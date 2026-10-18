@@ -22,7 +22,7 @@ import { createLiveSpacesStore, type LiveSpacesStore } from "./live-store";
 import { hasSignedInSession, isRefusal, onSignedIn, readWhenSignedIn, type LoadAccess } from "./load-access";
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
-import { installTemplateTables, makeTemplatePages, packRunJournal, readSpaceTemplate, readStarterTemplate } from "../templates/use-pack";
+import { installTemplateTables, makeTemplatePages, packRunJournal, readSpaceTemplate, readStarterTemplate, timed, type PreviewSizes } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
 /** The sidebar's open rows (written by SpacesSidebar): the tree's first read loads their children too. */
@@ -98,7 +98,7 @@ interface SpacesContextValue {
   };
   /** The template library (custom.space_templates): "Use template" installs its tables in the active
    *  organization and makes its pages there. `stage` = what it is doing now; null = idle. */
-  packs: { stage: string | null; use: (templateId: string) => Promise<void> };
+  packs: { stage: string | null; use: (templateId: string, sizes?: PreviewSizes | null) => Promise<void> };
   /** The live pages loaded so far (the sidebar loads lazily, like Notion): never the whole tree. */
   summaries: SpaceSummary[];
   /** Trash: empty until `loadTrash` (Trash opened) has read it. */
@@ -495,30 +495,67 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
       toast.error(err instanceof Error ? err.message : "We couldn't use this template.");
     }
   };
-  const applyPack = async (templateId: string) => {
+  /**
+   * "Use template" (ADVERSARIAL-1 #2: ~30 s, then the page jumped). The template read and the organization are
+   * fetched together; the tables install WHILE the page tree is made; the root opens the moment its content is
+   * written (its database blocks holding the preview's sizes, `sizes`), and the sub-pages are filled behind it.
+   * Every step streams into the stage text. Phases are `performance.measure` entries (use-pack.ts `timed`).
+   */
+  const applyPack = async (templateId: string, sizes?: PreviewSizes | null) => {
     if (packStage) return;
     setPackStage("Planning…");
+    const started = typeof performance === "undefined" ? 0 : performance.now();
+    let opened = false;
+    let tableStage = "Making tables…";
+    let pageStage = "";
+    const show = () => setPackStage([tableStage, pageStage].filter(Boolean).join(" · ") || "Finishing…");
     try {
-      const template = await readSpaceTemplate(templateId);
-      // org-filter: write-target the template's tables and pages are filed in the active organization
-      const orgId = await ensureOrgId(orgRef.current);
-      const tables = await installTemplateTables(template, orgId, dispatch, setPackStage);
-      setPackStage("Making pages…");
-      const root = await makeTemplatePages(
-        store,
-        async (title) => {
-          const doc = await createDatabaseSpacesStore(orgId).create({ parentId: null, title });
-          store.notifyTree();
-          return doc;
-        },
-        template,
-        tables,
-        (done, total) => setPackStage(`Pages ${done}/${total}`),
-        packRunJournal(orgId, templateId),
+      const [template, orgId] = await Promise.all([
+        timed("read", () => readSpaceTemplate(templateId)),
+        // org-filter: write-target the template's tables and pages are filed in the active organization
+        ensureOrgId(orgRef.current),
+      ]);
+      show();
+      const tables = timed("tables", () =>
+        installTemplateTables(template, orgId, dispatch, (stage) => {
+          tableStage = stage;
+          show();
+        }),
+      ).then((made) => {
+        tableStage = "";
+        show();
+        return made;
+      });
+      // Its failure is answered through makeTemplatePages (which moves the pages to Trash); never unhandled.
+      tables.catch(() => undefined);
+      const openRoot = (doc: SpaceDoc) => {
+        store.notifyTree();
+        reopenWith(doc);
+        open(doc.id);
+        opened = true;
+        if (typeof performance !== "undefined") performance.measure("spaces:use-template:opened", { start: started, end: performance.now() });
+      };
+      const root = await timed("pages", () =>
+        makeTemplatePages(
+          store,
+          async (title) => {
+            const doc = await createDatabaseSpacesStore(orgId).create({ parentId: null, title });
+            store.notifyTree();
+            return doc;
+          },
+          template,
+          tables,
+          (done, total) => {
+            pageStage = `Pages ${done}/${total}`;
+            show();
+          },
+          packRunJournal(orgId, templateId),
+          { sizes, onRootReady: openRoot },
+        ),
       );
       store.notifyTree();
-      reopenWith(root);
-      open(root.id);
+      if (!opened) openRoot(root);
+      if (typeof performance !== "undefined") performance.measure("spaces:use-template:total", { start: started, end: performance.now() });
     } catch (err) {
       toast.error(err instanceof Error && err.message ? err.message : `We couldn't use this template: ${errorSentence(err)}`, {
         duration: Infinity,
