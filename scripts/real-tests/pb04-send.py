@@ -7,6 +7,9 @@ executes it, a grader reads the database. Before it sends it prints and saves (r
 server's commit, the UTC start time and the fixture ids it uses.
 
 A run:
+  0. Setup — every run first writes the start state back through the store doors (the same writes as
+     --reset all), reads every value back, and prints it. If any value read back differs from what was
+     written, or a read fails, it exits non-zero and sends nothing.
   1. Turn 1 — POST /ai/agents/<Kestrel Dock Desk> (new stored conversation, active organization Safety Net
      Real Tests, scope Stockton cold dock) with the typed variable driver_name and the carrier pick-list
      reference (Bluewater Reefer, its CURRENT item id looked up by label).
@@ -29,8 +32,8 @@ Usage:
   pb04-send.py --between 90       wait 90 s between the writes and turn 2
   pb04-send.py --reset all        write the START state back (hidden text, hold code, dock status) and print
                                   what the store now holds; sends no turn
-  pb04-send.py --dry-run          no model call and no write: turn 1 goes with dry_run true, the between-turn
-                                  writes and turn 2 are printed, not sent
+  pb04-send.py --dry-run          no model call and no between-turn write: the start state is still written and
+                                  read back (setup), turn 1 goes with dry_run true, turn 2 and 3 are printed
 
   4. Turn 3 — POST /ai/conversations/<conversation id> again, the same conversation, with admin's Workspace
      (TURN_3_ORG) as the active organization in the X-Organization-Id header AND in the body. The message
@@ -208,6 +211,46 @@ def show_store(token: str) -> None:
         print(f"  {label}: HTTP {r['status']} {r['raw'][:600]}")
 
 
+def read_store(token: str) -> dict:
+    """The three sources' current values, parsed from the store's read doors (None where a read failed)."""
+    got: dict = {"items": None, "hold": None, "dock": None}
+    r = store(token, "pick_list_get", {"p_list_id": PICK_LIST})
+    if r["status"] == 200:
+        try:
+            doc = json.loads(r["raw"])
+            got["items"] = {i["label"]: i.get("description") for g in (doc.get("items_grouped") or {}).values() for i in g}
+        except (ValueError, KeyError, TypeError):
+            pass
+    for key, rec, field in [("hold", APT_3318, "hold_code"), ("dock", DOCK_SCOPE, "dock_status")]:
+        r = store(token, "value_read", {"p_organization_id": ORG, "p_record_id": rec, "p_key": field})
+        if r["status"] == 200:
+            try:
+                got[key] = json.loads(r["raw"])[0]["value"]
+            except (ValueError, KeyError, IndexError, TypeError):
+                pass
+    return got
+
+
+def reset_start_state(token: str) -> bool:
+    """Write the start state through the store doors, read every value back, print it and say whether it is exact.
+
+    Setup, not a fault: every run starts from it, whatever an earlier or crashed run left behind."""
+    for r in [write_hidden_text(token, ITEMS_START), write_hold(token, HOLD_START),
+              write_dock(token, DOCK_START, "Real-tests PB-04 start state")]:
+        print(f"{r['door']}: HTTP {r['status']}")
+    got = read_store(token)
+    want_items = {i["label"]: i["description"] for i in ITEMS_START}
+    print("start state read back:")
+    for label, value in (got["items"] or {}).items():
+        print(f"  carrier notes, {label}: {value}")
+    print(f"  hold code on the appointment row: {got['hold']}")
+    print(f"  dock status on the scope: {got['dock']}")
+    ok = got["items"] == want_items and got["hold"] == HOLD_START and got["dock"] == DOCK_START
+    if not ok:
+        print("start state differs from the written start state (or a read failed)")
+    return ok
+
+
 def agent_version(token: str) -> dict:
     """The agent's live row as the agent read door returns it: id, version and its messages."""
     status, _, raw = _call("GET", f"{SERVER}/agent-service/agents/{AGENT}", token, None, {"X-Organization-Id": ORG})
@@ -242,17 +285,20 @@ def main() -> None:
     if args.reset:
         record_run_identity("pb04-send --reset", SERVER, fixtures)
         token = admin_token()
-        for r in [write_hidden_text(token, ITEMS_START), write_hold(token, HOLD_START),
-                  write_dock(token, DOCK_START, "Real-tests PB-04 start state")]:
-            print(f"{r['door']}: HTTP {r['status']}")
+        ok = reset_start_state(token)
         print("store now holds:")
         show_store(token)
+        if not ok:
+            sys.exit(1)
         return
 
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb04-"))
     out.mkdir(parents=True, exist_ok=True)
     record_run_identity("pb04-send --dry-run" if args.dry_run else "pb04-send", SERVER, fixtures, out)
     token = admin_token()
+    if not reset_start_state(token):
+        print("refusing to send turn 1: the store does not hold the start state")
+        sys.exit(1)
     cid = str(uuid.uuid4())
     agent = agent_version(token)
     turn_2 = turn_2_message(agent["version"])
@@ -275,7 +321,7 @@ def main() -> None:
          "request_id": lower.get("x-request-id"), "headers": headers, "raw_response": raw})
     print(f"turn 1: HTTP {status}, conversation {cid}")
     if args.dry_run:
-        print("dry run: the three between-turn writes were not made (the start state is untouched)")
+        print("dry run: the three between-turn writes were not made (the store holds the start state)")
         body2 = {"user_input": turn_2, "scope_ids": [DOCK_SCOPE], "organization_id": ORG}
         save(out, "turn-2.planned.json", {"turn": 2, "sent": False, "request": {"method": "POST",
              "url": f"{SERVER}/ai/conversations/<conversation id>", "organization": ORG, "body": body2}})
