@@ -1460,23 +1460,27 @@ export async function endAffiliation(id: string): Promise<void> {
   if (error) throw pgError(error);
 }
 
+/** `searchPartiesByName({ orgId })` value meaning "every organization of mine", asked of the server. */
+export const ALL_MY_ORGANIZATIONS = "all-my-organizations" as const;
+
 /**
- * Name-search live parties (any kind) in one or more org workspaces — the
+ * Name-search live parties (any kind) in one org workspace or all of mine — the
  * generic "link an existing person/company" picker read. Small page, canonical
- * rows only (merged losers excluded). An array of orgs is for pickers with no
+ * rows only (merged losers excluded). ALL_MY_ORGANIZATIONS is for pickers with no
  * single active org (the deal dialog, D227) — each row carries its
  * `organization_id` so the caller can stamp the record into the right org.
  */
 export async function searchPartiesByName(args: {
-  orgId: string | string[];
+  orgId: string | typeof ALL_MY_ORGANIZATIONS;
   search: string;
 }): Promise<Array<PartyRef & { organization_id: string }>> {
-  const orgIds = Array.isArray(args.orgId) ? args.orgId : [args.orgId];
-  let q = supabase
+  const base = supabase
     .schema("crm")
     .from("party")
-    .select("id,display_name,party_kind,organization_id")
-    .in("organization_id", orgIds)
+    .select("id,display_name,party_kind,organization_id");
+  let q = (args.orgId === ALL_MY_ORGANIZATIONS
+    ? base.is(IN_MY_ORGANIZATIONS, true)
+    : base.eq("organization_id", args.orgId))
     .is("deleted_at", null)
     .is("canonical_id", null)
     .eq("record_class", CRM_PRIMARY_RECORD_CLASS)
@@ -1699,17 +1703,14 @@ export async function runDedupScan(orgId: string): Promise<DedupScanResult> {
  * resolved. Pairs whose parties are no longer both live canonical records are
  * filtered here (the next scan retires them server-side as 'stale').
  */
-export async function fetchMergeCandidates(
-  orgIds: string[],
-): Promise<MergeCandidateWithParties[]> {
-  if (orgIds.length === 0) return [];
+export async function fetchMergeCandidates(): Promise<MergeCandidateWithParties[]> {
   const { data, error } = await supabase
     .schema("crm")
     .from("merge_candidate")
     .select(CANDIDATE_EMBED)
     .eq("status", "pending")
     .is("deleted_at", null)
-    .in("organization_id", orgIds)
+    .is(IN_MY_ORGANIZATIONS, true)
     .is("source.deleted_at", null)
     .is("source.canonical_id", null)
     .eq("source.record_class", CRM_PRIMARY_RECORD_CLASS)
@@ -1726,17 +1727,14 @@ export async function fetchMergeCandidates(
 }
 
 /** True pending-suggestion count for the /crm indicator badge. */
-export async function fetchPendingCandidateCount(
-  orgIds: string[],
-): Promise<number> {
-  if (orgIds.length === 0) return 0;
+export async function fetchPendingCandidateCount(): Promise<number> {
   const { count, error } = await supabase
     .schema("crm")
     .from("merge_candidate")
     .select(CANDIDATE_COUNT_EMBED, { count: "exact", head: true })
     .eq("status", "pending")
     .is("deleted_at", null)
-    .in("organization_id", orgIds)
+    .is(IN_MY_ORGANIZATIONS, true)
     .is("source.deleted_at", null)
     .is("source.canonical_id", null)
     .eq("source.record_class", CRM_PRIMARY_RECORD_CLASS)
@@ -1807,10 +1805,7 @@ export async function unmergeParties(mergeId: string): Promise<void> {
 }
 
 /** Active (un-undone) merges across the caller's orgs, newest first. */
-export async function fetchRecentMerges(
-  orgIds: string[],
-): Promise<PartyMergeWithParties[]> {
-  if (orgIds.length === 0) return [];
+export async function fetchRecentMerges(): Promise<PartyMergeWithParties[]> {
   const { data, error } = await supabase
     .schema("crm")
     .from("party_merge")
@@ -1818,7 +1813,7 @@ export async function fetchRecentMerges(
       "*, winner:winner_id!inner(id,display_name,party_kind), loser:loser_id!inner(id,display_name,party_kind)",
     )
     .is("unmerged_at", null)
-    .in("organization_id", orgIds)
+    .is(IN_MY_ORGANIZATIONS, true)
     .eq("winner.record_class", CRM_PRIMARY_RECORD_CLASS)
     .eq("loser.record_class", CRM_PRIMARY_RECORD_CLASS)
     .order("merged_at", { ascending: false })
