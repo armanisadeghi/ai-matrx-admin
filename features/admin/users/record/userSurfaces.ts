@@ -70,7 +70,7 @@ export const USER_TABS: readonly UserTab[] = [
   { id: "activity", label: "Activity", icon: Activity, built: false },
   { id: "billing", label: "Billing & usage", icon: WalletCards, built: true },
   { id: "organizations", label: "Organizations", icon: Building2, built: true },
-  { id: "content", label: "Content", icon: FolderOpen, built: false },
+  { id: "content", label: "Content", icon: FolderOpen, built: true },
   { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
   { id: "notes", label: "Notes", icon: StickyNote, built: false },
   { id: "security", label: "Security", icon: ShieldCheck, built: true },
