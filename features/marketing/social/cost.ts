@@ -131,7 +131,12 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return confirm({ title: dialog.title, description: `Uses ${words.replace(/^≈ /, "about ")}.`, confirmLabel: dialog.confirmLabel });
   }
 
-  return { costText, pointsText, agentCostText, confirmSpend, confirmPosts, postsText, postsTotalText, commentsText };
+  /** The dollars a fetch of `count` posts will cost (for a per-row cost column); null when unpriced. */
+  function postsUsdOf(platform: string, count: number): number | null {
+    return postsUsd(costs.data, platform, count);
+  }
+
+  return { costText, pointsText, agentCostText, confirmSpend, confirmPosts, postsText, postsTotalText, commentsText, postsUsd: postsUsdOf };
 }
 
 // ---------------------------------------------------------------------------

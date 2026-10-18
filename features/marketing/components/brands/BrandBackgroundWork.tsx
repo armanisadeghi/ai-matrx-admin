@@ -15,7 +15,7 @@ import { readAllRows } from "@ai-matrx/data/db";
  *
  * ONE `MatrxDataTable`: a row per site crawl and per account's posts, one column per sortable /
  * filterable value (status, what, source, fetched, updated, problem), the fetch in the table's own
- * Actions column. What a fetch costs lives in the header's Cost popover, never on the rows.
+ * Actions column. What one fetch costs is the row's Fetch cost column (`costColumn`); the header's Cost popover keeps the posts per fetch and the fetch-all total.
  */
 
 import { useState } from "react";
@@ -56,6 +56,8 @@ import { marketingSeg } from "@/features/marketing/lib/keys";
 import type { MarketingBrand } from "@/features/marketing/types";
 import { accountKey, loadPostHistoryNotes } from "./postHistoryOutcomes";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { costColumn } from "@/components/cost/costColumn";
+import { useCostDisplay } from "@/components/cost/useCostDisplay";
 
 const ACTIVE = new Set(["queued", "running"]);
 /** The loaded table: toolbar + header, then one row each (measured: 1 row 112px, 3 rows 170px). */
@@ -217,6 +219,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
   const queryClient = useQueryClient();
   const seg = marketingSeg(brand);
   const spend = useSocialSpend(brand.organization_id);
+  const costDisplay = useCostDisplay();
   const knob = Number(useSessionKnob("social.profile_posts_default"));
   const defaultPosts = Number.isFinite(knob) && knob > 0 ? knob : null;
   const [busy, setBusy] = useState<Record<string, boolean>>({});
@@ -430,6 +433,17 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
             </span>
           ),
       },
+      // What one fetch of this account's posts costs, on its own row: points for members, dollars
+      // only for a system admin with dollars on. A site's crawl is not priced here (blank).
+      ...(canEdit && defaultPosts
+        ? [costColumn<WorkRow>({
+            id: "fetch_cost",
+            header: "Fetch cost",
+            prefix: "≈ ",
+            display: costDisplay,
+            usd: (r) => (r.account ? spend.postsUsd(r.account.kind, defaultPosts) : null),
+          })]
+        : []),
       {
         id: "updated",
         label: "Updated",
@@ -525,15 +539,6 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
                 </PopoverTrigger>
                 <PopoverContent align="end" width="md" padding="sm">
                   <p className="px-1 pb-1.5 text-xs text-muted-foreground">{defaultPosts} posts per fetch</p>
-                  <ul className="flex flex-col">
-                    {costRows.map(({ a, points }) => (
-                      <li key={a.propertyId} className="flex min-w-0 items-center gap-2 px-1 py-1 text-sm">
-                        <PropertyKindMark kind={a.kind} size={16} />
-                        <span className="min-w-0 flex-1 truncate">{a.label}</span>
-                        <span className="shrink-0 tabular-nums text-muted-foreground">{points ?? "—"}</span>
-                      </li>
-                    ))}
-                  </ul>
                   {missingTotal && !accounts.isError ? (
                     <p className="mt-1 flex items-center gap-2 border-t border-border px-1 pt-1.5 text-sm">
                       <span className="flex-1">Fetch all posts ({missing.length})</span>
