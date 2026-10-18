@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 
 import { dollars, points } from "../../video/clone";
 import { plainFailureText } from "../../video/render-errors";
+import { isSessionExpired, useExpiredSessionGuard } from "../../video/session";
 import { useFileUrls } from "../../video/studio-hooks";
 
 // ── run log ─────────────────────────────────────────────────────────────────────────────────────────
@@ -344,7 +345,11 @@ export function OutputDownload({ fileId, label, fileName }: { fileId: string; la
 
 /** A failed run: its words on one line, with the Alchemy menu beside them. */
 export function FailureLine({ error, operation }: { error: unknown; operation: string }) {
-  const text = plainFailureText(error);
+  const guard = useExpiredSessionGuard();
+  useEffect(() => {
+    guard(error);
+  }, [error, guard]);
+  const text = isSessionExpired(error) ? "Your sign-in ran out. Taking you to sign in." : plainFailureText(error);
   return (
     <div className="flex min-w-0 items-center gap-2">
       <span className="type-meta min-w-0 flex-1 text-destructive">{text.slice(0, 220)}</span>

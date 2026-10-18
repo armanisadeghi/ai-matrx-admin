@@ -61,10 +61,13 @@ jest.mock("../gallery/publicCatalogue.server", () => {
 
 // The Spaces fence's browser islands: the editor preview draws its pages here as their titles, the icon as nothing.
 jest.mock("@/features/spaces/public/TemplatePackPreview", () => ({
-  TemplatePackPreview: ({ template }: { template: { catalogue_id: string; pack: { pages: Array<{ key: string; title: string }> } } }) => (
+  TemplatePackPreview: ({ template, outlines }: { template: { catalogue_id: string; pack: { pages: Array<{ key: string; title: string }> } }; outlines: Record<string, React.ReactNode> }) => (
     <div data-space-template-preview={template.catalogue_id}>
       {template.pack.pages.map((p) => (
-        <button key={p.key}>{p.title}</button>
+        <section key={p.key}>
+          <button>{p.title}</button>
+          {outlines[p.key]}
+        </section>
       ))}
     </div>
   ),
@@ -124,6 +127,12 @@ describe("one Space template's public page", () => {
     for (const p of PACK.pages) expect(page).toContain(p.title.replace(/&/g, "&amp;"));
     for (const t of PACK.spec.tables) expect(page).toContain(t.name);
     expect(page).toContain(`data-space-template-preview="${PACK.catalogueId}"`);
+    // The first paint draws each database block as a real table of its sample rows, never a placeholder.
+    const projects = PACK.spec.tables.find((t) => t.token === "project")!;
+    const firstTitle = String(projects.rows![0].values[projects.titleField!]);
+    expect(page).toContain('data-space-outline-table="project"');
+    expect(page).toContain(`>${firstTitle.replace(/&/g, "&amp;").replace(/'/g, "&#x27;")}<`);
+    expect(page).not.toContain("[database]");
     expect(page).toContain(`href="/sign-up?redirectTo=${encodeURIComponent(`/spaces/use-template?template=${PACK.catalogueId}`)}"`);
   });
 

@@ -18,6 +18,7 @@ import { TemplatePackPreview } from "@/features/spaces/public/TemplatePackPrevie
 import { packPagesInOrder, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 
 import { footprintLine, isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
+import { spacePageOutlines } from "./SpacePageOutline";
 import { SpaceTemplateCardGrid, TemplateChip } from "./TemplateCards";
 import { SpaceTemplateUseAction } from "./TemplateUseAction";
 import type { ShowSpec } from "./TemplateShowcase";
@@ -141,6 +142,7 @@ export function SpaceTemplatePublicBody({
 
         <TemplatePackPreview
           template={{ id: card.id, catalogue_id: card.catalogue_id, version: card.version, spec: spec as unknown as TemplateSpec, pack }}
+          outlines={spacePageOutlines(pages, spec)}
         />
 
         <section className="flex flex-col gap-3" aria-labelledby="space-template-inside">

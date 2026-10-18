@@ -521,6 +521,10 @@ export type Database = {
         Args: { p_before: string; p_limit: number; p_user: string }
         Returns: Json
       }
+      _user_activity_contact: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
       _user_activity_conversation: {
         Args: { p_before: string; p_limit: number; p_user: string }
         Returns: Json
@@ -531,6 +535,10 @@ export type Database = {
       }
       _user_activity_feedback: {
         Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_instant: {
+        Args: { p_at: string; p_kinds: string[]; p_user: string }
         Returns: Json
       }
       _user_activity_item: {
@@ -664,11 +672,26 @@ export type Database = {
       user_activity: {
         Args: {
           p_before?: string
+          p_before_key?: string
           p_kinds?: string[]
           p_limit?: number
           p_user: string
         }
         Returns: Json
+      }
+      user_billing_events: {
+        Args: { p_before?: string; p_limit?: number; p_user: string }
+        Returns: {
+          actor_id: string
+          at: string
+          detail: string
+          key: string
+          kind: string
+          note: string
+          record_id: string
+          record_type: string
+          title: string
+        }[]
       }
       user_overview: { Args: { p_user: string }; Returns: Json }
       user_owned_resources: {
@@ -2102,6 +2125,81 @@ export type Database = {
           verified_by?: string | null
           version?: number
           visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      required_flag_change: {
+        Row: {
+          agent_id: string
+          change_note: string
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          prior_default: Json | null
+          prior_default_present: boolean
+          prior_required: Json | null
+          prior_required_present: boolean
+          prior_version: number | null
+          restored_at: string | null
+          source_table: string
+          stage: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          variable_index: number
+          variable_name: string
+          version: number
+        }
+        Insert: {
+          agent_id: string
+          change_note: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          prior_default?: Json | null
+          prior_default_present: boolean
+          prior_required?: Json | null
+          prior_required_present: boolean
+          prior_version?: number | null
+          restored_at?: string | null
+          source_table?: string
+          stage: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variable_index: number
+          variable_name: string
+          version?: number
+        }
+        Update: {
+          agent_id?: string
+          change_note?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          prior_default?: Json | null
+          prior_default_present?: boolean
+          prior_required?: Json | null
+          prior_required_present?: boolean
+          prior_version?: number | null
+          restored_at?: string | null
+          source_table?: string
+          stage?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variable_index?: number
+          variable_name?: string
+          version?: number
         }
         Relationships: []
       }
@@ -93070,6 +93168,30 @@ export type Database = {
           covered_to?: string
           refreshed_at?: string
           singleton?: boolean
+        }
+        Relationships: []
+      }
+      _app_log_requests_hourly: {
+        Row: {
+          created_at: string
+          everyone: boolean
+          refreshed_at: string
+          requests: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at: string
+          everyone: boolean
+          refreshed_at?: string
+          requests: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          everyone?: boolean
+          refreshed_at?: string
+          requests?: number
+          user_id?: string | null
         }
         Relationships: []
       }

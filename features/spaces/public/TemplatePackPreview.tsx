@@ -9,11 +9,11 @@
 // read the server page already made (public.template_public_page).
 //
 // FIRST PAINT: BlockNote reads `window` while it creates the editor (see PublicSpace), so the server draws each
-// page's frame (cover, icon, title) and its text outline — what a crawler reads — and the browser swaps the
-// outline for the editor. The box has a fixed height and scrolls inside, so the swap moves nothing around it.
+// page's frame (cover, icon, title) and the host's outline (text + real tables of the sample rows, SpacePageOutline)
+// — what a crawler reads — and the browser swaps the outline for the editor. The box has a fixed height and scrolls inside, so the swap moves nothing around it.
 
 import { FileText } from "lucide-react";
-import { useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
@@ -21,7 +21,6 @@ import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 import type { SpaceSummary } from "../contract";
 import { SpaceEditor } from "../editor/SpaceEditor";
 import { Cover } from "../page/Cover";
-import { Preview } from "../page/PageHistory";
 import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
 import { readOnlySpacesValue } from "../state/read-only-value";
 import { StaticSpacesProvider } from "../state/SpacesProvider";
@@ -42,7 +41,11 @@ const READ_ONLY = () => {
 };
 const idOf = (key: string) => `preview-${key}`;
 
-export function TemplatePackPreview({ template }: { template: PublicPackTemplate }) {
+/**
+ * `outlines`: each page's server-drawn first paint by page key (the host renders them on the server: real tables of the
+ * sample rows, the text). Every page's outline is in the HTML (the current one shown) so a crawler reads them all.
+ */
+export function TemplatePackPreview({ template, outlines }: { template: PublicPackTemplate; outlines: Record<string, ReactNode> }) {
   const inBrowser = useSyncExternalStore(
     NO_SUBSCRIBE,
     () => true,
@@ -71,7 +74,6 @@ export function TemplatePackPreview({ template }: { template: PublicPackTemplate
     linkTarget: (id) => byId.get(id) ?? null,
   });
   if (!current) return null;
-  const titleOf = (id: string) => byId.get(id)?.title ?? null;
   return (
     <div
       className="spaces-root flex h-[40rem] min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card md:grid md:grid-cols-[13rem_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]"
@@ -124,9 +126,11 @@ export function TemplatePackPreview({ template }: { template: PublicPackTemplate
                   menu={{ moveBlocksTo: READ_ONLY, turnIntoPageIn: READ_ONLY, askAi: () => {} }}
                 />
               ) : (
-                <div data-space-template-outline="">
-                  <Preview blocks={current.doc.blocks} titleOf={titleOf} />
-                </div>
+                pages.map((p) => (
+                  <div key={p.key} hidden={p.key !== current.key}>
+                    {outlines[p.key] ?? null}
+                  </div>
+                ))
               )}
             </div>
           </div>

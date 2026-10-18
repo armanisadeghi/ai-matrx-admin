@@ -45,6 +45,7 @@ import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewS
 import { BackendApiError } from "@ai-matrx/api";
 import { appendPatch, conflictVersion, estimateProject, getVideoProject } from "../../video/server";
 import { readCompositionHistory } from "../../video/service";
+import { useExpiredSessionGuard } from "../../video/session";
 import { useLocalRenderAllowed } from "../../video/studio-hooks";
 import type { VariantAnswer, VideoProjectAnswer } from "../../video/types";
 import { useSocials } from "../SocialsContext";
@@ -166,6 +167,7 @@ function batchHandler(
 
 export function VideoProjectStudio({ projectId }: { projectId: string }) {
   const project = useVideoProject(projectId);
+  useExpiredSessionGuard();
   const { brandSeg, brandId } = useSocials();
   const router = useRouter();
   const base = `${marketingRoutes.brandSocials(brandSeg)}/videos`;
@@ -233,6 +235,7 @@ export function VideoProjectStudio({ projectId }: { projectId: string }) {
 }
 
 function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition }) {
+  const guard = useExpiredSessionGuard();
   const { organizationId } = useSocials();
   const queryClient = useQueryClient();
   const params = useSearchParams();
@@ -275,6 +278,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
       await reload();
       return true;
     } catch (err) {
+      if (guard(err)) return false;
       if (conflictVersion(err) === null) {
         toast.error(err instanceof Error ? err.message : "Couldn't save the change");
         return false;

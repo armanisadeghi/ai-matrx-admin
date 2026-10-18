@@ -48,6 +48,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+CANARY = "40379907-a685-4d59-93db-6533c5fdcb75"  # the plain canary the agent-call chain ends at
 CANARY_IDS = {"40379907-a685-4d59-93db-6533c5fdcb75", "76c1f930-3c08-40db-b156-6eeab958725d"}
 CALLER = "a9cf243e-90b3-435d-96e2-f21e56fe08f5"
 TYPED = "PB7-TYPED-5R1C Please send the canary line."
@@ -368,22 +369,57 @@ def snapshots(conn, cid: str) -> List[dict]:
                    "where conversation_id = %s and deleted_at is null order by created_at, iteration", (cid,))
 
 
-def find_canary_conversation(conn, agent_id: str, after: str, exclude: set) -> Optional[str]:
-    t = datetime.fromisoformat(after) - timedelta(seconds=5)
-    rows = q(conn, "select id::text from chat.conversation where initial_agent_id = %s and created_at >= %s "
-                   "order by created_at", (agent_id, t))
-    for r in rows:
-        if r["id"] not in exclude:
-            return r["id"]
-    return None
+class AmbiguousCanary(Exception):
+    """More than one conversation still matches this run's identifiers: never guess between them."""
 
 
-def child_conversation(conn, parent: str) -> Optional[str]:
-    """The canary conversation the caller started. Only a child whose agent IS a canary: the parent's
-    titler side job is a child too, and is created first."""
-    rows = q(conn, "select id::text from chat.conversation where parent_conversation_id = %s "
-                   "and initial_agent_id::text = any(%s) order by created_at", (parent, list(CANARY_IDS)))
-    return rows[0]["id"] if rows else None
+_CONV_COLS = "id::text id, parent_conversation_id::text parent, initial_agent_id::text agent, created_at"
+
+
+def find_canary_conversation(conn, agent_id: str, after: str, exclude: set, root: Optional[str] = None,
+                             request_ids: Tuple[Optional[str], ...] = (), source_feature: Optional[str] = None) -> Optional[str]:
+    """The conversation whose agent IS the canary, belonging to THIS run.
+
+    Bound to the run's own identifiers: the conversation id the sender recorded (``root``), any conversation
+    carrying one of the run's request ids, and every descendant of those by parent links, to any depth (the
+    agent-call chain is caller -> second caller -> canary). When the run has no such conversation (the door
+    records none), a top-level conversation of the canary agent created after the send AND carrying the door's
+    ``source_feature``; a time window alone is never enough. Zero matches -> None. More than one ->
+    AmbiguousCanary naming them all."""
+    ids = [i for i in request_ids if i]
+    seen: Dict[str, dict] = {}
+    if root or ids:
+        for r in q(conn, f"select {_CONV_COLS} from chat.conversation where id::text = any(%s) "
+                         "or last_request_id::text = any(%s)", ([root] if root else [], ids)):
+            seen[r["id"]] = r
+    frontier = list(seen)
+    while frontier:
+        kids = q(conn, f"select {_CONV_COLS} from chat.conversation where parent_conversation_id::text = any(%s)",
+                 (frontier,))
+        frontier = []
+        for k in kids:
+            if k["id"] not in seen:
+                seen[k["id"]] = k
+                frontier.append(k["id"])
+    hits = [r for r in seen.values() if r["agent"] == agent_id and r["id"] not in exclude]
+    if not seen and source_feature:
+        t = datetime.fromisoformat(after) - timedelta(seconds=5)
+        hits = [r for r in q(conn, f"select {_CONV_COLS} from chat.conversation where initial_agent_id::text = %s "
+                                   "and created_at >= %s and parent_conversation_id is null and source_feature = %s "
+                                   "order by created_at", (agent_id, t, source_feature)) if r["id"] not in exclude]
+    hits.sort(key=lambda r: str(r["created_at"]))
+    if len(hits) > 1:
+        raise AmbiguousCanary("more than one conversation matches this run: " + ", ".join(r["id"] for r in hits))
+    return hits[0]["id"] if hits else None
+
+
+def _mandate_feature(rec: dict) -> Optional[str]:
+    """source_feature a mandate try-run's conversation carries, from the mandate key in the sender's response."""
+    try:
+        key = json.loads(rec.get("raw_response") or "{}").get("mandate_key")
+    except ValueError:
+        return None
+    return f"mandate:{key}" if key else None
 
 
 def side_jobs(conn, parent: str) -> List[str]:
@@ -821,11 +857,19 @@ def main() -> None:
                 dries[e["door"]] = run / e["file"]
                 continue
             cid = e.get("conversation_id")
-            if e["door"] in ("mandate-try", "workflow"):
-                cid = find_canary_conversation(conn, e["agent_id"], e["sent_at"], claimed)
-            elif e["door"] == "agent-call" and cid:
-                side.append((e["door"] + " (caller)", cid, e.get("typed") or args.typed))
-                cid = child_conversation(conn, cid)
+            rec = json.loads((run / e["file"]).read_text())
+            rids = (rec.get("request_id"),)
+            others = claimed - {cid}
+            try:
+                if e["door"] in ("mandate-try", "workflow"):
+                    feature = "workflow_run" if e["door"] == "workflow" else _mandate_feature(rec)
+                    cid = find_canary_conversation(conn, e["agent_id"], e["sent_at"], others, cid, rids, feature)
+                elif e["door"] == "agent-call" and cid:
+                    side.append((e["door"] + " (caller)", cid, e.get("typed") or args.typed))
+                    cid = find_canary_conversation(conn, CANARY, e["sent_at"], others, cid, rids)
+            except AmbiguousCanary as exc:
+                report.append(f"{e['door']} | - | {exc}")
+                continue
             if not cid:
                 report.append(f"{e['door']} | - | no conversation found for this door (HTTP {e['status']})")
                 continue
@@ -1032,7 +1076,98 @@ def _self_test_cases() -> list:
     rows.append(("titler side job carrying a hidden context value", "carries a value the person did not type",
                  (lambda rep: side("door", _st_titler(_ST_TITLER_CLEAN + "\n\nCanary context marker PB7-CTX-8W5N."),
                                    TYPED, VARIABLE_VALUES, rep)) if side else None))
+    rows.extend(_lookup_cases())
     return rows
+
+
+# ── lookup cases: a fake chat.conversation table behind q() ─────────────────────────────────────────
+_LK_CANARY = "40379907-a685-4d59-93db-6533c5fdcb75"
+_LK_CALLER = "a9cf243e-90b3-435d-96e2-f21e56fe08f5"
+
+
+def _lk_row(cid: str, parent: Optional[str], agent: str, at: str, feature: str = "", last_req: str = "") -> dict:
+    return {"id": cid, "parent": parent, "agent": agent, "created_at": datetime.fromisoformat(at),
+            "source_feature": feature, "last_request_id": last_req}
+
+
+def _lk_fake_q(table: List[dict]):
+    def fake(conn, sql: str, args: tuple) -> List[dict]:
+        if "parent_conversation_id::text = any" in sql:
+            return [r for r in table if r["parent"] in args[0]]
+        if "last_request_id::text = any" in sql:
+            return [r for r in table if r["id"] in args[0] or r["last_request_id"] in args[1]]
+        # time window (old and new): canary agent, created at/after the send
+        out = [r for r in table if r["agent"] == args[0] and r["created_at"] >= args[1]]
+        if "parent_conversation_id is null" in sql:
+            out = [r for r in out if r["parent"] is None]
+        if "source_feature = %s" in sql:
+            out = [r for r in out if r["source_feature"] == args[2]]
+        return sorted(out, key=lambda r: r["created_at"])
+    return fake
+
+
+def _lk_call(table: List[dict], **want) -> Any:
+    """Run find_canary_conversation over ``table``; keywords the function does not take are dropped (so the
+    pre-fix helper runs the same case and shows what it would have answered)."""
+    import inspect
+
+    fn = globals()["find_canary_conversation"]
+    accepted = inspect.signature(fn).parameters
+    kw = {k: v for k, v in want.items() if k in accepted}
+    saved = globals()["q"]
+    globals()["q"] = _lk_fake_q(table)
+    try:
+        return fn(None, _LK_CANARY, "2026-10-18T07:37:20+00:00", set(), **kw)
+    finally:
+        globals()["q"] = saved
+
+
+def _lookup_cases() -> list:
+    def grandchild(rep):
+        table = [_lk_row("700ee1bd", None, _LK_CALLER, "2026-10-18T07:37:26+00:00", "agent", "req-a"),
+                 _lk_row("41d5bdc8", "700ee1bd", _LK_CALLER, "2026-10-18T07:37:33+00:00"),
+                 _lk_row("20244368", "41d5bdc8", _LK_CANARY, "2026-10-18T07:37:37+00:00")]
+        got = _lk_call(table, root="700ee1bd", request_ids=("req-a",))
+        if got != "20244368":
+            rep.append(f"lookup resolved {got!r}, wanted the grandchild 20244368")
+        else:
+            rep.append("lookup: grandchild resolved")
+
+    def overlap(rep):
+        # run A (caller aaaa) and run B (caller bbbb) overlap; B's canary was created first
+        table = [_lk_row("aaaa", None, _LK_CALLER, "2026-10-18T07:37:26+00:00", "agent", "req-a"),
+                 _lk_row("bbbb", None, _LK_CALLER, "2026-10-18T07:37:27+00:00", "agent", "req-b"),
+                 _lk_row("b-canary", "bbbb", _LK_CANARY, "2026-10-18T07:37:30+00:00"),
+                 _lk_row("a-canary", "aaaa", _LK_CANARY, "2026-10-18T07:37:31+00:00")]
+        got = _lk_call(table, root="aaaa", request_ids=("req-a",))
+        rep.append("lookup: overlapping runs kept apart" if got == "a-canary"
+                   else f"lookup resolved {got!r} for run A, wanted a-canary")
+
+    def feature(rep):
+        feat = [_lk_row("other-wf", None, _LK_CANARY, "2026-10-18T07:37:23+00:00", "workflow_run"),
+                _lk_row("mine", None, _LK_CANARY, "2026-10-18T07:37:24+00:00", "mandate:realtests.pb07_canary")]
+        got = _lk_call(feat, source_feature="mandate:realtests.pb07_canary")
+        rep.append("lookup: time window bound" if got == "mine"
+                   else f"lookup resolved {got!r} for the mandate door, wanted mine")
+
+    def ambiguous(rep):
+        table = [_lk_row("cccc", None, _LK_CALLER, "2026-10-18T07:37:26+00:00", "agent", "req-c"),
+                 _lk_row("c-one", "cccc", _LK_CANARY, "2026-10-18T07:37:30+00:00"),
+                 _lk_row("c-two", "cccc", _LK_CANARY, "2026-10-18T07:37:31+00:00")]
+        try:
+            got = _lk_call(table, root="cccc", request_ids=("req-c",))
+        except Exception as exc:
+            named = all(x in str(exc) for x in ("c-one", "c-two"))
+            rep.append("lookup: ambiguity fails loudly naming all" if type(exc).__name__ == "AmbiguousCanary" and named
+                       else f"lookup raised {type(exc).__name__}: {exc}")
+            return
+        rep.append(f"lookup silently picked {got!r} of two matches")
+
+    return [("lookup: canary two levels below the caller (caller -> caller -> canary)", "lookup: grandchild resolved", grandchild),
+            ("lookup: two overlapping runs keep their own conversations", "lookup: overlapping runs kept apart", overlap),
+            ("lookup: a door with no recorded conversation is bound to its feature, not just the time",
+             "lookup: time window bound", feature),
+            ("lookup: two matches in one run fail loudly, naming both", "lookup: ambiguity fails loudly", ambiguous)]
 
 
 VARIABLE_VALUES = {"canary_code": "PB7-VAR-7Q2K"}
