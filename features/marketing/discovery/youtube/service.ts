@@ -58,14 +58,18 @@ function mapSearchHistoryRow(row: {
 
 export async function listYouTubeSearchHistory(
   offset = 0,
+  /** Inside a research topic, only the searches run for that topic. */
+  topicId?: string,
 ): Promise<YouTubeSearchHistoryPage> {
   const userId = requireUserId();
-  const { data, error } = await supabase
+  let query = supabase
     .schema("research")
     .from("youtube_search")
     .select("id,query,request,response,status,result_count,error,created_at")
     .eq("created_by", userId)
-    .is("deleted_at", null)
+    .is("deleted_at", null);
+  if (topicId) query = query.eq("metadata->>research_topic_id", topicId);
+  const { data, error } = await query
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .range(offset, offset + SEARCH_HISTORY_PAGE_SIZE);

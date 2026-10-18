@@ -138,7 +138,17 @@ function restoreForm(request: YouTubeSearchRequest | null): FormState {
   };
 }
 
-export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
+export function YouTubeDiscovery({
+  topicId,
+  suggestedQueries = [],
+  onVideosAdded,
+}: {
+  topicId?: string;
+  /** One-click searches (a research topic passes its keywords). */
+  suggestedQueries?: string[];
+  /** Called after videos are attached to the topic. */
+  onVideosAdded?: () => void;
+}) {
   const userId = useAppSelector(selectUserId);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [page, setPage] = useState<YouTubeSearchPage | null>(null);
@@ -170,7 +180,7 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
           "search",
         );
         const [history, selectedSearch] = await Promise.all([
-          listYouTubeSearchHistory(),
+          listYouTubeSearchHistory(0, topicId),
           searchId ? getYouTubeSearchHistory(searchId) : Promise.resolve(null),
         ]);
         if (!active) return;
@@ -201,18 +211,20 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
     return () => {
       active = false;
     };
-  }, [userId]);
+  }, [userId, topicId]);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
-  const runSearch = async (pageToken?: string) => {
-    if (!form.query.trim() || loading) return;
+  const runSearch = async (pageToken?: string, queryOverride?: string) => {
+    const searchForm = queryOverride ? { ...form, query: queryOverride } : form;
+    if (!searchForm.query.trim() || loading) return;
+    if (queryOverride) setForm(searchForm);
     setLoading(true);
     setError(null);
     try {
-      const request = compactRequest(form, pageToken);
+      const request = compactRequest(searchForm, pageToken);
       const result = topicId
         ? await searchTopicYouTube(topicId, request)
         : await searchYouTube(request);
@@ -226,7 +238,7 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
         commitUrlParams({ search: result.search_id }, "replace");
       }
       try {
-        const history = await listYouTubeSearchHistory();
+        const history = await listYouTubeSearchHistory(0, topicId);
         setHistoryEntries(history.entries);
         setHistoryHasMore(history.hasMore);
         setHistoryError(null);
@@ -245,7 +257,7 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
           : "YouTube search could not be completed.",
       );
       try {
-        const history = await listYouTubeSearchHistory();
+        const history = await listYouTubeSearchHistory(0, topicId);
         setHistoryEntries(history.entries);
         setHistoryHasMore(history.hasMore);
         setHistoryError(null);
@@ -280,7 +292,7 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
     setHistoryLoading(true);
     setHistoryError(null);
     try {
-      const history = await listYouTubeSearchHistory(historyEntries.length);
+      const history = await listYouTubeSearchHistory(historyEntries.length, topicId);
       setHistoryEntries((current) => [...current, ...history.entries]);
       setHistoryHasMore(history.hasMore);
     } catch (caught) {
@@ -314,6 +326,7 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
     setError(null);
     try {
       await addTopicYouTubeVideos(topicId, videoIds);
+      onVideosAdded?.();
       const added = new Set(videoIds);
       setPage((current) =>
         current
@@ -420,6 +433,16 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
                 Search YouTube
               </SurfaceButton>
             </div>
+
+            {suggestedQueries.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                {suggestedQueries.map((suggestion) => (
+                  <Chip key={suggestion} asChild pressed={form.query === suggestion} label={suggestion} icon={<Search aria-hidden />}>
+                    <button type="button" disabled={loading} onClick={() => void runSearch(undefined, suggestion)} />
+                  </Chip>
+                ))}
+              </div>
+            )}
 
             <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-2 lg:grid-cols-6 dark:border-white/10">
               <FilterSelect
@@ -560,8 +583,7 @@ export function YouTubeDiscovery({ topicId }: { topicId?: string }) {
             <div className="rounded-3xl border border-dashed border-border p-14 text-center dark:border-white/15">
               <h2 className="text-lg font-semibold">No videos matched</h2>
               <p className="mt-2 text-sm text-muted-foreground dark:text-zinc-500">
-                Try broadening the query or removing one of the advanced
-                filters.
+                Try a broader query or fewer filters.
               </p>
             </div>
           )}
@@ -688,9 +710,6 @@ function AdvancedFilters({
     <div className="mt-3 rounded-2xl border border-border bg-muted/20 p-4 dark:border-white/10 dark:bg-black/20">
       <div className="mb-4">
         <h2 className="font-medium">Advanced discovery</h2>
-        <p className="mt-1 text-xs text-muted-foreground dark:text-zinc-500">
-          Every control maps to a supported YouTube discovery filter.
-        </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <TextFilter
