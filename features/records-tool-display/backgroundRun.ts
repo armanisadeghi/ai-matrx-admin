@@ -207,7 +207,12 @@ export function readCopyReport(output: Record<string, unknown> | null): CopyRepo
 
 // ── the whole view ─────────────────────────────────────────────────────────────
 
-export type BackgroundRunPhase = "opening" | "waiting" | "working" | "finished" | "stopped";
+/**
+ * "needs_you": parked on a question for the person (awaiting_input / interrupted); "paused": held
+ * (paused / pausing); "cancelled": the person's own stop, not a failure. The backend never wakes the
+ * chat for a park, so the card is the only signal.
+ */
+export type BackgroundRunPhase = "opening" | "waiting" | "working" | "needs_you" | "paused" | "finished" | "stopped" | "cancelled";
 
 /** A workflow run with no named stage list: how far through its steps it is. */
 export interface WorkflowReport {
@@ -282,6 +287,8 @@ export interface BackgroundRunView {
   stoppedBecause: string | null;
   /** Why the run cannot be read right now (never the run's own failure). */
   readFailure: string | null;
+  /** The question a parked run waits on, when it names one. */
+  ask: string | null;
 }
 
 /** Which copy this run is, from what it was started with, else its node. */
@@ -313,7 +320,7 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
   const kind = runKindOf(run, hint);
   const empty: BackgroundRunView = {
     kind, phase: "opening", name: null, sample: null, lastMovedAt: null, startedAt: null, endedAt: null,
-    report: null, stoppedBecause: null, readFailure: null,
+    report: null, stoppedBecause: null, readFailure: null, ask: null,
   };
   if (!run) return empty;
   if (kind === "workflow") return readWorkflowRun(run, empty);
@@ -329,14 +336,7 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
   // A copy that stopped part-way keeps its counts in the failure's details.
   const details = obj(node?.error?.details);
   const report = kind === "import" ? readImportReport(output) : readCopyReport(output ?? details);
-  const failed = over && run.status !== "completed";
-  const phase: BackgroundRunPhase = !run.statusKnown
-    ? "opening"
-    : over
-      ? (failed || node?.phase === "failed" ? "stopped" : "finished")
-      : run.status === "pending" && !progress
-        ? "waiting"
-        : "working";
+  const phase = phaseOf(run, progress != null, node?.phase === "failed");
   return {
     kind,
     phase,
@@ -348,12 +348,23 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
     report,
     stoppedBecause: phase === "stopped" ? (str(node?.error?.message) ?? errorSentence(run.error)) : null,
     readFailure: run.readFailure,
+    ask: askOf(run),
   };
+}
+
+/** What the parked run asks, in its own words, when the interrupt carries one. */
+function askOf(run: WorkflowRunState): string | null {
+  const payload = run.interrupt?.payload ?? null;
+  if (!payload) return null;
+  return str(payload.question) ?? str(payload.prompt) ?? str(payload.message) ?? str(payload.ask) ?? null;
 }
 
 function phaseOf(run: WorkflowRunState, progressed: boolean, stepFailed: boolean): BackgroundRunPhase {
   if (!run.statusKnown) return "opening";
+  if (run.status === "cancelled") return "cancelled";
   if (runIsOver(run.status)) return run.status !== "completed" || stepFailed ? "stopped" : "finished";
+  if (run.status === "awaiting_input" || run.status === "interrupted") return "needs_you";
+  if (run.status === "paused" || run.status === "pausing") return "paused";
   return run.status === "pending" && !progressed ? "waiting" : "working";
 }
 
@@ -373,6 +384,7 @@ function readWorkflowRun(run: WorkflowRunState, empty: BackgroundRunView): Backg
     report: over ? { kind: "workflow", steps: Math.max(done, run.stepsExecuted ?? 0), outputKeys: Object.keys(output ?? {}) } : null,
     stoppedBecause: phase === "stopped" ? (str(latest?.error?.message) ?? errorSentence(run.error)) : null,
     readFailure: run.readFailure,
+    ask: askOf(run),
   };
 }
 
@@ -385,9 +397,27 @@ export const STATUS_WORD: Record<BackgroundRunPhase, string> = {
   opening: "Opening",
   waiting: "Queued",
   working: "Working",
+  needs_you: "Waiting on you",
+  paused: "Paused",
   finished: "Finished",
   stopped: "Stopped",
+  cancelled: "Cancelled",
 };
+
+/**
+ * A working run quiet this long with no worker evidence is stalled. The run store carries no
+ * heartbeat or lease (only events), so the card never claims it "continues by itself": it says what
+ * is true, that nothing is moving and it resumes when a worker is free.
+ */
+export const STALLED_AFTER_MS = 300_000;
+
+/** The one quiet line under the bar while a run is not over: failure, stall, or a short quiet note. */
+export function quietNote(view: Pick<BackgroundRunView, "phase" | "readFailure">, quietMs: number, formatQuiet: (ms: number) => string): string {
+  if (view.readFailure) return view.readFailure;
+  if (view.phase !== "working" || quietMs < QUIET_AFTER_MS) return "";
+  if (quietMs >= STALLED_AFTER_MS) return "No worker on it · it resumes when one is free";
+  return `Still working · last moved ${formatQuiet(quietMs)} ago`;
+}
 
 export function whatToDoWhenStopped(kind: BackgroundRunKind): string {
   if (kind === "workflow") return "Open the run to see the step and continue it.";
