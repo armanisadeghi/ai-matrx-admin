@@ -14,7 +14,8 @@ const row = {
   min_display_seconds: 0, metadata: null,
 };
 
-jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => settled }));
+// "settled" = the engaged-late tier: the page settled AND the person engaged it (2026-10-17).
+jest.mock("@/lib/boot/engagedLate", () => ({ useEngagedLateReady: () => settled }));
 jest.mock("@/lib/redux/hooks", () => ({
   useAppSelector: () => [],
 }));
