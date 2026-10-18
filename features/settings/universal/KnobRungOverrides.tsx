@@ -292,7 +292,7 @@ function ScopeRowPicker({
                       // shortest thing that tells them apart is their own id;
                       // showing it here beats letting DOM order decide which
                       // one a person just excepted.
-                      <RecordId value={row.id} label="Rung" className="ml-auto shrink-0" />
+                      <RecordId value={row.id} label="Rung" inert className="ml-auto shrink-0" />
                     )}
                   </CommandItem>
                 ))}

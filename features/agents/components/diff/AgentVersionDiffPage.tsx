@@ -522,7 +522,7 @@ export function AgentVersionDiffPage({
 
               {selectedVersionItem && (
                 <div className="flex items-center gap-2 type-secondary text-muted-foreground">
-                  <RecordId value={selectedVersionItem.version_id} label="Version" look="chip" />
+                  <RecordId value={selectedVersionItem.version_id} label="Version" labelled look="chip" />
                 </div>
               )}
             </>

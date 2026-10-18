@@ -120,13 +120,22 @@ export function personSetText(ws: StudioWorkspace, field: TextField, value: stri
 
 const NAME_CUT = /(?:[.;:!?](?:\s|$)|\n| — | - | \((?=.)| (?:for|so that|so|by|which|that|because|when|while) )/;
 
+const JOINING_WORDS = new Set(
+  "a an the to of for with and or in on at about from into by as its their our your his her".split(" "),
+);
+
 /** A short name read off the goal's first clause; null for an empty goal. */
 export function nameFromGoal(goal: string | null | undefined): string | null {
   const text = (goal ?? "").split(/\s+/).filter(Boolean).join(" ");
   if (!text) return null;
   const cut = NAME_CUT.exec(text);
   let head = cut && text.slice(0, cut.index).split(" ").length >= 3 ? text.slice(0, cut.index) : text;
-  if (head.length > 60) head = head.slice(0, 60).replace(/ [^ ]*$/, "");
+  if (head.length > 60) {
+    // A cut name never ends on a joining word ("…buyer's question about").
+    const words = head.slice(0, 60).replace(/ [^ ]*$/, "").split(" ");
+    while (words.length > 3 && JOINING_WORDS.has(words[words.length - 1].toLowerCase().replace(/[,;:]+$/, ""))) words.pop();
+    head = words.join(" ");
+  }
   head = head.replace(/^[ ,;:\-—]+|[ ,;:\-—]+$/g, "");
   return head ? head[0].toUpperCase() + head.slice(1) : null;
 }

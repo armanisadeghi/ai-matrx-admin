@@ -196,7 +196,7 @@ export function SiteAnalysisTable() {
                 );
                 }}
               >
-                {row.page_path || <RecordId value={row.page_id} label="Page" />}
+                {row.page_path || <RecordId value={row.page_id} label="Page" inert />}
               </button>
             ) : (
               <p className="truncate font-mono text-[11px]">Site-level</p>

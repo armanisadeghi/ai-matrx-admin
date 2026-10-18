@@ -342,7 +342,7 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
                   <span className="min-w-0 flex-1 truncate font-medium text-foreground">
                     {c.title || "Untitled"}
                   </span>
-                  <RecordId value={c.id} label="Conversation" />
+                  <RecordId value={c.id} label="Conversation" inert />
                   <span className="text-muted-foreground">{c.model_calls} calls</span>
                   <span className="font-mono">{formatAdminCost(c.cost)}</span>
                 </AppLink>

@@ -9,7 +9,7 @@
  * rename one here. Pitches are 3–7 plain words (guarded in __tests__). Each piece links to its real
  * home. Each piece wears its ONE identity (colour + icon) from `@ai-matrx/icons/domain` — the same
  * tile it wears on the welcome grid, the dashboard and in chat; never a local colour. Knowledge's pitch speaks for ALL of a person's or company's information (notes, files, chats, research,
- * scrapes, code, tasks — not just files) that every agent can reach and never forgets (Arman, 2026-10-18). The stage itself is `@ai-matrx/design-system/intro-stage` (one UI system).
+ * scrapes, code, tasks — not just files) that every agent can reach and never forgets (Arman, 2026-10-18). The card is the stage's `featured` hero (a picture of what flows in). The stage itself is `@ai-matrx/design-system/intro-stage` (one UI system).
  */
 import type { ReactNode } from "react";
 import { IntroStage, type IntroGroup } from "@ai-matrx/design-system/intro-stage";
@@ -20,6 +20,13 @@ import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 export const MEET_MATRX_PATH = "/meet-matrx";
 
 export const MEET_MATRX_LEAD = "Three studios to build with. Six pieces to build from.";
+
+/**
+ * What Knowledge really takes in (aidream auto_ingest `SourceKind`, 2026-10-18): only kinds the
+ * system ingests today. Guarded in __tests__ — add a kind here only when it is ingested for real.
+ * Chats = `cx_message` (the conversation pipeline), People = the Knowledge Graph's entities.
+ */
+export const KNOWLEDGE_FLOW = ["Notes", "Documents", "Chats", "Web pages", "Workbooks", "Research", "Tasks", "People"] as const;
 
 export const MEET_MATRX_GROUPS: IntroGroup[] = [
   {
@@ -37,11 +44,20 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
     label: "The building blocks",
     size: "compact",
     items: [
+      {
+        id: "knowledge",
+        name: "Knowledge",
+        pitch: "Everything in one place. Agents never forget.",
+        href: "/knowledge/hub",
+        identity: PRIMITIVE_IDENTITIES.knowledge,
+        featured: true,
+        flow: KNOWLEDGE_FLOW,
+        flowTo: "Every agent",
+      },
       { id: "mandates", name: "Mandates", pitch: "Name the job. Choose who does it.", href: "/mandates", identity: P.mandates },
       { id: "applets", name: "Applets", pitch: "Package your AI for anyone to use", href: "/applets", identity: P.applets },
       { id: "boards", name: "Boards", pitch: "All your work on one canvas", href: "/board", identity: P.boards },
       { id: "custom-data", name: "Custom data", pitch: "Your own tables, shaped your way", href: "/data", identity: PRIMITIVE_IDENTITIES.data },
-      { id: "knowledge", name: "Knowledge", pitch: "Everything in one place. Agents never forget.", href: "/knowledge/hub", identity: PRIMITIVE_IDENTITIES.knowledge },
       { id: "tools", name: "Tools & Connectors", pitch: "Plug agents into the apps you use", href: "/agent-connections", identity: P.tools },
     ],
   },

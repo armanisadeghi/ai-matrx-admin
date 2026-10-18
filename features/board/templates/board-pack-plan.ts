@@ -14,7 +14,7 @@ import { packBoards, type PackBoard, type PackBoardPage, type PackBoardTile, typ
 
 import type { BoardDocument, BoardGroup, BoardNode, NodeSource } from "../board/document";
 import { PAGE_COLUMN_W, PAGE_FRAME_PAD, PAGE_FRAME_TOP, PAGE_MIN_FRAME_H, PAGE_SECTION_GAP, PAGE_TILE_GAP, planPageLayout } from "../engine/page-layout";
-import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "../items/table-tile";
+import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, entityTableSource } from "../items/table-tile";
 // The cover's entity word (kept with its item, cover-items.tsx); a literal import would pull the tile body here.
 const COVER_ENTITY = "cover";
 
@@ -29,6 +29,8 @@ export interface PlannedBoard {
 function tileSource(tile: PackBoardTile, tables: Record<string, ResolvedTable>): NodeSource {
   switch (tile.kind) {
     case "table": {
+      // A real schema table (a registered entity token): nothing was installed for it; the tile reads the platform's rows.
+      if (tile.entity) return entityTableSource(tile.entity, { layout: tile.layout === "section" ? "section" : "table" });
       const made = tile.table ? tables[tile.table] : undefined;
       // A token with no made table is the checker's finding; at use time it is a bug, said by name.
       if (!made) throw new Error(`The template's "${tile.table ?? "?"}" table was not made, so the "${tile.title}" tile has nothing to show.`);

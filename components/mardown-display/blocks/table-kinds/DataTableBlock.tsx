@@ -28,7 +28,7 @@
  *    `buildViewAgentInput` + `buildAgentPayload`. No second envelope shape.
  *  - "OPEN BIG" — routes to `TableViewerWindow` through its own opener; this
  *    component does not duplicate that window's toolbar, menu or surface.
- *  - UUID cells — the platform's `ShortId`.
+ *  - UUID cells — the platform's `RecordId`.
  *
  * DELIBERATELY NOT USED, and why:
  *  - `MatrxDataTable` (1,628 lines, 99 import sites) — the right answer for a

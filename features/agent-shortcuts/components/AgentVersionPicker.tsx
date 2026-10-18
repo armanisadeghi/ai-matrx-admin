@@ -324,7 +324,7 @@ export function AgentVersionPicker({
           )}
         </div>
         <div className="shrink-0 pt-0.5">
-          <RecordId value={agentId} label="Agent" token="agent" look="chip" />
+          <RecordId value={agentId} label="Agent" labelled token="agent" look="chip" />
         </div>
       </div>
 
@@ -419,6 +419,7 @@ export function AgentVersionPicker({
           <RecordId
             value={useLatest ? null : agentVersionId}
             label="Version"
+            labelled
             look="chip"
           />
         </div>

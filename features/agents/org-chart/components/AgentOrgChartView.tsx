@@ -50,7 +50,12 @@ import {
   setManualManager,
   updateOrgPosition,
 } from "@/features/agents/redux/orchestras/orgChartThunks";
-import { addAgentToOrchestra, removeAgentFromOrchestra } from "@/features/agents/redux/orchestras/thunks";
+import {
+  addAgentToOrchestra,
+  addSeatToOrchestra,
+  removeAgentFromOrchestra,
+  removeSeatFromOrchestra,
+} from "@/features/agents/redux/orchestras/thunks";
 import { saveAgentField } from "@/features/agents/redux/builder-write.thunks";
 import { archiveTeam, restoreTeam } from "@/features/organizations/service/teamsService";
 import { OrgChart, type OrgChartCrossLink } from "@/components/official/org-chart/OrgChart";
@@ -90,6 +95,8 @@ import {
 import { crossLinksOf, type AgentOrgNodeData } from "../buildAgentOrgForest";
 import { useAgentOrgChart } from "../useAgentOrgChart";
 import { OrgChartActivityProvider, useOrgChartActivity } from "../useOrgChartActivity";
+import { OrgChartSeatGatesProvider, seatGatesByPosition } from "../seatGates";
+import { useWaitingRuns } from "@/features/workflow-runtime/discovery/useWaitingRuns";
 import { OrgChartPointsProvider, branchTotals, useOrgChartPoints } from "../useOrgChartPoints";
 import { orgChartHealth, type HealthIssueId } from "../orgChartHealth";
 import { knobInt } from "@/lib/knobs/featureKnobs";
@@ -209,6 +216,8 @@ export function AgentOrgChartView({
   const { byKey, firstKeyOf } = indexForest(forest);
   const chartAgentIds = [...firstKeyOf.keys()].map(parseBoxId).filter((b) => b.type === "agent").map((b) => b.id);
   const activity = useOrgChartActivity(chartAgentIds);
+  // Decisions addressed to a seat (a position box), from the one waiting-on-you projection.
+  const seatGates = seatGatesByPosition(useWaitingRuns().rows);
   // Points per branch: an optional view, off until asked for.
   const [showPoints, setShowPoints] = useState(false);
   const points = useOrgChartPoints(chartAgentIds, showPoints);
@@ -370,6 +379,29 @@ export function AgentOrgChartView({
         if (!back.ok) throw new Error(back.error ?? "Could not take it back out.");
       },
     });
+  };
+
+  // A PERSON in an Orchestra: the seat is asked when the run reaches it.
+  const seatInOrchestra = async (conductorId: string, positionId: string) => {
+    const res = await dispatch(addSeatToOrchestra({ conductorId, positionId }));
+    if (!res.ok) {
+      fail(res.error);
+      return;
+    }
+    announceReversible({
+      verb: "move",
+      noun: "position",
+      subject: `${nameOf(boxId("position", positionId))} into the ${agents[conductorId]?.name ?? ""} Orchestra`,
+      undo: async () => {
+        const back = await dispatch(removeSeatFromOrchestra({ conductorId, positionId }));
+        if (!back.ok) throw new Error(back.error ?? "Could not take it back out.");
+      },
+    });
+  };
+
+  const unseatFromOrchestra = async (conductorId: string, positionId: string) => {
+    const res = await dispatch(removeSeatFromOrchestra({ conductorId, positionId }));
+    if (!res.ok) fail(res.error);
   };
 
   const leaveOrchestra = async (conductorId: string, agentId: string) => {
@@ -551,6 +583,13 @@ export function AgentOrgChartView({
     const actions: ChartAction[] = [];
     const draggedAgent = agentOf(dragged);
     const fromOrchestra = d.edgeKind === "directs" && d.parentId ? parseBoxId(d.parentId).id : null;
+    if (t.isConductor && d.boxType === "position" && !fromOrchestra) {
+      actions.push({
+        label: `Add to the ${nameOf(t.boxId)} Orchestra`,
+        hint: "The run waits for whoever holds this seat.",
+        run: () => seatInOrchestra(t.entityId, d.entityId),
+      });
+    }
     if (t.isConductor && draggedAgent) {
       actions.push({
         label: fromOrchestra ? `Move into the ${nameOf(t.boxId)} Orchestra` : `Add to the ${nameOf(t.boxId)} Orchestra`,
@@ -652,6 +691,8 @@ export function AgentOrgChartView({
       if (!n?.data.parentId) continue;
       const agent = agentOf(n);
       if (n.data.edgeKind === "directs" && agent) void leaveOrchestra(parseBoxId(n.data.parentId).id, agent);
+      else if (n.data.edgeKind === "directs" && n.data.boxType === "position")
+        void unseatFromOrchestra(parseBoxId(n.data.parentId).id, n.data.entityId);
       else void unplace(n.data.parentId, n.data.boxId);
     }
   };
@@ -953,6 +994,7 @@ export function AgentOrgChartView({
 
   return (
     <OrgChartActivityProvider value={activity.byAgentId}>
+    <OrgChartSeatGatesProvider value={seatGates}>
     <OrgChartPointsProvider value={pointTotals}>
     <div className="relative h-full w-full">
       {!error && points.error && (
@@ -1166,6 +1208,7 @@ export function AgentOrgChartView({
       />
     </div>
     </OrgChartPointsProvider>
+    </OrgChartSeatGatesProvider>
     </OrgChartActivityProvider>
   );
 }
