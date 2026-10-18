@@ -7,6 +7,20 @@
 
 /** Entity-type token for an agent (platform.entity_types.token → agent.definition). */
 export const AGENT_TOKEN = "agent" as const;
+/** An org-chart seat (`agent.position`) — a member edge may point at one held by a person. */
+export const POSITION_TOKEN = "position" as const;
+
+/**
+ * Why a person (seat) cannot be a member in this mode — null when they can. A
+ * supervisor calls members as tools inside one model turn, which cannot wait
+ * for a person; the other modes pause at a gate addressed to the seat. The
+ * server refuses the same combination at run time, by name.
+ */
+export function seatMemberRefusal(mode: OrchestraMode | undefined): string | null {
+  return (mode ?? DEFAULT_ORCHESTRA_MODE) === "supervisor"
+    ? "A person can't join a Supervisor Orchestra — it can't wait for them. Switch it to Pipeline, Panel or Custom flow first."
+    : null;
+}
 
 /**
  * Role of the self-edge (agent:X) → (agent:X) that marks agent X as an

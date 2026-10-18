@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-10-16`
+**Last updated:** `2026-10-18`
 
 ---
 
@@ -109,3 +109,23 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   1000-row cap, loop check read fresh from the server, failed Orchestras say so).
 - 2026-09-27 — Created (Claude Opus 5.5, with Arman): automatic + manual links, one UI, nested
   Orchestras on the builder canvas.
+
+## People in Orchestras and seat gates (2026-10-18)
+
+- **A person is an Orchestra member by the seat they hold.** Drop a position box on a Conductor →
+  "Add to the … Orchestra" (`orchestrasService.addSeatMember`: a `member` edge agent → `position`).
+  The run asks whoever holds the seat when it reaches them and waits for the answer (aidream
+  `services/orchestras/FEATURE.md` § Seat members). Seats load with the Orchestra
+  (`OrchestraDetail.seats`) and sit under the Conductor as **Directs**. Delete takes the seat out.
+- **Refused at save time for a Supervisor Orchestra** (`seatMemberRefusal`): adding a seat to one, or
+  switching an Orchestra that seats a person to Supervisor, is refused with the reason in words.
+- **A position box shows its holder** ("Filled by …", their avatar) and, when a workflow decision is
+  waiting on that seat, a "Decision waiting" chip that opens the run (`seatGates.ts`; from the one
+  waiting-on-you projection `useWaitingRuns`, so a viewer sees gates on runs they can reach and every
+  gate that asked them). An empty seat's chip is red with "No one holds …". The decision panel prints
+  the same seat line above the items.
+
+## Change Log
+
+- **2026-10-18** — Seat members in Orchestras (drop a position on a Conductor; supervisor refused at
+  save time), the "Decision waiting" chip on position boxes, the seat line on the decision panel.

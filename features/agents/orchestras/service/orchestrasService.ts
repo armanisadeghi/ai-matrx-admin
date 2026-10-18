@@ -27,6 +27,8 @@ import type { Json } from "@/types/database.types";
 import {
   AGENT_TOKEN,
   MEMBER_ROLE,
+  POSITION_TOKEN,
+  seatMemberRefusal,
   ORCHESTRA_MARKER_ROLE,
   isOrchestraMarkerRole,
   isOrchestraDepthBudget,
@@ -40,6 +42,7 @@ import type {
   OrchestraListRow,
   OrchestraMember,
   OrchestraMemberMeta,
+  OrchestraSeatMember,
   OrchestraSummary,
 } from "../types";
 
@@ -143,6 +146,18 @@ export const orchestrasService = {
     ));
     if (isRecordsErr(res)) return res;
 
+    // People in the Orchestra: member edges to org-chart seats (agent.position).
+    const seatRes = fromAssociations(await associationsService.listForSources(
+      AGENT_TOKEN,
+      [conductorId],
+      POSITION_TOKEN,
+    ));
+    if (isRecordsErr(seatRes)) return seatRes;
+    const seats: OrchestraSeatMember[] = seatRes.data.edges
+      .filter((e) => e.role === MEMBER_ROLE)
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .map((e, i) => ({ edgeId: e.id, positionId: e.targetId, position: e.position ?? i, roleTitle: e.label ?? null }));
+
     const edges = res.data.edges;
     const marker = edges.find(
       (e) => isOrchestraMarkerRole(e.role) && e.targetId === conductorId,
@@ -170,6 +185,7 @@ export const orchestrasService = {
       label: marker?.label ?? null,
       config: metaToConfig(marker?.metadata),
       members,
+      seats,
     });
   },
 
@@ -194,6 +210,14 @@ export const orchestrasService = {
     conductorId: string,
     args: { label?: string; config: OrchestraConfig },
   ): Promise<RecordsResult<{ id: string }>> {
+    // SAVE-TIME REFUSAL: a mode that cannot wait for a person never lands on an
+    // Orchestra that seats one (the run would otherwise refuse it later).
+    const refusal = seatMemberRefusal(args.config?.mode);
+    if (refusal) {
+      const current = await orchestrasService.load(conductorId);
+      if (isRecordsErr(current)) return current;
+      if (current.data.seats.length > 0) return err("refused_by_rule", refusal);
+    }
     return fromAssociations(await associationsService.add({
       sourceType: AGENT_TOKEN,
       sourceId: conductorId,
@@ -238,6 +262,42 @@ export const orchestrasService = {
     }));
   },
 
+  /**
+   * Seat a PERSON in the Orchestra: a member edge to an org-chart position. The
+   * run asks whoever holds the seat when it reaches them. Refused, by name, for
+   * a Supervisor Orchestra (it cannot wait for a person).
+   */
+  async addSeatMember(
+    conductorId: string,
+    positionId: string,
+    args?: { position?: number; roleTitle?: string },
+  ): Promise<RecordsResult<{ id: string }>> {
+    const current = await orchestrasService.load(conductorId);
+    if (isRecordsErr(current)) return current;
+    const refusal = seatMemberRefusal(current.data.config.mode);
+    if (refusal) return err("refused_by_rule", refusal);
+    return fromAssociations(await associationsService.add({
+      sourceType: AGENT_TOKEN,
+      sourceId: conductorId,
+      targetType: POSITION_TOKEN,
+      targetId: positionId,
+      role: MEMBER_ROLE,
+      label: args?.roleTitle,
+      position: args?.position ?? current.data.members.length + current.data.seats.length,
+    }));
+  },
+
+  /** Take a person (seat) out of the Orchestra. */
+  async removeSeatMember(conductorId: string, positionId: string): Promise<RecordsResult<null>> {
+    return fromAssociations(await associationsService.remove({
+      sourceType: AGENT_TOKEN,
+      sourceId: conductorId,
+      targetType: POSITION_TOKEN,
+      targetId: positionId,
+      role: MEMBER_ROLE,
+    }));
+  },
+
   /** Remove one member (role-scoped: never touches the marker self-edge). */
   async removeMember(
     conductorId: string,
@@ -262,6 +322,14 @@ export const orchestrasService = {
       role: MEMBER_ROLE,
     }));
     if (isRecordsErr(cleared)) return cleared;
+    const seatsCleared = fromAssociations(await associationsService.setTargets({
+      sourceType: AGENT_TOKEN,
+      sourceId: conductorId,
+      targetType: POSITION_TOKEN,
+      targetIds: [],
+      role: MEMBER_ROLE,
+    }));
+    if (isRecordsErr(seatsCleared)) return seatsCleared;
     return fromAssociations(await associationsService.remove({
       sourceType: AGENT_TOKEN,
       sourceId: conductorId,

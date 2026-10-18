@@ -10,6 +10,7 @@ import type {
   OrchestraConfig,
   OrchestraDetail,
   OrchestraMember,
+  OrchestraSeatMember,
   OrchestraMemberMeta,
   OrchestraSummary,
 } from "@/features/agents/orchestras/types";
@@ -20,6 +21,8 @@ export type LoadStatus = "idle" | "loading" | "ready" | "error";
 
 export interface OrchestraDetailEntry {
   members: OrchestraMember[];
+  /** People in the Orchestra, by seat (position member edges). */
+  seats?: OrchestraSeatMember[];
   config: OrchestraConfig;
   label: string | null;
   /** Whether the `matrx_set` marker exists (false = "not an Orchestra yet"). */
@@ -120,9 +123,10 @@ const slice = createSlice({
       entry.error = null;
     },
     detailFulfilled(state, action: PayloadAction<OrchestraDetail>) {
-      const { conductorId, members, config, label, exists } = action.payload;
+      const { conductorId, members, seats, config, label, exists } = action.payload;
       state.byId[conductorId] = {
         members,
+        seats,
         config,
         label,
         exists,
