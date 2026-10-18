@@ -1,11 +1,11 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 export type SetContextValueWindowDefinitionData = Record<string, unknown>;
 
-export const setContextValueWindowOverlay = /* @__PURE__ */ defineOverlay<SetContextValueWindowDefinitionData>()({
+export const setContextValueWindowOverlay = defineOverlay<SetContextValueWindowDefinitionData>()({
   id: "setContextValueWindow",
   label: "Set Context Value Window",
   instance: "single",

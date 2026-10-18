@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "browserFrameWindow" as const;
@@ -67,7 +67,7 @@ export function BrowserFrameWindowController(props: OpenBrowserFrameWindowOption
 
 export type BrowserFrameWindowDefinitionData = OpenBrowserFrameWindowOptions;
 
-export const browserFrameWindowOverlay = /* @__PURE__ */ defineOverlay<BrowserFrameWindowDefinitionData>()({
+export const browserFrameWindowOverlay = defineOverlay<BrowserFrameWindowDefinitionData>()({
   id: "browserFrameWindow",
   label: "Browser Frame Window",
   instance: "single",

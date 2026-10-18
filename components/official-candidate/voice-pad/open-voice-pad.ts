@@ -1,4 +1,4 @@
-import { closeOverlay, openOverlay, toggleOverlay, DEFAULT_INSTANCE_ID } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, toggleOverlay, DEFAULT_INSTANCE_ID } from "@ai-matrx/summon";
 import type { VoicePadOverlayVariant } from "@/lib/redux/slices/voicePadSlice";
 
 /**

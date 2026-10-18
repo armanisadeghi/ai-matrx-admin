@@ -11,7 +11,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { AttachableResource } from "./attachable-resources";
 
 const OVERLAY_ID = "attachResourcePicker" as const;

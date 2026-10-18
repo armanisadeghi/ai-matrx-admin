@@ -111,7 +111,7 @@ jest.mock("../google-adapter", () => ({
   MULTI_PRODUCT_CONSENT_UNSUPPORTED_MESSAGE: "not supported",
 }));
 
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import { ConnectorConsentBody } from "../ConnectorConsentDialog";
 import {
   googleActivityByProduct,

@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "codeFileManagerWindow" as const;
@@ -71,7 +71,7 @@ export function CodeFileManagerWindowController(props: OpenCodeFileManagerWindow
 
 export type CodeFileManagerWindowDefinitionData = OpenCodeFileManagerWindowOptions;
 
-export const codeFileManagerWindowOverlay = /* @__PURE__ */ defineOverlay<CodeFileManagerWindowDefinitionData>()({
+export const codeFileManagerWindowOverlay = defineOverlay<CodeFileManagerWindowDefinitionData>()({
   id: "codeFileManagerWindow",
   label: "Code File Manager Window",
   instance: "multi",

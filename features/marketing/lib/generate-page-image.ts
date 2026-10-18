@@ -47,7 +47,7 @@ import { executeInstance } from "@ai-matrx/chat/agents/redux/execution-system/th
 import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { destroyInstanceIfAllowed } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.thunks";
 import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon";
 import {
   selectAnswerText,
   selectRequestError,

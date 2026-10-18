@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickUtilities" as const;
@@ -66,7 +66,7 @@ export function UtilitiesOverlayController(props: OpenUtilitiesOverlayOptions): 
 
 export type QuickUtilitiesDefinitionData = OpenUtilitiesOverlayOptions;
 
-export const quickUtilitiesOverlay = /* @__PURE__ */ defineOverlay<QuickUtilitiesDefinitionData>()({
+export const quickUtilitiesOverlay = defineOverlay<QuickUtilitiesDefinitionData>()({
   id: "quickUtilities",
   label: "Quick Utilities",
   instance: "single",

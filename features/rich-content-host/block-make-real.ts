@@ -6,7 +6,7 @@
  */
 import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 
 export function useBlockMakeReal() {
   const dispatch = useAppDispatch();

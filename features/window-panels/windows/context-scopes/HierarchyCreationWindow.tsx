@@ -8,7 +8,7 @@ import {
   useCreateTask,
 } from "@/features/agent-context/hooks/useHierarchy";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";

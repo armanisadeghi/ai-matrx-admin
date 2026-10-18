@@ -15,9 +15,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { UntypedOverlayWire } from "./overlay-types";
 const OVERLAY_ID = "mandateWindow" as const;
 
@@ -88,7 +88,7 @@ export function MandateWindowController(props: OpenMandateWindowOptions): null {
 
 export type MandateWindowDefinitionData = OpenMandateWindowOptions;
 
-export const mandateWindowOverlay = /* @__PURE__ */ defineOverlay<MandateWindowDefinitionData>()({
+export const mandateWindowOverlay = defineOverlay<MandateWindowDefinitionData>()({
   id: "mandateWindow",
   label: "Mandates",
   instance: "single",

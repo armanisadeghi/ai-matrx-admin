@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "tableViewerWindow" as const;
@@ -68,7 +68,7 @@ export function TableViewerWindowController(
 
 export type TableViewerWindowDefinitionData = OpenTableViewerWindowOptions;
 
-export const tableViewerWindowOverlay = /* @__PURE__ */ defineOverlay<TableViewerWindowDefinitionData>()({
+export const tableViewerWindowOverlay = defineOverlay<TableViewerWindowDefinitionData>()({
   id: "tableViewerWindow",
   label: "Table Viewer Window",
   instance: "single",

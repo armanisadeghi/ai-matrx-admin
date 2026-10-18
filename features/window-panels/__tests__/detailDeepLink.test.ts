@@ -5,8 +5,7 @@
  */
 import { configureStore } from "@reduxjs/toolkit";
 
-import { selectOverlay } from "@ai-matrx/summon/open";
-import { overlaysReducer as overlays } from "@ai-matrx/summon";
+import { overlaysReducer as overlays, selectOverlay } from "@ai-matrx/summon";
 import { canvasItemId, canvasReducer } from "@ai-matrx/canvas";
 import { detailInstanceKey, parseDetailInstanceKey, presentationFromUrlArg, DETAIL_URL_AS_ARG, DETAIL_URL_TYPE_KEY } from "@ai-matrx/detail";
 import { decodeListQuery, encodeListQuery } from "@ai-matrx/detail";

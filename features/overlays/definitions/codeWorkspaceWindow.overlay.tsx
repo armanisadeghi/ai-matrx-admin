@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "codeWorkspaceWindow" as const;
@@ -89,7 +89,7 @@ export function CodeWorkspaceWindowController(props: OpenCodeWorkspaceWindowOpti
 
 export type CodeWorkspaceWindowDefinitionData = OpenCodeWorkspaceWindowOptions;
 
-export const codeWorkspaceWindowOverlay = /* @__PURE__ */ defineOverlay<CodeWorkspaceWindowDefinitionData>()({
+export const codeWorkspaceWindowOverlay = defineOverlay<CodeWorkspaceWindowDefinitionData>()({
   id: "codeWorkspaceWindow",
   label: "Code Workspace Window",
   instance: "multi",

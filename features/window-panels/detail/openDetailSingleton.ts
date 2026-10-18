@@ -27,7 +27,7 @@
 
 import type { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 
-import { openOverlay, selectOverlay, type StateWithOverlays } from "@ai-matrx/summon/open";
+import { openOverlay, selectOverlay, type StateWithOverlays } from "@ai-matrx/summon";
 import type { DetailInstanceData } from "@ai-matrx/detail";
 import { announceSingletonReplacement } from "./singletonReplacement";
 

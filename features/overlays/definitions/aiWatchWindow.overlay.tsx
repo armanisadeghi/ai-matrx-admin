@@ -19,8 +19,8 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "aiWatchWindow" as const;
@@ -80,7 +80,7 @@ export function useWatchAiRun() {
 
 export type AiWatchWindowDefinitionData = Record<string, unknown>;
 
-export const aiWatchWindowOverlay = /* @__PURE__ */ defineOverlay<AiWatchWindowDefinitionData>()({
+export const aiWatchWindowOverlay = defineOverlay<AiWatchWindowDefinitionData>()({
   id: "aiWatchWindow",
   label: "Watch AI",
   instance: "multi",

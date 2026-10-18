@@ -24,14 +24,14 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import {
   createFullScreenEditorCallbackGroup,
   disposeFullScreenEditorCallbackGroup,
   type FullScreenEditorHandlers,
 } from "./callbacks/fullScreenEditor";
 import type { EditorPrimaryAction } from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "fullScreenEditor" as const;
@@ -189,7 +189,7 @@ export type FullScreenEditorMode =
 
 export type FullScreenEditorDefinitionData = OpenFullScreenMarkdownEditorBridgeOptions;
 
-export const fullScreenEditorOverlay = /* @__PURE__ */ defineOverlay<FullScreenEditorDefinitionData>()({
+export const fullScreenEditorOverlay = defineOverlay<FullScreenEditorDefinitionData>()({
   id: "fullScreenEditor",
   label: "Full Screen Editor",
   instance: "multi",

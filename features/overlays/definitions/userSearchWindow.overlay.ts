@@ -1,11 +1,11 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 export type UserSearchWindowDefinitionData = Record<string, unknown>;
 
-export const userSearchWindowOverlay = /* @__PURE__ */ defineOverlay<UserSearchWindowDefinitionData>()({
+export const userSearchWindowOverlay = defineOverlay<UserSearchWindowDefinitionData>()({
   id: "userSearchWindow",
   label: "User Search",
   instance: "multi",

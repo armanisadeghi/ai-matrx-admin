@@ -1,4 +1,4 @@
-import type { OverlayId } from "@ai-matrx/summon/open";
+import type { OverlayId } from "@ai-matrx/summon";
 import type { QuickToolKind } from "@/features/canvas/host/quickToolLaunchers";
 import type { MenuIconKey } from "./menuIconRegistry";
 

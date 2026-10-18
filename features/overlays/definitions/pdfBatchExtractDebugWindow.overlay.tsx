@@ -6,8 +6,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "pdfBatchExtractDebugWindow" as const;
@@ -57,7 +57,7 @@ export function PdfBatchExtractDebugWindowController(
 
 export type PdfBatchExtractDebugWindowDefinitionData = OpenPdfBatchExtractDebugWindowOptions;
 
-export const pdfBatchExtractDebugWindowOverlay = /* @__PURE__ */ defineOverlay<PdfBatchExtractDebugWindowDefinitionData>()({
+export const pdfBatchExtractDebugWindowOverlay = defineOverlay<PdfBatchExtractDebugWindowDefinitionData>()({
   id: "pdfBatchExtractDebugWindow",
   label: "PDF Batch Extract Debug Window",
   instance: "single",

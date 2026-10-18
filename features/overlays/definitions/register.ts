@@ -1,4 +1,4 @@
-import { registerOverlayMeta } from "@ai-matrx/summon/open";
+import { registerOverlayMeta } from "@ai-matrx/summon";
 import { APP_OVERLAYS } from "./registry";
 
 let registered = false;

@@ -14,13 +14,13 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon";
 import type { WalkUnitKind } from "@/features/review-walk/types";
 import {
   REVIEW_WALK_OVERLAY_ID,
   openReviewWalk,
 } from "@/features/review-walk/openReviewWalk";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 export interface OpenReviewWalkWindowOptions {
@@ -71,7 +71,7 @@ export function ReviewWalkWindowController(
 
 export type ReviewWalkWindowDefinitionData = OpenReviewWalkWindowOptions;
 
-export const reviewWalkWindowOverlay = /* @__PURE__ */ defineOverlay<ReviewWalkWindowDefinitionData>()({
+export const reviewWalkWindowOverlay = defineOverlay<ReviewWalkWindowDefinitionData>()({
   id: "reviewWalkWindow",
   label: "Review Walk",
   instance: "multi",

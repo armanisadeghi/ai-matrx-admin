@@ -7,7 +7,7 @@
 //
 // Pure read-only — these helpers do not register anything.
 
-import type { MobilePresentation } from "@ai-matrx/summon/open";
+import type { MobilePresentation } from "@ai-matrx/summon";
 // The plain metadata index, never the registry: FeatureAdminPage is a server component and the
 // definitions are client modules.
 import { OVERLAY_META_INDEX, type OverlayMetaRow } from "@/features/overlays/definitions/overlay-meta-index";

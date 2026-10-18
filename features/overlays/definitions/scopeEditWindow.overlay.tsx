@@ -10,9 +10,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { ScopeEditWindowData } from "@/features/window-panels/windows/context-scopes/ScopeEditWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "scopeEditWindow" as const;
@@ -61,7 +61,7 @@ export function ScopeEditWindowController(
 
 export type ScopeEditWindowDefinitionData = OpenScopeEditWindowOptions;
 
-export const scopeEditWindowOverlay = /* @__PURE__ */ defineOverlay<ScopeEditWindowDefinitionData>()({
+export const scopeEditWindowOverlay = defineOverlay<ScopeEditWindowDefinitionData>()({
   id: "scopeEditWindow",
   label: "Scope Editor",
   instance: "single",

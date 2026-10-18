@@ -51,7 +51,7 @@ import {
 } from "@/features/marketing/seo/topical-map/mandateKeys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { openOverlay, selectOpenInstances } from "@ai-matrx/summon";
 import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";

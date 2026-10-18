@@ -4,12 +4,12 @@
 
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import {
   createMarketingMediaAssetCallbackGroup,
   type MarketingMediaAssetWindowHandlers,
 } from "./callbacks/marketingMediaAssetWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "marketingMediaAssetWindow" as const;
@@ -95,7 +95,7 @@ export function useOpenMarketingMediaAssetWindow() {
 
 export type MarketingMediaAssetWindowDefinitionData = OpenMarketingMediaAssetWindowOptions;
 
-export const marketingMediaAssetWindowOverlay = /* @__PURE__ */ defineOverlay<MarketingMediaAssetWindowDefinitionData>()({
+export const marketingMediaAssetWindowOverlay = defineOverlay<MarketingMediaAssetWindowDefinitionData>()({
   id: "marketingMediaAssetWindow",
   label: "Media Asset",
   instance: "multi",

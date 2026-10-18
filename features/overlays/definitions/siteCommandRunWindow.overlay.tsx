@@ -18,12 +18,12 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import {
   siteCommandKey,
   type SiteCommandMode,
 } from "@/features/marketing/crawler/site-commands";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteCommandRunWindow" as const;
@@ -77,7 +77,7 @@ export function useOpenSiteCommandRunWindow() {
 
 export type SiteCommandRunWindowDefinitionData = OpenSiteCommandRunWindowOptions;
 
-export const siteCommandRunWindowOverlay = /* @__PURE__ */ defineOverlay<SiteCommandRunWindowDefinitionData>()({
+export const siteCommandRunWindowOverlay = defineOverlay<SiteCommandRunWindowDefinitionData>()({
   id: "siteCommandRunWindow",
   label: "Site Command Run",
   instance: "multi",

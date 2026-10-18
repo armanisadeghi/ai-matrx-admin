@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickTasksWindow" as const;
@@ -57,7 +57,7 @@ export function QuickTasksWindowController(props: OpenQuickTasksWindowOptions): 
 
 export type QuickTasksWindowDefinitionData = OpenQuickTasksWindowOptions;
 
-export const quickTasksWindowOverlay = /* @__PURE__ */ defineOverlay<QuickTasksWindowDefinitionData>()({
+export const quickTasksWindowOverlay = defineOverlay<QuickTasksWindowDefinitionData>()({
   id: "quickTasksWindow",
   label: "Quick Tasks Window",
   instance: "single",

@@ -6,13 +6,13 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 
 const OVERLAY_ID = "flashcardItemWindow" as const;
 
 import type { ReviewResult } from "@/features/flashcards/types";
 import type { FaceImageRef } from "@/components/mardown-display/blocks/flashcards/FlashcardFaceImage";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 export interface OpenFlashcardItemWindowOptions {
@@ -81,7 +81,7 @@ export function FlashcardItemWindowController(
 
 export type FlashcardItemWindowDefinitionData = OpenFlashcardItemWindowOptions;
 
-export const flashcardItemWindowOverlay = /* @__PURE__ */ defineOverlay<FlashcardItemWindowDefinitionData>()({
+export const flashcardItemWindowOverlay = defineOverlay<FlashcardItemWindowDefinitionData>()({
   id: "flashcardItemWindow",
   label: "Flashcard Item Window",
   instance: "single",

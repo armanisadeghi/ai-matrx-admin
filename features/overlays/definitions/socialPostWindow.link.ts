@@ -1,7 +1,7 @@
 import type { SocialPostWindowDefinitionData } from "./socialPostWindow.overlay";
 import { postPanelOutOfScope } from "@/features/marketing/social/panelScope";
-import { openOverlay } from "@ai-matrx/summon/open";
-import type { LinkHydrateContext } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
+import type { LinkHydrateContext } from "@ai-matrx/summon";
 
 export function hydrate({ dispatch, id, args, open }: LinkHydrateContext<SocialPostWindowDefinitionData>) {
     const organizationId = args.o;

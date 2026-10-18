@@ -9,8 +9,8 @@
  */
 import type { ThunkAction, UnknownAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
-import { openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
-import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
+import { openOverlay, selectOpenInstances } from "@ai-matrx/summon";
+import { focusWindow, restoreWindow } from "@ai-matrx/summon";
 import { reviewWalkInstanceId, type WalkUnitRef } from "./address";
 import { nextStackIndex } from "./walkTitle";
 

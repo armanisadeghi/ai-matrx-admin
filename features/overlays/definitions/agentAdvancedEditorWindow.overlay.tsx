@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentAdvancedEditorWindow" as const;
@@ -73,7 +73,7 @@ export function AgentContentWindowController(props: OpenAgentContentWindowOption
 
 export type AgentAdvancedEditorWindowDefinitionData = OpenAgentContentWindowOptions;
 
-export const agentAdvancedEditorWindowOverlay = /* @__PURE__ */ defineOverlay<AgentAdvancedEditorWindowDefinitionData>()({
+export const agentAdvancedEditorWindowOverlay = defineOverlay<AgentAdvancedEditorWindowDefinitionData>()({
   id: "agentAdvancedEditorWindow",
   label: "Agent Advanced Editor Window",
   instance: "single",

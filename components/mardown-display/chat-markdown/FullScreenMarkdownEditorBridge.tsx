@@ -29,10 +29,9 @@
 import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon";
 import { type FullScreenEditorMode } from "@/features/overlays/definitions/fullScreenEditor.overlay";
-import { instanceKey } from "@ai-matrx/summon/open";
-import { setOverlayStateValue } from "@ai-matrx/summon/open";
+import { instanceKey, setOverlayStateValue } from "@ai-matrx/summon";
 import {
   disposeFullScreenEditorCallbackGroup,
   emitFullScreenEditorSave,

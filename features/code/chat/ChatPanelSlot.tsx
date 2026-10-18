@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PanelRight, PanelRightOpen, Plus, Settings2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import { AgentRunnerPage } from "@ai-matrx/chat/agents/components/run/AgentRunnerPage";
 import { selectFocusedConversation } from "@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import {

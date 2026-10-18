@@ -6,8 +6,8 @@
  */
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, toggleOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay, toggleOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 export const BUILDER_PANEL_OVERLAY_ID = "builderPanelWindow" as const;
@@ -45,7 +45,7 @@ export function useToggleBuilderPanel() {
 
 export type BuilderPanelWindowDefinitionData = OpenBuilderPanelOptions;
 
-export const builderPanelWindowOverlay = /* @__PURE__ */ defineOverlay<BuilderPanelWindowDefinitionData>()({
+export const builderPanelWindowOverlay = defineOverlay<BuilderPanelWindowDefinitionData>()({
   id: "builderPanelWindow",
   label: "Builder",
   instance: "single",

@@ -15,10 +15,10 @@ import { useCallback, useEffect } from "react";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentRunWindow" as const;
@@ -178,7 +178,7 @@ export function AgentRunWindowController(
 
 export type AgentRunWindowDefinitionData = OpenAgentRunWindowOptions;
 
-export const agentRunWindowOverlay = /* @__PURE__ */ defineOverlay<AgentRunWindowDefinitionData>()({
+export const agentRunWindowOverlay = defineOverlay<AgentRunWindowDefinitionData>()({
   id: "agentRunWindow",
   label: "Chat Window",
   instance: "multi",

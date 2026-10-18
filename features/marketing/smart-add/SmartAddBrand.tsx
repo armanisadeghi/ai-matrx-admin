@@ -178,7 +178,7 @@ import { SmartAddWebRow } from "./SmartAddWebRow";
 import { withPageKind, type BacklinkCheck } from "./backlinks";
 import { captureProvision } from "@/features/provision-window/data";
 import { autoOpenHasRoom, markAutoOpened } from "@ai-matrx/summon/window";
-import { DEFAULT_INSTANCE_ID } from "@ai-matrx/summon/open";
+import { DEFAULT_INSTANCE_ID } from "@ai-matrx/summon";
 import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";

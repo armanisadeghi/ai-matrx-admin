@@ -4,7 +4,7 @@ import { openDetailSingleton } from "@/features/window-panels/detail/openDetailS
 import { dispatchThunk } from "@/lib/redux/hooks";
 import { canvasActions } from "@ai-matrx/canvas";
 import { parseDetailInstanceKey, presentationFromUrlArg, DETAIL_URL_AS_ARG, detailListFromUrlArgs } from "@ai-matrx/detail";
-import type { LinkHydrateContext } from "@ai-matrx/summon/open";
+import type { LinkHydrateContext } from "@ai-matrx/summon";
 
 export function hydrate({ dispatch, id, args, open }: LinkHydrateContext<DetailWindowDefinitionData>) {
     const ref = parseDetailInstanceKey(id);

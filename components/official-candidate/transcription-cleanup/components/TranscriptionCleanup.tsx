@@ -18,7 +18,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon";
 import {
   selectVoicePadEntries,
   selectVoicePadDraftText,

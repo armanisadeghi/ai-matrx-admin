@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { PartyKind } from "@/features/crm/types";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "crmCreatePartyWindow" as const;
@@ -56,7 +56,7 @@ export function CrmCreatePartyWindowController(
 
 export type CrmCreatePartyWindowDefinitionData = OpenCrmCreatePartyWindowOptions;
 
-export const crmCreatePartyWindowOverlay = /* @__PURE__ */ defineOverlay<CrmCreatePartyWindowDefinitionData>()({
+export const crmCreatePartyWindowOverlay = defineOverlay<CrmCreatePartyWindowDefinitionData>()({
   id: "crmCreatePartyWindow",
   label: "Create CRM Record",
   instance: "single",

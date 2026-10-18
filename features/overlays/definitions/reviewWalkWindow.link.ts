@@ -2,7 +2,7 @@ import type { ReviewWalkWindowDefinitionData } from "./reviewWalkWindow.overlay"
 import { parseReviewWalkUrlId, REVIEW_WALK_URL_KEY, reviewWalkLabelsFromUrlArgs } from "@/features/review-walk/address";
 import { openReviewWalk } from "@/features/review-walk/openReviewWalk";
 import { dispatchThunk } from "@/lib/redux/hooks";
-import type { LinkHydrateContext } from "@ai-matrx/summon/open";
+import type { LinkHydrateContext } from "@ai-matrx/summon";
 
 export function hydrate({ dispatch, id, args, open }: LinkHydrateContext<ReviewWalkWindowDefinitionData>) {
     const ref = parseReviewWalkUrlId(id);

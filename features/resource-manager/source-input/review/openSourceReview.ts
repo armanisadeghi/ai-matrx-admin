@@ -22,7 +22,7 @@
 
 import type { SourceSet } from "@ai-matrx/agents/sources";
 import { getStore } from "@/lib/redux/store-singleton";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import { callbackManager } from "@ai-matrx/summon/handles";
 import type { SourceReviewOptions, SourceReviewOutcome } from "./types";
 

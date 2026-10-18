@@ -7,7 +7,7 @@
 
 import { durableRecordId } from "@ai-matrx/kit/ids";
 import { toast } from "@/lib/toast";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import { createFullScreenEditorCallbackGroup } from "@/features/overlays/definitions/callbacks/fullScreenEditor";
 import { registerMessageActionHostBody } from "@ai-matrx/chat/agents/components/messages-display/rich-document/actions/host-bodies";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";

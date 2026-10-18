@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "instanceUIStateWindow" as const;
@@ -65,7 +65,7 @@ export function InstanceUIStateWindowController(props: OpenInstanceUIStateWindow
 
 export type InstanceUIStateWindowDefinitionData = OpenInstanceUIStateWindowOptions;
 
-export const instanceUIStateWindowOverlay = /* @__PURE__ */ defineOverlay<InstanceUIStateWindowDefinitionData>()({
+export const instanceUIStateWindowOverlay = defineOverlay<InstanceUIStateWindowDefinitionData>()({
   id: "instanceUIStateWindow",
   label: "Instance U I State Window",
   instance: "single",

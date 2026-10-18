@@ -26,7 +26,6 @@ jest.mock("@/features/html-pages/components/HtmlPreviewFullScreenEditor", () => 
   },
 }));
 
-import { createSummonGate, ensureSummonRuntime } from "@ai-matrx/summon/open";
 import React, { act } from "react";
 import { Provider } from "react-redux";
 import { configureStore, type UnknownAction } from "@reduxjs/toolkit";
@@ -132,14 +131,11 @@ function notesRowByIntent(initial: Note) {
 
 function makeStore() {
   const baseReducer = createSlimRootReducer();
-  // The app store's summon gate (lib/redux/store.ts): the overlay slices join when the core loads.
-  const summonGate = createSummonGate();
-  summonGate.attachReducer((reducers) => baseReducer.inject(reducers));
   const reducer = (state: RootState | undefined, action: UnknownAction): RootState => {
     const next = baseReducer(state, action);
     return action.type === "test/seed" ? { ...next, userAuth: { ...next.userAuth, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", authReady: true } } : next;
   };
-  const store = configureStore({ reducer, middleware: (gdm) => gdm({ serializableCheck: false }).concat(summonGate.middleware) });
+  const store = configureStore({ reducer, middleware: (gdm) => gdm({ serializableCheck: false }) });
   store.dispatch({ type: "test/seed", payload: null });
   return store;
 }
@@ -155,9 +151,6 @@ function context(
   };
 }
 
-// The app store carries the overlay slices once the summon core loads (lib/redux/store.ts gate).
-beforeAll(() => ensureSummonRuntime());
-
 describe("registered Notes actions through overlay and rendered bridge", () => {
   let container: HTMLDivElement; let root: Root;
   beforeEach(() => {
@@ -172,7 +165,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     const store = makeStore(); const action = getAction(id); if (!action) throw new Error("registered action missing");
     await action.run(context(store));
     const instanceId = id === "edit" ? "note:edit-content" : "note:fullscreen-editor";
-    const overlay = store.getState().overlays!.overlays.fullScreenEditor?.[instanceId];
+    const overlay = store.getState().overlays.overlays.fullScreenEditor?.[instanceId];
     if (!overlay || !isFullScreenOverlayData(overlay.data)) throw new Error("overlay did not open with a callback target");
     const overlayData = overlay.data;
     expect(overlayData.content).toBe("authoritative full body");
@@ -192,7 +185,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     const source = captureNoteEditSource({ acknowledgedNote: note({ content: "acknowledged", version: 4 }), displayedNote: note({ content: "first dirty body", version: 4 }), actorId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", sourceId: "dirty", snapshotId: "dirty-1" });
     const store = makeStore(); const action = getAction("edit"); if (!action) throw new Error("registered action missing");
     await action.run(context(store, source));
-    const overlay = store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"];
+    const overlay = store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"];
     if (!overlay || !isFullScreenOverlayData(overlay.data)) throw new Error("missing prepared overlay");
     const overlayData = overlay.data;
     expect(overlayData.content).toBe("first dirty body");
@@ -209,7 +202,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     mockSchema.mockReturnValue({ from: server.from });
     const store = makeStore(); const action = getAction("html-preview"); if (!action) throw new Error("registered action missing");
     await action.run(context(store));
-    const overlay = store.getState().overlays!.overlays.htmlPreview?.["note:html-preview"];
+    const overlay = store.getState().overlays.overlays.htmlPreview?.["note:html-preview"];
     if (!overlay || !isHtmlPreviewOverlayData(overlay.data)) throw new Error("HTML overlay did not open with a callback target");
     expect(overlay.data.content).toBe("authoritative full body");
     const overlayData = overlay.data;
@@ -231,7 +224,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
       .mockResolvedValueOnce({ data: { session: { user: { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" } } }, error: null });
     const store = makeStore(); const action = getAction("edit"); if (!action) throw new Error("registered action missing");
     await expect(action.run(context(store))).rejects.toThrow(/sign-in changed/i);
-    expect(store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"]).toBeUndefined();
+    expect(store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"]).toBeUndefined();
   });
 
   it("refuses a moved note before a prepared editor can write into another organization", async () => {
@@ -241,14 +234,14 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     const source = captureNoteEditSource({ acknowledgedNote: note({ version: 4 }), displayedNote: note({ content: "dirty retained", version: 4 }), actorId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", sourceId: "moved", snapshotId: "moved:4" });
     const store = makeStore(); const action = getAction("edit"); if (!action) throw new Error("registered action missing");
     await action.run(context(store, source));
-    const overlay = store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"];
+    const overlay = store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"];
     if (!overlay || !isFullScreenOverlayData(overlay.data)) throw new Error("missing moved-note editor");
     const overlayData = overlay.data;
     await act(async () => root.render(<Provider store={store}><FullScreenMarkdownEditorBridge isOpen onClose={() => {}} instanceId="note:edit-content" content={overlayData.content} callbackGroupId={overlayData.callbackGroupId} /></Provider>));
     if (!editorProps) throw new Error("missing moved-note callback");
     await expect(editorProps.onSave("attempted overwrite")).rejects.toThrow(/different organization/i);
     expect(server.writes).toHaveLength(0);
-    expect(store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"]).toBeDefined();
+    expect(store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"]).toBeDefined();
   });
 
   it("keeps a stale dirty base when the remote revision advanced before save", async () => {
@@ -261,7 +254,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     });
     const store = makeStore(); const action = getAction("edit"); if (!action) throw new Error("registered action missing");
     await action.run(context(store, source));
-    const overlay = store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"];
+    const overlay = store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"];
     if (!overlay || !isFullScreenOverlayData(overlay.data)) throw new Error("missing stale-base editor");
     const overlayData = overlay.data;
     await act(async () => root.render(<Provider store={store}><FullScreenMarkdownEditorBridge isOpen onClose={() => {}} instanceId="note:edit-content" content={overlayData.content} callbackGroupId={overlayData.callbackGroupId} /></Provider>));
@@ -270,7 +263,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     expect(server.writes).toHaveLength(1);
     expect(server.writes[0]?.filters.get("version")).toBe(4);
     expect(server.row()).toMatchObject({ version: 5, content: "remote version five" });
-    expect(store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"]).toBeDefined();
+    expect(store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"]).toBeDefined();
   });
 
   it("labels injected unchanged association receipts as protocol faults without relabeling a content write", async () => {
@@ -292,7 +285,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     try {
       const store = makeStore(); const action = getAction("html-preview"); if (!action) throw new Error("registered action missing");
       await action.run(context(store, source));
-      const overlay = store.getState().overlays!.overlays.htmlPreview?.["note:html-preview"];
+      const overlay = store.getState().overlays.overlays.htmlPreview?.["note:html-preview"];
       if (!overlay || !isHtmlPreviewOverlayData(overlay.data)) throw new Error("missing HTML protocol overlay");
       const overlayData = overlay.data;
       await act(async () => root.render(<Provider store={store}><HtmlPreviewBridge content={overlayData.content} callbackGroupId={overlayData.callbackGroupId} onClose={() => {}} showSaveButton /></Provider>));
@@ -339,7 +332,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     try {
       const store = makeStore(); const action = getAction("edit"); if (!action) throw new Error("registered action missing");
       await action.run(context(store, source));
-      const overlay = store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"];
+      const overlay = store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"];
       if (!overlay || !isFullScreenOverlayData(overlay.data)) throw new Error("missing partial overlay");
       const overlayData = overlay.data;
       await act(async () => root.render(<Provider store={store}><FullScreenMarkdownEditorBridge isOpen onClose={() => {}} instanceId="note:edit-content" content={overlayData.content} callbackGroupId={overlayData.callbackGroupId} /></Provider>));
@@ -370,7 +363,7 @@ describe("registered Notes actions through overlay and rendered bridge", () => {
     try {
       const store = makeStore(); const action = getAction("edit"); if (!action) throw new Error("registered action missing");
       await action.run(context(store, source));
-      const overlay = store.getState().overlays!.overlays.fullScreenEditor?.["note:edit-content"];
+      const overlay = store.getState().overlays.overlays.fullScreenEditor?.["note:edit-content"];
       if (!overlay || !isFullScreenOverlayData(overlay.data)) throw new Error("missing actor-change overlay");
       const overlayData = overlay.data;
       await act(async () => root.render(<Provider store={store}><FullScreenMarkdownEditorBridge isOpen onClose={() => {}} instanceId="note:edit-content" content={overlayData.content} callbackGroupId={overlayData.callbackGroupId} /></Provider>));

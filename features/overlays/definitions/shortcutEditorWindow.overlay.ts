@@ -9,8 +9,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "shortcutEditorWindow" as const;
@@ -49,7 +49,7 @@ export function useOpenShortcutEditorWindow() {
 
 export type ShortcutEditorWindowDefinitionData = OpenShortcutEditorWindowArgs;
 
-export const shortcutEditorWindowOverlay = /* @__PURE__ */ defineOverlay<ShortcutEditorWindowDefinitionData>()({
+export const shortcutEditorWindowOverlay = defineOverlay<ShortcutEditorWindowDefinitionData>()({
   id: "shortcutEditorWindow",
   label: "Shortcut editor",
   instance: "multi",

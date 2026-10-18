@@ -18,7 +18,7 @@ jest.mock("next/navigation", () => jest.requireActual("./remount-safety/next-nav
 import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import { supabase as typedClient } from "@/utils/supabase/client";
 
 /** The probes call tables and RPCs no real schema has; they only need the client's shape. */

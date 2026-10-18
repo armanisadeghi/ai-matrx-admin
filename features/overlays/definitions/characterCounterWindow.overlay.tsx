@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "characterCounterWindow" as const;
@@ -35,7 +35,7 @@ export function CharacterCounterWindowController({ initialText }: OpenCharacterC
 
 export type CharacterCounterWindowDefinitionData = OpenCharacterCounterWindowOptions;
 
-export const characterCounterWindowOverlay = /* @__PURE__ */ defineOverlay<CharacterCounterWindowDefinitionData>()({
+export const characterCounterWindowOverlay = defineOverlay<CharacterCounterWindowDefinitionData>()({
   id: "characterCounterWindow",
   label: "Character Counter",
   instance: "single",

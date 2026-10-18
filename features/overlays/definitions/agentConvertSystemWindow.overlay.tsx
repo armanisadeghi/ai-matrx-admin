@@ -13,9 +13,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentConvertSystemWindow" as const;
@@ -74,7 +74,7 @@ export function AgentConvertSystemWindowController(props: OpenAgentConvertSystem
 
 export type AgentConvertSystemWindowDefinitionData = OpenAgentConvertSystemWindowOptions;
 
-export const agentConvertSystemWindowOverlay = /* @__PURE__ */ defineOverlay<AgentConvertSystemWindowDefinitionData>()({
+export const agentConvertSystemWindowOverlay = defineOverlay<AgentConvertSystemWindowDefinitionData>()({
   id: "agentConvertSystemWindow",
   label: "Agent Convert System Window",
   instance: "single",

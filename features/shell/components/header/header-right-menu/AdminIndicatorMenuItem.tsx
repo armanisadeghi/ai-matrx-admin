@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
+import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon";
 import { selectIsSuperAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { MENU_ITEM_CLASS } from "./menuItemClass";
 import { MenuItemCloseLabel } from "./menuCheckboxId";

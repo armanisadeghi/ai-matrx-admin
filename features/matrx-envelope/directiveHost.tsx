@@ -73,7 +73,7 @@ import { invalidateReferenceLabel } from "@/features/matrx-envelope/referenceRes
 import { BackendApiError } from "@ai-matrx/api";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import { selectActiveOrganizationName } from "@/features/scopes/redux/selectors/active-context";
 import { selectOrganizations } from "@/features/scopes/redux/selectors/tree";
 import { readDirectiveRecord } from "@/features/matrx-envelope/directiveRecordRow";

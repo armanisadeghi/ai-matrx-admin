@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "scraperWindow" as const;
@@ -73,7 +73,7 @@ export function ScraperWindowController(props: OpenScraperWindowOptions): null {
 
 export type ScraperWindowDefinitionData = OpenScraperWindowOptions;
 
-export const scraperWindowOverlay = /* @__PURE__ */ defineOverlay<ScraperWindowDefinitionData>()({
+export const scraperWindowOverlay = defineOverlay<ScraperWindowDefinitionData>()({
   id: "scraperWindow",
   label: "Scraper Window",
   instance: "single",

@@ -1,11 +1,11 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 export type SaveContactFromSelectionDefinitionData = Record<string, unknown>;
 
-export const saveContactFromSelectionOverlay = /* @__PURE__ */ defineOverlay<SaveContactFromSelectionDefinitionData>()({
+export const saveContactFromSelectionOverlay = defineOverlay<SaveContactFromSelectionDefinitionData>()({
   id: "saveContactFromSelection",
   label: "Save As Contact",
   instance: "multi",

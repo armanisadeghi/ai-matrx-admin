@@ -96,7 +96,7 @@ import { getSettingsStore } from "@ai-matrx/chat/agents/identity/settings-store"
 
 /** The agent the settings store has active (agent core B4), if any. */
 const selectActiveAgentId = (_state: unknown): string | null => getSettingsStore().getState().activeAgentId;
-import type { OverlayId } from "@ai-matrx/summon/open";
+import type { OverlayId } from "@ai-matrx/summon";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
 import { resolveMandateAsking } from "@ai-matrx/chat/mandates/resolve-asking";
 import { GENERIC_CODE_EDITOR_AGENT } from "@/features/code-editor/agent-code-editor/agents";

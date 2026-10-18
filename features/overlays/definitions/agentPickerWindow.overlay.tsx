@@ -16,13 +16,13 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import {
   createAgentPickerCallbackGroup,
   type AgentPickerHandlers,
   type AgentPickerWindowData,
 } from "@/features/window-panels/windows/agents/agent-picker-callbacks";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentPickerWindow" as const;
@@ -102,7 +102,7 @@ export function AgentPickerWindowController(
 
 export type AgentPickerWindowDefinitionData = OpenAgentPickerWindowOptions;
 
-export const agentPickerWindowOverlay = /* @__PURE__ */ defineOverlay<AgentPickerWindowDefinitionData>()({
+export const agentPickerWindowOverlay = defineOverlay<AgentPickerWindowDefinitionData>()({
   id: "agentPickerWindow",
   label: "Select Agent",
   instance: "multi",

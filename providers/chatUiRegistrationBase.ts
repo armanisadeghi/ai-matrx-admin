@@ -83,8 +83,8 @@ import { flattenResourcePickerItems } from "@/features/resource-manager/resource
 import { useAttachResourcePicker } from "@/features/connectors/useAttachResourcePicker";
 // Light entries only: ./window and ./url each ship as one module, so a hook imported from them
 // carried the whole window section / link manager into every route's first load.
-import { usePopoutContainer, useOverlaySurfaceRenderAck } from "@ai-matrx/summon/root";
-import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/root";
+import { usePopoutContainer, useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window-host";
+import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/react";
 import {
   disposeFullScreenEditorCallbackGroup,
   emitFullScreenEditorSave,

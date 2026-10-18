@@ -3,7 +3,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import {
   useOpenAgentRunWindow,
   type OpenAgentRunWindowOptions,

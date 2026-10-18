@@ -12,8 +12,8 @@
  * in place is a link that silently lost its other half.
  */
 import type { AppDispatch } from "@/lib/redux/store";
-import { getOverlayMetaByLinkKey } from "@ai-matrx/summon/open";
-import { canonicalLinkKey, openFromLink, parseLinkParam, withPanelsParam } from "@ai-matrx/summon/url";
+import { getOverlayMetaByLinkKey } from "@ai-matrx/summon";
+import { canonicalLinkKey, openFromLink, parseLinkParam } from "@ai-matrx/summon/url";
 import { ensureAppOverlaysRegistered } from "@/features/overlays/definitions/register";
 
 export type OpenInPlaceResult =
@@ -37,6 +37,6 @@ export function openPanelsInPlace(
   }
   // Every key is known, so nothing is refused for being unknown; sync hydrators have dispatched
   // before this returns.
-  void openFromLink(withPanelsParam("", panelsParam), { dispatch, requireAll: true });
+  void openFromLink(`?panels=${encodeURIComponent(panelsParam)}`, { dispatch, requireAll: true });
   return { opened: true, keys: tokens.map((token) => token.key) };
 }

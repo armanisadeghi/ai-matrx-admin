@@ -1,6 +1,6 @@
 "use client";
 
-import type { OverlayErrorExtrasContext } from "@ai-matrx/summon/root";
+import type { OverlayErrorExtrasContext } from "@ai-matrx/summon/react";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";

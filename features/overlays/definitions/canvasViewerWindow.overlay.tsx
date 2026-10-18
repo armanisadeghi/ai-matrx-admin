@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "canvasViewerWindow" as const;
@@ -67,7 +67,7 @@ export function CanvasViewerWindowController(props: OpenCanvasViewerWindowOption
 
 export type CanvasViewerWindowDefinitionData = OpenCanvasViewerWindowOptions;
 
-export const canvasViewerWindowOverlay = /* @__PURE__ */ defineOverlay<CanvasViewerWindowDefinitionData>()({
+export const canvasViewerWindowOverlay = defineOverlay<CanvasViewerWindowDefinitionData>()({
   id: "canvasViewerWindow",
   label: "Canvas Viewer Window",
   instance: "single",

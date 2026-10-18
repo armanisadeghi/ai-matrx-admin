@@ -8,8 +8,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "shareLinkDialog" as const;
@@ -37,7 +37,7 @@ export function useOpenShareLinkDialog() {
 
 export type ShareLinkDialogDefinitionData = Record<string, unknown>;
 
-export const shareLinkDialogOverlay = /* @__PURE__ */ defineOverlay<ShareLinkDialogDefinitionData>()({
+export const shareLinkDialogOverlay = defineOverlay<ShareLinkDialogDefinitionData>()({
   id: "shareLinkDialog",
   label: "Manage Share Links",
   instance: "single",

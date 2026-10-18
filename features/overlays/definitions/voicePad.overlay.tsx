@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "voicePad" as const;
@@ -69,7 +69,7 @@ export function VoicePadController(props: OpenVoicePadOptions): null {
 
 export type VoicePadDefinitionData = OpenVoicePadOptions;
 
-export const voicePadOverlay = /* @__PURE__ */ defineOverlay<VoicePadDefinitionData>()({
+export const voicePadOverlay = defineOverlay<VoicePadDefinitionData>()({
   id: "voicePad",
   label: "Voice Pad",
   instance: "multi",

@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "noteInfoWindow" as const;
@@ -68,7 +68,7 @@ export function NoteInfoWindowController(
 
 export type NoteInfoWindowDefinitionData = OpenNoteInfoWindowOptions;
 
-export const noteInfoWindowOverlay = /* @__PURE__ */ defineOverlay<NoteInfoWindowDefinitionData>()({
+export const noteInfoWindowOverlay = defineOverlay<NoteInfoWindowDefinitionData>()({
   id: "noteInfoWindow",
   label: "Note Info",
   instance: "single",

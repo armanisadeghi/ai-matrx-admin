@@ -9,9 +9,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import { CLOUD_BROWSER_OVERLAY_ID } from "@/features/cloud-browser/constants";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = CLOUD_BROWSER_OVERLAY_ID;
@@ -57,7 +57,7 @@ export function CloudBrowserWindowController(
 
 export type CloudBrowserWindowDefinitionData = OpenCloudBrowserWindowOptions;
 
-export const cloudBrowserWindowOverlay = /* @__PURE__ */ defineOverlay<CloudBrowserWindowDefinitionData>()({
+export const cloudBrowserWindowOverlay = defineOverlay<CloudBrowserWindowDefinitionData>()({
   id: "cloudBrowserWindow",
   label: "Cloud Browser",
   instance: "single",

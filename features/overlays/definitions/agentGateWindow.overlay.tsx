@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentGateWindow" as const;
@@ -74,7 +74,7 @@ export function AgentGateWindowController(props: OpenAgentGateWindowOptions): nu
 
 export type AgentGateWindowDefinitionData = OpenAgentGateWindowOptions;
 
-export const agentGateWindowOverlay = /* @__PURE__ */ defineOverlay<AgentGateWindowDefinitionData>()({
+export const agentGateWindowOverlay = defineOverlay<AgentGateWindowDefinitionData>()({
   id: "agentGateWindow",
   label: "Agent Gate Window",
   instance: "multi",

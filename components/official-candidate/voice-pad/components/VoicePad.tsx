@@ -3,7 +3,7 @@
 import React, { lazy, Suspense, useState, useRef, useCallback } from "react";
 import { Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon";
 import {
   selectVoicePadEntries,
   selectVoicePadDraftText,

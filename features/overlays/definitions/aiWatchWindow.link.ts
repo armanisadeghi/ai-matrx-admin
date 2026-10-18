@@ -1,6 +1,6 @@
 import type { AiWatchWindowDefinitionData } from "./aiWatchWindow.overlay";
 import { watchAiRunAction } from "@/features/overlays/definitions/aiWatchWindow.overlay";
-import type { LinkHydrateContext } from "@ai-matrx/summon/open";
+import type { LinkHydrateContext } from "@ai-matrx/summon";
 
 export function hydrate({ dispatch, id, open }: LinkHydrateContext<AiWatchWindowDefinitionData>) {
     const [kind, ...rest] = id.split("-");

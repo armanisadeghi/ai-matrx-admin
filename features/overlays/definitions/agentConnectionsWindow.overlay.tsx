@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentConnectionsWindow" as const;
@@ -71,7 +71,7 @@ export function AgentConnectionsWindowController(props: OpenAgentConnectionsWind
 
 export type AgentConnectionsWindowDefinitionData = OpenAgentConnectionsWindowOptions;
 
-export const agentConnectionsWindowOverlay = /* @__PURE__ */ defineOverlay<AgentConnectionsWindowDefinitionData>()({
+export const agentConnectionsWindowOverlay = defineOverlay<AgentConnectionsWindowDefinitionData>()({
   id: "agentConnectionsWindow",
   label: "Agent Connections Window",
   instance: "single",

@@ -20,7 +20,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
 import { deleteAgent, saveAgentField, setAgentFavorite } from "@/features/agents/redux/builder-write.thunks";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import { buildRecordReferenceFence } from "@/features/matrx-envelope/recordReference";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { buildAgentDeleteConfirm } from "@/features/agents/deletion/agentDeleteConfirm";

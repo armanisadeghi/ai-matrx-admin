@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "cloudFilesWindow" as const;
@@ -66,7 +66,7 @@ export function CloudFilesWindowController(props: OpenCloudFilesWindowOptions): 
 
 export type CloudFilesWindowDefinitionData = OpenCloudFilesWindowOptions;
 
-export const cloudFilesWindowOverlay = /* @__PURE__ */ defineOverlay<CloudFilesWindowDefinitionData>()({
+export const cloudFilesWindowOverlay = defineOverlay<CloudFilesWindowDefinitionData>()({
   id: "cloudFilesWindow",
   label: "Cloud Files Window",
   instance: "single",

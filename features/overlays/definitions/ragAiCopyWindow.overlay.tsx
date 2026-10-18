@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type {
   RagAiCopyBundle,
   RagAiSectionKey,
 } from "@/features/rag/components/search/ragAiCopy";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "ragAiCopyWindow" as const;
@@ -58,7 +58,7 @@ export function RagAiCopyWindowController(
 
 export type RagAiCopyWindowDefinitionData = OpenRagAiCopyWindowOptions;
 
-export const ragAiCopyWindowOverlay = /* @__PURE__ */ defineOverlay<RagAiCopyWindowDefinitionData>()({
+export const ragAiCopyWindowOverlay = defineOverlay<RagAiCopyWindowDefinitionData>()({
   id: "ragAiCopyWindow",
   label: "Copy Knowledge Result for AI",
   instance: "single",

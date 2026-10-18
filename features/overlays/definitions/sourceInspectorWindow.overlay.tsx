@@ -14,8 +14,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "sourceInspectorWindow" as const;
@@ -95,7 +95,7 @@ export function SourceInspectorWindowController(
 
 export type SourceInspectorWindowDefinitionData = OpenSourceInspectorWindowOptions;
 
-export const sourceInspectorWindowOverlay = /* @__PURE__ */ defineOverlay<SourceInspectorWindowDefinitionData>()({
+export const sourceInspectorWindowOverlay = defineOverlay<SourceInspectorWindowDefinitionData>()({
   id: "sourceInspectorWindow",
   label: "Source Inspector",
   instance: "single",

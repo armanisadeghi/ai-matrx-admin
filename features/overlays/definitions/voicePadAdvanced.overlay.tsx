@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "voicePadAdvanced" as const;
@@ -69,7 +69,7 @@ export function VoicePadAdvancedController(props: OpenVoicePadAdvancedOptions): 
 
 export type VoicePadAdvancedDefinitionData = OpenVoicePadAdvancedOptions;
 
-export const voicePadAdvancedOverlay = /* @__PURE__ */ defineOverlay<VoicePadAdvancedDefinitionData>()({
+export const voicePadAdvancedOverlay = defineOverlay<VoicePadAdvancedDefinitionData>()({
   id: "voicePadAdvanced",
   label: "Voice Pad Advanced",
   instance: "multi",

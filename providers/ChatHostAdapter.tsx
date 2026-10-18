@@ -46,6 +46,7 @@
 // handed to the package (`store`), which keeps its `chatHost` slice synced.
 
 import { thisMachineLocalModels } from "@/features/ai-models/local/this-machine-local-models";
+import { overlaysRawActions } from "@ai-matrx/summon";
 import type { ReactNode } from "react";
 import { ChatProvider } from "@ai-matrx/chat/host/react";
 import { useNextNavigation } from "@ai-matrx/chat/next/navigation";
@@ -93,9 +94,9 @@ import { SettingDoor } from "@/features/settings/doors/SettingDoor";
 import { VOICE_SETTING_DOORS } from "@/features/settings/tabs/voices/voiceSettingDoors";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { appChatServerApi } from "@/lib/api/chat-server-api";
-import { closeOverlay, openOverlay, selectIsOverlayOpen } from "@ai-matrx/summon/open";
-import { focusWindow, restoreWindow, selectAllWindows } from "@ai-matrx/summon/open";
-import type { OverlayId } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, selectIsOverlayOpen } from "@ai-matrx/summon";
+import { focusWindow, restoreWindow, selectAllWindows } from "@ai-matrx/summon";
+import type { OverlayId } from "@ai-matrx/summon";
 import { requireOrganizationForChat } from "@/lib/organization/chat-org-port";
 import { toast, recordToast } from "@/lib/toast";
 import { createAppChatDiagnostics } from "@/lib/diagnostics/chat-diagnostics-port";
@@ -360,7 +361,7 @@ function reduxWindows(store: AppStore, canvas: CanvasController | null): ChatWin
         return;
       }
       store.dispatch(
-        openOverlay({ overlayId: chatWindowOverlay(id) as OverlayId, instanceId, data: data as never }),
+        overlaysRawActions.openOverlay({ overlayId: chatWindowOverlay(id), instanceId, data: data as Readonly<Record<string, unknown>> | null }),
       );
     },
     close(id, instanceId) {

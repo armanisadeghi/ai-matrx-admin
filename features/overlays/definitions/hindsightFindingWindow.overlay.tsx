@@ -3,11 +3,11 @@
 import { useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
-import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon";
+import { focusWindow, restoreWindow } from "@ai-matrx/summon";
 import type { DoorAudience } from "@/features/hindsight/subject-doors";
 import type { Finding } from "@/features/hindsight/types";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "hindsightFindingWindow" as const;
@@ -95,7 +95,7 @@ export function HindsightFindingWindowController(
 
 export type HindsightFindingWindowDefinitionData = OpenHindsightFindingWindowOptions;
 
-export const hindsightFindingWindowOverlay = /* @__PURE__ */ defineOverlay<HindsightFindingWindowDefinitionData>()({
+export const hindsightFindingWindowOverlay = defineOverlay<HindsightFindingWindowDefinitionData>()({
   id: "hindsightFindingWindow",
   label: "Hindsight Finding",
   instance: "multi",

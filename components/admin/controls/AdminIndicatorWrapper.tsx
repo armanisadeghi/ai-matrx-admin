@@ -21,7 +21,7 @@
 import React, { Suspense } from "react";
 import { AdminDebugContextCollector } from "@/components/admin/debug/AdminDebugContextCollector";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
+import { selectIsOverlayOpen } from "@ai-matrx/summon";
 import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 import dynamic from "next/dynamic";
 

@@ -22,8 +22,8 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, ExternalLink, PanelRight } from "lucide-react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
-import type { OverlayId } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
+import type { OverlayId } from "@ai-matrx/summon";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Button } from "@ai-matrx/design-system";
 import {

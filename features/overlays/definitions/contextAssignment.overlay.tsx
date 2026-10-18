@@ -14,9 +14,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "contextAssignment" as const;
@@ -87,7 +87,7 @@ export function ContextAssignmentController(
 
 export type ContextAssignmentDefinitionData = OpenContextAssignmentOptions;
 
-export const contextAssignmentOverlay = /* @__PURE__ */ defineOverlay<ContextAssignmentDefinitionData>()({
+export const contextAssignmentOverlay = defineOverlay<ContextAssignmentDefinitionData>()({
   id: "contextAssignment",
   label: "Attach To",
   instance: "single",

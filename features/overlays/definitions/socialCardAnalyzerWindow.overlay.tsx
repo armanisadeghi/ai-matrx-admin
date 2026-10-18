@@ -2,8 +2,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "socialCardAnalyzerWindow" as const;
@@ -51,7 +51,7 @@ export function useOpenSocialCardWindow() {
 
 export type SocialCardAnalyzerWindowDefinitionData = OpenSocialCardWindowOptions;
 
-export const socialCardAnalyzerWindowOverlay = /* @__PURE__ */ defineOverlay<SocialCardAnalyzerWindowDefinitionData>()({
+export const socialCardAnalyzerWindowOverlay = defineOverlay<SocialCardAnalyzerWindowDefinitionData>()({
   id: "socialCardAnalyzerWindow",
   label: "Social Cards",
   instance: "single",

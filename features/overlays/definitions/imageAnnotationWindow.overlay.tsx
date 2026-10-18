@@ -6,13 +6,13 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import {
   createImageAnnotationCallbackGroup,
   type ImageAnnotationWindowData,
   type ImageAnnotationWindowHandlers,
 } from "./callbacks/imageAnnotationWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "imageAnnotationWindow" as const;
@@ -133,7 +133,7 @@ export function ImageAnnotationWindowController(
 
 export type ImageAnnotationWindowDefinitionData = OpenImageAnnotationWindowOptions;
 
-export const imageAnnotationWindowOverlay = /* @__PURE__ */ defineOverlay<ImageAnnotationWindowDefinitionData>()({
+export const imageAnnotationWindowOverlay = defineOverlay<ImageAnnotationWindowDefinitionData>()({
   id: "imageAnnotationWindow",
   label: "Image Annotation",
   instance: "multi",

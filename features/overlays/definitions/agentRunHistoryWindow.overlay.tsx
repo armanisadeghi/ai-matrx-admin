@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentRunHistoryWindow" as const;
@@ -74,7 +74,7 @@ export function AgentRunHistoryWindowController(props: OpenAgentRunHistoryWindow
 
 export type AgentRunHistoryWindowDefinitionData = OpenAgentRunHistoryWindowOptions;
 
-export const agentRunHistoryWindowOverlay = /* @__PURE__ */ defineOverlay<AgentRunHistoryWindowDefinitionData>()({
+export const agentRunHistoryWindowOverlay = defineOverlay<AgentRunHistoryWindowDefinitionData>()({
   id: "agentRunHistoryWindow",
   label: "Agent Run History Window",
   instance: "single",

@@ -54,7 +54,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectOverlayData } from "@ai-matrx/summon/open";
+import { selectOverlayData } from "@ai-matrx/summon";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useGlobalRecordingOptional } from "@/providers/GlobalRecordingProvider";
 import { WindowPanel } from "@ai-matrx/summon/window";

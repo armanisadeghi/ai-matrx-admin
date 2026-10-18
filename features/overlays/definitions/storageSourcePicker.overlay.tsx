@@ -2,12 +2,12 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import {
   createStorageSourcePickerCallbackGroup,
   type StorageSourcePickerHandlers,
 } from "./callbacks/storageSourcePicker";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "storageSourcePicker" as const;
@@ -48,7 +48,7 @@ export function useOpenStorageSourcePicker() {
 
 export type StorageSourcePickerDefinitionData = OpenStorageSourcePickerOptions;
 
-export const storageSourcePickerOverlay = /* @__PURE__ */ defineOverlay<StorageSourcePickerDefinitionData>()({
+export const storageSourcePickerOverlay = defineOverlay<StorageSourcePickerDefinitionData>()({
   id: "storageSourcePicker",
   label: "Import from cloud storage",
   instance: "single",

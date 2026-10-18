@@ -7,7 +7,7 @@ import {
   type ConnectorProviderConfig,
 } from "../provider-config";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
-import type { OverlayId } from "@ai-matrx/summon/open";
+import type { OverlayId } from "@ai-matrx/summon";
 
 /** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
 const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(

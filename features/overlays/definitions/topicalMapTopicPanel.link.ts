@@ -1,7 +1,7 @@
 import type { TopicalMapTopicPanelDefinitionData } from "./topicalMapTopicPanel.overlay";
 import { parseTopicPanelInstanceId, topicPanelInstanceId } from "@/features/marketing/seo/topical-map/panel/topicPanelInstance";
-import { openOverlay } from "@ai-matrx/summon/open";
-import type { LinkHydrateContext } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
+import type { LinkHydrateContext } from "@ai-matrx/summon";
 
 export function hydrate({ dispatch, id, open }: LinkHydrateContext<TopicalMapTopicPanelDefinitionData>) {
     const identity = parseTopicPanelInstanceId(id);

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Crown } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
-import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
+import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon";
 
 /**
  * Crown affordance in the main sidebar footer — the creator analogue of the

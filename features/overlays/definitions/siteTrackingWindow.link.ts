@@ -1,7 +1,7 @@
 import { getRestorableResourceId } from "./link-helpers";
 import type { SiteTrackingWindowDefinitionData } from "./siteTrackingWindow.overlay";
-import { openOverlay } from "@ai-matrx/summon/open";
-import type { LinkHydrateContext } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
+import type { LinkHydrateContext } from "@ai-matrx/summon";
 
 export function hydrate({ dispatch, id, open }: LinkHydrateContext<SiteTrackingWindowDefinitionData>) {
     const siteId = getRestorableResourceId(id, "siteTrackingWindow");

@@ -14,9 +14,9 @@
 import { useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
-import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon";
+import { focusWindow, restoreWindow } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "socialPostWindow" as const;
@@ -87,7 +87,7 @@ export function SocialPostWindowController(props: OpenSocialPostOptions): null {
 
 export type SocialPostWindowDefinitionData = OpenSocialPostOptions;
 
-export const socialPostWindowOverlay = /* @__PURE__ */ defineOverlay<SocialPostWindowDefinitionData>()({
+export const socialPostWindowOverlay = defineOverlay<SocialPostWindowDefinitionData>()({
   id: "socialPostWindow",
   label: "Post",
   instance: "multi",

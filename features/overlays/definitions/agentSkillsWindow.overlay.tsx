@@ -10,8 +10,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentSkillsWindow" as const;
@@ -37,7 +37,7 @@ export function useOpenAgentSkillsWindow() {
 
 export type AgentSkillsWindowDefinitionData = Record<string, unknown>;
 
-export const agentSkillsWindowOverlay = /* @__PURE__ */ defineOverlay<AgentSkillsWindowDefinitionData>()({
+export const agentSkillsWindowOverlay = defineOverlay<AgentSkillsWindowDefinitionData>()({
   id: "agentSkillsWindow",
   label: "Agent Skills",
   instance: "single",

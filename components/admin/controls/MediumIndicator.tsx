@@ -27,7 +27,7 @@ import {
   selectIsDebugMode,
 } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectIsSuperAdminDebugger, selectUser } from "@/lib/redux/slices/userSlice";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import {
   selectActiveServer,
   selectResolvedBaseUrl,

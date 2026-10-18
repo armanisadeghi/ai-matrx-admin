@@ -14,10 +14,10 @@
 
 import { useCallback, useEffect } from "react";
 import { dispatchThunk, useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon";
 import type { DetailInstanceData } from "@ai-matrx/detail";
 import { openDetailSingleton } from "@/features/window-panels/detail/openDetailSingleton";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "detailWindow" as const;
@@ -76,7 +76,7 @@ export function DetailWindowController(props: OpenDetailWindowOptions): null {
 
 export type DetailWindowDefinitionData = OpenDetailWindowOptions;
 
-export const detailWindowOverlay = /* @__PURE__ */ defineOverlay<DetailWindowDefinitionData>()({
+export const detailWindowOverlay = defineOverlay<DetailWindowDefinitionData>()({
   id: "detailWindow",
   label: "Record detail",
   instance: "single",

@@ -3,7 +3,7 @@
  * Plain-data metadata for every app overlay, for code that must not load the "use client"
  * definitions (server components such as the feature admin lookups).
  */
-import type { MobilePresentation } from "@ai-matrx/summon/open";
+import type { MobilePresentation } from "@ai-matrx/summon";
 
 export interface OverlayMetaRow {
   readonly id: string;

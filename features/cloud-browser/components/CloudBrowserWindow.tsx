@@ -12,7 +12,7 @@
 
 import React from "react";
 import { WindowPanel } from "@ai-matrx/summon/window";
-import type { OverlayId } from "@ai-matrx/summon/open";
+import type { OverlayId } from "@ai-matrx/summon";
 import { CloudBrowserBody } from "./CloudBrowserBody";
 
 export interface CloudBrowserWindowProps {

@@ -1,5 +1,5 @@
-import { openOverlay } from "@ai-matrx/summon/open";
-import type { OverlayId } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
+import type { OverlayId } from "@ai-matrx/summon";
 // Plain-data metadata only (id / instance / windowId). Never `definitions/register` or
 // `definitions/registry` here: they import every overlay definition, and each definition's
 // `render: () => import(...)` drags that window's whole implementation into any graph that

@@ -48,7 +48,7 @@ import {
 import { isNoteContentEmpty } from "../../utils/noteUtils";
 import { downloadNoteAsMarkdown } from "../../utils/exportNotesMarkdown";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface NoteMenuContext {

@@ -11,8 +11,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "assistsWindow" as const;
@@ -44,7 +44,7 @@ export function AssistsWindowController(): null {
 
 export type AssistsWindowDefinitionData = Record<string, unknown>;
 
-export const assistsWindowOverlay = /* @__PURE__ */ defineOverlay<AssistsWindowDefinitionData>()({
+export const assistsWindowOverlay = defineOverlay<AssistsWindowDefinitionData>()({
   id: "assistsWindow",
   label: "Assists",
   instance: "single",

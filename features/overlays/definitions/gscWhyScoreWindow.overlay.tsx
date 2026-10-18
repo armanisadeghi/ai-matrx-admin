@@ -10,9 +10,9 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
-import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon";
+import { focusWindow, restoreWindow } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "gscWhyScoreWindow" as const;
@@ -75,7 +75,7 @@ export function useOpenGscWhyScoreWindow() {
 
 export type GscWhyScoreWindowDefinitionData = OpenGscWhyScoreWindowOptions;
 
-export const gscWhyScoreWindowOverlay = /* @__PURE__ */ defineOverlay<GscWhyScoreWindowDefinitionData>()({
+export const gscWhyScoreWindowOverlay = defineOverlay<GscWhyScoreWindowDefinitionData>()({
   id: "gscWhyScoreWindow",
   label: "Why This Score",
   instance: "multi",

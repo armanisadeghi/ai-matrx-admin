@@ -6,7 +6,7 @@
  * state). Mounted by the deferred singleton core; an open they trigger loads the overlay world.
  */
 import { Suspense, useEffect } from "react";
-import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, selectIsOverlayOpen, type OverlayId, type StateWithOverlays } from "@ai-matrx/summon/open";
+import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, selectIsOverlayOpen, type OverlayId, type StateWithOverlays } from "@ai-matrx/summon";
 import { OverlayLinkManager } from "@ai-matrx/summon/url";
 import { OverlayPersistence } from "@ai-matrx/summon/persistence";
 import { useAppStore } from "@/lib/redux/hooks";

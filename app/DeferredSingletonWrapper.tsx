@@ -45,7 +45,6 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { registerIdleTask, useIdleReady } from "@ai-matrx/kit/idle-scheduler";
 import { useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/rootReducer";
-import { selectAnyOverlayTouched as selectAnyOverlayTouchedIn } from "@ai-matrx/summon/open";
 import {
   personPeekRequested,
   subscribePersonPeek,
@@ -95,8 +94,12 @@ const DeferredOverlayWorld = dynamic(
   { ssr: false, loading: () => null },
 );
 
-/** Any overlay currently in the slice (absent until the summon core loads on the first open). */
-const selectAnyOverlayTouched = (state: RootState): boolean => selectAnyOverlayTouchedIn(state);
+/** Any overlay currently in the slice (a key is added on open; closing the last instance removes it). */
+const selectAnyOverlayTouched = (state: RootState): boolean => {
+  // Runs on every app dispatch: no allocation (Object.keys built an array each time).
+  for (const _ in state.overlays.overlays) return true;
+  return false;
+};
 
 /** Latches true on the first overlay open or person-peek request. */
 export function useOverlayWorldWanted(): boolean {

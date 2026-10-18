@@ -14,7 +14,7 @@ import {
   type OpenContentEditorWindowOptions,
   type ContentEditorWindowHandle,
 } from "@/features/window-panels/windows/content-editors/useOpenContentEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 export {
@@ -39,7 +39,7 @@ export function ContentEditorWindowController(
 
 export type ContentEditorWindowDefinitionData = OpenContentEditorWindowOptions;
 
-export const contentEditorWindowOverlay = /* @__PURE__ */ defineOverlay<ContentEditorWindowDefinitionData>()({
+export const contentEditorWindowOverlay = defineOverlay<ContentEditorWindowDefinitionData>()({
   id: "contentEditorWindow",
   label: "Content Editor Window",
   instance: "multi",

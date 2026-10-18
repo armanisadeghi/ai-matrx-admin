@@ -13,8 +13,8 @@ import type { GoogleAgendaWindowLaunchData } from "@/features/google-workspace/c
 import { useCallback, useEffect } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "googleAgendaWindow" as const;
@@ -44,7 +44,7 @@ export function GoogleAgendaWindowController() {
 
 export type GoogleAgendaWindowDefinitionData = Record<string, unknown>;
 
-export const googleAgendaWindowOverlay = /* @__PURE__ */ defineOverlay<GoogleAgendaWindowDefinitionData>()({
+export const googleAgendaWindowOverlay = defineOverlay<GoogleAgendaWindowDefinitionData>()({
   id: "googleAgendaWindow",
   label: "Agenda",
   instance: "single",

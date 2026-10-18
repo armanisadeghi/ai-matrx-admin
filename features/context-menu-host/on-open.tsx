@@ -18,7 +18,7 @@ import type {
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode, toggleDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectIsSuperAdmin, selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
-import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
+import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon";
 import { openCompareWithBase, selectHasCompareBase, setCompareBase } from "@ai-matrx/chat/agents/redux/diff-compare/diff-compare.slice";
 import { selectActiveScopeIds } from "@/features/scopes/redux/selectors/active-context";
 import { useOpenListenSummaryWindow } from "@/features/overlays/definitions/listenSummaryWindow.overlay";

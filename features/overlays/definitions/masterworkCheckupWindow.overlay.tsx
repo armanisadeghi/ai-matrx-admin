@@ -10,8 +10,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "masterworkCheckupWindow" as const;
@@ -60,7 +60,7 @@ export function MasterworkCheckupWindowController(
 
 export type MasterworkCheckupWindowDefinitionData = OpenMasterworkCheckupWindowOptions;
 
-export const masterworkCheckupWindowOverlay = /* @__PURE__ */ defineOverlay<MasterworkCheckupWindowDefinitionData>()({
+export const masterworkCheckupWindowOverlay = defineOverlay<MasterworkCheckupWindowDefinitionData>()({
   id: "masterworkCheckupWindow",
   label: "Final Checkup",
   instance: "single",

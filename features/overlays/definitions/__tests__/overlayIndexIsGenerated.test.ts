@@ -41,7 +41,7 @@ function scanDefinitionFiles(dir: string = DIR): DefinitionFile[] {
     .filter((f) => /\.overlay\.tsx?$/.test(f))
     .sort()
     .map((file) => {
-      const names = [...fs.readFileSync(path.join(dir, file), "utf8").matchAll(/^export const (\w+)\s*=\s*(?:\/\*\s*@__PURE__\s*\*\/\s*)?defineOverlay\b/gm)].map(
+      const names = [...fs.readFileSync(path.join(dir, file), "utf8").matchAll(/^export const (\w+)\s*=\s*defineOverlay\b/gm)].map(
         (m) => m[1],
       );
       if (names.length !== 1) throw new Error(`${file}: expected exactly one \`export const <name> = defineOverlay\`, found ${names.length}`);
@@ -86,7 +86,7 @@ function metaIndexText(defs: readonly MetaSource[]): string {
  * Plain-data metadata for every app overlay, for code that must not load the "use client"
  * definitions (server components such as the feature admin lookups).
  */
-import type { MobilePresentation } from "@ai-matrx/summon/open";
+import type { MobilePresentation } from "@ai-matrx/summon";
 
 export interface OverlayMetaRow {
   readonly id: string;
@@ -137,13 +137,6 @@ describe("overlay index (generated from the definitions)", () => {
     const want = barrelText(files);
     if (WRITE) fs.writeFileSync(BARREL, want);
     if (readOrEmpty(BARREL) !== want) throw new Error(`overlay-definitions.gen.ts ${STALE}`);
-  });
-
-  // PURE: a file imported only for its opener (the shell's menus) drops its definition object from
-  // the first-load bundle; the host and registry, which use it, keep it (W2 2026-10-17).
-  it("every definition is annotated pure so openers never carry it", () => {
-    const bare = files.filter(({ file }) => !/=\s*\/\*\s*@__PURE__\s*\*\/\s*defineOverlay\b/.test(fs.readFileSync(path.join(DIR, file), "utf8")));
-    expect(bare.map((f) => `${f.file}: write \`export const x = /* @__PURE__ */ defineOverlay…\``)).toEqual([]);
   });
 
   it("every definition file is listed exactly once in APP_OVERLAYS (registry.ts)", () => {

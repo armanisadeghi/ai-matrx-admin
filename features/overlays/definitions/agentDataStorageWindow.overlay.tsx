@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentDataStorageWindow" as const;
@@ -65,7 +65,7 @@ export function AgentDataStorageWindowController(props: OpenAgentDataStorageWind
 
 export type AgentDataStorageWindowDefinitionData = OpenAgentDataStorageWindowOptions;
 
-export const agentDataStorageWindowOverlay = /* @__PURE__ */ defineOverlay<AgentDataStorageWindowDefinitionData>()({
+export const agentDataStorageWindowOverlay = defineOverlay<AgentDataStorageWindowDefinitionData>()({
   id: "agentDataStorageWindow",
   label: "Agent Data Storage Window",
   instance: "single",

@@ -14,9 +14,9 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import type { ContextBundle } from "@/features/research/resources/types";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "researchContextPreviewWindow" as const;
@@ -61,7 +61,7 @@ export function useOpenResearchContextPreview() {
 
 export type ResearchContextPreviewWindowDefinitionData = OpenResearchContextPreviewOptions;
 
-export const researchContextPreviewWindowOverlay = /* @__PURE__ */ defineOverlay<ResearchContextPreviewWindowDefinitionData>()({
+export const researchContextPreviewWindowOverlay = defineOverlay<ResearchContextPreviewWindowDefinitionData>()({
   id: "researchContextPreviewWindow",
   label: "Context Preview",
   instance: "single",

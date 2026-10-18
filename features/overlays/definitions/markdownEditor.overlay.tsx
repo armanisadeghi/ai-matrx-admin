@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "markdownEditor" as const;
@@ -73,7 +73,7 @@ export function FullscreenMarkdownEditorController(props: OpenFullscreenMarkdown
 
 export type MarkdownEditorDefinitionData = OpenFullscreenMarkdownEditorOptions;
 
-export const markdownEditorOverlay = /* @__PURE__ */ defineOverlay<MarkdownEditorDefinitionData>()({
+export const markdownEditorOverlay = defineOverlay<MarkdownEditorDefinitionData>()({
   id: "markdownEditor",
   label: "Markdown Editor",
   instance: "single",

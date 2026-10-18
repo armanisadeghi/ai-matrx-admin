@@ -8,8 +8,8 @@ import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/t
 import { followWhatIsStillInFlight } from "@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight";
 import { resolveAgentPanelDisplayMode, readAgentPanelSurfaceArg } from "@ai-matrx/chat/window-panels/windows/agents/agentPanelSurfaceAddress";
 import { AGENT_RUN_WINDOW_URL_MODE, AGENT_RUN_WINDOW_AGENT_ARG, AGENT_RUN_WINDOW_CONVERSATION_ARG } from "@ai-matrx/chat/window-panels/windows/agents/agentRunWindowAddress";
-import { openOverlay } from "@ai-matrx/summon/open";
-import type { LinkHydrateContext } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
+import type { LinkHydrateContext } from "@ai-matrx/summon";
 
 export function hydrate({ dispatch, id, args, open }: LinkHydrateContext<AgentRunWindowDefinitionData>) {
     const subject = getRestorableResourceId(id);

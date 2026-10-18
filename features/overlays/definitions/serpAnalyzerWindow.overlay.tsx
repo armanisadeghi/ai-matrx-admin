@@ -2,8 +2,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "serpAnalyzerWindow" as const;
@@ -43,7 +43,7 @@ export function useOpenSerpAnalyzerWindow() {
 
 export type SerpAnalyzerWindowDefinitionData = OpenSerpAnalyzerWindowOptions;
 
-export const serpAnalyzerWindowOverlay = /* @__PURE__ */ defineOverlay<SerpAnalyzerWindowDefinitionData>()({
+export const serpAnalyzerWindowOverlay = defineOverlay<SerpAnalyzerWindowDefinitionData>()({
   id: "serpAnalyzerWindow",
   label: "Search Appearance",
   instance: "single",

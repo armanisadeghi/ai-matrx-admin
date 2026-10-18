@@ -13,7 +13,7 @@
 // migration that produced this split.
 
 import { blockStatesReducer } from "@/features/block-state/redux/blockStatesSlice";
-import type { SummonRootState } from "@ai-matrx/summon";
+import { summonReducers } from "@ai-matrx/summon";
 import { combineReducers, type Reducer } from "@reduxjs/toolkit";
 import { applyIdentityReset } from "@/lib/sync/engine/identityReset";
 import { createModuleSlice } from "./slices/moduleSliceCreator";
@@ -157,9 +157,8 @@ export const slimReducerMap = {
 
   adminDebug: adminDebugReducer,
   creatorDebug: creatorDebugReducer,
-  // overlays, windowManager, urlSync, overlayState (@ai-matrx/summon) are NOT here: the summon
-  // gate (lib/redux/store.ts) injects them when the summon core first loads (first open, a page's
-  // WindowPanel, a link, saved windows), so no route pays for them up front.
+  // overlays, windowManager, urlSync, overlayState (@ai-matrx/summon)
+  ...summonReducers,
   voicePad: voicePadReducer,
 
   // Canvas and Artifacts system ----------
@@ -343,22 +342,12 @@ export const slimReducerMap = {
  * has to know about. See `lib/sync/engine/identityReset.ts` for what leaked.
  */
 export const createSlimRootReducer = () => {
-  type SlimCombined = ReturnType<typeof combineReducers<typeof slimReducerMap>>;
-  // Reducers injected later (the summon slices, by the summon gate) join this map.
-  let injected: Record<string, Reducer> = {};
-  let combined: SlimCombined = combineReducers(slimReducerMap);
-  const withIdentityReset: SlimCombined = (state, action) =>
+  const combined = combineReducers(slimReducerMap);
+  const withIdentityReset: typeof combined = (state, action) =>
     combined(applyIdentityReset(state, action), action);
   // The chat package reads who is signed in and the active organization from its own
   // `chatHost` slice; this keeps that slice equal to this app's state in the same reduction.
-  const root = withAppChatHost(withIdentityReset);
-  return Object.assign(root, {
-    /** Add reducers at their keys (idempotent per key); state for them appears on the next action. */
-    inject(reducers: Readonly<Record<string, Reducer>>) {
-      injected = { ...injected, ...reducers };
-      combined = combineReducers({ ...slimReducerMap, ...injected }) as unknown as SlimCombined;
-    },
-  });
+  return withAppChatHost(withIdentityReset);
 };
 
 /**
@@ -369,6 +358,4 @@ export const createSlimRootReducer = () => {
  * This type is structurally identical to `ReturnType<AppStore["getState"]>`
  * in store.ts — both are driven by the same slimReducerMap.
  */
-export type RootState = ReturnType<ReturnType<typeof createSlimRootReducer>> &
-  // Injected on first use by the summon gate; absent until then.
-  Partial<SummonRootState>;
+export type RootState = ReturnType<ReturnType<typeof createSlimRootReducer>>;

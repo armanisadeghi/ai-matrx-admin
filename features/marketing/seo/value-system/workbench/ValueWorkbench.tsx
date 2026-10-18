@@ -177,7 +177,7 @@ import { ApprovalQueue } from "@/features/approvals/ApprovalQueue";
 import { BandScoreboard } from "./BandScoreboard";
 import { ValueKpiBand } from "./ValueKpiBand";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon";
 import { ReasonChainDetail } from "./ReasonChain";
 import { MeaningPanel } from "./MeaningPanel";
 import { Group, Panel } from "react-resizable-panels";

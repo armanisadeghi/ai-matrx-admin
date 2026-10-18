@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "emailDialog" as const;
@@ -69,7 +69,7 @@ export function EmailDialogBridgeController(props: OpenEmailDialogBridgeOptions)
 
 export type EmailDialogDefinitionData = OpenEmailDialogBridgeOptions;
 
-export const emailDialogOverlay = /* @__PURE__ */ defineOverlay<EmailDialogDefinitionData>()({
+export const emailDialogOverlay = defineOverlay<EmailDialogDefinitionData>()({
   id: "emailDialog",
   label: "Email Dialog",
   instance: "multi",
