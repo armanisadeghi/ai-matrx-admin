@@ -18,3 +18,6 @@ comment on function platform.drill_def__structured_logs() is
 
 -- The summary-backed definition replaces the raw-table override keyed by the token app_log (lane APPLOG-ROLLUP).
 drop function if exists platform.drill_def__app_log();
+
+-- The summary-backed definition replaces the raw-table override keyed by the token app_log (lane APPLOG-ROLLUP).
+drop function if exists platform.drill_def__app_log();
