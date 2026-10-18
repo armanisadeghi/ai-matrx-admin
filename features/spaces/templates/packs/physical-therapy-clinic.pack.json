@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0401",
-  "version": 2,
+  "version": 3,
   "title": "Physical Therapy Clinic",
   "description": "Referrals, plans of care, visits and visit counts for a small therapy clinic.",
   "forWho": "Physical therapy and rehab clinics",
@@ -175,6 +175,17 @@
             "button": {
               "do": "run_action",
               "action": "referral_scheduled"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "referral_take"
             }
           }
         ],
@@ -686,7 +697,8 @@
               "Discharged"
             ],
             "filled": [
-              "authorized"
+              "authorized",
+              "discharged_on"
             ]
           }
         ],
@@ -1117,7 +1129,8 @@
               "Completed"
             ],
             "filled": [
-              "therapist"
+              "therapist",
+              "completed_on"
             ]
           }
         ],
@@ -1220,7 +1233,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "patient",
@@ -1759,6 +1773,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "referral_take",
+        "table": "referral",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2083,7 +2111,7 @@
         "Millbrook Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

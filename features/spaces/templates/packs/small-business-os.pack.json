@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0303",
-  "version": 5,
+  "version": 6,
   "title": "Small Business OS",
   "description": "Owners of 1 to 15 person businesses: sales, projects, money, team and goals in one.",
   "forWho": "Owners of 1 to 15 person businesses",
@@ -635,7 +635,26 @@
           "owner": "Either record can be created or change status before the other.",
           "contact": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Won"
+            ],
+            "filled": [
+              "close_on"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Lost"
+            ],
+            "filled": [
+              "close_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New deal",
@@ -959,7 +978,17 @@
         "independentOf": {
           "contact": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New job",
@@ -1150,6 +1179,17 @@
             }
           },
           {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
+          },
+          {
             "key": "created_at",
             "label": "Created",
             "parityType": "created_time",
@@ -1275,7 +1315,17 @@
           "assignee": "Either record can be created or change status before the other.",
           "project": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New task",
@@ -1331,7 +1381,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "invoice",
@@ -1368,7 +1419,8 @@
               "Sent"
             ],
             "filled": [
-              "issued_on"
+              "issued_on",
+              "sent_on"
             ]
           }
         ],
@@ -2552,6 +2604,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2997,7 +3063,7 @@
         "Weatherby Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

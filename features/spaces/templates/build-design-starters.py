@@ -449,7 +449,7 @@ STARTERS.append({
 
 BASE = {
     "slug": "base", "id": "SP0363", "name": "Design system", "file": "design-system-board.pack.json", "base": True,
-    "title": "Design system board",
+    "title": "Design Tokens Board",
     "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
     "forWho": "Product teams keeping one design system",
     "tags": ["design", "tokens", "colors", "typography", "board", "ui"],

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-  "version": 3,
+  "version": 4,
   "title": "Consulting Practice Desk",
   "description": "Clients, proposals, engagements, deliverables and consultant days for a consulting firm.",
   "forWho": "Management and operations consulting practices",
@@ -551,7 +551,8 @@
               "Lost"
             ],
             "filled": [
-              "sent_on"
+              "sent_on",
+              "closed_on"
             ]
           }
         ],
@@ -962,7 +963,17 @@
           "client": "Either record can be created or change status before the other.",
           "lead": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Closed"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ],
         "before": [
           [
             "starts_on",
@@ -1220,13 +1231,34 @@
               "do": "run_action",
               "action": "deliverable_send_to_client"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deliverable_take"
+            }
           }
         ],
         "independentOf": {
           "engagement": "Either record can be created or change status before the other.",
           "owner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New deliverable",
@@ -1407,7 +1439,8 @@
               "owner": "tm-1"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "timesheet",
@@ -1881,6 +1914,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deliverable_take",
+        "table": "deliverable",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2271,7 +2318,7 @@
         "Halsey Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

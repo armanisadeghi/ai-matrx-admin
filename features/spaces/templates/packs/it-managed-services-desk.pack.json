@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 3,
+  "version": 4,
   "title": "IT Managed Services Desk",
   "description": "Clients, devices, support tickets, contract renewals and scheduled maintenance for an MSP.",
   "forWho": "Managed IT service providers and IT consultancies",
@@ -613,7 +613,17 @@
         "independentOf": {
           "client": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Retired"
+            ],
+            "filled": [
+              "retired_on"
+            ]
+          }
+        ],
         "before": [
           [
             "purchased_on",
@@ -979,6 +989,17 @@
             "button": {
               "do": "run_action",
               "action": "ticket_fix_confirmed"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ticket_take"
             }
           }
         ],
@@ -1355,7 +1376,17 @@
           "client": "Either record can be created or change status before the other.",
           "tech": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New scheduled job",
@@ -1516,7 +1547,8 @@
               "owner_me": "@installer"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1735,6 +1767,20 @@
             "field": "completed_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ticket_take",
+        "table": "ticket",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -2159,7 +2205,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

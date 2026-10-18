@@ -23,7 +23,12 @@ comment on table iam.oauth_app is 'An OAuth app a person registered (client in a
 create index oauth_app_owner_idx on iam.oauth_app (owner_id) where archived_at is null;
 
 alter table iam.oauth_app enable row level security;
-create policy oauth_app_owner_read on iam.oauth_app for select to authenticated using (owner_id = (select auth.uid()));
+revoke all on iam.oauth_app from anon, authenticated;
+insert into platform.entity_types (token, schema_name, table_name, label, audit_class, audit_class_reason, table_ref, type)
+values ('iam_oauth_app', 'iam', 'oauth_app', 'OAuth app', 'machinery',
+        'Register of person-owned OAuth clients and their declared scopes; written only by aidream, read by people only through iam.oauth_app_list / iam.oauth_app_consent.',
+        'iam.oauth_app'::regclass, 'system')
+on conflict (token) do nothing;
 
 -- The owner's own apps (never the secret: it is not stored anywhere on our side).
 create function iam.oauth_app_list()

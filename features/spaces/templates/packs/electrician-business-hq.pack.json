@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0505",
-  "version": 2,
+  "version": 3,
   "title": "Electrician Business HQ",
   "description": "Quote electrical jobs, track permits and inspections, parts stock, margins and invoices.",
   "forWho": "Electrical contractors and electricians",
@@ -467,7 +467,17 @@
           "customer": "Either record can be created or change status before the other.",
           "tech": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "job_name",
@@ -716,6 +726,17 @@
             "button": {
               "do": "run_action",
               "action": "job_done"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_take"
             }
           },
           {
@@ -1226,7 +1247,8 @@
               "hours": 2
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "part",
@@ -1941,6 +1963,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "job_take",
+        "table": "job",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2218,7 +2254,7 @@
         "Anvil Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

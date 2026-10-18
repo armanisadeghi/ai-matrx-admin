@@ -237,6 +237,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "pupil_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_tuition",
             "label": "Add tuition due",
             "parityType": "button",
@@ -651,6 +662,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "lesson_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1029,6 +1051,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "tuition_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1358,6 +1391,17 @@
             "button": {
               "do": "run_action",
               "action": "rentals_returned"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "rentals_claim"
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -1702,6 +1746,20 @@
       },
       {
         "kind": "row_action",
+        "token": "pupil_claim",
+        "table": "pupil",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "lesson_done",
         "table": "lesson",
         "name": "Mark done",
@@ -1730,6 +1788,20 @@
       },
       {
         "kind": "row_action",
+        "token": "lesson_claim",
+        "table": "lesson",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "tuition_paid",
         "table": "tuition",
         "name": "Mark paid",
@@ -1739,6 +1811,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1758,6 +1835,20 @@
       },
       {
         "kind": "row_action",
+        "token": "tuition_claim",
+        "table": "tuition",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "rentals_returned",
         "table": "rentals",
         "name": "Mark returned",
@@ -1767,6 +1858,20 @@
             "field": "status",
             "set": "value",
             "value": "Available"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "rentals_claim",
+        "table": "rentals",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }

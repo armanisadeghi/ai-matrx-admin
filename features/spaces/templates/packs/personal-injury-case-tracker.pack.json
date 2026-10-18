@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0410",
-  "version": 2,
+  "version": 3,
   "title": "Personal Injury Intake and Cases",
   "description": "Intakes, case stages, medical records requests and offers for a personal injury practice.",
   "forWho": "Personal injury firms",
@@ -208,6 +208,17 @@
               "do": "run_action",
               "action": "intake_declined"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "intake_take"
+            }
           }
         ],
         "rows": [
@@ -328,7 +339,8 @@
               "Signed"
             ],
             "filled": [
-              "source"
+              "source",
+              "signed_on"
             ]
           },
           {
@@ -337,7 +349,8 @@
               "Declined"
             ],
             "filled": [
-              "source"
+              "source",
+              "decided_on"
             ]
           }
         ],
@@ -812,7 +825,8 @@
               "Resolved"
             ],
             "filled": [
-              "client_name"
+              "client_name",
+              "resolved_on"
             ]
           }
         ],
@@ -1220,7 +1234,8 @@
               "Received"
             ],
             "filled": [
-              "provider"
+              "provider",
+              "received_on"
             ]
           }
         ],
@@ -1777,6 +1792,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "intake_take",
+        "table": "intake",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2127,7 +2156,7 @@
         "Beale Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

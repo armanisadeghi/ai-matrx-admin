@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 3,
+  "version": 4,
   "title": "Translation Agency Desk",
   "description": "Clients, linguists, translation jobs, glossaries and quality checks for a language agency.",
   "forWho": "Translation and localization agencies",
@@ -903,6 +903,17 @@
                 "job": "@row"
               }
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_take"
+            }
           }
         ],
         "independentOf": {
@@ -910,7 +921,17 @@
           "linguist": "Either record can be created or change status before the other.",
           "pm": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
         "before": [
           [
             "received_on",
@@ -1833,6 +1854,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "job_take",
+        "table": "job",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2073,7 +2108,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

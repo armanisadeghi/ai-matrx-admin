@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0462",
-  "version": 3,
+  "version": 4,
   "title": "Event Planning Company Desk",
   "description": "Clients, events, vendors, bookings and planning tasks for an event planning company.",
   "forWho": "Event planners and event production companies",
@@ -620,7 +620,17 @@
           "client": "Either record can be created or change status before the other.",
           "planner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Wrapped"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New event",
@@ -790,7 +800,8 @@
               "owner_me": "@installer"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "vendor",
@@ -1448,13 +1459,34 @@
               "do": "run_action",
               "action": "task_tick_done"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
           }
         ],
         "independentOf": {
           "event": "Either record can be created or change status before the other.",
           "owner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New task",
@@ -1619,7 +1651,8 @@
               "owner_me": "@installer"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1837,6 +1870,20 @@
             "field": "completed_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -2212,7 +2259,7 @@
         "Harbor Lantern Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

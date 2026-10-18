@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 7,
+  "version": 8,
   "title": "Incident Postmortems",
   "description": "Engineering and ops teams: log incidents, write blameless postmortems, track the fixes.",
   "forWho": "Engineering and operations teams",
@@ -163,6 +163,17 @@
             "button": {
               "do": "run_action",
               "action": "action_item_done"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "action_item_take"
             }
           },
           {
@@ -430,7 +441,19 @@
             },
             "default": true
           }
-        ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "incident",
@@ -1226,6 +1249,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "action_item_take",
+        "table": "action_item",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -1465,7 +1502,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

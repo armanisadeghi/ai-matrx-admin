@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "version": 5,
+  "version": 6,
   "title": "Personal To-Do List",
   "description": "Anyone with a long to-do list: capture tasks, sort by priority, use smart lists.",
   "forWho": "Anyone with a long to-do list",
@@ -347,6 +347,17 @@
               "do": "run_action",
               "action": "task_finish"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
           }
         ],
         "rows": [
@@ -687,7 +698,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -759,6 +771,20 @@
           }
         ],
         "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assignee",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -955,7 +981,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

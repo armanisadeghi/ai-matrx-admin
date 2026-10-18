@@ -198,6 +198,17 @@
             }
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "client_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_project",
             "label": "Start a project",
             "parityType": "button",
@@ -670,6 +681,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "projects_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_milestone",
             "label": "Add a milestone",
             "parityType": "button",
@@ -1070,6 +1092,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "milestones_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1444,6 +1477,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "bugs_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1812,6 +1856,20 @@
     "extras": [
       {
         "kind": "row_action",
+        "token": "client_claim",
+        "table": "client",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "projects_build",
         "table": "projects",
         "name": "Move to build",
@@ -1854,6 +1912,20 @@
       },
       {
         "kind": "row_action",
+        "token": "projects_claim",
+        "table": "projects",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "milestones_done",
         "table": "milestones",
         "name": "Mark done",
@@ -1877,6 +1949,20 @@
             "field": "status",
             "set": "value",
             "value": "Blocked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "milestones_claim",
+        "table": "milestones",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       },
@@ -1919,6 +2005,25 @@
             "field": "status",
             "set": "value",
             "value": "Closed"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "bugs_claim",
+        "table": "bugs",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }

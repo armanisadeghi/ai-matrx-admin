@@ -4,4 +4,5 @@ delete from platform.client_callable_door where declared_by = 'migrations/atoaut
 drop function if exists iam.oauth_app_scopes(uuid);
 drop function if exists iam.oauth_app_consent(uuid);
 drop function if exists iam.oauth_app_list();
+delete from platform.entity_types where token = 'iam_oauth_app';
 drop table if exists iam.oauth_app;

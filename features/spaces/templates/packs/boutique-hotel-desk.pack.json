@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 3,
+  "version": 4,
   "title": "Boutique Hotel Desk",
   "description": "Rooms, reservations, housekeeping and repairs for a boutique hotel or bed and breakfast.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -971,7 +971,17 @@
           "room": "Either record can be created or change status before the other.",
           "cleaner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Inspected"
+            ],
+            "filled": [
+              "inspected_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New cleaning job",
@@ -1101,7 +1111,8 @@
               "cleaner": "tm-3"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "repair",
@@ -1232,13 +1243,34 @@
               "do": "run_action",
               "action": "repair_mark_fixed"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "repair_take"
+            }
           }
         ],
         "independentOf": {
           "room": "Either record can be created or change status before the other.",
           "owner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Fixed"
+            ],
+            "filled": [
+              "fixed_on"
+            ]
+          }
+        ],
         "before": [
           [
             "reported_on",
@@ -1614,6 +1646,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "repair_take",
+        "table": "repair",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -1959,7 +2005,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

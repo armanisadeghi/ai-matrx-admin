@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0402",
-  "version": 2,
+  "version": 3,
   "title": "Chiropractic Office",
   "description": "Inquiries, patients, visits and prepaid packages for a chiropractic office.",
   "forWho": "Chiropractors and wellness clinics",
@@ -184,6 +184,17 @@
             "button": {
               "do": "run_action",
               "action": "inquiry_booked"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_take"
             }
           }
         ],
@@ -727,7 +738,8 @@
               "Completed"
             ],
             "filled": [
-              "provider"
+              "provider",
+              "completed_on"
             ]
           }
         ],
@@ -808,7 +820,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "patient",
@@ -1629,6 +1642,20 @@
             "value": "Used up"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inquiry_take",
+        "table": "inquiry",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -1957,7 +1984,7 @@
         "Pecan Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

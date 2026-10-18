@@ -88,10 +88,32 @@ function comment(row: Row, me: string | null): SpaceComment {
   };
 }
 
-/** Every thread on the page, oldest first, replies nested. */
-export async function listSpaceThreads(spaceId: string): Promise<SpaceThread[]> {
-  const { data, error } = await seam("cmt_list", { p_entity_type: "document", p_entity_id: spaceId });
-  if (error) throw humanError("loading the comments", error);
+/** The connection failed before the database answered (supabase-js: no code, no message), not a refusal. */
+function noAnswer(error: { message: string; code?: string }): boolean {
+  return !error.code && !error.message;
+}
+
+/**
+ * Every thread on the page, oldest first, replies nested.
+ *
+ * `stale` says the person has moved on (another page opened, or this one closed). A read that failed for
+ * that reason is not a failure to report: leaving a page aborts its in-flight read, and that used to print
+ * "[annotations] loading the comments failed ()" on every quick navigation. A connection that dropped on a
+ * page still shown is tried once more before it is reported.
+ */
+export async function listSpaceThreads(spaceId: string, stale: () => boolean = () => false): Promise<SpaceThread[]> {
+  const args = { p_entity_type: "document", p_entity_id: spaceId };
+  let { data, error } = await seam("cmt_list", args);
+  if (error && noAnswer(error)) {
+    if (stale()) return [];
+    await new Promise((r) => setTimeout(r, 600));
+    if (stale()) return [];
+    ({ data, error } = await seam("cmt_list", args));
+  }
+  if (error) {
+    if (stale()) return [];
+    throw humanError("loading the comments", error);
+  }
   const rows = Array.isArray(data) ? data.filter(isRow) : [];
   const me = getUserId();
   const roots = new Map<string, SpaceThread>();

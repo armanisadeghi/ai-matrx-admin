@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 5,
+  "version": 6,
   "title": "Bug Tracker",
   "description": "Engineering and support teams: report, triage and fix bugs by severity on a board.",
   "forWho": "Engineering and support teams",
@@ -470,6 +470,17 @@
             }
           },
           {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "bug_take"
+            }
+          },
+          {
             "key": "assigned_to",
             "label": "Assigned to",
             "parityType": "member",
@@ -768,7 +779,8 @@
               "Fixed"
             ],
             "filled": [
-              "priority"
+              "priority",
+              "fixed_on"
             ]
           }
         ],
@@ -894,7 +906,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1072,6 +1085,20 @@
             "field": "status",
             "set": "value",
             "value": "In progress"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "bug_take",
+        "table": "bug",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -1279,7 +1306,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

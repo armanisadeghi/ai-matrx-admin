@@ -193,6 +193,17 @@
             }
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "funder_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_grant",
             "label": "Start an application",
             "parityType": "button",
@@ -653,6 +664,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "grant_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_report",
             "label": "Add a funder report",
             "parityType": "button",
@@ -1086,6 +1108,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "report_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1399,6 +1432,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "touch_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1701,6 +1745,20 @@
     "extras": [
       {
         "kind": "row_action",
+        "token": "funder_claim",
+        "table": "funder",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "grant_submitted",
         "table": "grant",
         "name": "Mark submitted",
@@ -1743,6 +1801,20 @@
       },
       {
         "kind": "row_action",
+        "token": "grant_claim",
+        "table": "grant",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "report_submitted",
         "table": "report",
         "name": "Mark submitted",
@@ -1757,6 +1829,20 @@
       },
       {
         "kind": "row_action",
+        "token": "report_claim",
+        "table": "report",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "touch_held",
         "table": "touch",
         "name": "Mark held",
@@ -1766,6 +1852,20 @@
             "field": "outcome",
             "set": "value",
             "value": "Held"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "touch_claim",
+        "table": "touch",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }

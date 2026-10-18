@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 2,
+  "version": 3,
   "title": "Real Estate Brokerage",
   "description": "Leads, listings, transactions and closing milestones for a small brokerage.",
   "forWho": "Real estate brokerages and teams",
@@ -210,6 +210,17 @@
               "do": "run_action",
               "action": "lead_lost"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_take"
+            }
           }
         ],
         "rows": [
@@ -368,7 +379,8 @@
               "Lost"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "closed_on"
             ]
           }
         ],
@@ -473,7 +485,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "listing",
@@ -749,7 +762,8 @@
               "Sold"
             ],
             "filled": [
-              "street"
+              "street",
+              "sold_on"
             ]
           }
         ],
@@ -863,7 +877,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "transaction",
@@ -1181,7 +1196,8 @@
               "Closed"
             ],
             "filled": [
-              "side"
+              "side",
+              "closed_on"
             ]
           },
           {
@@ -1516,7 +1532,8 @@
               "Done"
             ],
             "filled": [
-              "transaction"
+              "transaction",
+              "completed_on"
             ]
           }
         ],
@@ -1583,7 +1600,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1842,6 +1860,20 @@
             "field": "completed_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lead_take",
+        "table": "lead",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -2186,7 +2218,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

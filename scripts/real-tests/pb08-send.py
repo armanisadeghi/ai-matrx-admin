@@ -57,6 +57,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
+from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
@@ -338,6 +339,7 @@ def main() -> None:
     ap.add_argument("--read", metavar="CONVERSATION", help="write final.json for an existing conversation; send nothing")
     ap.add_argument("--lead-tools", choices=["all"], help="store the lead's start tools and print them; send nothing")
     ap.add_argument("--dry-run", action="store_true", help="no model call (see the header)")
+    add_accept_drift_arg(ap)
     args = ap.parse_args()
     fixtures = {"organization": ORG, "lead_agent": LEAD, **{f"tool_{k}": v for k, v in TOOL_IDS.items()}}
 
@@ -346,10 +348,11 @@ def main() -> None:
         set_lead_tools(Session(), list(TOOL_IDS))
         return
 
+    fx = None if args.read else require_fixtures("PB-08", args.accept_drift)  # --read sends nothing
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb08-"))
     out.mkdir(parents=True, exist_ok=True)
     record_run_identity("pb08-send --read" if args.read else ("pb08-send --dry-run" if args.dry_run else "pb08-send"),
-                        SERVER, fixtures, out)
+                        SERVER, fixtures, out, fixture_check=fx)
     s = Session()
 
     if args.read:

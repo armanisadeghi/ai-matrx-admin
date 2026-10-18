@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0508",
-  "version": 2,
+  "version": 3,
   "title": "Moving Company HQ",
   "description": "Quote moves, schedule crews and trucks, track supplies and collect final payments.",
   "forWho": "Local moving companies",
@@ -467,7 +467,17 @@
           "customer": "Either record can be created or change status before the other.",
           "tech": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "job_name",
@@ -716,6 +726,17 @@
             "button": {
               "do": "run_action",
               "action": "job_done"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_take"
             }
           },
           {
@@ -1215,7 +1236,8 @@
               "hours": 18
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "part",
@@ -1932,6 +1954,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "job_take",
+        "table": "job",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2209,7 +2245,7 @@
         "Depot Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

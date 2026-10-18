@@ -11,14 +11,15 @@ the output directory (default: a new temp dir), in the order sent:
                      active organization Safety Net Real Tests, the file move-4471.md attached as a media
                      document, one typed message that carries the published rates page's address. No tools.
   2. turn-2.json     POST /ai/conversations/<id> as admin, the continuation's `tools` field adding the
-                     agent-call, data (table) and web tools, one typed message.
+                     agent (formerly agent_call), data (table) and web tools, one typed message.
   3. link-*.json     a share link for the conversation through the share door (create_share_link), the
                      transcript read through that link with no session (resolve_share_token), and one
                      message sent to the conversation with no session, carrying the link's token.
   4. seat-nogrant-*  as test@test.com, before any grant: the conversation read by id (server and database
                      doors) and a search of the seat's visible conversations for the words `Mexico City`.
   5. seat-viewer-*   the conversation shared to test@test.com as viewer (share_resource_with_user), then as
-                     that seat: the same read and one continuation message.
+                     that seat: the same read and one continuation message. Every seat call carries the seat's own
+                     workspace (SEAT_ORG) as its organization, never the test organization it is not a member of.
   6. seat-editor-*   the same share raised to editor, then as that seat: one continuation message.
   7. legacy-*.json   admin's browser session cookie sent to GET /api/cx-chat/history and /api/cx-chat/shared.
 It writes nothing else: no note, table or page is touched.
@@ -47,6 +48,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
+from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 SITE = "https://www.aimatrx.com"  # the web app, for the two legacy routes
@@ -55,6 +57,10 @@ AGENT = "1f11faa5-7c56-4154-898d-d34b852cff3b"  # Compass Ledger Desk — Claude
 MOVE_FILE = "b9a3f1f8-a84a-4b83-9827-ce9dbbef7b4f"  # move-4471.md
 PAGE_URL = "https://www.aimatrx.com/p/e/note/18244cbf-dd26-455f-b37e-7f4c9550b3fa"  # published page "Compass road rates"
 SEAT_EMAIL = "test@test.com"
+# The seat's own sends and reads carry an organization the seat really belongs to (it is not a member of the test
+# organization): its own workspace, where it is owner. The sender checks the membership before it sends anything.
+SEAT_ORG = "8cb71c8b-5b49-4563-a5fe-d77ff600f8ee"
+PUBLIC_RPC = {"Content-Profile": "public", "Accept-Profile": "public"}  # the share doors live in schema public
 
 TURN_1 = f"Routing line for move 4471, please. The rates page is {PAGE_URL}."
 TURN_2 = "Same again, now with your tools."
@@ -62,8 +68,8 @@ LINK_SEND = "Link here."
 VIEWER_SEND = "Viewer here."
 EDITOR_SEND = "Editor here. Send the line once more."
 SEARCH_WORDS = "Mexico City"
-TOOLS = [  # the continuation's `tools` field: agent-call, data and web tools, by registry name
-    {"kind": "registered", "name": "agent_call"},
+TOOLS = [  # the continuation's `tools` field: agent, data and web tools, by registry name
+    {"kind": "registered", "name": "agent"},  # `agent_call` is an INACTIVE tool since the 2026-10-18 rename
     {"kind": "registered", "name": "table"},
     {"kind": "registered", "name": "web"},
 ]
@@ -122,8 +128,18 @@ def call(method: str, url: str, headers: dict, body: dict | None) -> tuple[int, 
         return e.code, dict(e.headers), e.read().decode("utf-8", "replace")
 
 
-def bearer(token: str, org: bool = True) -> dict:
-    return {"Authorization": "Bearer " + token, **({"X-Organization-Id": ORG} if org else {})}
+def bearer(token: str, org: bool = True, org_id: str = ORG) -> dict:
+    return {"Authorization": "Bearer " + token, **({"X-Organization-Id": org_id} if org else {})}
+
+
+def seat_member_of(token: str, seat_id: str, org_id: str) -> tuple[bool, str]:
+    """Whether the seat holds a membership row in ``org_id``, read as the seat itself (raw status for the log)."""
+    status, _, raw = db_read(f"organization_member?user_id=eq.{seat_id}&organization_id=eq.{org_id}&select=role", token, "iam")
+    try:
+        rows = json.loads(raw) if status == 200 else []
+    except ValueError:
+        rows = []
+    return bool(rows), f"HTTP {status} {raw[:200]}"
 
 
 def db_rpc(fn: str, token: str | None, args: dict) -> tuple[int, dict, str]:
@@ -162,15 +178,23 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--out", help="directory for the response files (default: a new temp dir)")
     ap.add_argument("--dry-run", action="store_true", help="no model call and no write (see the header)")
+    add_accept_drift_arg(ap)
     args = ap.parse_args()
+    fx = require_fixtures("PB-06", args.accept_drift)
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb06-"))
     out.mkdir(parents=True, exist_ok=True)
     record_run_identity("pb06-send --dry-run" if args.dry_run else "pb06-send", SERVER,
-                        {"organization": ORG, "agent": AGENT, "file": MOVE_FILE, "page": PAGE_URL, "seat": SEAT_EMAIL}, out)
+                        {"organization": ORG, "agent": AGENT, "file": MOVE_FILE, "page": PAGE_URL, "seat": SEAT_EMAIL,
+                         "seat_organization": SEAT_ORG, "tools_added": [t["name"] for t in TOOLS]}, out, fixture_check=fx)
     admin = sign_in("admin@admin.com")
     seat = sign_in(SEAT_EMAIL)
     admin_token, seat_token = admin["access_token"], seat["access_token"]
     seat_id = seat["user"]["id"]
+    member, member_raw = seat_member_of(seat_token, seat_id, SEAT_ORG)
+    print(f"seat {SEAT_EMAIL} membership in its send organization {SEAT_ORG}: {'yes' if member else 'NO'} ({member_raw})")
+    if not member:
+        print("refused: the seat's sends must carry an organization the seat belongs to; nothing was sent")
+        sys.exit(4)
     rec = Recorder(out, args.dry_run)
     cid = str(uuid.uuid4())
 
@@ -196,7 +220,7 @@ def main() -> None:
 
     # 3. Share link: made by the owner, read with no session, one send with no session.
     link = rec.step("link-create", "POST", f"{DB}/rest/v1/rpc/create_share_link",
-                    {"apikey": PUB, "Authorization": "Bearer " + admin_token},
+                    {"apikey": PUB, "Authorization": "Bearer " + admin_token, **PUBLIC_RPC},
                     {"p_resource_type": "conversation", "p_resource_id": cid, "p_permission_level": "viewer"})
     token = ""
     if link:
@@ -204,13 +228,13 @@ def main() -> None:
             token = json.loads(link["raw_response"]).get("token") or ""
         except ValueError:
             token = ""
-    rec.step("link-read", "POST", f"{DB}/rest/v1/rpc/resolve_share_token", {"apikey": PUB}, {"p_token": token or "<token>"},
+    rec.step("link-read", "POST", f"{DB}/rest/v1/rpc/resolve_share_token", {"apikey": PUB, **PUBLIC_RPC}, {"p_token": token or "<token>"},
              "no session: only the project's public key")
     rec.step("link-send", "POST", cont, {"X-Share-Token": token or "<token>"},
              {"user_input": LINK_SEND, "organization_id": ORG}, "no session: the link's token is the only credential")
 
     # 4. The second seat before any grant.
-    seat_headers = bearer(seat_token)
+    seat_headers = bearer(seat_token, org_id=SEAT_ORG)
     rec.step("seat-nogrant-read-server", "GET", f"{SERVER}/cx/conversations/{cid}", seat_headers, None)
     rec.step("seat-nogrant-read-database", "GET", f"{DB}/rest/v1/conversation_summary?id=eq.{cid}&select=id,title,user_id",
              {"apikey": PUB, "Authorization": "Bearer " + seat_token, "Accept-Profile": "chat"}, None)
@@ -221,16 +245,16 @@ def main() -> None:
 
     # 5. Viewer: shared by the owner, then the seat reads and tries to write.
     rec.step("share-viewer", "POST", f"{DB}/rest/v1/rpc/share_resource_with_user",
-             {"apikey": PUB, "Authorization": "Bearer " + admin_token},
+             {"apikey": PUB, "Authorization": "Bearer " + admin_token, **PUBLIC_RPC},
              {"p_resource_type": "conversation", "p_resource_id": cid, "p_target_user_id": seat_id, "p_permission_level": "viewer"})
     rec.step("seat-viewer-read", "GET", f"{SERVER}/cx/conversations/{cid}", seat_headers, None)
-    rec.step("seat-viewer-send", "POST", cont, seat_headers, {"user_input": VIEWER_SEND, "organization_id": ORG})
+    rec.step("seat-viewer-send", "POST", cont, seat_headers, {"user_input": VIEWER_SEND, "organization_id": SEAT_ORG})
 
     # 6. Editor: the same share raised, then the seat writes.
     rec.step("share-editor", "POST", f"{DB}/rest/v1/rpc/share_resource_with_user",
-             {"apikey": PUB, "Authorization": "Bearer " + admin_token},
+             {"apikey": PUB, "Authorization": "Bearer " + admin_token, **PUBLIC_RPC},
              {"p_resource_type": "conversation", "p_resource_id": cid, "p_target_user_id": seat_id, "p_permission_level": "editor"})
-    rec.step("seat-editor-send", "POST", cont, seat_headers, {"user_input": EDITOR_SEND, "organization_id": ORG})
+    rec.step("seat-editor-send", "POST", cont, seat_headers, {"user_input": EDITOR_SEND, "organization_id": SEAT_ORG})
 
     # 7. The two legacy routes, with admin's browser session.
     cookie = {"Cookie": session_cookie(admin)}

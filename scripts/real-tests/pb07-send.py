@@ -50,6 +50,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
+from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests
@@ -191,15 +192,18 @@ def record(out: Path, manifest: dict, door: str, kind: str, token: str) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--only", choices=DOORS, help="send one door")
-    ap.add_argument("--dry-only", action="store_true", help="dry runs only (no model call, nothing stored)")
+    ap.add_argument("--dry-only", "--dry-run", dest="dry_only", action="store_true",
+                    help="dry runs only (no model call, nothing stored)")
     ap.add_argument("--out", help="directory for the files (default: a new temp dir)")
+    add_accept_drift_arg(ap)
     args = ap.parse_args()
+    fx = require_fixtures("PB-07", args.accept_drift)
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb07-"))
     out.mkdir(parents=True, exist_ok=True)
     manifest = json.loads((out / "manifest.json").read_text()) if (out / "manifest.json").exists() else {}
     record_run_identity("pb07-send", SERVER, {"organization": ORG, "canary": CANARY, "canary_together": CANARY_T,
                                               "caller": CALLER, "workflow": WORKFLOW, "mandate": MANDATE, "scope": SCOPE,
-                                              "model": HAIKU}, out)
+                                              "model": HAIKU}, out, fixture_check=fx)
     token = admin_token()
     for door in [args.only] if args.only else DOORS:
         if not args.dry_only:

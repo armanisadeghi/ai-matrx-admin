@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 2,
+  "version": 3,
   "title": "Short-Term Rental Host",
   "description": "Bookings, turnovers, issues and revenue for a host running several rentals.",
   "forWho": "Short-term rental hosts and co-hosts",
@@ -629,6 +629,17 @@
               "do": "run_action",
               "action": "turnover_cleaned"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "turnover_take"
+            }
           }
         ],
         "rows": [
@@ -770,7 +781,8 @@
               "Cleaned"
             ],
             "filled": [
-              "cleaner"
+              "cleaner",
+              "cleaned_on"
             ]
           }
         ],
@@ -876,7 +888,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "issue",
@@ -1127,7 +1140,8 @@
               "Fixed"
             ],
             "filled": [
-              "priority"
+              "priority",
+              "fixed_on"
             ]
           },
           {
@@ -1228,7 +1242,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "property",
@@ -1485,7 +1500,8 @@
               "Live"
             ],
             "filled": [
-              "nightly"
+              "nightly",
+              "live_on"
             ]
           }
         ],
@@ -1848,6 +1864,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "turnover_take",
+        "table": "turnover",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2158,7 +2188,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

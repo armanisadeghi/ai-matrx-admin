@@ -258,6 +258,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "student_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_session",
             "label": "Book a session",
             "parityType": "button",
@@ -690,6 +701,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "sessions_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1066,6 +1088,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "package_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1294,6 +1327,17 @@
             "key": "summary",
             "label": "What changed",
             "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "note_claim"
+            },
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1589,6 +1633,20 @@
       },
       {
         "kind": "row_action",
+        "token": "student_claim",
+        "table": "student",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "sessions_done",
         "table": "sessions",
         "name": "Mark done",
@@ -1617,6 +1675,20 @@
       },
       {
         "kind": "row_action",
+        "token": "sessions_claim",
+        "table": "sessions",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "package_used",
         "table": "package",
         "name": "Mark used up",
@@ -1626,6 +1698,34 @@
             "field": "status",
             "set": "value",
             "value": "Used up"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "package_claim",
+        "table": "package",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "note_claim",
+        "table": "note",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }

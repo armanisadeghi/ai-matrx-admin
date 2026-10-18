@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 2,
+  "version": 3,
   "title": "General Contractor Projects",
   "description": "Jobs, subcontractors, phases, change orders and punch lists for a builder.",
   "forWho": "General contractors and remodelers",
@@ -410,7 +410,8 @@
               "Complete"
             ],
             "filled": [
-              "super"
+              "super",
+              "completed_on"
             ]
           }
         ],
@@ -660,6 +661,17 @@
               "do": "run_action",
               "action": "phase_done"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "phase_take"
+            }
           }
         ],
         "rows": [
@@ -806,7 +818,8 @@
               "Done"
             ],
             "filled": [
-              "sub"
+              "sub",
+              "completed_on"
             ]
           }
         ],
@@ -1131,7 +1144,8 @@
               "Approved"
             ],
             "filled": [
-              "amount"
+              "amount",
+              "approved_on"
             ]
           },
           {
@@ -1457,7 +1471,8 @@
               "Fixed"
             ],
             "filled": [
-              "location"
+              "location",
+              "fixed_on"
             ]
           },
           {
@@ -1466,7 +1481,8 @@
               "Verified"
             ],
             "filled": [
-              "location"
+              "location",
+              "verified_on"
             ]
           }
         ],
@@ -1536,7 +1552,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "subcontractor",
@@ -2121,6 +2138,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "phase_take",
+        "table": "phase",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2555,7 +2586,7 @@
         "Quarry Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

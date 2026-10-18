@@ -25,6 +25,8 @@ Usage:
   pb03-send.py                 send A, O, G in order
   pb03-send.py --only O        send one copy only
   pb03-send.py --out DIR       write the response files to DIR
+  pb03-send.py --dry-run       no model call: each copy goes with dry_run true; no snapshot is read
+  --accept-drift REASON        send although the fixture check found differences (printed and recorded)
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
 (matrx-frontend/.env.local, never printed), the same way signin.py and pb02-send.py do.
@@ -45,6 +47,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
+from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
@@ -177,17 +180,24 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--only", choices=sorted(COPIES), help="send one copy (A, O or G)")
     ap.add_argument("--out", help="directory for the response files (default: a new temp dir)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="no model call: each copy goes with dry_run true (nothing stored, so no snapshot is read)")
+    add_accept_drift_arg(ap)
     args = ap.parse_args()
+    fx = require_fixtures("PB-03", args.accept_drift)
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb03-"))
     out.mkdir(parents=True, exist_ok=True)
-    record_run_identity("pb03-send", SERVER, {"organization": ORG, "scope": PORT_OF_OAKLAND_LANE,
-                                              **{f"copy_{k}": v for k, v in COPIES.items()}}, out)
+    record_run_identity("pb03-send --dry-run" if args.dry_run else "pb03-send", SERVER,
+                        {"organization": ORG, "scope": PORT_OF_OAKLAND_LANE, **{f"copy_{k}": v for k, v in COPIES.items()}},
+                        out, fixture_check=fx)
     token = admin_token()
     for copy in [args.only] if args.only else ["A", "O", "G"]:
         cid = str(uuid.uuid4())
         path = f"/ai/agents/{COPIES[copy]}"
         body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": ORG,
                 "scope_ids": [PORT_OF_OAKLAND_LANE], "variables": VARIABLES}
+        if args.dry_run:
+            body["dry_run"] = True
         sent_at = datetime.now(timezone.utc).isoformat()
         status, headers, raw = send(token, path, body)
         lower = {k.lower(): v for k, v in headers.items()}
@@ -205,6 +215,8 @@ def main() -> None:
         path_out = out / f"call-{copy}.json"
         path_out.write_text(json.dumps(record, indent=1, ensure_ascii=False))
         print(f"copy {copy}: HTTP {status}, conversation {record['conversation_id']}, wrote {path_out}")
+        if args.dry_run:
+            continue  # a dry run stores nothing: there is no snapshot to read
         snap_status, snaps = stored_snapshots(token, record["conversation_id"])
         snap_out = out / f"snapshot-{copy}.json"
         snap_out.write_text(json.dumps({"copy": copy, "conversation_id": record["conversation_id"], "read_status": snap_status,

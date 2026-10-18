@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0405",
-  "version": 2,
+  "version": 3,
   "title": "Mental Health Practice",
   "description": "Inquiries, clients, sessions with note status, and statements for a counseling practice.",
   "forWho": "Therapy and counseling practices",
@@ -183,6 +183,17 @@
             "button": {
               "do": "run_action",
               "action": "inquiry_booked"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_take"
             }
           }
         ],
@@ -774,7 +785,8 @@
               "Completed"
             ],
             "filled": [
-              "fee"
+              "fee",
+              "completed_on"
             ]
           },
           {
@@ -890,7 +902,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "client",
@@ -1478,7 +1491,8 @@
               "Paid"
             ],
             "filled": [
-              "amount"
+              "amount",
+              "paid_on"
             ]
           },
           {
@@ -1487,7 +1501,8 @@
               "Sent"
             ],
             "filled": [
-              "amount"
+              "amount",
+              "sent_on"
             ]
           }
         ],
@@ -1765,6 +1780,20 @@
             "field": "sent_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inquiry_take",
+        "table": "inquiry",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -2085,7 +2114,7 @@
         "Fremont Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

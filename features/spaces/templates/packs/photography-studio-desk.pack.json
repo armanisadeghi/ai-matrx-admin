@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0455",
-  "version": 3,
+  "version": 4,
   "title": "Photography Studio Desk",
   "description": "Clients, packages, shoots and the editing-to-delivery checklist for a photo studio.",
   "forWho": "Portrait, wedding and brand photographers",
@@ -899,7 +899,8 @@
               "Delivered"
             ],
             "filled": [
-              "images_delivered"
+              "images_delivered",
+              "delivered_on"
             ]
           }
         ],
@@ -1319,13 +1320,34 @@
               "do": "run_action",
               "action": "task_tick_done"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
           }
         ],
         "independentOf": {
           "shoot": "Either record can be created or change status before the other.",
           "owner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New checklist item",
@@ -1501,7 +1523,8 @@
               "owner": "tm-4"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1685,6 +1708,20 @@
             "field": "completed_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -1986,7 +2023,7 @@
         "Weaver Close"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

@@ -254,6 +254,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "donor_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_gift",
             "label": "Record a gift",
             "parityType": "button",
@@ -758,6 +769,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "campaign_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_gift",
             "label": "Record a gift",
             "parityType": "button",
@@ -1118,6 +1140,17 @@
             "button": {
               "do": "run_action",
               "action": "gift_thanked"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "gift_claim"
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -1522,6 +1555,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "task_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1890,6 +1934,20 @@
       },
       {
         "kind": "row_action",
+        "token": "donor_claim",
+        "table": "donor",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "campaign_live",
         "table": "campaign",
         "name": "Go live",
@@ -1918,6 +1976,20 @@
       },
       {
         "kind": "row_action",
+        "token": "campaign_claim",
+        "table": "campaign",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "gift_received",
         "table": "gift",
         "name": "Mark received",
@@ -1927,6 +1999,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1946,6 +2023,20 @@
       },
       {
         "kind": "row_action",
+        "token": "gift_claim",
+        "table": "gift",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "task_done",
         "table": "task",
         "name": "Mark done",
@@ -1955,6 +2046,20 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_claim",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0459",
-  "version": 3,
+  "version": 4,
   "title": "Insurance Agency Desk",
   "description": "Insureds, policies, renewals, claims and follow-ups for an independent insurance agency.",
   "forWho": "Independent insurance agencies and brokers",
@@ -1283,13 +1283,34 @@
               "do": "run_action",
               "action": "task_tick_done"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
           }
         ],
         "independentOf": {
           "policy": "Either record can be created or change status before the other.",
           "owner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New follow-up",
@@ -1431,7 +1452,8 @@
               "completed_on": "@today-3d"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1626,6 +1648,20 @@
             "field": "completed_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -1952,7 +1988,7 @@
         "Chandler Plaza"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

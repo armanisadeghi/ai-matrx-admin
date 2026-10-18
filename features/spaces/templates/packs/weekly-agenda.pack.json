@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 5,
+  "version": 6,
   "title": "Weekly Agenda",
   "description": "Solo consultants and small teams: tasks and meetings by day, with a Friday review.",
   "forWho": "Solo consultants and small teams",
@@ -207,6 +207,17 @@
             }
           },
           {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
+          },
+          {
             "key": "assigned_to",
             "label": "Assigned to",
             "parityType": "member",
@@ -403,7 +414,19 @@
         ],
         "independentOf": {
           "owner": "Anyone can take a task."
-        }
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "meeting",
@@ -911,6 +934,20 @@
             "value": "Doing"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -1177,7 +1214,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

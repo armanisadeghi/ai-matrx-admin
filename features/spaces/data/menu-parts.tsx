@@ -217,10 +217,26 @@ export function ViewerSortButton({
   );
 }
 
-/** An open menu, popover or dialog owns Esc first (Radix closes it); the peek waits for the next Esc. */
+/**
+ * An open menu, popover or dialog owns Esc first (Radix closes it); the peek waits for the next Esc. Only layers
+ * a person can see count: Radix and the editor leave closed or hidden wrappers mounted, and one of those used to
+ * hold Esc away from the peek for good.
+ */
 export function layerOpen(): boolean {
-  return Boolean(document.querySelector('[data-radix-popper-content-wrapper], [role="dialog"][data-state="open"], [role="menu"], [role="listbox"]'));
+  const layers = document.querySelectorAll<HTMLElement>('[data-radix-popper-content-wrapper], [role="dialog"], [role="menu"], [role="listbox"]');
+  for (const el of Array.from(layers)) {
+    if (el.closest('[hidden], [aria-hidden="true"], [data-state="closed"], [inert]')) continue;
+    if (el.getAttribute("role") === "dialog" && el.getAttribute("data-state") !== "open") continue;
+    if (el.style.display === "none" || el.style.visibility === "hidden") continue;
+    const check = (el as HTMLElement & { checkVisibility?: () => boolean }).checkVisibility;
+    if (typeof check === "function" && !check.call(el)) continue;
+    return true;
+  }
+  return false;
 }
+
+/** The open peeks, newest last: Esc closes the newest one only, never two layers in one press. */
+const openPeeks: symbol[] = [];
 
 /**
  * Notion's side peek: a panel on the right with a close button; Esc closes it. The database host stops
@@ -268,14 +284,20 @@ export function SidePeek({ onClose, focusFirstField = false, children }: { onClo
     close.current = onClose;
   });
   useEffect(() => {
+    const me = Symbol("side-peek");
+    openPeeks.push(me);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape" || e.defaultPrevented || layerOpen()) return;
+      if (e.key !== "Escape" || e.defaultPrevented || openPeeks[openPeeks.length - 1] !== me || layerOpen()) return;
       e.preventDefault();
       e.stopPropagation();
       close.current();
     };
     window.addEventListener("keydown", onKey, true);
-    return () => window.removeEventListener("keydown", onKey, true);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      const at = openPeeks.indexOf(me);
+      if (at >= 0) openPeeks.splice(at, 1);
+    };
   }, []);
   return (
     <aside ref={aside} tabIndex={-1} className="spaces-peek-side" aria-label="Side peek">

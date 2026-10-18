@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 6,
+  "version": 7,
   "title": "Scrum Sprint Board",
   "description": "Scrum teams: epics and stories with points, sprint ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -654,6 +654,17 @@
             }
           },
           {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "story_take"
+            }
+          },
+          {
             "key": "assigned_to",
             "label": "Assigned to",
             "parityType": "member",
@@ -1085,6 +1096,17 @@
               ]
             }
           }
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
         ]
       },
       {
@@ -1397,6 +1419,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "story_take",
+        "table": "story",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -1591,7 +1627,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

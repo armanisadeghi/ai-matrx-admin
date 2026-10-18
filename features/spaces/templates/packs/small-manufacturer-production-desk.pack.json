@@ -1,0 +1,4322 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0569",
+  "version": 1,
+  "title": "Small Manufacturer Production Desk",
+  "description": "Customer orders, products, parts, production runs and quality checks for a small factory.",
+  "forWho": "Small manufacturers and workshops making products to order",
+  "icon": {
+    "emoji": "🏭"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "manufacturing",
+  "tags": [
+    "manufacturing",
+    "orders",
+    "bill of materials",
+    "production",
+    "quality"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-small-manufacturer-production-desk",
+    "catalogueId": "SP0569",
+    "useCase": "Kasimir Adeyemi-Strand runs operations at a small furniture workshop and uses this to see which orders ship this week, which parts are running low and how much scrap each production run made.",
+    "industry": "manufacturing_logistics",
+    "vertical": "Small manufacturer",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Redwater Woodworks",
+      "describes": "A 22-person workshop making hardwood tables, shelving and chairs to order for retailers and design studios.",
+      "address": {
+        "line1": "440 Foundry Street",
+        "city": "Cleveland",
+        "region": "OH",
+        "postalCode": "44113",
+        "country": "US"
+      },
+      "phone": "(216) 555-0134",
+      "website": "redwaterwoodworks.net",
+      "email": "orders@redwaterwoodworks.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-small-manufacturer-production-desk",
+    "tables": [
+      {
+        "token": "orders",
+        "name": "Customer orders",
+        "labelSingular": "Customer order",
+        "labelPlural": "Customer orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "order_name",
+        "describes": "Orders from retailers and designers, from quote to shipped.",
+        "subject": "thing",
+        "independentOf": {
+          "product": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Shipped"
+            ],
+            "filled": [
+              "shipped_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "ordered_on",
+            "due_on"
+          ],
+          [
+            "ordered_on",
+            "shipped_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Customer order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "relationTarget": "product",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "quantity",
+            "label": "Quantity",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Quoted",
+              "Confirmed",
+              "In production",
+              "Shipped",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Quoted": "slate",
+              "Confirmed": "blue",
+              "In production": "amber",
+              "Shipped": "violet",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Quoted",
+            "statusGroups": {
+              "Quoted": "todo",
+              "Confirmed": "in_progress",
+              "In production": "in_progress",
+              "Shipped": "in_progress",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ordered_on",
+            "label": "Ordered on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "total",
+            "label": "Order total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Order owner",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "runs_count",
+            "label": "Production runs",
+            "parityType": "rollup",
+            "via": "runs",
+            "pick": "run_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "good_units",
+            "label": "Good units made",
+            "parityType": "rollup",
+            "via": "runs",
+            "pick": "good_qty",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "remaining",
+            "label": "Units still to make",
+            "parityType": "formula",
+            "formula": "MAX(0, {Quantity} - {Good units made})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_confirm",
+            "label": "Confirm",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "orders_confirm"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_start",
+            "label": "Start production",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "orders_start"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_shipped",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "orders_shipped"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "orders_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_run",
+            "label": "Plan a production run",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "runs",
+              "template": "New run",
+              "prefill": {
+                "order": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New order",
+            "values": {
+              "order_name": "New order",
+              "status": "Quoted"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Customer needs"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Finish, delivery window and any special packing."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Shipping checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Final inspection passed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Packed with corner guards"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Paperwork in the box"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Carrier booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Customer notified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "orders-1",
+            "values": {
+              "order_name": "Birchfield Home, spring dining tables",
+              "product": "product-1",
+              "customer": "Birchfield Home",
+              "quantity": 6,
+              "status": "In production",
+              "ordered_on": "@today-25d",
+              "due_on": "@today+6d",
+              "total": 8700,
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "orders-2",
+            "values": {
+              "order_name": "Oak and Elm Design, bookshelves",
+              "product": "product-2",
+              "customer": "Oak and Elm Design",
+              "quantity": 12,
+              "status": "In production",
+              "ordered_on": "@today-20d",
+              "due_on": "@today",
+              "total": 7440,
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "orders-3",
+            "values": {
+              "order_name": "Larkspur Cafe chairs",
+              "product": "product-3",
+              "customer": "Larkspur Cafe",
+              "quantity": 40,
+              "status": "Confirmed",
+              "ordered_on": "@today-10d",
+              "due_on": "@today+20d",
+              "total": 11600,
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "orders-4",
+            "values": {
+              "order_name": "Hollis Hardware benches",
+              "product": "product-4",
+              "customer": "Hollis Hardware",
+              "quantity": 10,
+              "status": "Confirmed",
+              "ordered_on": "@today-8d",
+              "due_on": "@today+3d",
+              "total": 4100,
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "orders-5",
+            "values": {
+              "order_name": "Greenhouse Studio wall shelves",
+              "product": "product-5",
+              "customer": "Greenhouse Studio",
+              "quantity": 30,
+              "status": "Quoted",
+              "ordered_on": "@today-3d",
+              "due_on": "@today-1d",
+              "total": 5400,
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "orders-6",
+            "values": {
+              "order_name": "Birchfield Home, fall dining tables",
+              "product": "product-1",
+              "customer": "Birchfield Home",
+              "quantity": 8,
+              "status": "Quoted",
+              "ordered_on": "@today-1d",
+              "due_on": "@today+60d",
+              "total": 11600,
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "orders-7",
+            "values": {
+              "order_name": "Oak and Elm Design, benches",
+              "product": "product-4",
+              "customer": "Oak and Elm Design",
+              "quantity": 8,
+              "status": "Shipped",
+              "ordered_on": "@today-50d",
+              "due_on": "@today-20d",
+              "total": 3280,
+              "owner": "tm-1",
+              "shipped_on": "@today-22d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "orders-8",
+            "values": {
+              "order_name": "Larkspur Cafe, trial chairs",
+              "product": "product-3",
+              "customer": "Larkspur Cafe",
+              "quantity": 4,
+              "status": "Shipped",
+              "ordered_on": "@today-70d",
+              "due_on": "@today-45d",
+              "total": 1160,
+              "owner": "tm-1",
+              "shipped_on": "@today-47d"
+            }
+          },
+          {
+            "key": "orders-9",
+            "values": {
+              "order_name": "Cancelled round tables",
+              "product": "product-7",
+              "customer": "Hollis Hardware",
+              "quantity": 5,
+              "status": "Cancelled",
+              "ordered_on": "@today-40d",
+              "due_on": "@today-10d",
+              "total": 2600,
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "runs",
+        "name": "Production runs",
+        "labelSingular": "Production run",
+        "labelPlural": "Production runs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "factory",
+        "titleField": "run_name",
+        "describes": "Each batch built for an order, with units made, units scrapped and the quality checks.",
+        "subject": "thing",
+        "independentOf": {
+          "order": "Either record can be created or change status before the other.",
+          "supervisor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "finished_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "run_on",
+            "finished_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "run_name",
+            "label": "Production run",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "order",
+            "label": "Customer order",
+            "parityType": "relation",
+            "relationTarget": "orders",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Running",
+              "Done",
+              "Stopped"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Running": "blue",
+              "Done": "amber",
+              "Stopped": "violet"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Running": "in_progress",
+              "Done": "in_progress",
+              "Stopped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "run_on",
+            "label": "Run starts",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "finished_on",
+            "label": "Finished on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "planned_qty",
+            "label": "Units planned",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "good_qty",
+            "label": "Good units",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "scrap_qty",
+            "label": "Scrapped units",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "supervisor",
+            "label": "Supervisor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "scrap_pct",
+            "label": "Scrap (%)",
+            "parityType": "formula",
+            "formula": "IF({Good units} + {Scrapped units} > 0, ROUND({Scrapped units} / ({Good units} + {Scrapped units}) * 100, 1), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "checks_failed",
+            "label": "Checks failed",
+            "parityType": "rollup",
+            "via": "checks",
+            "pick": "check_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "result": "Fail"
+            }
+          },
+          {
+            "key": "checks_total",
+            "label": "Checks done",
+            "parityType": "rollup",
+            "via": "checks",
+            "pick": "check_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_start",
+            "label": "Start run",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "runs_start"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "runs_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "runs_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_check",
+            "label": "Add a quality check",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "checks",
+              "template": "New check",
+              "prefill": {
+                "run": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New run",
+            "values": {
+              "run_name": "New run",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Jigs, blades, material staged and who is on the line."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Delays, rework and what to change next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "runs-1",
+            "values": {
+              "run_name": "Dining tables, batch 1",
+              "order": "orders-1",
+              "status": "Running",
+              "run_on": "@today-5d",
+              "planned_qty": 6,
+              "good_qty": 0,
+              "scrap_qty": 0,
+              "supervisor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "runs-2",
+            "values": {
+              "run_name": "Bookshelves, batch 1",
+              "order": "orders-2",
+              "status": "Running",
+              "run_on": "@today-3d",
+              "planned_qty": 12,
+              "good_qty": 8,
+              "scrap_qty": 1,
+              "supervisor": "tm-2"
+            }
+          },
+          {
+            "key": "runs-3",
+            "values": {
+              "run_name": "Chairs, batch 1",
+              "order": "orders-3",
+              "status": "Planned",
+              "run_on": "@today+4d",
+              "planned_qty": 20,
+              "good_qty": 0,
+              "scrap_qty": 0,
+              "supervisor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "runs-4",
+            "values": {
+              "run_name": "Benches, batch 1",
+              "order": "orders-4",
+              "status": "Planned",
+              "run_on": "@today",
+              "planned_qty": 10,
+              "good_qty": 0,
+              "scrap_qty": 0,
+              "supervisor": "tm-2"
+            }
+          },
+          {
+            "key": "runs-5",
+            "values": {
+              "run_name": "Chairs, batch 2",
+              "order": "orders-3",
+              "status": "Planned",
+              "run_on": "@today+9d",
+              "planned_qty": 20,
+              "good_qty": 0,
+              "scrap_qty": 0,
+              "supervisor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "runs-6",
+            "values": {
+              "run_name": "Benches for Oak and Elm",
+              "order": "orders-7",
+              "status": "Done",
+              "run_on": "@today-35d",
+              "planned_qty": 8,
+              "good_qty": 8,
+              "scrap_qty": 0,
+              "supervisor": "tm-2",
+              "finished_on": "@today-30d"
+            }
+          },
+          {
+            "key": "runs-7",
+            "values": {
+              "run_name": "Trial chairs",
+              "order": "orders-8",
+              "status": "Done",
+              "run_on": "@today-60d",
+              "planned_qty": 4,
+              "good_qty": 4,
+              "scrap_qty": 1,
+              "supervisor": "tm-2",
+              "finished_on": "@today-55d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "runs-8",
+            "values": {
+              "run_name": "Wall shelves trial",
+              "order": "orders-5",
+              "status": "Stopped",
+              "run_on": "@today-10d",
+              "planned_qty": 3,
+              "good_qty": 0,
+              "scrap_qty": 3,
+              "supervisor": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "product",
+        "name": "Products",
+        "labelSingular": "Product",
+        "labelPlural": "Products",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "armchair",
+        "titleField": "product_name",
+        "describes": "Everything the shop makes, with price, build time and what it is made from.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Product",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "In development",
+              "Active",
+              "Discontinued"
+            ],
+            "choiceColors": {
+              "In development": "slate",
+              "Active": "blue",
+              "Discontinued": "amber"
+            },
+            "required": true,
+            "default": "In development",
+            "statusGroups": {
+              "In development": "todo",
+              "Active": "in_progress",
+              "Discontinued": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "family",
+            "label": "Family",
+            "parityType": "select",
+            "choices": [
+              "Tables",
+              "Shelving",
+              "Chairs",
+              "Accessories"
+            ],
+            "choiceColors": {
+              "Tables": "slate",
+              "Shelving": "blue",
+              "Chairs": "amber",
+              "Accessories": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "price",
+            "label": "Wholesale price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "build_hours",
+            "label": "Build hours",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "parts_count",
+            "label": "Parts in the recipe",
+            "parityType": "rollup",
+            "via": "bom_lines",
+            "pick": "line_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "orders_open",
+            "label": "Open orders",
+            "parityType": "rollup",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Quoted",
+                "Confirmed",
+                "In production"
+              ]
+            }
+          },
+          {
+            "key": "units_open",
+            "label": "Units on open orders",
+            "parityType": "rollup",
+            "via": "orders",
+            "pick": "quantity",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Confirmed",
+                "In production"
+              ]
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "product_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_line",
+            "label": "Add a part to the recipe",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "bom_lines",
+              "template": "New recipe line",
+              "prefill": {
+                "product": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_order",
+            "label": "Add an order",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "orders",
+              "template": "New order",
+              "prefill": {
+                "product": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New product",
+            "values": {
+              "product_name": "New product",
+              "status": "In development"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Design"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Dimensions, materials and finish options."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Build notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Order of operations and jigs."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "product-1",
+            "values": {
+              "product_name": "Harvest dining table, 72 inch",
+              "status": "Active",
+              "family": "Tables",
+              "price": 1450,
+              "build_hours": 22,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "product-2",
+            "values": {
+              "product_name": "Ladder bookshelf",
+              "status": "Active",
+              "family": "Shelving",
+              "price": 620,
+              "build_hours": 9
+            }
+          },
+          {
+            "key": "product-3",
+            "values": {
+              "product_name": "Spindle side chair",
+              "status": "Active",
+              "family": "Chairs",
+              "price": 290,
+              "build_hours": 6,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "product-4",
+            "values": {
+              "product_name": "Low bench, oak",
+              "status": "Active",
+              "family": "Tables",
+              "price": 410,
+              "build_hours": 7
+            }
+          },
+          {
+            "key": "product-5",
+            "values": {
+              "product_name": "Wall shelf set, three",
+              "status": "Active",
+              "family": "Shelving",
+              "price": 180,
+              "build_hours": 3,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "product-6",
+            "values": {
+              "product_name": "Cabinet pull set, brass",
+              "status": "In development",
+              "family": "Accessories",
+              "price": 45,
+              "build_hours": 1
+            }
+          },
+          {
+            "key": "product-7",
+            "values": {
+              "product_name": "Round cafe table",
+              "status": "Discontinued",
+              "family": "Tables",
+              "price": 520,
+              "build_hours": 8,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "part",
+        "name": "Parts and materials",
+        "labelSingular": "Part",
+        "labelPlural": "Parts and materials",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "part_name",
+        "describes": "Every material and component the shop buys, with stock, reorder level and supplier.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "part_name",
+            "label": "Part",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Stocked",
+              "Low",
+              "Out",
+              "Discontinued"
+            ],
+            "choiceColors": {
+              "Stocked": "slate",
+              "Low": "blue",
+              "Out": "amber",
+              "Discontinued": "violet"
+            },
+            "required": true,
+            "default": "Stocked",
+            "statusGroups": {
+              "Stocked": "todo",
+              "Low": "in_progress",
+              "Out": "in_progress",
+              "Discontinued": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Hardwood",
+              "Hardware",
+              "Finish",
+              "Fabric",
+              "Packaging",
+              "Glue and fasteners"
+            ],
+            "choiceColors": {
+              "Hardwood": "slate",
+              "Hardware": "blue",
+              "Finish": "amber",
+              "Fabric": "violet",
+              "Packaging": "teal",
+              "Glue and fasteners": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reorder_point",
+            "label": "Reorder at",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reorder_by",
+            "label": "Reorder by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead_days",
+            "label": "Lead time (days)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "used_in",
+            "label": "Used in products",
+            "parityType": "rollup",
+            "via": "bom_lines",
+            "pick": "line_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "short",
+            "label": "Short by",
+            "parityType": "formula",
+            "formula": "MAX(0, {Reorder at} - {On hand})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_restocked",
+            "label": "Mark stocked",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "part_restocked"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "part_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New part",
+            "values": {
+              "part_name": "New part",
+              "status": "Stocked"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Specification"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Grade, size, finish and acceptable substitutes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Buying"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Supplier contact, minimum order and lead time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "part-1",
+            "values": {
+              "part_name": "White oak boards, 4/4",
+              "status": "Low",
+              "kind": "Hardwood",
+              "on_hand": 180,
+              "reorder_point": 300,
+              "reorder_by": "@today+1d",
+              "supplier": "Kettle Creek Lumber",
+              "unit_cost": 9,
+              "lead_days": 14,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "part-2",
+            "values": {
+              "part_name": "Walnut boards, 4/4",
+              "status": "Stocked",
+              "kind": "Hardwood",
+              "on_hand": 420,
+              "reorder_point": 200,
+              "reorder_by": "@today+30d",
+              "supplier": "Kettle Creek Lumber",
+              "unit_cost": 14,
+              "lead_days": 14
+            }
+          },
+          {
+            "key": "part-3",
+            "values": {
+              "part_name": "Brass cabinet pulls",
+              "status": "Out",
+              "kind": "Hardware",
+              "on_hand": 0,
+              "reorder_point": 200,
+              "reorder_by": "@today",
+              "supplier": "Anvil and Latch Supply",
+              "unit_cost": 3,
+              "lead_days": 21,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "part-4",
+            "values": {
+              "part_name": "Hardwax oil finish, 1 liter",
+              "status": "Low",
+              "kind": "Finish",
+              "on_hand": 12,
+              "reorder_point": 30,
+              "reorder_by": "@today+4d",
+              "supplier": "Marlow Coatings",
+              "unit_cost": 28,
+              "lead_days": 7
+            }
+          },
+          {
+            "key": "part-5",
+            "values": {
+              "part_name": "Wood glue, gallon",
+              "status": "Stocked",
+              "kind": "Glue and fasteners",
+              "on_hand": 25,
+              "reorder_point": 10,
+              "reorder_by": "@today+60d",
+              "supplier": "Marlow Coatings",
+              "unit_cost": 18,
+              "lead_days": 5,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "part-6",
+            "values": {
+              "part_name": "Chair seat webbing",
+              "status": "Stocked",
+              "kind": "Fabric",
+              "on_hand": 90,
+              "reorder_point": 40,
+              "reorder_by": "@today+45d",
+              "supplier": "Bolt and Weft Textiles",
+              "unit_cost": 6,
+              "lead_days": 18
+            }
+          },
+          {
+            "key": "part-7",
+            "values": {
+              "part_name": "Shipping corner guards",
+              "status": "Low",
+              "kind": "Packaging",
+              "on_hand": 300,
+              "reorder_point": 800,
+              "reorder_by": "@today-2d",
+              "supplier": "Parcel Pro Supply",
+              "unit_cost": 0.4,
+              "lead_days": 5,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "part-8",
+            "values": {
+              "part_name": "Dowels, 8 mm",
+              "status": "Stocked",
+              "kind": "Glue and fasteners",
+              "on_hand": 2400,
+              "reorder_point": 1000,
+              "reorder_by": "@today+90d",
+              "supplier": "Anvil and Latch Supply",
+              "unit_cost": 0.1,
+              "lead_days": 10
+            }
+          },
+          {
+            "key": "part-9",
+            "values": {
+              "part_name": "Shelf pins, steel",
+              "status": "Stocked",
+              "kind": "Hardware",
+              "on_hand": 1800,
+              "reorder_point": 800,
+              "reorder_by": "@today+80d",
+              "supplier": "Anvil and Latch Supply",
+              "unit_cost": 0.08,
+              "lead_days": 10,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "bom_lines",
+        "name": "Recipe lines",
+        "labelSingular": "Recipe line",
+        "labelPlural": "Recipe lines",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-tree",
+        "titleField": "line_name",
+        "describes": "The bill of materials: which part goes into which product and how many.",
+        "subject": "thing",
+        "independentOf": {
+          "product": "Either record can be created or change status before the other.",
+          "part": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "line_name",
+            "label": "Recipe line",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "relationTarget": "product",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "part",
+            "label": "Part",
+            "parityType": "relation",
+            "relationTarget": "part",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "qty",
+            "label": "Quantity per unit",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "select",
+            "choices": [
+              "Board feet",
+              "Each",
+              "Liters",
+              "Meters"
+            ],
+            "choiceColors": {
+              "Board feet": "slate",
+              "Each": "blue",
+              "Liters": "amber",
+              "Meters": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New recipe line",
+            "values": {
+              "line_name": "New recipe line"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Cut sizes, grain direction and any substitutes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "bom_lines-1",
+            "values": {
+              "line_name": "Harvest table, white oak",
+              "product": "product-1",
+              "part": "part-1",
+              "qty": 60,
+              "unit": "Board feet"
+            }
+          },
+          {
+            "key": "bom_lines-2",
+            "values": {
+              "line_name": "Harvest table, hardwax oil",
+              "product": "product-1",
+              "part": "part-4",
+              "qty": 0.5,
+              "unit": "Liters"
+            }
+          },
+          {
+            "key": "bom_lines-3",
+            "values": {
+              "line_name": "Harvest table, glue",
+              "product": "product-1",
+              "part": "part-5",
+              "qty": 0.1,
+              "unit": "Liters"
+            }
+          },
+          {
+            "key": "bom_lines-4",
+            "values": {
+              "line_name": "Bookshelf, white oak",
+              "product": "product-2",
+              "part": "part-1",
+              "qty": 28,
+              "unit": "Board feet"
+            }
+          },
+          {
+            "key": "bom_lines-5",
+            "values": {
+              "line_name": "Bookshelf, shelf pins",
+              "product": "product-2",
+              "part": "part-9",
+              "qty": 16,
+              "unit": "Each"
+            }
+          },
+          {
+            "key": "bom_lines-6",
+            "values": {
+              "line_name": "Side chair, walnut",
+              "product": "product-3",
+              "part": "part-2",
+              "qty": 14,
+              "unit": "Board feet"
+            }
+          },
+          {
+            "key": "bom_lines-7",
+            "values": {
+              "line_name": "Side chair, webbing",
+              "product": "product-3",
+              "part": "part-6",
+              "qty": 3,
+              "unit": "Meters"
+            }
+          },
+          {
+            "key": "bom_lines-8",
+            "values": {
+              "line_name": "Side chair, dowels",
+              "product": "product-3",
+              "part": "part-8",
+              "qty": 24,
+              "unit": "Each"
+            }
+          },
+          {
+            "key": "bom_lines-9",
+            "values": {
+              "line_name": "Bench, white oak",
+              "product": "product-4",
+              "part": "part-1",
+              "qty": 22,
+              "unit": "Board feet"
+            }
+          },
+          {
+            "key": "bom_lines-10",
+            "values": {
+              "line_name": "Cabinet pull set, brass pulls",
+              "product": "product-6",
+              "part": "part-3",
+              "qty": 6,
+              "unit": "Each"
+            }
+          }
+        ]
+      },
+      {
+        "token": "checks",
+        "name": "Quality checks",
+        "labelSingular": "Quality check",
+        "labelPlural": "Quality checks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "check_name",
+        "describes": "Inspections done on a run, with the result and what was found.",
+        "subject": "thing",
+        "independentOf": {
+          "run": "Either record can be created or change status before the other.",
+          "inspector": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "check_name",
+            "label": "Quality check",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "run",
+            "label": "Production run",
+            "parityType": "relation",
+            "relationTarget": "runs",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "First article",
+              "In process",
+              "Final inspection",
+              "Finish check",
+              "Packing check"
+            ],
+            "choiceColors": {
+              "First article": "slate",
+              "In process": "blue",
+              "Final inspection": "amber",
+              "Finish check": "violet",
+              "Packing check": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "result",
+            "label": "Result",
+            "parityType": "select",
+            "choices": [
+              "Pass",
+              "Rework",
+              "Fail"
+            ],
+            "choiceColors": {
+              "Pass": "slate",
+              "Rework": "blue",
+              "Fail": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "checked_on",
+            "label": "Checked on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "inspector",
+            "label": "Inspector",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "finding",
+            "label": "What was found",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "checks_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New check",
+            "values": {
+              "check_name": "New check"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What to look at"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Dimensions, joints, finish and function."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Defects and the action taken."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "checks-1",
+            "values": {
+              "check_name": "Dining table first article",
+              "run": "runs-1",
+              "kind": "First article",
+              "result": "Pass",
+              "checked_on": "@today-5d",
+              "inspector": "tm-3",
+              "finding": "Dimensions within tolerance; top flat.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "checks-2",
+            "values": {
+              "check_name": "Dining table mid-run check",
+              "run": "runs-1",
+              "kind": "In process",
+              "result": "Rework",
+              "checked_on": "@today-2d",
+              "inspector": "tm-3",
+              "finding": "Two leg joints show a gap; reglue and clamp."
+            }
+          },
+          {
+            "key": "checks-3",
+            "values": {
+              "check_name": "Bookshelf first article",
+              "run": "runs-2",
+              "kind": "First article",
+              "result": "Pass",
+              "checked_on": "@today-3d",
+              "inspector": "tm-3",
+              "finding": "Ladder angle correct.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "checks-4",
+            "values": {
+              "check_name": "Bookshelf finish check",
+              "run": "runs-2",
+              "kind": "Finish check",
+              "result": "Pass",
+              "checked_on": "@today-1d",
+              "inspector": "tm-3",
+              "finding": "Even coat on all pieces."
+            }
+          },
+          {
+            "key": "checks-5",
+            "values": {
+              "check_name": "Bookshelf final inspection",
+              "run": "runs-2",
+              "kind": "Final inspection",
+              "result": "Fail",
+              "checked_on": "@today",
+              "inspector": "tm-3",
+              "finding": "One shelf warped; scrap and remake.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "checks-6",
+            "values": {
+              "check_name": "Bench final inspection",
+              "run": "runs-6",
+              "kind": "Final inspection",
+              "result": "Pass",
+              "checked_on": "@today-31d",
+              "inspector": "tm-3",
+              "finding": "All benches pass."
+            }
+          },
+          {
+            "key": "checks-7",
+            "values": {
+              "check_name": "Trial chair final inspection",
+              "run": "runs-7",
+              "kind": "Final inspection",
+              "result": "Pass",
+              "checked_on": "@today-56d",
+              "inspector": "tm-3",
+              "finding": "One chair scrapped for a hairline crack.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "checks-8",
+            "values": {
+              "check_name": "Wall shelf trial in process",
+              "run": "runs-8",
+              "kind": "In process",
+              "result": "Fail",
+              "checked_on": "@today-9d",
+              "inspector": "tm-3",
+              "finding": "Material moved after cutting; trial stopped."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each customer order belongs to one product.",
+        "fromTable": "orders",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each customer order belongs to one order owner.",
+        "fromTable": "orders",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "order_by_owner"
+      },
+      {
+        "describes": "Each production run belongs to one customer order.",
+        "fromTable": "runs",
+        "fromField": "order",
+        "toTable": "orders",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "runs"
+      },
+      {
+        "describes": "Each production run belongs to one supervisor.",
+        "fromTable": "runs",
+        "fromField": "supervisor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "run_by_supervisor"
+      },
+      {
+        "describes": "Each recipe line belongs to one product.",
+        "fromTable": "bom_lines",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bom_lines"
+      },
+      {
+        "describes": "Each recipe line belongs to one part.",
+        "fromTable": "bom_lines",
+        "fromField": "part",
+        "toTable": "part",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bom_lines"
+      },
+      {
+        "describes": "Each quality check belongs to one production run.",
+        "fromTable": "checks",
+        "fromField": "run",
+        "toTable": "runs",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "checks"
+      },
+      {
+        "describes": "Each quality check belongs to one inspector.",
+        "fromTable": "checks",
+        "fromField": "inspector",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "check_by_inspector"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Kasimir Adeyemi-Strand",
+              "role": "Operations manager",
+              "work_email": "kasimir@redwaterwoodworks.net",
+              "mobile": "(216) 555-0141",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Bronwyn Okafor",
+              "role": "Production supervisor",
+              "work_email": "bronwyn@redwaterwoodworks.net",
+              "mobile": "(216) 555-0142",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Lars Hartmann-Ibe",
+              "role": "Quality lead",
+              "work_email": "lars@redwaterwoodworks.net",
+              "mobile": "(216) 555-0143",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Esperanza Nwosu",
+              "role": "Purchasing and stock",
+              "work_email": "esperanza@redwaterwoodworks.net",
+              "mobile": "(216) 555-0144",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Tadeusz Cole",
+              "role": "Shipping",
+              "work_email": "tadeusz@redwaterwoodworks.net",
+              "mobile": "(216) 555-0145",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Quote request",
+        "describes": "Customers ask for a quote here.",
+        "audience": "staff",
+        "table": "orders",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "What do you want made?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "What is your company called?",
+            "required": true
+          },
+          {
+            "fieldKey": "quantity",
+            "ask": "How many do you need?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When do you need them?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. Sales will send a quote within two working days."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "orders_confirm",
+        "table": "orders",
+        "name": "Confirm",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "orders_start",
+        "table": "orders",
+        "name": "Start production",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In production"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "orders_shipped",
+        "table": "orders",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "orders_claim",
+        "table": "orders",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "runs_start",
+        "table": "runs",
+        "name": "Start run",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Running"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "runs_done",
+        "table": "runs",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          },
+          {
+            "field": "finished_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "runs_claim",
+        "table": "runs",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "product_claim",
+        "table": "product",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "part_restocked",
+        "table": "part",
+        "name": "Mark stocked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Stocked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "part_claim",
+        "table": "part",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "checks_claim",
+        "table": "checks",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_orders",
+        "name": "All customer orders",
+        "table": "orders",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "orders_board",
+        "name": "By status",
+        "table": "orders",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "orders_cal",
+        "name": "Calendar",
+        "table": "orders",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "orders_over",
+        "name": "Overdue",
+        "table": "orders",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Confirmed",
+            "In production"
+          ]
+        }
+      },
+      {
+        "token": "orders_week",
+        "name": "This week",
+        "table": "orders",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Confirmed",
+            "In production"
+          ]
+        }
+      },
+      {
+        "token": "orders_next7",
+        "name": "Next 7 days",
+        "table": "orders",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Confirmed",
+            "In production"
+          ]
+        }
+      },
+      {
+        "token": "orders_mine",
+        "name": "My customer orders",
+        "table": "orders",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_runs",
+        "name": "All production runs",
+        "table": "runs",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "runs_board",
+        "name": "By status",
+        "table": "runs",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "runs_cal",
+        "name": "Calendar",
+        "table": "runs",
+        "kind": "calendar",
+        "dateField": "run_on",
+        "allDay": true
+      },
+      {
+        "token": "runs_over",
+        "name": "Overdue",
+        "table": "runs",
+        "kind": "grid",
+        "within": {
+          "run_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Running"
+          ]
+        }
+      },
+      {
+        "token": "runs_week",
+        "name": "This week",
+        "table": "runs",
+        "kind": "grid",
+        "within": {
+          "run_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Running"
+          ]
+        }
+      },
+      {
+        "token": "runs_next7",
+        "name": "Next 7 days",
+        "table": "runs",
+        "kind": "grid",
+        "within": {
+          "run_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Running"
+          ]
+        }
+      },
+      {
+        "token": "runs_mine",
+        "name": "My production runs",
+        "table": "runs",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_product",
+        "name": "All products",
+        "table": "product",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "product_board",
+        "name": "By status",
+        "table": "product",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "product_mine",
+        "name": "My products",
+        "table": "product",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_part",
+        "name": "All parts and materials",
+        "table": "part",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "part_board",
+        "name": "By status",
+        "table": "part",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "part_cal",
+        "name": "Calendar",
+        "table": "part",
+        "kind": "calendar",
+        "dateField": "reorder_by",
+        "allDay": true
+      },
+      {
+        "token": "part_over",
+        "name": "Overdue",
+        "table": "part",
+        "kind": "grid",
+        "within": {
+          "reorder_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "part_week",
+        "name": "This week",
+        "table": "part",
+        "kind": "grid",
+        "within": {
+          "reorder_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "part_next7",
+        "name": "Next 7 days",
+        "table": "part",
+        "kind": "grid",
+        "within": {
+          "reorder_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "part_mine",
+        "name": "My parts and materials",
+        "table": "part",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_bom_lines",
+        "name": "All recipe lines",
+        "table": "bom_lines",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "bom_lines_board",
+        "name": "By unit",
+        "table": "bom_lines",
+        "kind": "kanban",
+        "groupBy": "unit"
+      },
+      {
+        "token": "all_checks",
+        "name": "All quality checks",
+        "table": "checks",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "checks_board",
+        "name": "By result",
+        "table": "checks",
+        "kind": "kanban",
+        "groupBy": "result"
+      },
+      {
+        "token": "checks_mine",
+        "name": "My quality checks",
+        "table": "checks",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Small Manufacturer Production Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "part",
+          "describes": "Every material and component the shop buys, with stock, reorder level and supplier."
+        },
+        {
+          "name": "related_tables",
+          "table": "orders",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many parts are running low?",
+        "whyItMatters": "Purchasing orders against this list every Tuesday.",
+        "expect": {
+          "table": "part",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Low"
+          },
+          "answer": 3,
+          "unit": "parts"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open customer orders.",
+        "action": {
+          "kind": "open",
+          "surface": "orders_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "orders_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open production runs.",
+        "action": {
+          "kind": "open",
+          "surface": "runs_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "runs_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open products.",
+        "action": {
+          "kind": "open",
+          "surface": "product_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "product_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "redwaterwoodworks.net"
+      ],
+      "fictionalStreets": [
+        "Foundry Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "small-manufacturer-production-desk",
+      "parent": null,
+      "title": "Small Manufacturer Production Desk",
+      "icon": {
+        "emoji": "🏭"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The shop floor and the order book in one place: customer orders, the recipe behind each product, parts stock, production runs and quality checks. Start with the Dashboard each morning. Order whatever shows Short by, and record scrap and checks on every run before it is closed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:order-to-shipment-flow"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:quality-control-routine"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:stock-and-reorder"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customer orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Orders from retailers and designers, from quote to shipped."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "orders",
+              "view": "orders_board"
+            },
+            "inline": true,
+            "title": "Customer orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ord-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ord-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "ord-t",
+                "name": "All customer orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ord-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Confirmed",
+                    "In production"
+                  ]
+                }
+              },
+              {
+                "id": "ord-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Confirmed",
+                    "In production"
+                  ]
+                }
+              },
+              {
+                "id": "ord-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Confirmed",
+                    "In production"
+                  ]
+                }
+              },
+              {
+                "id": "ord-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ord-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Production runs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each batch built for an order, with units made, units scrapped and the quality checks."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "runs",
+              "view": "runs_board"
+            },
+            "inline": true,
+            "title": "Production runs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "run-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "run-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "run_on"
+              },
+              {
+                "id": "run-t",
+                "name": "All production runs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "run-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "run_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Running"
+                  ]
+                }
+              },
+              {
+                "id": "run-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "run_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Running"
+                  ]
+                }
+              },
+              {
+                "id": "run-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "run_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Running"
+                  ]
+                }
+              },
+              {
+                "id": "run-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "run-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything the shop makes, with price, build time and what it is made from."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Products",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pro-t",
+                "name": "All products",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pro-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parts and materials"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every material and component the shop buys, with stock, reorder level and supplier."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "part",
+              "view": "part_board"
+            },
+            "inline": true,
+            "title": "Parts and materials",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "par-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "par-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "reorder_by"
+              },
+              {
+                "id": "par-t",
+                "name": "All parts and materials",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "par-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "reorder_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "par-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "reorder_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "par-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "reorder_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "par-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "par-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recipe lines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The bill of materials: which part goes into which product and how many."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bom_lines",
+              "view": "bom_lines_board"
+            },
+            "inline": true,
+            "title": "Recipe lines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "bom-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "unit"
+              },
+              {
+                "id": "bom-t",
+                "name": "All recipe lines",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "bom-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Inspections done on a run, with the result and what was found."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "checks",
+              "view": "checks_board"
+            },
+            "inline": true,
+            "title": "Quality checks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "che-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "result"
+              },
+              {
+                "id": "che-t",
+                "name": "All quality checks",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "che-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "che-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "small-manufacturer-production-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The shop at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "orders",
+                      "view": "all_orders"
+                    },
+                    "inline": true,
+                    "title": "Orders by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Orders by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "orders",
+                      "view": "all_orders"
+                    },
+                    "inline": true,
+                    "title": "Order value by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Order value by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "total"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "runs",
+                      "view": "all_runs"
+                    },
+                    "inline": true,
+                    "title": "Scrapped units by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Scrapped units by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "scrap_qty"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "part",
+                      "view": "all_part"
+                    },
+                    "inline": true,
+                    "title": "Parts by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Parts by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders due in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "orders",
+              "view": "all_orders"
+            },
+            "inline": true,
+            "title": "Orders due in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Orders due in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Confirmed",
+                    "In production"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parts to reorder"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "part",
+              "view": "all_part"
+            },
+            "inline": true,
+            "title": "Parts to reorder",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Parts to reorder",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Runs that start this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "runs",
+              "view": "all_runs"
+            },
+            "inline": true,
+            "title": "Runs that start this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Runs that start this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "run_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Running"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Units still to make"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order quantity minus good units from finished runs, never below zero"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan another run if it is above zero when the previous run is done"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Scrap (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Scrapped units divided by good plus scrapped units"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over 5 percent means look at the material or the jig before the next run"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Short by"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reorder level minus on hand, never below zero"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Add it to the next purchase and check the lead time against the due dates"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "order-to-shipment-flow",
+      "parent": "small-manufacturer-production-desk",
+      "title": "Order to shipment flow",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every order follows the same path. Each handoff has one owner and one thing that must be true before it passes on."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The path"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Must be true to move on"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Quoted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sales"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Customer has price, date and finish in writing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Confirmed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Operations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deposit received and parts checked against the recipe"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "In production"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Supervisor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At least one run planned for every unit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shipped"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shipping"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final inspection passed and carrier booked"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each Friday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Walk the Orders due in the next 7 days list with the supervisor and decide what to overtime, move or tell the customer about."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "quality-control-routine",
+      "parent": "small-manufacturer-production-desk",
+      "title": "Quality control routine",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Quality is built in at each step, not added at the end. Three checks per run catch most problems early."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "First article: measure the first piece before the batch continues."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "In process: check joints and dimensions halfway through."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Final inspection: look at every unit before packing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a check fails"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stop the run and write what was found on the check row."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rework only with the supervisor's approval; record rework as such."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the cause is material or tooling, add a note to the part or product."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "stock-and-reorder",
+      "parent": "small-manufacturer-production-desk",
+      "title": "Stock and reorder routine",
+      "icon": {
+        "emoji": "📦"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Running out of a part stops the whole line. A weekly stock walk keeps the reorder list honest."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly walk"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Count on-hand for parts marked Low"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update the On hand figure on each row"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check lead times against orders due in the next three weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send the purchase orders"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting the reorder level"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Reorder level = average weekly use times lead time in weeks, plus a safety margin you can explain. Review it each quarter."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

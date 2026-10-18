@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0517",
-  "version": 2,
+  "version": 3,
   "title": "Boutique Clothing Store HQ",
   "description": "Track inventory by season, sales, customers and vendors for a clothing boutique.",
   "forWho": "Independent clothing and accessory boutiques",
@@ -974,7 +974,17 @@
           "product": "Either record can be created or change status before the other.",
           "handler": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Shipped"
+            ],
+            "filled": [
+              "shipped_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "order_name",
@@ -1134,6 +1144,17 @@
             "button": {
               "do": "run_action",
               "action": "order_shipped"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_take"
             }
           },
           {
@@ -1536,7 +1557,8 @@
               "ship_by": "@today+4d"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1687,6 +1709,20 @@
             "field": "shipped_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "order_take",
+        "table": "order",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "packer",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -1908,7 +1944,7 @@
         "Willow Passage"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

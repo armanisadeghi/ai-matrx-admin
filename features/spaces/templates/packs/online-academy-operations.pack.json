@@ -218,6 +218,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "course_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_cohort",
             "label": "Add a cohort",
             "parityType": "button",
@@ -670,6 +681,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "cohort_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "add_enroll",
             "label": "Enroll a learner",
             "parityType": "button",
@@ -1051,6 +1073,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "enrollment_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "btn_mail",
             "label": "Send email",
             "parityType": "button",
@@ -1405,6 +1438,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "help_request_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner_me",
             "label": "Assigned to",
             "parityType": "member",
@@ -1712,6 +1756,20 @@
       },
       {
         "kind": "row_action",
+        "token": "course_claim",
+        "table": "course",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "cohort_open",
         "table": "cohort",
         "name": "Open enrollment",
@@ -1754,6 +1812,20 @@
       },
       {
         "kind": "row_action",
+        "token": "cohort_claim",
+        "table": "cohort",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "enrollment_accept",
         "table": "enrollment",
         "name": "Accept",
@@ -1782,6 +1854,20 @@
       },
       {
         "kind": "row_action",
+        "token": "enrollment_claim",
+        "table": "enrollment",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
         "token": "help_request_solved",
         "table": "help_request",
         "name": "Mark solved",
@@ -1791,6 +1877,20 @@
             "field": "status",
             "set": "value",
             "value": "Solved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "help_request_claim",
+        "table": "help_request",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }

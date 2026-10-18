@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0003",
-  "version": 7,
+  "version": 8,
   "title": "Meeting Notes",
   "description": "Teams that meet weekly: notes, decisions and action items for every meeting.",
   "forWho": "Teams that meet every week and want nothing to slip",
@@ -650,6 +650,17 @@
             }
           },
           {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "action_item_take"
+            }
+          },
+          {
             "key": "assigned_to",
             "label": "Assigned to",
             "parityType": "member",
@@ -982,7 +993,19 @@
             },
             "default": true
           }
-        ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "sharedBlocks": [
@@ -1122,6 +1145,20 @@
             "field": "completed_on",
             "set": "value",
             "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "action_item_take",
+        "table": "action_item",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
           }
         ]
       }
@@ -1343,7 +1380,7 @@
         "Larkspur Bend"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

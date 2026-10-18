@@ -1,0 +1,3795 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0571",
+  "version": 1,
+  "title": "Trucking Fleet Desk",
+  "description": "Trucks, loads, maintenance and driver paperwork for a small trucking company.",
+  "forWho": "Small trucking companies and owner-operator fleets",
+  "icon": {
+    "emoji": "🚛"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "manufacturing",
+  "tags": [
+    "trucking",
+    "fleet",
+    "loads",
+    "maintenance",
+    "drivers"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-trucking-fleet-desk",
+    "catalogueId": "SP0571",
+    "useCase": "Waldemar Okonkwo-Hess dispatches for a small regional carrier and uses this to see which trucks are free, which loads are late and which maintenance and driver documents are about to expire.",
+    "industry": "manufacturing_logistics",
+    "vertical": "Trucking and fleet management",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Plainsline Freight",
+      "describes": "A regional carrier with 14 trucks and 16 drivers hauling dry van and flatbed freight across the central states.",
+      "address": {
+        "line1": "800 Terminal Road",
+        "city": "Oklahoma City",
+        "region": "OK",
+        "postalCode": "73108",
+        "country": "US"
+      },
+      "phone": "(405) 555-0192",
+      "website": "plainslinefreight.net",
+      "email": "dispatch@plainslinefreight.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-trucking-fleet-desk",
+    "tables": [
+      {
+        "token": "truck",
+        "name": "Trucks",
+        "labelSingular": "Truck",
+        "labelPlural": "Trucks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "unit_name",
+        "describes": "Every tractor and trailer in the fleet, with status, mileage, service and inspection dates.",
+        "subject": "thing",
+        "independentOf": {
+          "driver": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "service_due",
+            "inspection_due"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "unit_name",
+            "label": "Truck",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Available",
+              "On a load",
+              "In the shop",
+              "Out of service"
+            ],
+            "choiceColors": {
+              "Available": "slate",
+              "On a load": "blue",
+              "In the shop": "amber",
+              "Out of service": "violet"
+            },
+            "required": true,
+            "default": "Available",
+            "statusGroups": {
+              "Available": "in_progress",
+              "On a load": "in_progress",
+              "In the shop": "in_progress",
+              "Out of service": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Day cab tractor",
+              "Sleeper tractor",
+              "Dry van trailer",
+              "Flatbed trailer"
+            ],
+            "choiceColors": {
+              "Day cab tractor": "slate",
+              "Sleeper tractor": "blue",
+              "Dry van trailer": "amber",
+              "Flatbed trailer": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "miles",
+            "label": "Odometer (miles)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "service_due",
+            "label": "Next service",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "inspection_due",
+            "label": "Next inspection",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "driver",
+            "label": "Assigned driver",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "loads_active",
+            "label": "Loads in progress",
+            "parityType": "rollup",
+            "via": "loads",
+            "pick": "load_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Dispatched",
+                "In transit"
+              ]
+            }
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue delivered (USD)",
+            "parityType": "rollup",
+            "via": "loads",
+            "pick": "rate",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "maint_open",
+            "label": "Maintenance open",
+            "parityType": "rollup",
+            "via": "maintenance",
+            "pick": "job_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "maint_cost",
+            "label": "Maintenance spend (USD)",
+            "parityType": "rollup",
+            "via": "maintenance",
+            "pick": "cost",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "net",
+            "label": "Revenue less maintenance (USD)",
+            "parityType": "formula",
+            "formula": "{Revenue delivered (USD)} - {Maintenance spend (USD)}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_shop",
+            "label": "Send to the shop",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "truck_shop"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_available",
+            "label": "Mark available",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "truck_available"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "truck_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_maint",
+            "label": "Schedule maintenance",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "maintenance",
+              "template": "New maintenance job",
+              "prefill": {
+                "truck": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_load",
+            "label": "Add a load",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "loads",
+              "template": "New load",
+              "prefill": {
+                "truck": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New truck",
+            "values": {
+              "unit_name": "New truck",
+              "status": "Available"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Specs"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Make, model, year, plate and VIN are kept in the asset file."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pre-trip checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tires and wheels"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Brakes and air system"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lights and reflectors"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fluid levels"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Coupling and trailer connection"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "truck-1",
+            "values": {
+              "unit_name": "Unit 101, sleeper tractor",
+              "status": "On a load",
+              "kind": "Sleeper tractor",
+              "miles": 412000,
+              "service_due": "@today+14d",
+              "inspection_due": "@today+60d",
+              "driver": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "truck-2",
+            "values": {
+              "unit_name": "Unit 102, sleeper tractor",
+              "status": "On a load",
+              "kind": "Sleeper tractor",
+              "miles": 388000,
+              "service_due": "@today+3d",
+              "inspection_due": "@today+45d",
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "truck-3",
+            "values": {
+              "unit_name": "Unit 103, day cab",
+              "status": "Available",
+              "kind": "Day cab tractor",
+              "miles": 204000,
+              "service_due": "@today",
+              "inspection_due": "@today+90d",
+              "driver": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "truck-4",
+            "values": {
+              "unit_name": "Unit 104, sleeper tractor",
+              "status": "In the shop",
+              "kind": "Sleeper tractor",
+              "miles": 520000,
+              "service_due": "@today-5d",
+              "inspection_due": "@today+20d"
+            }
+          },
+          {
+            "key": "truck-5",
+            "values": {
+              "unit_name": "Unit 201, dry van trailer",
+              "status": "On a load",
+              "kind": "Dry van trailer",
+              "miles": 0,
+              "service_due": "@today+30d",
+              "inspection_due": "@today+120d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "truck-6",
+            "values": {
+              "unit_name": "Unit 202, flatbed trailer",
+              "status": "Available",
+              "kind": "Flatbed trailer",
+              "miles": 0,
+              "service_due": "@today+6d",
+              "inspection_due": "@today+70d"
+            }
+          },
+          {
+            "key": "truck-7",
+            "values": {
+              "unit_name": "Unit 105, day cab",
+              "status": "Out of service",
+              "kind": "Day cab tractor",
+              "miles": 610000,
+              "service_due": "@today-30d",
+              "inspection_due": "@today-10d",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "loads",
+        "name": "Loads",
+        "labelSingular": "Load",
+        "labelPlural": "Loads",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package-check",
+        "titleField": "load_name",
+        "describes": "Every load from booking to delivered, with pickup, delivery deadline and rate.",
+        "subject": "thing",
+        "independentOf": {
+          "truck": "Either record can be created or change status before the other.",
+          "driver": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "pickup_at",
+            "deliver_by"
+          ],
+          [
+            "pickup_at",
+            "delivered_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "load_name",
+            "label": "Load",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lane",
+            "label": "Lane",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "truck",
+            "label": "Truck",
+            "parityType": "relation",
+            "relationTarget": "truck",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "driver",
+            "label": "Driver",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Booked",
+              "Dispatched",
+              "In transit",
+              "Delivered",
+              "Problem",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Dispatched": "blue",
+              "In transit": "amber",
+              "Delivered": "violet",
+              "Problem": "teal",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Dispatched": "in_progress",
+              "In transit": "in_progress",
+              "Delivered": "in_progress",
+              "Problem": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pickup_at",
+            "label": "Pickup",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "deliver_by",
+            "label": "Deliver by",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rate",
+            "label": "Rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "miles",
+            "label": "Loaded miles",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "per_mile",
+            "label": "Revenue per mile (USD)",
+            "parityType": "formula",
+            "formula": "IF({Loaded miles} > 0, ROUND({Rate (USD)} / {Loaded miles}, 2), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_dispatch",
+            "label": "Dispatch",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "loads_dispatch"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_transit",
+            "label": "Mark in transit",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "loads_transit"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_delivered",
+            "label": "Mark delivered",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "loads_delivered"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_problem",
+            "label": "Flag a problem",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "loads_problem"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "loads_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New load",
+            "values": {
+              "load_name": "New load",
+              "status": "Booked"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pickup and delivery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Addresses, contacts, appointment numbers and hours."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Load details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Commodity, weight, tarps or straps, and any temperature or hazmat rules."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Paperwork"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rate confirmation signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Bill of lading received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof of delivery uploaded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invoice sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "loads-1",
+            "values": {
+              "load_name": "Dallas to Kansas City, fertilizer",
+              "customer": "Prairie Ag Supply",
+              "lane": "Dallas to Kansas City",
+              "truck": "truck-1",
+              "driver": "tm-3",
+              "status": "In transit",
+              "pickup_at": "@today-1d 09:00",
+              "deliver_by": "@today+1d 12:00",
+              "rate": 2850,
+              "miles": 500,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "loads-2",
+            "values": {
+              "load_name": "Tulsa to Denver, appliances",
+              "customer": "Summit Home Distribution",
+              "lane": "Tulsa to Denver",
+              "truck": "truck-2",
+              "driver": "tm-4",
+              "status": "Dispatched",
+              "pickup_at": "@today 14:00",
+              "deliver_by": "@today+2d 10:00",
+              "rate": 3600,
+              "miles": 680
+            }
+          },
+          {
+            "key": "loads-3",
+            "values": {
+              "load_name": "Wichita to Little Rock, steel coils",
+              "customer": "Ironbridge Metals",
+              "lane": "Wichita to Little Rock",
+              "truck": "truck-3",
+              "driver": "tm-5",
+              "status": "Booked",
+              "pickup_at": "@today+2d 07:00",
+              "deliver_by": "@today+3d 16:00",
+              "rate": 2400,
+              "miles": 360,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "loads-4",
+            "values": {
+              "load_name": "Oklahoma City to Amarillo, paper",
+              "customer": "Cascade Paper Co",
+              "lane": "Oklahoma City to Amarillo",
+              "truck": "truck-3",
+              "driver": "tm-5",
+              "status": "Dispatched",
+              "pickup_at": "@today 06:00",
+              "deliver_by": "@today 18:00",
+              "rate": 1100,
+              "miles": 260
+            }
+          },
+          {
+            "key": "loads-5",
+            "values": {
+              "load_name": "Memphis to Nashville, produce",
+              "customer": "Greenleaf Grocers",
+              "lane": "Memphis to Nashville",
+              "truck": "truck-1",
+              "driver": "tm-3",
+              "status": "Booked",
+              "pickup_at": "@today+5d 06:00",
+              "deliver_by": "@today+5d 15:00",
+              "rate": 1450,
+              "miles": 210,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "loads-6",
+            "values": {
+              "load_name": "Kansas City to Tulsa, tires",
+              "customer": "Roadmaster Tire Wholesale",
+              "lane": "Kansas City to Tulsa",
+              "truck": "truck-2",
+              "driver": "tm-4",
+              "status": "In transit",
+              "pickup_at": "@today-2d 10:00",
+              "deliver_by": "@today-1d 12:00",
+              "rate": 1900,
+              "miles": 360
+            }
+          },
+          {
+            "key": "loads-7",
+            "values": {
+              "load_name": "Denver to Tulsa, return load",
+              "customer": "Summit Home Distribution",
+              "lane": "Denver to Tulsa",
+              "truck": "truck-2",
+              "driver": "tm-4",
+              "status": "Delivered",
+              "pickup_at": "@today-12d 08:00",
+              "deliver_by": "@today-10d 14:00",
+              "rate": 3400,
+              "miles": 680,
+              "delivered_on": "@today-10d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "loads-8",
+            "values": {
+              "load_name": "Little Rock to Memphis, lumber",
+              "customer": "Pinehill Lumber",
+              "lane": "Little Rock to Memphis",
+              "truck": "truck-3",
+              "driver": "tm-5",
+              "status": "Delivered",
+              "pickup_at": "@today-9d 08:00",
+              "deliver_by": "@today-8d 14:00",
+              "rate": 1250,
+              "miles": 140,
+              "delivered_on": "@today-8d"
+            }
+          },
+          {
+            "key": "loads-9",
+            "values": {
+              "load_name": "Cancelled Amarillo run",
+              "customer": "Cascade Paper Co",
+              "lane": "Oklahoma City to Amarillo",
+              "truck": "truck-3",
+              "driver": "tm-5",
+              "status": "Cancelled",
+              "pickup_at": "@today-15d 09:00",
+              "deliver_by": "@today-15d 18:00",
+              "rate": 0,
+              "miles": 260,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "maintenance",
+        "name": "Maintenance",
+        "labelSingular": "Maintenance job",
+        "labelPlural": "Maintenance",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "job_name",
+        "describes": "Preventive service, repairs and inspections for each truck, with cost.",
+        "subject": "thing",
+        "independentOf": {
+          "truck": "Either record can be created or change status before the other.",
+          "mechanic": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "done_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "due_on",
+            "done_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Maintenance job",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "truck",
+            "label": "Truck",
+            "parityType": "relation",
+            "relationTarget": "truck",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Oil and filter service",
+              "Brake service",
+              "Tire replacement",
+              "Annual inspection",
+              "Repair",
+              "Trailer service"
+            ],
+            "choiceColors": {
+              "Oil and filter service": "slate",
+              "Brake service": "blue",
+              "Tire replacement": "amber",
+              "Annual inspection": "violet",
+              "Repair": "teal",
+              "Trailer service": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Scheduled",
+              "Done",
+              "Skipped"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Done": "blue",
+              "Skipped": "amber"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Done": "done",
+              "Skipped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_on",
+            "label": "Done on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cost",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "miles_at",
+            "label": "Odometer at service",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "mechanic",
+            "label": "Mechanic",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "maintenance_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "maintenance_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New maintenance job",
+            "values": {
+              "job_name": "New maintenance job",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Work to do"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What is being replaced or checked."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Parts and cost"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Parts used, invoice number and total."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "maintenance-1",
+            "values": {
+              "job_name": "Unit 103 oil and filter service",
+              "truck": "truck-3",
+              "kind": "Oil and filter service",
+              "status": "Scheduled",
+              "due_on": "@today",
+              "cost": 320,
+              "miles_at": 204000,
+              "mechanic": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-2",
+            "values": {
+              "job_name": "Unit 102 brake service",
+              "truck": "truck-2",
+              "kind": "Brake service",
+              "status": "Scheduled",
+              "due_on": "@today+3d",
+              "cost": 1450,
+              "miles_at": 388000,
+              "mechanic": "tm-2"
+            }
+          },
+          {
+            "key": "maintenance-3",
+            "values": {
+              "job_name": "Unit 104 engine repair",
+              "truck": "truck-4",
+              "kind": "Repair",
+              "status": "Scheduled",
+              "due_on": "@today-5d",
+              "cost": 6800,
+              "miles_at": 520000,
+              "mechanic": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-4",
+            "values": {
+              "job_name": "Unit 202 trailer service",
+              "truck": "truck-6",
+              "kind": "Trailer service",
+              "status": "Scheduled",
+              "due_on": "@today+6d",
+              "cost": 480,
+              "miles_at": 0,
+              "mechanic": "tm-2"
+            }
+          },
+          {
+            "key": "maintenance-5",
+            "values": {
+              "job_name": "Unit 101 tires",
+              "truck": "truck-1",
+              "kind": "Tire replacement",
+              "status": "Scheduled",
+              "due_on": "@today+14d",
+              "cost": 3200,
+              "miles_at": 412000,
+              "mechanic": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-6",
+            "values": {
+              "job_name": "Unit 101 oil and filter service",
+              "truck": "truck-1",
+              "kind": "Oil and filter service",
+              "status": "Done",
+              "due_on": "@today-60d",
+              "cost": 340,
+              "miles_at": 398000,
+              "mechanic": "tm-2",
+              "done_on": "@today-58d"
+            }
+          },
+          {
+            "key": "maintenance-7",
+            "values": {
+              "job_name": "Unit 102 annual inspection",
+              "truck": "truck-2",
+              "kind": "Annual inspection",
+              "status": "Done",
+              "due_on": "@today-120d",
+              "cost": 250,
+              "miles_at": 360000,
+              "mechanic": "tm-2",
+              "done_on": "@today-119d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-8",
+            "values": {
+              "job_name": "Unit 103 tire replacement",
+              "truck": "truck-3",
+              "kind": "Tire replacement",
+              "status": "Done",
+              "due_on": "@today-90d",
+              "cost": 2100,
+              "miles_at": 190000,
+              "mechanic": "tm-2",
+              "done_on": "@today-88d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "docs",
+        "name": "Driver paperwork",
+        "labelSingular": "Driver document",
+        "labelPlural": "Driver paperwork",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "id-card",
+        "titleField": "doc_name",
+        "describes": "Licenses, medical cards and training records with their expiry dates.",
+        "subject": "thing",
+        "independentOf": {
+          "driver": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "doc_name",
+            "label": "Driver document",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "driver",
+            "label": "Driver",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Commercial license",
+              "Medical card",
+              "Safety training",
+              "Drug test record",
+              "Insurance listing"
+            ],
+            "choiceColors": {
+              "Commercial license": "slate",
+              "Medical card": "blue",
+              "Safety training": "amber",
+              "Drug test record": "violet",
+              "Insurance listing": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Valid",
+              "Expiring",
+              "Expired",
+              "Renewed"
+            ],
+            "choiceColors": {
+              "Valid": "slate",
+              "Expiring": "blue",
+              "Expired": "amber",
+              "Renewed": "violet"
+            },
+            "required": true,
+            "default": "Valid",
+            "statusGroups": {
+              "Valid": "in_progress",
+              "Expiring": "in_progress",
+              "Expired": "done",
+              "Renewed": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_renewed",
+            "label": "Mark renewed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "docs_renewed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "docs_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New driver document",
+            "values": {
+              "doc_name": "New driver document",
+              "status": "Valid"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Number kept in the secure file, not here."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Renewal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who to call and what to bring."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "docs-1",
+            "values": {
+              "doc_name": "Everard medical card",
+              "driver": "tm-3",
+              "kind": "Medical card",
+              "status": "Expiring",
+              "expires_on": "@today+6d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "docs-2",
+            "values": {
+              "doc_name": "Natasha license",
+              "driver": "tm-4",
+              "kind": "Commercial license",
+              "status": "Valid",
+              "expires_on": "@today+300d"
+            }
+          },
+          {
+            "key": "docs-3",
+            "values": {
+              "doc_name": "Ignatius medical card",
+              "driver": "tm-5",
+              "kind": "Medical card",
+              "status": "Valid",
+              "expires_on": "@today+120d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "docs-4",
+            "values": {
+              "doc_name": "Everard safety training",
+              "driver": "tm-3",
+              "kind": "Safety training",
+              "status": "Valid",
+              "expires_on": "@today"
+            }
+          },
+          {
+            "key": "docs-5",
+            "values": {
+              "doc_name": "Natasha medical card",
+              "driver": "tm-4",
+              "kind": "Medical card",
+              "status": "Expired",
+              "expires_on": "@today-4d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "docs-6",
+            "values": {
+              "doc_name": "Ignatius license",
+              "driver": "tm-5",
+              "kind": "Commercial license",
+              "status": "Expiring",
+              "expires_on": "@today+25d"
+            }
+          },
+          {
+            "key": "docs-7",
+            "values": {
+              "doc_name": "Natasha insurance listing",
+              "driver": "tm-4",
+              "kind": "Insurance listing",
+              "status": "Renewed",
+              "expires_on": "@today+360d",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each truck belongs to one assigned driver.",
+        "fromTable": "truck",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "truck_by_driver"
+      },
+      {
+        "describes": "Each load belongs to one truck.",
+        "fromTable": "loads",
+        "fromField": "truck",
+        "toTable": "truck",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "loads"
+      },
+      {
+        "describes": "Each load belongs to one driver.",
+        "fromTable": "loads",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "load_by_driver"
+      },
+      {
+        "describes": "Each maintenance job belongs to one truck.",
+        "fromTable": "maintenance",
+        "fromField": "truck",
+        "toTable": "truck",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "maintenance"
+      },
+      {
+        "describes": "Each maintenance job belongs to one mechanic.",
+        "fromTable": "maintenance",
+        "fromField": "mechanic",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "maintenance_by_mechanic"
+      },
+      {
+        "describes": "Each driver document belongs to one driver.",
+        "fromTable": "docs",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "doc_by_driver"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Waldemar Okonkwo-Hess",
+              "role": "Dispatcher",
+              "work_email": "waldemar@plainslinefreight.net",
+              "mobile": "(405) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Concepcion Aldridge",
+              "role": "Fleet maintenance lead",
+              "work_email": "concepcion@plainslinefreight.net",
+              "mobile": "(405) 555-0142",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Everard Mbatha",
+              "role": "Driver",
+              "work_email": "everard@plainslinefreight.net",
+              "mobile": "(405) 555-0143",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Natasha Brightwell",
+              "role": "Driver",
+              "work_email": "natasha@plainslinefreight.net",
+              "mobile": "(405) 555-0144",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Ignatius Pruitt-Sato",
+              "role": "Driver",
+              "work_email": "ignatius@plainslinefreight.net",
+              "mobile": "(405) 555-0145",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Odalys Rennick",
+              "role": "Safety and compliance",
+              "work_email": "odalys@plainslinefreight.net",
+              "mobile": "(405) 555-0146",
+              "start_date": "@today-5y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Load request",
+        "describes": "Customers ask for a load to be booked.",
+        "audience": "staff",
+        "table": "loads",
+        "fields": [
+          {
+            "fieldKey": "load_name",
+            "ask": "What needs to move?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is the customer?",
+            "required": true
+          },
+          {
+            "fieldKey": "pickup_at",
+            "ask": "When should it be picked up?"
+          },
+          {
+            "fieldKey": "lane",
+            "ask": "Where is it going?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. Dispatch will reply with a rate and pickup time."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "truck_shop",
+        "table": "truck",
+        "name": "Send to the shop",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In the shop"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "truck_available",
+        "table": "truck",
+        "name": "Mark available",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Available"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "truck_claim",
+        "table": "truck",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loads_dispatch",
+        "table": "loads",
+        "name": "Dispatch",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Dispatched"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loads_transit",
+        "table": "loads",
+        "name": "Mark in transit",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In transit"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loads_delivered",
+        "table": "loads",
+        "name": "Mark delivered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loads_problem",
+        "table": "loads",
+        "name": "Flag a problem",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Problem"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loads_claim",
+        "table": "loads",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "maintenance_done",
+        "table": "maintenance",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          },
+          {
+            "field": "done_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "maintenance_claim",
+        "table": "maintenance",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "docs_renewed",
+        "table": "docs",
+        "name": "Mark renewed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Renewed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "docs_claim",
+        "table": "docs",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_truck",
+        "name": "All trucks",
+        "table": "truck",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "truck_board",
+        "name": "By status",
+        "table": "truck",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "truck_cal",
+        "name": "Calendar",
+        "table": "truck",
+        "kind": "calendar",
+        "dateField": "service_due",
+        "allDay": true
+      },
+      {
+        "token": "truck_over",
+        "name": "Overdue",
+        "table": "truck",
+        "kind": "grid",
+        "within": {
+          "service_due": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Available",
+            "On a load",
+            "In the shop"
+          ]
+        }
+      },
+      {
+        "token": "truck_week",
+        "name": "This week",
+        "table": "truck",
+        "kind": "grid",
+        "within": {
+          "service_due": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Available",
+            "On a load",
+            "In the shop"
+          ]
+        }
+      },
+      {
+        "token": "truck_next7",
+        "name": "Next 7 days",
+        "table": "truck",
+        "kind": "grid",
+        "within": {
+          "service_due": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Available",
+            "On a load",
+            "In the shop"
+          ]
+        }
+      },
+      {
+        "token": "truck_mine",
+        "name": "My trucks",
+        "table": "truck",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_loads",
+        "name": "All loads",
+        "table": "loads",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "loads_board",
+        "name": "By status",
+        "table": "loads",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "loads_cal",
+        "name": "Calendar",
+        "table": "loads",
+        "kind": "calendar",
+        "dateField": "deliver_by",
+        "allDay": false
+      },
+      {
+        "token": "loads_today",
+        "name": "Today",
+        "table": "loads",
+        "kind": "grid",
+        "within": {
+          "deliver_by": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Dispatched",
+            "In transit"
+          ]
+        }
+      },
+      {
+        "token": "loads_over",
+        "name": "Overdue",
+        "table": "loads",
+        "kind": "grid",
+        "within": {
+          "deliver_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Dispatched",
+            "In transit"
+          ]
+        }
+      },
+      {
+        "token": "loads_week",
+        "name": "This week",
+        "table": "loads",
+        "kind": "grid",
+        "within": {
+          "deliver_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Dispatched",
+            "In transit"
+          ]
+        }
+      },
+      {
+        "token": "loads_next7",
+        "name": "Next 7 days",
+        "table": "loads",
+        "kind": "grid",
+        "within": {
+          "deliver_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Dispatched",
+            "In transit"
+          ]
+        }
+      },
+      {
+        "token": "loads_mine",
+        "name": "My loads",
+        "table": "loads",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_maintenance",
+        "name": "All maintenance",
+        "table": "maintenance",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "maintenance_board",
+        "name": "By status",
+        "table": "maintenance",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "maintenance_cal",
+        "name": "Calendar",
+        "table": "maintenance",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "maintenance_over",
+        "name": "Overdue",
+        "table": "maintenance",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "maintenance_week",
+        "name": "This week",
+        "table": "maintenance",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "maintenance_next7",
+        "name": "Next 7 days",
+        "table": "maintenance",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "maintenance_mine",
+        "name": "My maintenance",
+        "table": "maintenance",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_docs",
+        "name": "All driver paperwork",
+        "table": "docs",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "docs_board",
+        "name": "By status",
+        "table": "docs",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "docs_cal",
+        "name": "Calendar",
+        "table": "docs",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true
+      },
+      {
+        "token": "docs_over",
+        "name": "Overdue",
+        "table": "docs",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Valid",
+            "Expiring",
+            "Expired"
+          ]
+        }
+      },
+      {
+        "token": "docs_week",
+        "name": "This week",
+        "table": "docs",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Valid",
+            "Expiring",
+            "Expired"
+          ]
+        }
+      },
+      {
+        "token": "docs_next7",
+        "name": "Next 7 days",
+        "table": "docs",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Valid",
+            "Expiring",
+            "Expired"
+          ]
+        }
+      },
+      {
+        "token": "docs_mine",
+        "name": "My driver paperwork",
+        "table": "docs",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Trucking Fleet Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "loads",
+          "describes": "Every load from booking to delivered, with pickup, delivery deadline and rate."
+        },
+        {
+          "name": "related_tables",
+          "table": "truck",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many booked loads are waiting for dispatch?",
+        "whyItMatters": "Dispatch assigns trucks and drivers each afternoon.",
+        "expect": {
+          "table": "loads",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Booked"
+          },
+          "answer": 2,
+          "unit": "loads"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open trucks.",
+        "action": {
+          "kind": "open",
+          "surface": "truck_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "truck_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open loads.",
+        "action": {
+          "kind": "open",
+          "surface": "loads_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "loads_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open maintenance.",
+        "action": {
+          "kind": "open",
+          "surface": "maintenance_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "maintenance_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "plainslinefreight.net"
+      ],
+      "fictionalStreets": [
+        "Terminal Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "trucking-fleet-desk",
+      "parent": null,
+      "title": "Trucking Fleet Desk",
+      "icon": {
+        "emoji": "🚛"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Trucks, loads, maintenance and driver paperwork on one board. Start with the Dashboard every morning: loads in transit, deliveries due, maintenance overdue and documents about to expire. Follow your own regulator's rules on hours and records; this workspace helps you track dates, not replace those rules."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dispatch-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:preventive-maintenance-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:driver-paperwork-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Trucks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every tractor and trailer in the fleet, with status, mileage, service and inspection dates."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "truck",
+              "view": "truck_board"
+            },
+            "inline": true,
+            "title": "Trucks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tru-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tru-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "service_due"
+              },
+              {
+                "id": "tru-t",
+                "name": "All trucks",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tru-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "service_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Available",
+                    "On a load",
+                    "In the shop"
+                  ]
+                }
+              },
+              {
+                "id": "tru-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "service_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Available",
+                    "On a load",
+                    "In the shop"
+                  ]
+                }
+              },
+              {
+                "id": "tru-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "service_due": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Available",
+                    "On a load",
+                    "In the shop"
+                  ]
+                }
+              },
+              {
+                "id": "tru-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tru-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Loads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every load from booking to delivered, with pickup, delivery deadline and rate."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "loads",
+              "view": "loads_board"
+            },
+            "inline": true,
+            "title": "Loads",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "loa-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "loa-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "deliver_by"
+              },
+              {
+                "id": "loa-t",
+                "name": "All loads",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "loa-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "deliver_by": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Dispatched",
+                    "In transit"
+                  ]
+                }
+              },
+              {
+                "id": "loa-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "deliver_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Dispatched",
+                    "In transit"
+                  ]
+                }
+              },
+              {
+                "id": "loa-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "deliver_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Dispatched",
+                    "In transit"
+                  ]
+                }
+              },
+              {
+                "id": "loa-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "deliver_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Dispatched",
+                    "In transit"
+                  ]
+                }
+              },
+              {
+                "id": "loa-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "loa-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Maintenance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Preventive service, repairs and inspections for each truck, with cost."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "maintenance",
+              "view": "maintenance_board"
+            },
+            "inline": true,
+            "title": "Maintenance",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "mai-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "mai-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "mai-t",
+                "name": "All maintenance",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "mai-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "mai-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "mai-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "mai-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "mai-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Driver paperwork"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Licenses, medical cards and training records with their expiry dates."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "docs",
+              "view": "docs_board"
+            },
+            "inline": true,
+            "title": "Driver paperwork",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "doc-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "doc-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "doc-t",
+                "name": "All driver paperwork",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "doc-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Expiring",
+                    "Expired"
+                  ]
+                }
+              },
+              {
+                "id": "doc-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Expiring",
+                    "Expired"
+                  ]
+                }
+              },
+              {
+                "id": "doc-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Expiring",
+                    "Expired"
+                  ]
+                }
+              },
+              {
+                "id": "doc-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "doc-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "trucking-fleet-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The fleet at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loads",
+                      "view": "all_loads"
+                    },
+                    "inline": true,
+                    "title": "Loads by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Loads by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loads",
+                      "view": "all_loads"
+                    },
+                    "inline": true,
+                    "title": "Revenue by truck (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Revenue by truck (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "truck",
+                          "op": "sum",
+                          "field": "rate"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "truck",
+                      "view": "all_truck"
+                    },
+                    "inline": true,
+                    "title": "Trucks by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Trucks by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "maintenance",
+                      "view": "all_maintenance"
+                    },
+                    "inline": true,
+                    "title": "Maintenance spend by kind (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Maintenance spend by kind (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "cost"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliveries due in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "loads",
+              "view": "all_loads"
+            },
+            "inline": true,
+            "title": "Deliveries due in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Deliveries due in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "deliver_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Dispatched",
+                    "In transit"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Maintenance overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "maintenance",
+              "view": "all_maintenance"
+            },
+            "inline": true,
+            "title": "Maintenance overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Maintenance overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Documents expiring in 30 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "docs",
+              "view": "all_docs"
+            },
+            "inline": true,
+            "title": "Documents expiring in 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Documents expiring in 30 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Expiring"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Revenue per mile (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rate divided by loaded miles"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with your cost per mile before accepting repeat lanes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Revenue less maintenance (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Delivered revenue minus maintenance spend for the truck"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A truck that keeps going negative is a replacement decision"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Loads in progress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Loads dispatched or in transit on the truck"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A truck marked Available with one in progress needs a status fix"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "dispatch-routine",
+      "parent": "trucking-fleet-desk",
+      "title": "Dispatch routine",
+      "icon": {
+        "emoji": "📞"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Dispatch is matching the right truck, driver and load, then checking back until the freight is delivered."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open Loads due in the next 7 days and call any in-transit load behind schedule"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check driver paperwork expiring this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm which trucks are in the shop"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assigning a load"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the truck's status and open maintenance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the driver's documents and rest before assigning."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Dispatch and send the pickup details."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update to In transit at pickup and Delivered at the proof of delivery."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When there is a problem"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press Flag a problem, call the customer within the hour and write what was agreed on the load row."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "preventive-maintenance-guide",
+      "parent": "trucking-fleet-desk",
+      "title": "Preventive maintenance guide",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A truck that is fixed on schedule costs far less than one fixed on the side of the road."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Set the schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use the manufacturer's service intervals as a starting point."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add the next service and inspection dates to every truck."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add a maintenance job for each due service so the cost is tracked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review Maintenance overdue and book the shop"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Compare maintenance spend by truck"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Replace trucks that cost more to fix than to retire"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "driver-paperwork-guide",
+      "parent": "trucking-fleet-desk",
+      "title": "Driver paperwork guide",
+      "icon": {
+        "emoji": "🪪"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Missing paperwork can park a good driver. Track expiry dates before they arrive."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to track"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Document"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check how often"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Commercial license"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Needed to drive"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly view of expiry dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Medical card"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Needed to stay qualified"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Safety training"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Required by customers and insurers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quarterly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Insurance listing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Needed for dispatch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At each renewal"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never store here"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "License numbers, medical details and anything private. Keep those in the secure personnel file and track only the dates."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

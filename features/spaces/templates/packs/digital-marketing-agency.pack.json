@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 3,
+  "version": 4,
   "title": "Digital Marketing Agency HQ",
   "description": "Clients, retainers, campaigns, deliverables and monthly reports for a marketing agency.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -869,7 +869,26 @@
           "client": "Either record can be created or change status before the other.",
           "lead": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Live"
+            ],
+            "filled": [
+              "live_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Closed"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ],
         "before": [
           [
             "starts_on",
@@ -1313,13 +1332,34 @@
               "do": "run_action",
               "action": "deliverable_mark_done"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deliverable_take"
+            }
           }
         ],
         "independentOf": {
           "campaign": "Either record can be created or change status before the other.",
           "owner": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New deliverable",
@@ -1571,7 +1611,8 @@
               "owner": "tm-2"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "time_entry",
@@ -2436,6 +2477,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deliverable_take",
+        "table": "deliverable",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2877,7 +2932,7 @@
         "Alder Quay"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

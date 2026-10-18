@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0200",
-  "version": 4,
+  "version": 5,
   "title": "Life OS",
   "description": "Anyone: tasks, projects, notes and goals in one home, with a daily view.",
   "forWho": "Anyone running their whole life from one place",
@@ -907,6 +907,17 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
           }
         ],
         "rows": [
@@ -1794,7 +1805,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assignee",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_areas",
@@ -2081,7 +2107,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

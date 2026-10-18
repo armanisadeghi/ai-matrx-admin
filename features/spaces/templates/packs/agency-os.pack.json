@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 5,
+  "version": 6,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -988,7 +988,17 @@
           "lead": "Either record can be created or change status before the other.",
           "client": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "Project kickoff",
@@ -1221,6 +1231,17 @@
             }
           },
           {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
+          },
+          {
             "key": "created_at",
             "label": "Created",
             "parityType": "created_time",
@@ -1377,7 +1398,17 @@
           "assignee": "Either record can be created or change status before the other.",
           "project": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New task",
@@ -1433,7 +1464,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "capacity",
@@ -1605,7 +1637,8 @@
               "Lost"
             ],
             "filled": [
-              "sent_on"
+              "sent_on",
+              "closed_on"
             ]
           }
         ],
@@ -1891,7 +1924,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "time_entry",
@@ -2371,6 +2405,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2677,7 +2725,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

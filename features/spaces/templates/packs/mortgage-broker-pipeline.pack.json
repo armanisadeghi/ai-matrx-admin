@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0419",
-  "version": 2,
+  "version": 3,
   "title": "Mortgage Broker Pipeline",
   "description": "Borrowers, loan files by stage, conditions and referral partners. Tracking only.",
   "forWho": "Mortgage brokers and loan officers",
@@ -471,7 +471,8 @@
               "Funded"
             ],
             "filled": [
-              "purpose"
+              "purpose",
+              "funded_on"
             ]
           }
         ],
@@ -757,6 +758,17 @@
               "do": "run_action",
               "action": "condition_cleared"
             }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "condition_take"
+            }
           }
         ],
         "rows": [
@@ -887,7 +899,8 @@
               "Received"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "received_on"
             ]
           },
           {
@@ -896,7 +909,8 @@
               "Cleared"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "cleared_on"
             ]
           }
         ],
@@ -977,7 +991,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "borrower",
@@ -1758,6 +1773,20 @@
             "value": "@today"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "condition_take",
+        "table": "condition",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2091,7 +2120,7 @@
         "Trade Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

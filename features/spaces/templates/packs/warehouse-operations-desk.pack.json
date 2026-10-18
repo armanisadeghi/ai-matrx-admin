@@ -1,0 +1,3841 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0570",
+  "version": 1,
+  "title": "Warehouse Operations Desk",
+  "description": "Stock locations, inbound dock schedule, outbound orders and cycle counts.",
+  "forWho": "Warehouses, 3PLs and distribution centers",
+  "icon": {
+    "emoji": "📦"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "manufacturing",
+  "tags": [
+    "warehouse",
+    "inventory",
+    "receiving",
+    "shipping",
+    "cycle counts"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-warehouse-operations-desk",
+    "catalogueId": "SP0570",
+    "useCase": "Gideon Abernathy-Osei manages a regional distribution warehouse and uses this to see what arrives at the dock, which orders must ship, which stock is below minimum and which counts are due.",
+    "industry": "manufacturing_logistics",
+    "vertical": "Warehouse operations",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Mid-South Fulfillment Center",
+      "describes": "A 60,000 square foot distribution warehouse handling inbound pallets, pick-and-pack orders and returns for twelve small brands.",
+      "address": {
+        "line1": "2200 Cargo Way",
+        "city": "Memphis",
+        "region": "TN",
+        "postalCode": "38118",
+        "country": "US"
+      },
+      "phone": "(901) 555-0188",
+      "website": "midsouthfulfillment.net",
+      "email": "ops@midsouthfulfillment.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-warehouse-operations-desk",
+    "tables": [
+      {
+        "token": "sku",
+        "name": "Stock lines",
+        "labelSingular": "Stock line",
+        "labelPlural": "Stock lines",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "boxes",
+        "titleField": "sku_name",
+        "describes": "Each product the warehouse holds, with location, quantity, minimum and how much is coming in or going out.",
+        "subject": "thing",
+        "statusImplies": [],
+        "before": [
+          [
+            "last_counted",
+            "reorder_by"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "sku_name",
+            "label": "Stock line",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "In stock",
+              "Low",
+              "Out",
+              "Blocked"
+            ],
+            "choiceColors": {
+              "In stock": "slate",
+              "Low": "blue",
+              "Out": "amber",
+              "Blocked": "violet"
+            },
+            "required": true,
+            "default": "In stock",
+            "statusGroups": {
+              "In stock": "todo",
+              "Low": "in_progress",
+              "Out": "in_progress",
+              "Blocked": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client",
+            "label": "Brand",
+            "parityType": "select",
+            "choices": [
+              "Pinecone Pet Goods",
+              "Lowtide Skincare",
+              "Ridgeback Outdoor",
+              "Candlewick Home",
+              "Tinker Toy Works"
+            ],
+            "choiceColors": {
+              "Pinecone Pet Goods": "slate",
+              "Lowtide Skincare": "blue",
+              "Ridgeback Outdoor": "amber",
+              "Candlewick Home": "violet",
+              "Tinker Toy Works": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "Units on hand",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "minimum",
+            "label": "Minimum units",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reorder_by",
+            "label": "Reorder by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_counted",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "incoming",
+            "label": "Units incoming",
+            "parityType": "rollup",
+            "via": "inbound",
+            "pick": "units",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Expected",
+                "Arrived"
+              ]
+            }
+          },
+          {
+            "key": "promised",
+            "label": "Units on open orders",
+            "parityType": "rollup",
+            "via": "outbound",
+            "pick": "units",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Pending",
+                "Picking",
+                "Packed"
+              ]
+            }
+          },
+          {
+            "key": "available",
+            "label": "Available to promise",
+            "parityType": "formula",
+            "formula": "{Units on hand} - {Units on open orders}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_block",
+            "label": "Block stock",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "sku_block"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_release",
+            "label": "Release",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "sku_release"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "sku_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_count",
+            "label": "Schedule a count",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "counts",
+              "template": "New count",
+              "prefill": {
+                "sku": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New stock line",
+            "values": {
+              "sku_name": "New stock line",
+              "status": "In stock"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Handling"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pallet size, stacking limits and any care instructions."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Location rules"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pick face, reserve location and slotting notes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "sku-1",
+            "values": {
+              "sku_name": "Pet bed, large",
+              "status": "In stock",
+              "client": "Pinecone Pet Goods",
+              "location": "A-12-3",
+              "on_hand": 420,
+              "minimum": 150,
+              "reorder_by": "@today+30d",
+              "last_counted": "@today-20d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sku-2",
+            "values": {
+              "sku_name": "Dog leash, 6 ft",
+              "status": "Low",
+              "client": "Pinecone Pet Goods",
+              "location": "A-14-1",
+              "on_hand": 85,
+              "minimum": 200,
+              "reorder_by": "@today+2d",
+              "last_counted": "@today-9d"
+            }
+          },
+          {
+            "key": "sku-3",
+            "values": {
+              "sku_name": "Face serum, 30 ml",
+              "status": "In stock",
+              "client": "Lowtide Skincare",
+              "location": "C-03-2",
+              "on_hand": 960,
+              "minimum": 300,
+              "reorder_by": "@today+25d",
+              "last_counted": "@today-14d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sku-4",
+            "values": {
+              "sku_name": "Moisturizer, 50 ml",
+              "status": "Low",
+              "client": "Lowtide Skincare",
+              "location": "C-03-4",
+              "on_hand": 140,
+              "minimum": 300,
+              "reorder_by": "@today",
+              "last_counted": "@today-31d"
+            }
+          },
+          {
+            "key": "sku-5",
+            "values": {
+              "sku_name": "Camp stove",
+              "status": "In stock",
+              "client": "Ridgeback Outdoor",
+              "location": "B-20-1",
+              "on_hand": 310,
+              "minimum": 120,
+              "reorder_by": "@today+40d",
+              "last_counted": "@today-6d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sku-6",
+            "values": {
+              "sku_name": "Sleeping bag, 3-season",
+              "status": "Out",
+              "client": "Ridgeback Outdoor",
+              "location": "B-22-2",
+              "on_hand": 0,
+              "minimum": 80,
+              "reorder_by": "@today-3d",
+              "last_counted": "@today-22d"
+            }
+          },
+          {
+            "key": "sku-7",
+            "values": {
+              "sku_name": "Soy candle, cedar",
+              "status": "In stock",
+              "client": "Candlewick Home",
+              "location": "D-07-2",
+              "on_hand": 1200,
+              "minimum": 400,
+              "reorder_by": "@today+50d",
+              "last_counted": "@today-4d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sku-8",
+            "values": {
+              "sku_name": "Candle gift box",
+              "status": "Low",
+              "client": "Candlewick Home",
+              "location": "D-07-5",
+              "on_hand": 60,
+              "minimum": 150,
+              "reorder_by": "@today+5d",
+              "last_counted": "@today-18d"
+            }
+          },
+          {
+            "key": "sku-9",
+            "values": {
+              "sku_name": "Wooden puzzle, 100 pc",
+              "status": "In stock",
+              "client": "Tinker Toy Works",
+              "location": "E-02-1",
+              "on_hand": 520,
+              "minimum": 200,
+              "reorder_by": "@today+35d",
+              "last_counted": "@today-11d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sku-10",
+            "values": {
+              "sku_name": "Returned items hold",
+              "status": "Blocked",
+              "client": "Tinker Toy Works",
+              "location": "R-01-1",
+              "on_hand": 45,
+              "minimum": 0,
+              "reorder_by": "@today+10d",
+              "last_counted": "@today-2d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "inbound",
+        "name": "Inbound deliveries",
+        "labelSingular": "Inbound delivery",
+        "labelPlural": "Inbound deliveries",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "delivery_name",
+        "describes": "Trucks and pallets arriving at the dock, with the stock line, door and what was received.",
+        "subject": "thing",
+        "independentOf": {
+          "sku": "Either record can be created or change status before the other.",
+          "receiver": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "received_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "eta_at",
+            "received_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "delivery_name",
+            "label": "Inbound delivery",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "Stock line",
+            "parityType": "relation",
+            "relationTarget": "sku",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "carrier",
+            "label": "Carrier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "door",
+            "label": "Dock door",
+            "parityType": "select",
+            "choices": [
+              "Door 1",
+              "Door 2",
+              "Door 3",
+              "Door 4"
+            ],
+            "choiceColors": {
+              "Door 1": "slate",
+              "Door 2": "blue",
+              "Door 3": "amber",
+              "Door 4": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Expected",
+              "Arrived",
+              "Received",
+              "Problem"
+            ],
+            "choiceColors": {
+              "Expected": "slate",
+              "Arrived": "blue",
+              "Received": "amber",
+              "Problem": "violet"
+            },
+            "required": true,
+            "default": "Expected",
+            "statusGroups": {
+              "Expected": "in_progress",
+              "Arrived": "in_progress",
+              "Received": "done",
+              "Problem": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "eta_at",
+            "label": "Expected at",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pallets",
+            "label": "Pallets",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "units",
+            "label": "Units",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "receiver",
+            "label": "Receiver",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_arrived",
+            "label": "Mark arrived",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "inbound_arrived"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_received",
+            "label": "Mark received",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "inbound_received"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_problem",
+            "label": "Flag a problem",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "inbound_problem"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "inbound_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New inbound delivery",
+            "values": {
+              "delivery_name": "New inbound delivery",
+              "status": "Expected"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before it arrives"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Purchase order, appointment and door assigned."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Receiving checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Seal number matches paperwork"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Count pallets and cartons"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Check for damage and photograph it"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Record overages and shortages"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Put away to the right location"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "inbound-1",
+            "values": {
+              "delivery_name": "Pinecone leash restock",
+              "sku": "sku-2",
+              "carrier": "Southern Freight",
+              "door": "Door 2",
+              "status": "Expected",
+              "eta_at": "@today 10:30",
+              "pallets": 4,
+              "units": 2400,
+              "receiver": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inbound-2",
+            "values": {
+              "delivery_name": "Lowtide moisturizer restock",
+              "sku": "sku-4",
+              "carrier": "Delta Line",
+              "door": "Door 1",
+              "status": "Arrived",
+              "eta_at": "@today 08:00",
+              "pallets": 6,
+              "units": 3600,
+              "receiver": "tm-2"
+            }
+          },
+          {
+            "key": "inbound-3",
+            "values": {
+              "delivery_name": "Ridgeback sleeping bag container",
+              "sku": "sku-6",
+              "carrier": "Harbor Transport",
+              "door": "Door 3",
+              "status": "Expected",
+              "eta_at": "@today+2d 09:00",
+              "pallets": 12,
+              "units": 960,
+              "receiver": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inbound-4",
+            "values": {
+              "delivery_name": "Candlewick gift boxes",
+              "sku": "sku-8",
+              "carrier": "Southern Freight",
+              "door": "Door 4",
+              "status": "Expected",
+              "eta_at": "@today+4d 13:00",
+              "pallets": 3,
+              "units": 1500,
+              "receiver": "tm-2"
+            }
+          },
+          {
+            "key": "inbound-5",
+            "values": {
+              "delivery_name": "Camp stove replenishment",
+              "sku": "sku-5",
+              "carrier": "Delta Line",
+              "door": "Door 2",
+              "status": "Expected",
+              "eta_at": "@today+1d 14:00",
+              "pallets": 5,
+              "units": 480,
+              "receiver": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inbound-6",
+            "values": {
+              "delivery_name": "Puzzle pallets",
+              "sku": "sku-9",
+              "carrier": "Harbor Transport",
+              "door": "Door 1",
+              "status": "Expected",
+              "eta_at": "@today-1d 11:00",
+              "pallets": 4,
+              "units": 800,
+              "receiver": "tm-2"
+            }
+          },
+          {
+            "key": "inbound-7",
+            "values": {
+              "delivery_name": "Pet bed restock",
+              "sku": "sku-1",
+              "carrier": "Southern Freight",
+              "door": "Door 2",
+              "status": "Received",
+              "eta_at": "@today-8d 10:00",
+              "pallets": 6,
+              "units": 300,
+              "receiver": "tm-2",
+              "received_on": "@today-8d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inbound-8",
+            "values": {
+              "delivery_name": "Serum restock, damaged pallet",
+              "sku": "sku-3",
+              "carrier": "Delta Line",
+              "door": "Door 1",
+              "status": "Problem",
+              "eta_at": "@today-3d 09:00",
+              "pallets": 3,
+              "units": 1200,
+              "receiver": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "outbound",
+        "name": "Outbound orders",
+        "labelSingular": "Outbound order",
+        "labelPlural": "Outbound orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "send",
+        "titleField": "order_name",
+        "describes": "Customer orders to pick, pack and ship, with the carrier and deadline.",
+        "subject": "thing",
+        "independentOf": {
+          "sku": "Either record can be created or change status before the other.",
+          "picker": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Shipped"
+            ],
+            "filled": [
+              "shipped_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "ship_by",
+            "shipped_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Outbound order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "Stock line",
+            "parityType": "relation",
+            "relationTarget": "sku",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "units",
+            "label": "Units",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "carrier",
+            "label": "Carrier",
+            "parityType": "select",
+            "choices": [
+              "Ground parcel",
+              "Express parcel",
+              "Less-than-truckload",
+              "Customer pickup"
+            ],
+            "choiceColors": {
+              "Ground parcel": "slate",
+              "Express parcel": "blue",
+              "Less-than-truckload": "amber",
+              "Customer pickup": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Pending",
+              "Picking",
+              "Packed",
+              "Shipped",
+              "On hold"
+            ],
+            "choiceColors": {
+              "Pending": "slate",
+              "Picking": "blue",
+              "Packed": "amber",
+              "Shipped": "violet",
+              "On hold": "teal"
+            },
+            "required": true,
+            "default": "Pending",
+            "statusGroups": {
+              "Pending": "todo",
+              "Picking": "in_progress",
+              "Packed": "in_progress",
+              "Shipped": "in_progress",
+              "On hold": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ship_by",
+            "label": "Ship by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "picker",
+            "label": "Picker",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_pick",
+            "label": "Start picking",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "outbound_pick"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_pack",
+            "label": "Mark packed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "outbound_pack"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_ship",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "outbound_ship"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "outbound_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New outbound order",
+            "values": {
+              "order_name": "New outbound order",
+              "status": "Pending"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pick notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Substitutions allowed and special handling."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pack checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Contents match the order"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Right carton and filler"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Label on the largest face"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Weight recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "outbound-1",
+            "values": {
+              "order_name": "Pet shop wholesale order",
+              "sku": "sku-1",
+              "units": 60,
+              "carrier": "Less-than-truckload",
+              "status": "Picking",
+              "ship_by": "@today",
+              "picker": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "outbound-2",
+            "values": {
+              "order_name": "Online order batch, leashes",
+              "sku": "sku-2",
+              "units": 40,
+              "carrier": "Ground parcel",
+              "status": "Pending",
+              "ship_by": "@today-1d",
+              "picker": "tm-3"
+            }
+          },
+          {
+            "key": "outbound-3",
+            "values": {
+              "order_name": "Spa retail order, serum",
+              "sku": "sku-3",
+              "units": 120,
+              "carrier": "Express parcel",
+              "status": "Pending",
+              "ship_by": "@today+2d",
+              "picker": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "outbound-4",
+            "values": {
+              "order_name": "Outdoor retailer order, stoves",
+              "sku": "sku-5",
+              "units": 30,
+              "carrier": "Less-than-truckload",
+              "status": "Packed",
+              "ship_by": "@today",
+              "picker": "tm-3"
+            }
+          },
+          {
+            "key": "outbound-5",
+            "values": {
+              "order_name": "Online order batch, candles",
+              "sku": "sku-7",
+              "units": 200,
+              "carrier": "Ground parcel",
+              "status": "Pending",
+              "ship_by": "@today+3d",
+              "picker": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "outbound-6",
+            "values": {
+              "order_name": "Gift shop order, puzzles",
+              "sku": "sku-9",
+              "units": 48,
+              "carrier": "Ground parcel",
+              "status": "Pending",
+              "ship_by": "@today+5d",
+              "picker": "tm-3"
+            }
+          },
+          {
+            "key": "outbound-7",
+            "values": {
+              "order_name": "Spa retail order, moisturizer",
+              "sku": "sku-4",
+              "units": 90,
+              "carrier": "Express parcel",
+              "status": "On hold",
+              "ship_by": "@today-2d",
+              "picker": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "outbound-8",
+            "values": {
+              "order_name": "Pet shop order, beds",
+              "sku": "sku-1",
+              "units": 24,
+              "carrier": "Ground parcel",
+              "status": "Shipped",
+              "ship_by": "@today-6d",
+              "picker": "tm-3",
+              "shipped_on": "@today-6d"
+            }
+          },
+          {
+            "key": "outbound-9",
+            "values": {
+              "order_name": "Candle subscription batch",
+              "sku": "sku-7",
+              "units": 150,
+              "carrier": "Ground parcel",
+              "status": "Shipped",
+              "ship_by": "@today-4d",
+              "picker": "tm-3",
+              "shipped_on": "@today-4d",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "counts",
+        "name": "Cycle counts",
+        "labelSingular": "Cycle count",
+        "labelPlural": "Cycle counts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "scan-barcode",
+        "titleField": "count_name",
+        "describes": "Rolling counts of stock lines, with expected quantity, counted quantity and the difference.",
+        "subject": "thing",
+        "independentOf": {
+          "sku": "Either record can be created or change status before the other.",
+          "counter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Adjusted"
+            ],
+            "filled": [
+              "adjusted_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "count_on",
+            "adjusted_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "count_name",
+            "label": "Cycle count",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "Stock line",
+            "parityType": "relation",
+            "relationTarget": "sku",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Scheduled",
+              "Counted",
+              "Adjusted",
+              "Skipped"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Counted": "blue",
+              "Adjusted": "amber",
+              "Skipped": "violet"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Counted": "in_progress",
+              "Adjusted": "in_progress",
+              "Skipped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "count_on",
+            "label": "Count on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "adjusted_on",
+            "label": "Adjusted on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expected",
+            "label": "Expected units",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counted",
+            "label": "Counted units",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "variance",
+            "label": "Variance (units)",
+            "parityType": "formula",
+            "formula": "{Counted units} - {Expected units}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counter",
+            "label": "Counted by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_counted",
+            "label": "Mark counted",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "counts_counted"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_adjusted",
+            "label": "Mark adjusted",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "counts_adjusted"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "counts_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New count",
+            "values": {
+              "count_name": "New count",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Count rules"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Count the bin twice and write the figure before looking at the system."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Variance notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Cause of any difference and the fix."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "counts-1",
+            "values": {
+              "count_name": "Moisturizer count",
+              "sku": "sku-4",
+              "status": "Scheduled",
+              "count_on": "@today",
+              "expected": 140,
+              "counted": 0,
+              "counter": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "counts-2",
+            "values": {
+              "count_name": "Leash count",
+              "sku": "sku-2",
+              "status": "Scheduled",
+              "count_on": "@today+2d",
+              "expected": 85,
+              "counted": 0,
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "counts-3",
+            "values": {
+              "count_name": "Gift box count",
+              "sku": "sku-8",
+              "status": "Scheduled",
+              "count_on": "@today+4d",
+              "expected": 60,
+              "counted": 0,
+              "counter": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "counts-4",
+            "values": {
+              "count_name": "Sleeping bag count",
+              "sku": "sku-6",
+              "status": "Scheduled",
+              "count_on": "@today-1d",
+              "expected": 0,
+              "counted": 0,
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "counts-5",
+            "values": {
+              "count_name": "Pet bed count",
+              "sku": "sku-1",
+              "status": "Counted",
+              "count_on": "@today-3d",
+              "expected": 420,
+              "counted": 418,
+              "counter": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "counts-6",
+            "values": {
+              "count_name": "Camp stove count",
+              "sku": "sku-5",
+              "status": "Adjusted",
+              "count_on": "@today-6d",
+              "expected": 312,
+              "counted": 310,
+              "counter": "tm-4",
+              "adjusted_on": "@today-5d"
+            }
+          },
+          {
+            "key": "counts-7",
+            "values": {
+              "count_name": "Candle count",
+              "sku": "sku-7",
+              "status": "Adjusted",
+              "count_on": "@today-5d",
+              "expected": 1200,
+              "counted": 1200,
+              "counter": "tm-4",
+              "adjusted_on": "@today-5d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "counts-8",
+            "values": {
+              "count_name": "Puzzle count",
+              "sku": "sku-9",
+              "status": "Skipped",
+              "count_on": "@today-9d",
+              "expected": 520,
+              "counted": 0,
+              "counter": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each inbound delivery belongs to one stock line.",
+        "fromTable": "inbound",
+        "fromField": "sku",
+        "toTable": "sku",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "inbound"
+      },
+      {
+        "describes": "Each inbound delivery belongs to one receiver.",
+        "fromTable": "inbound",
+        "fromField": "receiver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "inbound_by_receiver"
+      },
+      {
+        "describes": "Each outbound order belongs to one stock line.",
+        "fromTable": "outbound",
+        "fromField": "sku",
+        "toTable": "sku",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "outbound"
+      },
+      {
+        "describes": "Each outbound order belongs to one picker.",
+        "fromTable": "outbound",
+        "fromField": "picker",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "outbound_by_picker"
+      },
+      {
+        "describes": "Each cycle count belongs to one stock line.",
+        "fromTable": "counts",
+        "fromField": "sku",
+        "toTable": "sku",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "counts"
+      },
+      {
+        "describes": "Each cycle count belongs to one counted by.",
+        "fromTable": "counts",
+        "fromField": "counter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "count_by_counter"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Gideon Abernathy-Osei",
+              "role": "Warehouse manager",
+              "work_email": "gideon@midsouthfulfillment.net",
+              "mobile": "(901) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Priscilla Dangerfield",
+              "role": "Inbound lead",
+              "work_email": "priscilla@midsouthfulfillment.net",
+              "mobile": "(901) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Marcus Ibekwe",
+              "role": "Outbound lead",
+              "work_email": "marcus@midsouthfulfillment.net",
+              "mobile": "(901) 555-0143",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Yuki Tanaka-Reyes",
+              "role": "Inventory control",
+              "work_email": "yuki@midsouthfulfillment.net",
+              "mobile": "(901) 555-0144",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Oswald Petrov",
+              "role": "Shift supervisor",
+              "work_email": "oswald@midsouthfulfillment.net",
+              "mobile": "(901) 555-0145",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Order request",
+        "describes": "Brands send orders to ship here.",
+        "audience": "staff",
+        "table": "outbound",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "What is the order called?",
+            "required": true
+          },
+          {
+            "fieldKey": "units",
+            "ask": "How many units?",
+            "required": true
+          },
+          {
+            "fieldKey": "carrier",
+            "ask": "Which carrier?"
+          },
+          {
+            "fieldKey": "ship_by",
+            "ask": "Ship by when?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The outbound lead will confirm the order."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "sku_block",
+        "table": "sku",
+        "name": "Block stock",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Blocked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "sku_release",
+        "table": "sku",
+        "name": "Release",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In stock"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "sku_claim",
+        "table": "sku",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inbound_arrived",
+        "table": "inbound",
+        "name": "Mark arrived",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Arrived"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inbound_received",
+        "table": "inbound",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inbound_problem",
+        "table": "inbound",
+        "name": "Flag a problem",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Problem"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inbound_claim",
+        "table": "inbound",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "outbound_pick",
+        "table": "outbound",
+        "name": "Start picking",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Picking"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "outbound_pack",
+        "table": "outbound",
+        "name": "Mark packed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Packed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "outbound_ship",
+        "table": "outbound",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "outbound_claim",
+        "table": "outbound",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "counts_counted",
+        "table": "counts",
+        "name": "Mark counted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Counted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "counts_adjusted",
+        "table": "counts",
+        "name": "Mark adjusted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Adjusted"
+          },
+          {
+            "field": "adjusted_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "counts_claim",
+        "table": "counts",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_sku",
+        "name": "All stock lines",
+        "table": "sku",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "sku_board",
+        "name": "By status",
+        "table": "sku",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "sku_cal",
+        "name": "Calendar",
+        "table": "sku",
+        "kind": "calendar",
+        "dateField": "reorder_by",
+        "allDay": true
+      },
+      {
+        "token": "sku_over",
+        "name": "Overdue",
+        "table": "sku",
+        "kind": "grid",
+        "within": {
+          "reorder_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "sku_week",
+        "name": "This week",
+        "table": "sku",
+        "kind": "grid",
+        "within": {
+          "reorder_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "sku_next7",
+        "name": "Next 7 days",
+        "table": "sku",
+        "kind": "grid",
+        "within": {
+          "reorder_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "sku_mine",
+        "name": "My stock lines",
+        "table": "sku",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_inbound",
+        "name": "All inbound deliveries",
+        "table": "inbound",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "inbound_board",
+        "name": "By status",
+        "table": "inbound",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "inbound_cal",
+        "name": "Calendar",
+        "table": "inbound",
+        "kind": "calendar",
+        "dateField": "eta_at",
+        "allDay": false
+      },
+      {
+        "token": "inbound_today",
+        "name": "Today",
+        "table": "inbound",
+        "kind": "grid",
+        "within": {
+          "eta_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Expected",
+            "Arrived"
+          ]
+        }
+      },
+      {
+        "token": "inbound_over",
+        "name": "Overdue",
+        "table": "inbound",
+        "kind": "grid",
+        "within": {
+          "eta_at": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Expected",
+            "Arrived"
+          ]
+        }
+      },
+      {
+        "token": "inbound_week",
+        "name": "This week",
+        "table": "inbound",
+        "kind": "grid",
+        "within": {
+          "eta_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Expected",
+            "Arrived"
+          ]
+        }
+      },
+      {
+        "token": "inbound_next7",
+        "name": "Next 7 days",
+        "table": "inbound",
+        "kind": "grid",
+        "within": {
+          "eta_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Expected",
+            "Arrived"
+          ]
+        }
+      },
+      {
+        "token": "inbound_mine",
+        "name": "My inbound deliveries",
+        "table": "inbound",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_outbound",
+        "name": "All outbound orders",
+        "table": "outbound",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "outbound_board",
+        "name": "By status",
+        "table": "outbound",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "outbound_cal",
+        "name": "Calendar",
+        "table": "outbound",
+        "kind": "calendar",
+        "dateField": "ship_by",
+        "allDay": true
+      },
+      {
+        "token": "outbound_over",
+        "name": "Overdue",
+        "table": "outbound",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Picking",
+            "Packed"
+          ]
+        }
+      },
+      {
+        "token": "outbound_week",
+        "name": "This week",
+        "table": "outbound",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Picking",
+            "Packed"
+          ]
+        }
+      },
+      {
+        "token": "outbound_next7",
+        "name": "Next 7 days",
+        "table": "outbound",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Picking",
+            "Packed"
+          ]
+        }
+      },
+      {
+        "token": "outbound_mine",
+        "name": "My outbound orders",
+        "table": "outbound",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_counts",
+        "name": "All cycle counts",
+        "table": "counts",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "counts_board",
+        "name": "By status",
+        "table": "counts",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "counts_cal",
+        "name": "Calendar",
+        "table": "counts",
+        "kind": "calendar",
+        "dateField": "count_on",
+        "allDay": true
+      },
+      {
+        "token": "counts_over",
+        "name": "Overdue",
+        "table": "counts",
+        "kind": "grid",
+        "within": {
+          "count_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "counts_week",
+        "name": "This week",
+        "table": "counts",
+        "kind": "grid",
+        "within": {
+          "count_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "counts_next7",
+        "name": "Next 7 days",
+        "table": "counts",
+        "kind": "grid",
+        "within": {
+          "count_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "counts_mine",
+        "name": "My cycle counts",
+        "table": "counts",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Warehouse Operations Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "outbound",
+          "describes": "Customer orders to pick, pack and ship, with the carrier and deadline."
+        },
+        {
+          "name": "related_tables",
+          "table": "sku",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many outbound orders are waiting to be picked?",
+        "whyItMatters": "The outbound lead plans pickers from this list each morning.",
+        "expect": {
+          "table": "outbound",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Pending"
+          },
+          "answer": 4,
+          "unit": "orders"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open stock lines.",
+        "action": {
+          "kind": "open",
+          "surface": "sku_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sku_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open inbound deliveries.",
+        "action": {
+          "kind": "open",
+          "surface": "inbound_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "inbound_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open outbound orders.",
+        "action": {
+          "kind": "open",
+          "surface": "outbound_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "outbound_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "midsouthfulfillment.net"
+      ],
+      "fictionalStreets": [
+        "Cargo Way"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "warehouse-operations-desk",
+      "parent": null,
+      "title": "Warehouse Operations Desk",
+      "icon": {
+        "emoji": "📦"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Receiving, stock, shipping and counts for the warehouse in one place. Start with the Dashboard at shift start: trucks due at the dock, orders that must ship and stock below minimum. Log overages, shortages and damage at the dock as exceptions, never as later adjustments."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:receiving-sop"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pick-pack-ship-sop"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:cycle-counting-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stock lines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each product the warehouse holds, with location, quantity, minimum and how much is coming in or going out."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sku",
+              "view": "sku_board"
+            },
+            "inline": true,
+            "title": "Stock lines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sku-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sku-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "reorder_by"
+              },
+              {
+                "id": "sku-t",
+                "name": "All stock lines",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sku-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "reorder_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "sku-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "reorder_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "sku-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "reorder_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "sku-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sku-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inbound deliveries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Trucks and pallets arriving at the dock, with the stock line, door and what was received."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inbound",
+              "view": "inbound_board"
+            },
+            "inline": true,
+            "title": "Inbound deliveries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inb-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inb-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "eta_at"
+              },
+              {
+                "id": "inb-t",
+                "name": "All inbound deliveries",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inb-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "eta_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Expected",
+                    "Arrived"
+                  ]
+                }
+              },
+              {
+                "id": "inb-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "eta_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Expected",
+                    "Arrived"
+                  ]
+                }
+              },
+              {
+                "id": "inb-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "eta_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Expected",
+                    "Arrived"
+                  ]
+                }
+              },
+              {
+                "id": "inb-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "eta_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Expected",
+                    "Arrived"
+                  ]
+                }
+              },
+              {
+                "id": "inb-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "inb-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Outbound orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Customer orders to pick, pack and ship, with the carrier and deadline."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "outbound",
+              "view": "outbound_board"
+            },
+            "inline": true,
+            "title": "Outbound orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "out-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "out-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ship_by"
+              },
+              {
+                "id": "out-t",
+                "name": "All outbound orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "out-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Picking",
+                    "Packed"
+                  ]
+                }
+              },
+              {
+                "id": "out-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ship_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Picking",
+                    "Packed"
+                  ]
+                }
+              },
+              {
+                "id": "out-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ship_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Picking",
+                    "Packed"
+                  ]
+                }
+              },
+              {
+                "id": "out-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "out-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cycle counts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rolling counts of stock lines, with expected quantity, counted quantity and the difference."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "counts",
+              "view": "counts_board"
+            },
+            "inline": true,
+            "title": "Cycle counts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cou-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cou-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "count_on"
+              },
+              {
+                "id": "cou-t",
+                "name": "All cycle counts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cou-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "count_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "cou-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "count_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "cou-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "count_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "cou-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cou-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "warehouse-operations-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The warehouse at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "outbound",
+                      "view": "all_outbound"
+                    },
+                    "inline": true,
+                    "title": "Outbound orders by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Outbound orders by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inbound",
+                      "view": "all_inbound"
+                    },
+                    "inline": true,
+                    "title": "Inbound deliveries by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Inbound deliveries by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "sku",
+                      "view": "all_sku"
+                    },
+                    "inline": true,
+                    "title": "Units on hand by brand",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Units on hand by brand",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "client",
+                          "op": "sum",
+                          "field": "on_hand"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "counts",
+                      "view": "all_counts"
+                    },
+                    "inline": true,
+                    "title": "Cycle counts by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Cycle counts by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Trucks expected in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inbound",
+              "view": "all_inbound"
+            },
+            "inline": true,
+            "title": "Trucks expected in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Trucks expected in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "eta_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Expected",
+                    "Arrived"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders that must ship this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "outbound",
+              "view": "all_outbound"
+            },
+            "inline": true,
+            "title": "Orders that must ship this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Orders that must ship this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "ship_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Picking",
+                    "Packed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stock below minimum"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sku",
+              "view": "all_sku"
+            },
+            "inline": true,
+            "title": "Stock below minimum",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Stock below minimum",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Available to promise"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Units on hand minus units on open orders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "If it is negative, hold new orders for the line until stock arrives"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Units incoming"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Units on deliveries expected or arrived but not received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Do not promise incoming units to a customer until they are received"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Variance (units)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Counted minus expected"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Investigate any variance over your tolerance before adjusting"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "receiving-sop",
+      "parent": "warehouse-operations-desk",
+      "title": "Receiving procedure",
+      "icon": {
+        "emoji": "📥"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Receiving is the front door of inventory. Mistakes made here follow every order for months."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Match the truck to an Inbound delivery row and assign a dock door."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the seal and paperwork before opening the trailer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count pallets and cartons against the paperwork."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record overages, shortages and damage as exceptions at the dock, with photos."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Put away to the assigned location and press Mark received."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update the stock line's units on hand."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No pallet is put away without a location."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Damaged goods go to the hold location, not the pick face."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything you cannot identify stays on the dock with a tag."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pick-pack-ship-sop",
+      "parent": "warehouse-operations-desk",
+      "title": "Pick, pack and ship procedure",
+      "icon": {
+        "emoji": "🏷️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Picking is the costliest step per order, so every minute saved there pays for itself."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start picking on the oldest ship-by first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick from the pick face; ask inventory control to replenish from reserve."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pack with the right carton and filler, and weigh it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Label, scan and stage the order by carrier."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark shipped when the carrier takes it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common problems"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Short pick"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check the bin twice, then flag the stock line and hold the order line"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Damaged unit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Set aside and replace from stock"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wrong label"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reprint; do not write over a printed label"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "cycle-counting-guide",
+      "parent": "warehouse-operations-desk",
+      "title": "Cycle counting guide",
+      "icon": {
+        "emoji": "🔢"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Rolling counts catch errors early and avoid one painful annual shutdown."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count fast movers monthly and slow movers quarterly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count every line after a problem delivery."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Schedule counts in quiet hours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Method"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count the bin twice before looking at the system quantity."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter the counted units and let the variance work itself out."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Investigate any large variance: recent receipts, picks, returns."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark adjusted only after approval."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
