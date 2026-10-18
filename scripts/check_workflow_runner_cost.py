@@ -533,15 +533,16 @@ def sibling_manifests(root: Path) -> dict[str, dict]:
 def check_ceiling(root: Path) -> list[str]:
     own = _load_manifest(root)
     siblings = sibling_manifests(root)
-    if own is None or not siblings:
+    if own is None:
         return []
     problems = [f"{name}/{MANIFEST}: unreadable ({m['_error']})" for name, m in siblings.items() if "_error" in m]
     every = {root.resolve().name: own, **{k: v for k, v in siblings.items() if "_error" not in v}}
-    total = sum(manifest_billed(m) for m in every.values())
+    costs = {name: max(manifest_billed(m), fresh_measured_billed(m)) for name, m in every.items()}
+    total = sum(costs.values())
     shares = sum(float(m.get("repo_share_usd", 0) or 0) for m in every.values())
     if total > WEEKLY_CEILING_USD + 1e-9:
-        worst = ", ".join(f"{k} ${manifest_billed(v):.2f}" for k, v in sorted(every.items(), key=lambda kv: -manifest_billed(kv[1]))[:4])
-        problems.append(f"all repos: CI costs ~${total:.2f}/week across {len(every)} manifests, over the ${WEEKLY_CEILING_USD:g}/week ceiling ({worst})")
+        worst = ", ".join(f"{k} ${v:.2f}" for k, v in sorted(costs.items(), key=lambda kv: -kv[1])[:4])
+        problems.append(f"all repos: CI costs ~${total:.2f}/week across {len(every)} manifests (higher of forecast and fresh measured billed spend per repo), over the ${WEEKLY_CEILING_USD:g}/week ceiling ({worst})")
     if shares > WEEKLY_CEILING_USD + 1e-9:
         problems.append(f"all repos: the repo_share_usd values add up to ${shares:g}, over the ${WEEKLY_CEILING_USD:g}/week ceiling")
     return problems
@@ -1150,13 +1151,7 @@ def manifest_self_test() -> int:
     return 0
 
 
-# ── Budget verdicts in the release train: a forecast never turns testing off (2026-10-15) ────────
-# The train's core guards run this checker, and test.yml's ci-breaker pauses EVERY train job after
-# three reds. A repo or ceiling overage that the pushed change did not cause therefore used to stop
-# all testing until the cap was decided. With --base, an overage fails only when this change raised
-# the forecast; otherwise it is reported loudly (warning annotation + job-summary line) and passes.
-# Every other problem (missing entry, stale shape, wrong sums) still fails. Without --base (by hand,
-# the workflow-change gate) the checker is unchanged.
+# Budget ceilings bind every invocation. A baseline adds attribution, never an exemption.
 BUDGET_MARKERS = ("/week share of the $", "/week ceiling (")
 
 
@@ -1173,34 +1168,21 @@ def base_billed(root: Path, base: str) -> float | None:
         return None
 
 
-def split_budget(root: Path, problems: list[str], base: str) -> tuple[list[str], list[str]]:
-    """(failing, reported): budget overages move to ``reported`` unless this change raised the forecast."""
-    budget = [p for p in problems if is_budget_problem(p)]
-    if not budget:
-        return problems, []
+def budget_with_base(root: Path, problems: list[str], base: str) -> list[str]:
+    """Keep every refusal; a readable baseline only adds cost-change diagnostics."""
+    if not any(is_budget_problem(p) for p in problems):
+        return problems
     own = _load_manifest(root)
     head = manifest_billed(own) if own else 0.0
     before = base_billed(root, base)
-    rest = [p for p in problems if not is_budget_problem(p)]
     if before is not None and head > before + 0.005:
-        return rest + [f"{p} — and this change RAISES the forecast ${before:.2f} -> ${head:.2f}/week (base {base[:10]})" for p in budget], []
-    note = "unchanged by this change" if before is not None else f"base {base[:10]} unreadable, so not attributed to this change"
-    return rest, [f"{p} [{note}: reported, not failed]" for p in budget]
-
-
-def report_budget(lines: list[str]) -> None:
-    gh = "GITHUB_ACTIONS" in os.environ
-    for line in lines:
-        print(f"::warning::CI SPEND OVER BUDGET: {line}" if gh else f"CI SPEND OVER BUDGET: {line}")
-    summary = os.environ.get("GITHUB_STEP_SUMMARY")
-    if summary and lines:
-        with open(summary, "a", encoding="utf-8") as fh:
-            fh.write("### CI SPEND OVER BUDGET (reported, not failed: this change did not raise it)\n")
-            fh.writelines(f"- {line}\n" for line in lines)
+        return [f"{p} — and this change RAISES the forecast ${before:.2f} -> ${head:.2f}/week (base {base[:10]})"
+                if is_budget_problem(p) else p for p in problems]
+    return problems
 
 
 def budget_self_test() -> int:
-    """An unchanged tree over budget passes; a change that raises the forecast fails."""
+    """Budget refusals survive every baseline and measurement; affordable workflows pass."""
     import tempfile
 
     def leg(runs: float) -> dict:
@@ -1227,31 +1209,271 @@ def budget_self_test() -> int:
         old_probe = globals()["VISIBILITY_PROBE"]
         globals()["VISIBILITY_PROBE"] = lambda _root: None
         try:
-            probs = check_root(root)
-            if not any(is_budget_problem(p) for p in probs):
-                print(f"BUDGET SELF-TEST FAIL: the planted overage was not seen: {probs}")
+            # AI Matrx's release train must refuse overspend even when recalibrating
+            # an understated forecast, cutting costs, or unable to read its baseline.
+            for runs, measured, ref, label in [
+                (500, False, base, "unchanged overage"),
+                (900, False, base, "increased overage"),
+                (300, False, base, "reduced but still over share"),
+                (25000, True, base, "fresh measurement timestamp with forecast above the $100 ceiling"),
+                (25000, False, "unreadable-ref", "unreadable baseline above ceiling"),
+                (100, True, base, "within share and ceiling"),
+            ]:
+                current = manifest(runs)
+                if measured:
+                    current["measured"] = {"at": "2026-10-18T12:00:00Z"}
+                (root / MANIFEST).write_text(json.dumps(current))
+                probs = check_root(root)
+                failing = budget_with_base(root, probs, ref)
+                if runs == 100:
+                    if failing:
+                        print(f"BUDGET SELF-TEST FAIL: {label} must pass: {failing}")
+                        return 1
+                elif not failing or any(not any(f.startswith(p) for f in failing) for p in probs):
+                    print(f"BUDGET SELF-TEST FAIL: {label} must retain every refusal: {failing}")
+                    return 1
+            # Measured spend is independent of a low forecast; stale history is not current spend.
+            for measured_usd, age_days, visibility, expected in [
+                (150, 0, "private", True),
+                (0.60, 0, "private", False),
+                (150, MEASURED_STALE_DAYS + 1, "private", False),
+                (150, 0, "public", False),
+            ]:
+                current = manifest(100)
+                current["visibility"] = visibility
+                current["measured"] = {
+                    "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - age_days * 86400)),
+                    "window_hours": 168, "usd_per_week": measured_usd,
+                    "by_workflow": {"w.yml": {"linux": {"runs": 1, "minutes": measured_usd / 0.006}}},
+                }
+                (root / MANIFEST).write_text(json.dumps(current))
+                probs = check_root(root)
+                for findings in (probs, budget_with_base(root, probs, base)):
+                    ceiling = [p for p in findings if "over the $100/week ceiling" in p]
+                    if bool(ceiling) != expected or (not expected and findings):
+                        print(f"BUDGET SELF-TEST FAIL: measured ${measured_usd}, age {age_days}, {visibility}: {findings}")
+                        return 1
+            current = manifest(100)
+            current["measured"] = {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "usd_per_week": 60}
+            (root / MANIFEST).write_text(json.dumps(current))
+            other = root.parent / "release-peer" / MANIFEST
+            other.parent.mkdir(parents=True)
+            other.write_text(json.dumps(current))
+            combined = check_ceiling(root)
+            if not any("$120.00/week" in p for p in combined):
+                print(f"BUDGET SELF-TEST FAIL: fresh measurements must aggregate across repos: {combined}")
                 return 1
-            failing, reported = split_budget(root, probs, base)
-            if failing or not reported:
-                print(f"BUDGET SELF-TEST FAIL: an unchanged over-budget tree must pass and report; failing={failing}")
+            current["measured"]["usd_per_week"] = 40
+            other.write_text(json.dumps(current))
+            if check_ceiling(root):
+                print("BUDGET SELF-TEST FAIL: exactly $100 measured across repos must pass")
                 return 1
-            (root / MANIFEST).write_text(json.dumps(manifest(900)))  # the change raises $3 -> $5.40
-            failing, reported = split_budget(root, check_root(root), base)
-            if not any("RAISES the forecast" in p for p in failing) or reported:
-                print(f"BUDGET SELF-TEST FAIL: a cost-raising change must fail; failing={failing} reported={reported}")
-                return 1
-            (root / MANIFEST).write_text(json.dumps(manifest(300)))  # a cut, still over: passes
-            failing, _ = split_budget(root, check_root(root), base)
-            if failing:
-                print(f"BUDGET SELF-TEST FAIL: a cost-cutting change still over budget must pass; failing={failing}")
-                return 1
-            failing, _ = split_budget(root, ["w.yml: no entry in .github/ci-cost.json"], base)
+            other.unlink()
+            failing = budget_with_base(root, ["w.yml: no entry in .github/ci-cost.json"], base)
             if failing != ["w.yml: no entry in .github/ci-cost.json"]:
                 print("BUDGET SELF-TEST FAIL: a non-budget problem must still fail under --base")
                 return 1
         finally:
             globals()["VISIBILITY_PROBE"] = old_probe
-    print("budget self-test ok: over budget + unchanged passes (reported), a cost-raising change fails, a cut passes, other problems still fail")
+    print("budget self-test ok: unchanged, raised, reduced, recalibrated and unreadable-base overages fail; affordable costs pass")
+    return 0
+
+
+# ── MEASURED SPEND (2026-10-18: the manifest said $39/week while real list price ran ~$145) ──────────
+#: Below this share of measured spend the manifest is under-stating (warned, never failed).
+MEASURED_UNDERSTATE_PCT = 30.0
+#: A measurement older than this many days is warned as stale (re-run --measure).
+MEASURED_STALE_DAYS = 7.0
+
+
+def job_os(labels: list[str]) -> str:
+    """The cost leg of one finished job from its runner labels (jobs API)."""
+    text = " ".join(labels or []).lower()
+    if "runs-on=" in text or "runs-on/" in text:
+        return "runs-on"
+    if "self-hosted" in text:
+        return "self-hosted"
+    if "macos" in text:
+        return "macos"
+    if "windows" in text:
+        return "windows"
+    return "linux"
+
+
+def _job_minutes(job: dict) -> int:
+    """GitHub bills each job rounded UP to the minute (0 for a job that never started)."""
+    import datetime as dt
+    a, b = job.get("started_at"), job.get("completed_at")
+    if not a or not b or job.get("conclusion") == "skipped":
+        return 0
+    secs = (dt.datetime.fromisoformat(b.replace("Z", "+00:00")) - dt.datetime.fromisoformat(a.replace("Z", "+00:00"))).total_seconds()
+    return max(0, -(-int(secs) // 60))
+
+
+def tally_jobs(runs: list[dict], jobs_of) -> dict[str, dict[str, dict[str, float]]]:
+    """{workflow file: {os: {"runs": runs with a job on that leg, "minutes": billed minutes}}}."""
+    out: dict[str, dict[str, dict[str, float]]] = {}
+    for run in runs:
+        wf = os.path.basename(run.get("path") or "") or str(run.get("name"))
+        seen: set[str] = set()
+        for job in jobs_of(run):
+            mins = _job_minutes(job)
+            if not mins:
+                continue
+            leg = out.setdefault(wf, {}).setdefault(job_os(job.get("labels") or []), {"runs": 0, "minutes": 0})
+            leg["minutes"] += mins
+            if job_os(job.get("labels") or []) not in seen:
+                leg["runs"] += 1
+                seen.add(job_os(job.get("labels") or []))
+    return out
+
+
+def measured_usd_per_week(manifest: dict, tally: dict, hours: float) -> float:
+    prices = {**PRICE_PER_MINUTE, **manifest.get("prices_usd_per_minute", {})}
+    scale = 24.0 * 7 / hours
+    return round(sum(float(leg["minutes"]) * float(prices.get(os_name, prices["linux"])) * scale
+                     for legs in tally.values() for os_name, leg in legs.items()), 2)
+
+
+def measure(root: Path, hours: float = 24.0) -> dict:
+    """Read the last ``hours`` of finished runs + their jobs (gh api) for this repo's measured spend."""
+    import datetime as dt
+    repo = _gh_name(root)
+    since = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - hours * 3600))
+    gh = lambda path: json.loads(subprocess.run(["gh", "api", path], capture_output=True, text=True, check=True, timeout=120).stdout)  # noqa: E731
+    runs: list[dict] = []
+    for page in range(1, 31):
+        batch = gh(f"repos/{repo}/actions/runs?status=completed&created=%3E%3D{since}&per_page=100&page={page}").get("workflow_runs", [])
+        runs += batch
+        if len(batch) < 100:
+            break
+
+    def jobs_of(run: dict) -> list[dict]:
+        out, attempt = [], int(run.get("run_attempt") or 1)
+        for a in range(1, attempt + 1):  # every attempt is billed
+            out += gh(f"repos/{repo}/actions/runs/{run['id']}/attempts/{a}/jobs?per_page=100").get("jobs", [])
+        return out
+
+    tally = tally_jobs(runs, jobs_of)
+    manifest = _load_manifest(root) or {}
+    return {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "window_hours": hours, "since": since, "runs": len(runs),
+            "usd_per_week": measured_usd_per_week(manifest, tally, hours), "by_workflow": tally,
+            "source": "GitHub jobs API: billed minutes (each job rounded up) x manifest prices, scaled to a week"}
+
+
+def recalibrate(manifest: dict, measured: dict) -> list[str]:
+    """Rewrite each existing leg's runs/week, minutes/run and $ from the measurement (a scheduled
+    workflow keeps at least its cron runs); returns the measured legs the manifest has no leg for."""
+    scale = 24.0 * 7 / float(measured["window_hours"])
+    unmatched: list[str] = []
+    for wf, legs in measured["by_workflow"].items():
+        entry = manifest.get("workflows", {}).get(wf)
+        if not entry:
+            unmatched.append(f"{wf} (no entry)")
+            continue
+        floor = sum(cron_runs_per_week(c) for c in entry.get("crons", []))
+        for os_name, m in legs.items():
+            leg = entry["legs"].get(os_name)
+            if leg is None:
+                unmatched.append(f"{wf}:{os_name} ({m['minutes']} min)")
+                continue
+            runs = max(round(m["runs"] * scale, 1), floor)
+            leg["runs_per_week"] = runs
+            leg["minutes_per_run"] = round(m["minutes"] / m["runs"], 1) if m["runs"] else leg.get("minutes_per_run", 1)
+            leg["usd_per_week"] = round(runs * leg["minutes_per_run"] * leg_price(manifest, os_name, leg), 2)
+        entry["usd_per_week"] = round(sum(float(lg.get("usd_per_week", 0)) for lg in entry["legs"].values()), 2)
+    manifest["total_usd_per_week"] = manifest_total(manifest)
+    return unmatched
+
+
+def fresh_measured_billed(manifest: dict, now: float | None = None) -> float:
+    """Fresh observed billed spend; historical or future samples cannot block today's budget.
+
+    measured.usd_per_week is gross list-price spend, so public standard-runner
+    minutes must be excluded. The saved tally retains paid larger and RunsOn legs.
+    """
+    import calendar
+    measured = manifest.get("measured") or {}
+    try:
+        at = calendar.timegm(time.strptime(measured["at"][:19], "%Y-%m-%dT%H:%M:%S"))
+    except (KeyError, TypeError, ValueError):
+        return 0.0
+    age = ((time.time() if now is None else now) - at) / 86400
+    if not 0 <= age <= MEASURED_STALE_DAYS:
+        return 0.0
+    billed = 0.0
+    hours = float(measured.get("window_hours") or 0)
+    if hours > 0:
+        for wf, legs in measured.get("by_workflow", {}).items():
+            declared = manifest.get("workflows", {}).get(wf, {}).get("legs", {})
+            for os_name, tally in legs.items():
+                leg = declared.get(os_name, {})
+                usd = float(tally["minutes"]) * leg_price(manifest, os_name, leg) * 168 / hours
+                billed += leg_billed(manifest, os_name, {**leg, "usd_per_week": usd})
+    if manifest.get("visibility") != "public":
+        billed = max(billed, float(measured.get("usd_per_week") or 0))
+    return round(billed, 2)
+
+
+def measured_warnings(manifest: dict, now: float | None = None) -> list[str]:
+    """The manifest vs measured spend: under-stated by more than MEASURED_UNDERSTATE_PCT, or stale."""
+    import datetime as dt
+    m = manifest.get("measured")
+    if not m:
+        return ["no measured spend in the manifest: run `python scripts/check_workflow_runner_cost.py --measure --recalibrate`"]
+    out = []
+    import calendar
+    at = calendar.timegm(time.strptime(m["at"][:19], "%Y-%m-%dT%H:%M:%S"))
+    age_days = ((now or time.time()) - at) / 86400
+    if age_days > MEASURED_STALE_DAYS:
+        out.append(f"measured spend is {age_days:.0f} days old (line {MEASURED_STALE_DAYS:g}): re-run --measure")
+    total, real = manifest_total(manifest), float(m.get("usd_per_week") or 0)
+    if real > 0 and total < real * (1 - MEASURED_UNDERSTATE_PCT / 100):
+        out.append(f"the manifest says ${total:.2f}/week but measured spend is ${real:.2f}/week ({(1 - total / real) * 100:.0f}% under, "
+                   f"line {MEASURED_UNDERSTATE_PCT:g}%; measured {m['at']}): run --measure --recalibrate")
+    return out
+
+
+def measured_self_test() -> int:
+    """A manifest far under measured spend warns; a recalibrated one does not."""
+    import datetime as dt
+    runs = [{"id": 1, "path": ".github/workflows/w.yml"}, {"id": 2, "path": ".github/workflows/w.yml"}]
+    jobs = {1: [{"labels": ["ubuntu-latest"], "started_at": "2026-10-18T00:00:00Z", "completed_at": "2026-10-18T00:09:30Z"},
+                {"labels": ["runs-on=1/family=m8a.xlarge"], "started_at": "2026-10-18T00:00:00Z", "completed_at": "2026-10-18T00:20:00Z"}],
+            2: [{"labels": ["ubuntu-latest"], "started_at": "2026-10-18T01:00:00Z", "completed_at": "2026-10-18T01:00:10Z"}]}
+    tally = tally_jobs(runs, lambda r: jobs[r["id"]])
+    if tally != {"w.yml": {"linux": {"runs": 2, "minutes": 11}, "runs-on": {"runs": 1, "minutes": 20}}}:
+        print(f"MEASURED SELF-TEST FAIL: tally {tally}")
+        return 1
+    legs = {"linux": {"jobs": ["a"], "runs_per_week": 1, "minutes_per_run": 1, "usd_per_week": 0.01},
+            "runs-on": {"jobs": ["b"], "runs_per_week": 1, "minutes_per_run": 1, "usd_per_week": 0.0}}
+    manifest = {"prices_usd_per_minute": {"runs-on": 0.002}, "workflows": {"w.yml": {"crons": [], "usd_per_week": 0.01, "legs": legs}}}
+    measured = {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "window_hours": 24, "by_workflow": tally,
+                "usd_per_week": measured_usd_per_week(manifest, tally, 24)}
+    manifest["measured"] = measured
+    manifest["visibility"] = "private"
+    if fresh_measured_billed(manifest) != 0.74:
+        print("MEASURED SELF-TEST FAIL: private measured billed spend must be $0.74")
+        return 1
+    manifest["visibility"] = "public"
+    if fresh_measured_billed(manifest) != 0.28:
+        print("MEASURED SELF-TEST FAIL: public standard minutes are free but RunsOn must bill $0.28")
+        return 1
+    legs["linux"].update({"larger": True, "price_usd_per_minute": 0.02})
+    if fresh_measured_billed(manifest) != 1.82:
+        print("MEASURED SELF-TEST FAIL: public larger and RunsOn measured minutes must bill $1.82")
+        return 1
+    del legs["linux"]["larger"]
+    del legs["linux"]["price_usd_per_minute"]
+    manifest["visibility"] = "private"
+    if not any("under" in w for w in measured_warnings(manifest)):
+        print(f"MEASURED SELF-TEST FAIL: an under-stated manifest did not warn: {measured_warnings(manifest)}")
+        return 1
+    recalibrate(manifest, measured)
+    if measured_warnings(manifest):
+        print(f"MEASURED SELF-TEST FAIL: a recalibrated manifest still warns: {measured_warnings(manifest)}")
+        return 1
+    print("measured self-test ok: billed minutes tallied per leg; under-stated manifest warns; recalibrated one is quiet")
     return 0
 
 
@@ -1260,17 +1482,32 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--summary", action="store_true", help="print $/week per repo and in total, then check")
-    parser.add_argument("--base", help="release train: a budget overage fails only if the change since this git ref raised the forecast")
+    parser.add_argument("--base", help="add forecast-change diagnostics against this git ref; budget overages always fail")
+    parser.add_argument("--measure", action="store_true", help="read the last --hours of runs + jobs (gh api) into the manifest's `measured` block")
+    parser.add_argument("--recalibrate", action="store_true", help="with --measure: rewrite every leg's runs, minutes and $ from the measurement")
+    parser.add_argument("--hours", type=float, default=24.0)
     args = parser.parse_args()
     if args.self_test:
-        return self_test() or schedule_self_test() or manifest_self_test() or money_self_test() or budget_self_test()
+        return self_test() or schedule_self_test() or manifest_self_test() or money_self_test() or budget_self_test() or measured_self_test()
+    if args.measure:
+        manifest = _load_manifest(args.root)
+        if manifest is None:
+            print(f"no {MANIFEST} in {args.root}")
+            return 1
+        manifest["measured"] = measure(args.root, args.hours)
+        unmatched = recalibrate(manifest, manifest["measured"]) if args.recalibrate else []
+        (args.root / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"measured {manifest['measured']['runs']} runs: ${manifest['measured']['usd_per_week']:.2f}/week; manifest ${manifest_total(manifest):.2f}/week")
+        for u in unmatched:
+            print(f"measured leg without a manifest leg: {u}")
     problems = check_root(args.root) + check_twins(args.root)
-    reported: list[str] = []
+    own = _load_manifest(args.root)
+    for w in measured_warnings(own) if own else []:
+        print(f"::warning::CI COST MANIFEST: {w}" if "GITHUB_ACTIONS" in os.environ else f"CI COST MANIFEST: {w}")
     if args.base:
-        problems, reported = split_budget(args.root, problems, args.base)
+        problems = budget_with_base(args.root, problems, args.base)
     if args.summary or not problems:
         print(cost_summary(args.root))
-    report_budget(reported)
     for p in problems:
         print(f"::error::{p}" if "GITHUB_ACTIONS" in os.environ else p)
     if problems:
