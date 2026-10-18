@@ -27,7 +27,8 @@ import { extractErrorMessage } from "@/utils/errors";
 import { AUDIO_API_ROUTES } from "../constants";
 import { AUDIO_LIMIT_KNOBS, resolveAudioLimit } from "../limits";
 import { TranscriptionResult, TranscriptionOptions } from "../types";
-import { transcribeCloudFile } from "./speechApi";
+import { transcribeAudioFile, transcribeCloudFile } from "./speechApi";
+import { activeTranscriptionCapability } from "./transcriptionGrant";
 import {
   normalizeAudioType,
   audioExtensionForType,
@@ -172,6 +173,13 @@ export async function uploadAndTranscribeFull(
   options?: TranscriptionOptions,
 ): Promise<TranscriptionResult> {
   let handle: UploadHandle | null = null;
+
+  // UNDER A PUBLIC GRANT NOTHING IS STORED: the visitor has no storage of their own and the grant
+  // only transcribes, so the whole recording goes straight to transcription (the server applies the
+  // grant's longest-clip knob and says so when it is too long).
+  if (activeTranscriptionCapability()) {
+    return transcribeAudioFile(new File([blob], "recording.webm", { type: blob.type || "audio/webm" }), options);
+  }
 
   try {
     handle = await uploadWithRetry(blob);

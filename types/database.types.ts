@@ -108987,6 +108987,10 @@ export type Database = {
         }
         Returns: Json
       }
+      mint_transcription_grant: {
+        Args: { p_capability: string; p_capability_type: string }
+        Returns: Json
+      }
       module_config: {
         Args: { p_org: string; p_token: string }
         Returns: {
