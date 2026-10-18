@@ -1,45 +1,35 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowUpRight,
-  Brain,
-  CheckCircle2,
-  Library,
-  LoaderCircle,
-  Search,
-} from "lucide-react";
+import { Brain, Library, LoaderCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { removeRequest } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.slice";
 import { toast } from "@/lib/toast";
 import { runWithConcurrency } from "@ai-matrx/kit/concurrency";
-import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { YouTubeDiscovery } from "@/features/marketing/discovery/youtube/YouTubeDiscovery";
-import { YouTubeResearchActions } from "@/features/marketing/discovery/youtube/YouTubeResearchActions";
-import { VideoPublishDate } from "@/features/files/blocks/video/VideoPublishDate";
 import {
   getYouTubeLibraryVideo,
-  getTopicYouTubeVideos,
   streamYouTubeVideoAnalysis,
 } from "@/features/marketing/discovery/youtube/service";
-import type { YouTubeVideoLibraryRecord } from "@/features/marketing/discovery/youtube/types";
+import { enumUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { useTopicId } from "../../context/ResearchContext";
+import { useResearchKeywords } from "../../hooks/useResearchState";
+import { TopicYouTubeLibrary } from "./TopicYouTubeLibrary";
+import { loadTopicVideoLibrary, type RankedTopicVideo } from "./topicVideoLibrary";
 import { UntrustedCount } from "@ai-matrx/design-system";
 
 export default function ResearchYouTubePage() {
   const dispatch = useAppDispatch();
   const topicId = useTopicId();
-  const [view, setView] = useState<"discover" | "library">("discover");
-  const [videos, setVideos] = useState<YouTubeVideoLibraryRecord[]>([]);
+  const keywords = useResearchKeywords(topicId);
+  // The topic's own videos are the page; Discover is the way to add more.
+  const [view, setView] = useUrlState("view", enumUrlCodec(["library", "discover"] as const, "library"));
+  const [videos, setVideos] = useState<RankedTopicVideo[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [libraryError, setLibraryError] = useState<unknown>(null);
   const [processing, setProcessing] = useState(false);
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
@@ -48,15 +38,13 @@ export default function ResearchYouTubePage() {
   /** In-flight stream controllers — each fetch and adopter watchdog share the
    * same object. All are aborted on unmount so orphaned streams never keep
    * draining into reaped rows (events on a missing row are silently dropped; see
-   * /Users/armanisadeghi/code/common-docs/systems/architecture/execution-runtime/LIVE-RUN-RETENTION.md seam #3). */
+   * common-docs/systems/architecture/execution-runtime/LIVE-RUN-RETENTION.md seam #3). */
   const streamAbortControllersRef = useRef(new Set<AbortController>());
 
   useEffect(
     () => () => {
       // Stop the client fetch FIRST (server-side processing continues and the
-      // saved records recover it), then reap the adopted row. The aborted
-      // controller stays in the ref so the batch loop's catch can recognize
-      // its own cancellation and settle silently.
+      // saved records recover it), then reap the adopted row.
       for (const controller of streamAbortControllersRef.current) {
         controller.abort();
       }
@@ -72,37 +60,27 @@ export default function ResearchYouTubePage() {
   const loadLibrary = async () => {
     setLoading(true);
     try {
-      setVideos(await getTopicYouTubeVideos(topicId));
+      setVideos(await loadTopicVideoLibrary(topicId));
       setLibraryError(null);
     } catch (caught) {
       setLibraryError(caught ?? true);
-      toast.error(
-        caught instanceof Error
-          ? caught.message
-          : "The YouTube library could not be loaded.",
-      );
     } finally {
       setLoading(false);
     }
   };
 
+  // Loaded once per topic, whichever view opens first, so the library count
+  // shows on the switch even from Discover.
   useEffect(() => {
-    if (view !== "library") return;
     let active = true;
-    getTopicYouTubeVideos(topicId)
+    loadTopicVideoLibrary(topicId)
       .then((result) => {
         if (!active) return;
         setVideos(result);
         setLibraryError(null);
       })
       .catch((caught: unknown) => {
-        if (!active) return;
-        setLibraryError(caught ?? true);
-        toast.error(
-          caught instanceof Error
-            ? caught.message
-            : "The YouTube library could not be loaded.",
-        );
+        if (active) setLibraryError(caught ?? true);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -110,7 +88,7 @@ export default function ResearchYouTubePage() {
     return () => {
       active = false;
     };
-  }, [view, topicId]);
+  }, [topicId]);
 
   const toggle = (videoId: string) => {
     setSelected((current) => {
@@ -153,8 +131,10 @@ export default function ResearchYouTubePage() {
             });
             const updated = await getYouTubeLibraryVideo(videoId);
             setVideos((current) =>
-              current.map((video) =>
-                video.youtube_video_id === videoId ? updated : video,
+              current.map((entry) =>
+                entry.video.youtube_video_id === videoId
+                  ? { ...entry, video: { ...updated, topic_source_id: entry.video.topic_source_id, is_in_topic: true } }
+                  : entry,
               ),
             );
           } finally {
@@ -186,35 +166,28 @@ export default function ResearchYouTubePage() {
 
   return (
     <div className="min-h-full bg-background">
-      <div className="sticky top-0 z-20 border-b border-border/60 bg-background/90 px-4 py-3 backdrop-blur-xl sm:px-6">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3">
+      <div className="sticky top-0 z-20 border-b border-border/60 bg-background/90 px-4 py-2 backdrop-blur-xl sm:px-6">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3">
           <SegmentedControl
             aria-label="Research view"
             value={view}
-            onValueChange={(next) => {
-              if (next === "library") setLoading(true);
-              setView(next);
-            }}
+            onValueChange={(next) => setView(next)}
             data={[
-              { value: "discover", label: <span className="inline-flex items-center gap-1.5"><Search className="size-3.5" />Discover</span> },
               {
                 value: "library",
                 label: (
                   <span className="inline-flex items-center gap-1.5">
-                    <Library className="size-3.5" />Topic library
+                    <Library className="size-3.5" />Topic videos
                     {videos.length > 0 && <UntrustedCount value={videos.length} trustworthy={libraryError == null || videos.length > 0} label="Videos" />}
                   </span>
                 ),
               },
+              { value: "discover", label: <span className="inline-flex items-center gap-1.5"><Search className="size-3.5" />Find more</span> },
             ]}
           />
           {view === "library" && selected.size > 0 && (
             <Button
-              icon={processing ? (
-                <LoaderCircle className="animate-spin" />
-              ) : (
-                <Brain />
-              )}
+              icon={processing ? <LoaderCircle className="animate-spin" /> : <Brain />}
               variant="primary"
               type="button"
               onClick={() => void processSelected()}
@@ -229,130 +202,33 @@ export default function ResearchYouTubePage() {
       </div>
 
       {view === "discover" ? (
-        <YouTubeDiscovery topicId={topicId} />
+        <YouTubeDiscovery
+          topicId={topicId}
+          suggestedQueries={(keywords.data ?? []).map((keyword) => keyword.keyword)}
+          onVideosAdded={() => void loadLibrary()}
+        />
+      ) : loading ? (
+        <div className="grid min-h-64 place-items-center text-muted-foreground">
+          <LoaderCircle className="h-6 w-6 animate-spin" />
+        </div>
+      ) : libraryError != null && videos.length === 0 ? (
+        <div className="mx-auto max-w-3xl px-4 py-10">
+          <ReadFailure
+            error={libraryError}
+            what="this topic's videos"
+            onRetry={() => void loadLibrary()}
+          />
+        </div>
+      ) : videos.length === 0 ? (
+        <div className="mx-auto max-w-xl px-4 py-16 text-center">
+          <Library className="mx-auto h-8 w-8 text-muted-foreground" />
+          <h2 className="mt-4 font-semibold">No videos in this topic yet</h2>
+          <Button variant="primary" type="button" onClick={() => setView("discover")} className="mt-5">
+            Find videos
+          </Button>
+        </div>
       ) : (
-        <section className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-7">
-            <p className="text-sm font-medium text-red-600 dark:text-red-400">
-              Permanent topic sources
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              YouTube research library
-              <InfoHint
-                text="Each video is linked to this topic; its metadata, comments, transcript and analysis are stored once and reused everywhere."
-                label="About this library"
-                className="ml-2"
-              />
-            </h1>
-          </div>
-
-          {loading ? (
-            <div className="grid min-h-64 place-items-center text-muted-foreground">
-              <LoaderCircle className="h-6 w-6 animate-spin" />
-            </div>
-          ) : libraryError != null && videos.length === 0 ? (
-            <ReadFailure
-              error={libraryError}
-              what="this topic's YouTube library"
-              onRetry={() => void loadLibrary()}
-            />
-          ) : videos.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border p-12 text-center">
-              <Library className="mx-auto h-8 w-8 text-muted-foreground" />
-              <h2 className="mt-4 font-semibold">No topic videos yet</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Use Discover to search YouTube and add the strongest results.
-              </p>
-              <Button
-                variant="primary"
-                type="button"
-                onClick={() => setView("discover")}
-                className="mt-5"
-              >
-                Discover videos
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-5 lg:grid-cols-2">
-              {videos.map((video) => (
-                <article
-                  key={video.youtube_video_id}
-                  className="overflow-hidden rounded-3xl border border-border bg-card dark:border-white/10"
-                >
-                  <div className="grid sm:grid-cols-[15rem_1fr]">
-                    <Link
-                      href={marketingRoutes.youtubeVideo(
-                        video.youtube_video_id,
-                      )}
-                      className="relative block min-h-44 overflow-hidden bg-muted"
-                    >
-                      {video.thumbnail_url && (
-                        <Image
-                          src={video.thumbnail_url}
-                          alt=""
-                          fill
-                          sizes="240px"
-                          className="object-cover transition hover:scale-[1.02]"
-                        />
-                      )}
-                      <VideoPublishDate
-                        publishedAt={video.published_at}
-                        className="absolute bottom-2 left-2 rounded bg-black/75 px-1.5 py-0.5 text-white shadow-sm"
-                      />
-                    </Link>
-                    <div className="p-5">
-                      <div className="flex items-start gap-3">
-                        <Checkbox
-                          checked={selected.has(video.youtube_video_id)}
-                          onCheckedChange={() => toggle(video.youtube_video_id)}
-                          aria-label={`Select ${video.title ?? "video"}`}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-medium uppercase tracking-[0.12em] text-red-600 dark:text-red-400">
-                            {video.channel_title ?? "YouTube creator"}
-                          </p>
-                          <Link
-                            href={marketingRoutes.youtubeVideo(
-                              video.youtube_video_id,
-                            )}
-                            className="mt-1 line-clamp-2 block font-semibold hover:underline"
-                          >
-                            {video.title ?? "Untitled video"}
-                          </Link>
-                        </div>
-                        {video.processing_status === "completed" && (
-                          <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-500" />
-                        )}
-                      </div>
-                      <p className="mt-3 line-clamp-2 text-sm leading-5 text-muted-foreground">
-                        {video.description || "No description supplied."}
-                      </p>
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="mt-4"
-                      >
-                        <Link
-                          href={marketingRoutes.youtubeVideo(
-                            video.youtube_video_id,
-                          )}
-                        >
-                          <ArrowUpRight className="mr-1.5 h-4 w-4" />
-                          Open full page
-                        </Link>
-                      </Button>
-                      <YouTubeResearchActions
-                        videoId={video.youtube_video_id}
-                        initialStatus={video.processing_status}
-                        showAnalysis={false}
-                      />
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+        <TopicYouTubeLibrary videos={videos} selected={selected} onToggle={toggle} />
       )}
     </div>
   );
