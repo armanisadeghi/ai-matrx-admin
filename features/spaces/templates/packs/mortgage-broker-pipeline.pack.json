@@ -1,0 +1,3251 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0419",
+  "version": 1,
+  "title": "Mortgage Broker Pipeline",
+  "description": "Borrowers, loan files by stage, conditions and referral partners. Tracking only.",
+  "forWho": "Mortgage brokers and loan officers",
+  "icon": {
+    "emoji": "🏦"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "realestate",
+  "tags": [
+    "mortgage",
+    "pipeline",
+    "conditions",
+    "referrals"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-mortgage-broker-pipeline",
+    "catalogueId": "SP0419",
+    "useCase": "Concetta Ruiz processes loan files for a small mortgage brokerage and uses this to see which files close this month, which conditions are still open, which locks end soon and which referral partners to call. Tracking only; it holds no rates or financial advice.",
+    "industry": "real_estate_property",
+    "vertical": "Mortgage broker",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Redcedar Home Loans",
+      "describes": "A small mortgage brokerage with two loan officers, a processor and a closing coordinator.",
+      "address": {
+        "line1": "900 Trade Street",
+        "city": "Charlotte",
+        "region": "NC",
+        "postalCode": "28202",
+        "country": "US"
+      },
+      "phone": "(704) 555-0120",
+      "website": "redcedarloans.net",
+      "email": "hello@redcedarloans.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-mortgage-broker-pipeline",
+    "tables": [
+      {
+        "token": "loan",
+        "name": "Loans",
+        "labelSingular": "Loan",
+        "labelPlural": "Loans",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "landmark",
+        "titleField": "loan_title",
+        "describes": "Each file from pre-approval to funding, with lock and closing dates.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "loan_title",
+            "label": "Loan",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "borrower",
+            "label": "Borrower",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "borrower",
+            "relationMax": 1
+          },
+          {
+            "key": "partner",
+            "label": "Referred by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "partner",
+            "relationMax": 1
+          },
+          {
+            "key": "purpose",
+            "label": "Purpose",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Purchase",
+              "Refinance",
+              "Cash-out refinance"
+            ],
+            "choiceColors": {
+              "Purchase": "blue",
+              "Refinance": "green",
+              "Cash-out refinance": "amber"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Loan type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Conventional",
+              "FHA",
+              "VA",
+              "Jumbo"
+            ],
+            "choiceColors": {
+              "Conventional": "blue",
+              "FHA": "green",
+              "VA": "amber",
+              "Jumbo": "violet"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Loan amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000000
+              }
+            ]
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pre-approval",
+              "Application",
+              "Processing",
+              "Underwriting",
+              "Clear to close",
+              "Funded",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Lost": "red",
+              "Pre-approval": "blue",
+              "Application": "amber",
+              "Processing": "violet",
+              "Underwriting": "teal",
+              "Clear to close": "slate",
+              "Funded": "yellow"
+            },
+            "statusGroups": {
+              "Pre-approval": "in_progress",
+              "Application": "in_progress",
+              "Processing": "in_progress",
+              "Underwriting": "in_progress",
+              "Clear to close": "in_progress",
+              "Funded": "in_progress",
+              "Lost": "done"
+            },
+            "required": true,
+            "default": "Pre-approval"
+          },
+          {
+            "key": "lock_ends",
+            "label": "Lock ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "closing_on",
+            "label": "Closing",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "officer",
+            "label": "Loan officer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "processor",
+            "label": "Processor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "open_conditions",
+            "label": "Open conditions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "conditions",
+            "pick": "cond_title",
+            "agg": "count",
+            "filter": {
+              "status": "Open"
+            }
+          },
+          {
+            "key": "cond_btn",
+            "label": "Add condition",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "condition",
+              "template": "Condition",
+              "prefill": {
+                "loan": "@row"
+              }
+            }
+          },
+          {
+            "key": "processing_btn",
+            "label": "Move to processing",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "loan_processing"
+            }
+          },
+          {
+            "key": "underwriting_btn",
+            "label": "Move to underwriting",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "loan_underwriting"
+            }
+          },
+          {
+            "key": "ctc_btn",
+            "label": "Clear to close",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "loan_ctc"
+            }
+          },
+          {
+            "key": "funded_btn",
+            "label": "Mark funded",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "loan_funded"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "l01",
+            "values": {
+              "loan_title": "Lindqvist purchase",
+              "borrower": "b01",
+              "partner": "a01",
+              "purpose": "Purchase",
+              "kind": "Conventional",
+              "amount": 412000,
+              "stage": "Underwriting",
+              "lock_ends": "@today+14d",
+              "closing_on": "@today+24d",
+              "officer": "tm-geraldine",
+              "processor": "tm-concetta"
+            }
+          },
+          {
+            "key": "l02",
+            "values": {
+              "loan_title": "Adebayo purchase",
+              "borrower": "b02",
+              "partner": "a03",
+              "purpose": "Purchase",
+              "kind": "FHA",
+              "amount": 286000,
+              "stage": "Pre-approval",
+              "lock_ends": "@today+40d",
+              "closing_on": "@today+60d",
+              "officer": "tm-ravi",
+              "processor": "tm-concetta"
+            }
+          },
+          {
+            "key": "l03",
+            "values": {
+              "loan_title": "Tanaka new construction",
+              "borrower": "b03",
+              "partner": "a04",
+              "purpose": "Purchase",
+              "kind": "Conventional",
+              "amount": 545000,
+              "stage": "Processing",
+              "lock_ends": "@mon+4d",
+              "closing_on": "@mon+5d",
+              "officer": "tm-ravi",
+              "processor": "tm-concetta"
+            }
+          },
+          {
+            "key": "l04",
+            "values": {
+              "loan_title": "Moreau refinance",
+              "borrower": "b04",
+              "partner": "a06",
+              "purpose": "Refinance",
+              "kind": "Conventional",
+              "amount": 338000,
+              "stage": "Application",
+              "lock_ends": "@today+45d",
+              "closing_on": "@today+55d",
+              "officer": "tm-geraldine",
+              "processor": "tm-concetta"
+            }
+          },
+          {
+            "key": "l05",
+            "values": {
+              "loan_title": "Castellano purchase",
+              "borrower": "b05",
+              "partner": "a01",
+              "purpose": "Purchase",
+              "kind": "VA",
+              "amount": 364000,
+              "stage": "Funded",
+              "lock_ends": "@today-40d",
+              "closing_on": "@today-30d",
+              "officer": "tm-geraldine",
+              "processor": "tm-concetta"
+            }
+          },
+          {
+            "key": "l06",
+            "values": {
+              "loan_title": "Abara cash-out refinance",
+              "borrower": "b06",
+              "partner": "a05",
+              "purpose": "Cash-out refinance",
+              "kind": "Conventional",
+              "amount": 295000,
+              "stage": "Clear to close",
+              "lock_ends": "@today",
+              "closing_on": "@today",
+              "officer": "tm-ravi",
+              "processor": "tm-concetta"
+            }
+          },
+          {
+            "key": "l07",
+            "values": {
+              "loan_title": "Peacock purchase",
+              "borrower": "b07",
+              "partner": "a02",
+              "purpose": "Purchase",
+              "kind": "Jumbo",
+              "amount": 910000,
+              "stage": "Pre-approval",
+              "lock_ends": "@today+50d",
+              "closing_on": "@today+75d",
+              "officer": "tm-ravi",
+              "processor": "tm-concetta"
+            }
+          },
+          {
+            "key": "l08",
+            "values": {
+              "loan_title": "Volkov-Hale purchase",
+              "borrower": "b08",
+              "partner": "a03",
+              "purpose": "Purchase",
+              "kind": "Conventional",
+              "amount": 378000,
+              "stage": "Lost",
+              "lock_ends": "@today-60d",
+              "closing_on": "@today-35d",
+              "officer": "tm-geraldine",
+              "processor": "tm-concetta"
+            }
+          }
+        ],
+        "independentOf": {
+          "borrower": "The two sides move on their own schedule and status; neither forces the other.",
+          "partner": "The two sides move on their own schedule and status; neither forces the other.",
+          "officer": "Anyone on the team can take this on, whenever they joined.",
+          "processor": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "lock_ends",
+            "closing_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Processing"
+            ],
+            "filled": [
+              "purpose"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Underwriting"
+            ],
+            "filled": [
+              "purpose"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Clear to close"
+            ],
+            "filled": [
+              "purpose"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Funded"
+            ],
+            "filled": [
+              "purpose"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Loan file",
+            "values": {
+              "stage": "Pre-approval",
+              "loan_title": "New loan"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Tracking only. The loan origination system is the record of the loan itself."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Application"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Application taken and disclosures delivered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Documents requested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Processing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Appraisal ordered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Title ordered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Closing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Closing disclosure delivered at least three business days before closing"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Final conditions cleared"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Funding confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "condition",
+        "name": "Conditions",
+        "labelSingular": "Condition",
+        "labelPlural": "Conditions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "cond_title",
+        "describes": "Items underwriting or the processor needs before a file can close.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "cond_title",
+            "label": "Condition",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "loan",
+            "label": "Loan",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "loan",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Income",
+              "Assets",
+              "Credit",
+              "Property",
+              "Title",
+              "Insurance"
+            ],
+            "choiceColors": {
+              "Income": "blue",
+              "Assets": "green",
+              "Credit": "amber",
+              "Property": "violet",
+              "Title": "teal",
+              "Insurance": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Requested",
+              "Received",
+              "Cleared"
+            ],
+            "choiceColors": {
+              "Open": "blue",
+              "Requested": "amber",
+              "Received": "violet",
+              "Cleared": "green"
+            },
+            "statusGroups": {
+              "Open": "todo",
+              "Requested": "in_progress",
+              "Received": "in_progress",
+              "Cleared": "done"
+            },
+            "required": true,
+            "default": "Open"
+          },
+          {
+            "key": "due_on",
+            "label": "Needed by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "requested_btn",
+            "label": "Mark requested",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "condition_requested"
+            }
+          },
+          {
+            "key": "received_btn",
+            "label": "Mark received",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "condition_received"
+            }
+          },
+          {
+            "key": "cleared_btn",
+            "label": "Mark cleared",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "condition_cleared"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "cond_title": "Updated pay stubs - Lindqvist",
+              "loan": "l01",
+              "kind": "Income",
+              "status": "Requested",
+              "due_on": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "cond_title": "Bank statements - Lindqvist",
+              "loan": "l01",
+              "kind": "Assets",
+              "status": "Open",
+              "due_on": "@mon+2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "cond_title": "Homeowner insurance binder - Lindqvist",
+              "loan": "l01",
+              "kind": "Insurance",
+              "status": "Open",
+              "due_on": "@today+9d"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "cond_title": "Appraisal review - Tanaka",
+              "loan": "l03",
+              "kind": "Property",
+              "status": "Requested",
+              "due_on": "@mon+4d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "cond_title": "Explanation letter - Tanaka",
+              "loan": "l03",
+              "kind": "Credit",
+              "status": "Received",
+              "due_on": "@today-2d"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "cond_title": "Title commitment - Abara",
+              "loan": "l06",
+              "kind": "Title",
+              "status": "Open",
+              "due_on": "@today-1d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "cond_title": "Employment verification - Abara",
+              "loan": "l06",
+              "kind": "Income",
+              "status": "Cleared",
+              "due_on": "@today-6d"
+            }
+          },
+          {
+            "key": "c08",
+            "values": {
+              "cond_title": "Gift letter - Adebayo",
+              "loan": "l02",
+              "kind": "Assets",
+              "status": "Open",
+              "due_on": "@today+14d"
+            }
+          },
+          {
+            "key": "c09",
+            "values": {
+              "cond_title": "Payoff statement - Moreau",
+              "loan": "l04",
+              "kind": "Credit",
+              "status": "Requested",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "c10",
+            "values": {
+              "cond_title": "Bank statements - Castellano",
+              "loan": "l05",
+              "kind": "Assets",
+              "status": "Cleared",
+              "due_on": "@today-50d"
+            }
+          }
+        ],
+        "independentOf": {
+          "loan": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Requested"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Cleared"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Condition",
+            "values": {
+              "status": "Open",
+              "cond_title": "New condition"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is needed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tracking"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Borrower told exactly what to send"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Received and uploaded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Underwriter confirms it is cleared"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "borrower",
+        "name": "Borrowers",
+        "labelSingular": "Borrower",
+        "labelPlural": "Borrowers",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "borrower_name",
+        "describes": "People and households in the pipeline or past clients.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "borrower_name",
+            "label": "Borrower",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lead",
+              "Pre-approved",
+              "In process",
+              "Closed",
+              "Past client"
+            ],
+            "choiceColors": {
+              "Lead": "blue",
+              "Pre-approved": "green",
+              "In process": "amber",
+              "Closed": "violet",
+              "Past client": "teal"
+            },
+            "default": "Lead"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Agent referral",
+              "Website",
+              "Past client",
+              "Builder",
+              "Social media"
+            ],
+            "choiceColors": {
+              "Agent referral": "blue",
+              "Website": "green",
+              "Past client": "amber",
+              "Builder": "violet",
+              "Social media": "teal"
+            }
+          },
+          {
+            "key": "officer",
+            "label": "Loan officer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "loan_count",
+            "label": "Loans",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loans",
+            "pick": "loan_title",
+            "agg": "count"
+          },
+          {
+            "key": "loan_btn",
+            "label": "Start loan file",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "loan",
+              "template": "Loan file",
+              "prefill": {
+                "borrower": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "b01",
+            "values": {
+              "borrower_name": "Marisol and Anders Lindqvist",
+              "status": "In process",
+              "phone": "(704) 555-0141",
+              "email": "lindqvists@mailbox-demo.net",
+              "source": "Agent referral",
+              "officer": "tm-geraldine"
+            }
+          },
+          {
+            "key": "b02",
+            "values": {
+              "borrower_name": "Oluwaseun Adebayo",
+              "status": "Pre-approved",
+              "phone": "(704) 555-0142",
+              "email": "seun.a@mailbox-demo.net",
+              "source": "Website",
+              "officer": "tm-ravi"
+            }
+          },
+          {
+            "key": "b03",
+            "values": {
+              "borrower_name": "Beatrix Tanaka",
+              "status": "In process",
+              "phone": "(704) 555-0143",
+              "email": "beatrix.t@mailbox-demo.net",
+              "source": "Builder",
+              "officer": "tm-ravi"
+            }
+          },
+          {
+            "key": "b04",
+            "values": {
+              "borrower_name": "Cassius and Odette Moreau",
+              "status": "Lead",
+              "phone": "(704) 555-0144",
+              "email": "moreaus@mailbox-demo.net",
+              "source": "Social media",
+              "officer": "tm-geraldine"
+            }
+          },
+          {
+            "key": "b05",
+            "values": {
+              "borrower_name": "Imelda Castellano",
+              "status": "Closed",
+              "phone": "(704) 555-0145",
+              "email": "imelda.c@mailbox-demo.net",
+              "source": "Agent referral",
+              "officer": "tm-geraldine"
+            }
+          },
+          {
+            "key": "b06",
+            "values": {
+              "borrower_name": "Thelonius Abara",
+              "status": "In process",
+              "phone": "(704) 555-0146",
+              "email": "theo.a@mailbox-demo.net",
+              "source": "Past client",
+              "officer": "tm-ravi"
+            }
+          },
+          {
+            "key": "b07",
+            "values": {
+              "borrower_name": "Rosalind Peacock",
+              "status": "Lead",
+              "phone": "(704) 555-0147",
+              "email": "rosalind.p@mailbox-demo.net",
+              "source": "Website",
+              "officer": "tm-ravi"
+            }
+          },
+          {
+            "key": "b08",
+            "values": {
+              "borrower_name": "Dmitri Volkov-Hale",
+              "status": "Past client",
+              "phone": "(704) 555-0148",
+              "email": "dmitri.vh@mailbox-demo.net",
+              "source": "Past client",
+              "officer": "tm-geraldine"
+            }
+          }
+        ],
+        "independentOf": {
+          "officer": "Anyone on the team can take this on, whenever they joined."
+        },
+        "rowTemplates": [
+          {
+            "name": "Borrower",
+            "values": {
+              "status": "Lead",
+              "borrower_name": "New borrower"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First conversation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Goals and timeline captured"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pre-application checklist sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "partner",
+        "name": "Referral partners",
+        "labelSingular": "Referral partner",
+        "labelPlural": "Referral partners",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "partner_name",
+        "describes": "Agents and advisers who send borrowers.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "partner_name",
+            "label": "Referral partner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Real estate agent",
+              "Attorney",
+              "Financial planner",
+              "Builder"
+            ],
+            "choiceColors": {
+              "Real estate agent": "blue",
+              "Attorney": "green",
+              "Financial planner": "amber",
+              "Builder": "violet"
+            }
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "loan_count",
+            "label": "Loans referred",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loans",
+            "pick": "loan_title",
+            "agg": "count"
+          },
+          {
+            "key": "last_contact",
+            "label": "Last contact",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_touch",
+            "label": "Next touch",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "partner_name": "Valentina Brooks-Ndlovu",
+              "company": "Harborstone Realty",
+              "kind": "Real estate agent",
+              "phone": "(704) 555-0131",
+              "email": "valentina@harborstonerealty.net",
+              "last_contact": "@today-10d",
+              "next_touch": "@mon+3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "partner_name": "Desmond Achterberg",
+              "company": "Keystone Title Counsel",
+              "kind": "Attorney",
+              "phone": "(704) 555-0132",
+              "email": "desmond@keystonetitle.net",
+              "last_contact": "@today-35d",
+              "next_touch": "@today-3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "partner_name": "Aiyana Redwood",
+              "company": "Lakeview Realty",
+              "kind": "Real estate agent",
+              "phone": "(704) 555-0133",
+              "email": "aiyana@lakeviewrealty.net",
+              "last_contact": "@today-20d",
+              "next_touch": "@today+8d"
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "partner_name": "Thaddeus Ingram",
+              "company": "Ingram Custom Homes",
+              "kind": "Builder",
+              "phone": "(704) 555-0134",
+              "email": "thad@ingramcustomhomes.net",
+              "last_contact": "@today-45d",
+              "next_touch": "@today-10d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "partner_name": "Philippa Osei",
+              "company": "Clearwater Planning",
+              "kind": "Financial planner",
+              "phone": "(704) 555-0135",
+              "email": "philippa@clearwaterplanning.net",
+              "last_contact": "@today-14d",
+              "next_touch": "@today+16d"
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "partner_name": "Cormac Bellweather",
+              "company": "Redbud Realty Group",
+              "kind": "Real estate agent",
+              "phone": "(704) 555-0136",
+              "email": "cormac@redbudrealty.net",
+              "last_contact": "@today-5d",
+              "next_touch": "@today+24d"
+            }
+          }
+        ],
+        "before": [
+          [
+            "last_contact",
+            "next_touch"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "Referral partner",
+            "values": {
+              "kind": "Real estate agent",
+              "partner_name": "New referral partner"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Introduction"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Coffee or call booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Process explained: how fast a pre-approval turns around"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Staying in touch"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "How they like to hear about their clients' progress"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each loan links to one borrower.",
+        "fromTable": "loan",
+        "fromField": "borrower",
+        "toTable": "borrower",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "loans"
+      },
+      {
+        "describes": "Each loan links to one referral partner.",
+        "fromTable": "loan",
+        "fromField": "partner",
+        "toTable": "partner",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "loans"
+      },
+      {
+        "describes": "Each loan links to one team member.",
+        "fromTable": "loan",
+        "fromField": "officer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "officer_loans"
+      },
+      {
+        "describes": "Each loan links to one team member.",
+        "fromTable": "loan",
+        "fromField": "processor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "processor_loans"
+      },
+      {
+        "describes": "Each condition links to one loan.",
+        "fromTable": "condition",
+        "fromField": "loan",
+        "toTable": "loan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "conditions"
+      },
+      {
+        "describes": "Each borrower links to one team member.",
+        "fromTable": "borrower",
+        "fromField": "officer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "officer_borrowers"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-geraldine",
+            "values": {
+              "full_name": "Geraldine Fairweather",
+              "role": "Loan officer",
+              "work_email": "geraldine@redcedarloans.net",
+              "mobile": "(704) 555-0121",
+              "start_date": "@today-12y"
+            }
+          },
+          {
+            "key": "tm-ravi",
+            "values": {
+              "full_name": "Ravi Subramanian",
+              "role": "Loan officer",
+              "work_email": "ravi@redcedarloans.net",
+              "mobile": "(704) 555-0122",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-concetta",
+            "values": {
+              "full_name": "Concetta Ruiz",
+              "role": "Loan processor",
+              "work_email": "concetta@redcedarloans.net",
+              "mobile": "(704) 555-0123",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-hamish",
+            "values": {
+              "full_name": "Hamish Okoye",
+              "role": "Closing coordinator",
+              "work_email": "hamish@redcedarloans.net",
+              "mobile": "(704) 555-0124",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "loan_inquiry",
+        "name": "Loan inquiry",
+        "describes": "How a borrower asks about financing.",
+        "audience": "staff",
+        "table": "borrower",
+        "fields": [
+          {
+            "fieldKey": "borrower_name",
+            "ask": "Your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email?"
+          },
+          {
+            "fieldKey": "source",
+            "ask": "How did you find the brokerage?"
+          }
+        ],
+        "submitLabel": "Send inquiry",
+        "confirmation": "Received. A loan officer will reach out; this is not a loan commitment."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "loan_processing",
+        "table": "loan",
+        "name": "Move to processing",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Processing"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loan_underwriting",
+        "table": "loan",
+        "name": "Move to underwriting",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Underwriting"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loan_ctc",
+        "table": "loan",
+        "name": "Clear to close",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Clear to close"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "loan_funded",
+        "table": "loan",
+        "name": "Mark funded",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Funded"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "condition_requested",
+        "table": "condition",
+        "name": "Mark requested",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Requested"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "condition_received",
+        "table": "condition",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "condition_cleared",
+        "table": "condition",
+        "name": "Mark cleared",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Cleared"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_loan",
+        "name": "All loans",
+        "table": "loan",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "loan_board",
+        "name": "By status",
+        "table": "loan",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "loan_cal",
+        "name": "Calendar",
+        "table": "loan",
+        "kind": "calendar",
+        "dateField": "closing_on",
+        "allDay": true
+      },
+      {
+        "token": "loan_today",
+        "name": "Today",
+        "table": "loan",
+        "kind": "grid",
+        "within": {
+          "closing_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Pre-approval",
+            "Application",
+            "Processing",
+            "Underwriting",
+            "Clear to close",
+            "Funded"
+          ]
+        }
+      },
+      {
+        "token": "loan_week",
+        "name": "This week",
+        "table": "loan",
+        "kind": "grid",
+        "within": {
+          "closing_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Pre-approval",
+            "Application",
+            "Processing",
+            "Underwriting",
+            "Clear to close",
+            "Funded"
+          ]
+        }
+      },
+      {
+        "token": "loan_next30",
+        "name": "Next 30 days",
+        "table": "loan",
+        "kind": "grid",
+        "within": {
+          "closing_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Pre-approval",
+            "Application",
+            "Processing",
+            "Underwriting",
+            "Clear to close",
+            "Funded"
+          ]
+        }
+      },
+      {
+        "token": "all_condition",
+        "name": "All conditions",
+        "table": "condition",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "condition_board",
+        "name": "By status",
+        "table": "condition",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "condition_cal",
+        "name": "Calendar",
+        "table": "condition",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "condition_today",
+        "name": "Today",
+        "table": "condition",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "condition_week",
+        "name": "This week",
+        "table": "condition",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "condition_over",
+        "name": "Overdue",
+        "table": "condition",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "condition_mine",
+        "name": "My conditions",
+        "table": "condition",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_borrower",
+        "name": "All borrowers",
+        "table": "borrower",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_partner",
+        "name": "All referral partners",
+        "table": "partner",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "partner_cal",
+        "name": "Calendar",
+        "table": "partner",
+        "kind": "calendar",
+        "dateField": "next_touch",
+        "allDay": true
+      },
+      {
+        "token": "partner_week",
+        "name": "This week",
+        "table": "partner",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "partner_next30",
+        "name": "Next 30 days",
+        "table": "partner",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "partner_over",
+        "name": "Overdue",
+        "table": "partner",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "partner_mine",
+        "name": "My referral partners",
+        "table": "partner",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Pipeline assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "condition",
+          "describes": "Every condition with its loan, kind and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "loan",
+          "describes": "The loans conditions belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many conditions are still open?",
+        "whyItMatters": "The processor clears open conditions before anything goes to underwriting.",
+        "expect": {
+          "table": "condition",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Open"
+          },
+          "answer": 4,
+          "unit": "conditions"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open loans.",
+        "action": {
+          "kind": "open",
+          "surface": "loan_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "loan_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open conditions.",
+        "action": {
+          "kind": "open",
+          "surface": "condition_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "condition_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open borrowers.",
+        "action": {
+          "kind": "open",
+          "surface": "all_borrower"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_borrower",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "clearwaterplanning.net",
+        "harborstonerealty.net",
+        "ingramcustomhomes.net",
+        "keystonetitle.net",
+        "lakeviewrealty.net",
+        "mailbox-demo.net",
+        "redbudrealty.net",
+        "redcedarloans.net"
+      ],
+      "fictionalStreets": [
+        "Trade Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "mortgage-broker-pipeline",
+      "parent": null,
+      "title": "Mortgage Broker Pipeline",
+      "icon": {
+        "emoji": "🏦"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your pipeline in one place. Follow each Loan from pre-approval to funding, clear Conditions before they hold up closing, and keep Borrowers and Referral partners in view. Tracking only; this holds no rates, quotes or financial advice."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-stages"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-conditions"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-closing"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-partners"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loan",
+                      "view": "all_loan"
+                    },
+                    "inline": true,
+                    "title": "Loans by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Loans by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loan",
+                      "view": "all_loan"
+                    },
+                    "inline": true,
+                    "title": "Loan amount by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Loan amount by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loan",
+                      "view": "all_loan"
+                    },
+                    "inline": true,
+                    "title": "Loans by purpose",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Loans by purpose",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "purpose",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Loans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "loan",
+              "view": "loan_board"
+            },
+            "inline": true,
+            "title": "Loans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "closing_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Pre-approval",
+                    "Application",
+                    "Processing",
+                    "Underwriting",
+                    "Clear to close",
+                    "Funded"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "closing_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Pre-approval",
+                    "Application",
+                    "Processing",
+                    "Underwriting",
+                    "Clear to close",
+                    "Funded"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "closing_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Pre-approval",
+                    "Application",
+                    "Processing",
+                    "Underwriting",
+                    "Clear to close",
+                    "Funded"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "closing_on"
+              },
+              {
+                "id": "vall",
+                "name": "All loans",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "closing_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Conditions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "condition",
+              "view": "condition_board"
+            },
+            "inline": true,
+            "title": "Conditions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All conditions",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Referral partners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "partner",
+              "view": "all_partner"
+            },
+            "inline": true,
+            "title": "Referral partners",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_touch": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_touch": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_touch": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_touch"
+              },
+              {
+                "id": "vall",
+                "name": "All referral partners",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "next_touch",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "mortgage-broker-pipeline",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loan",
+                      "view": "all_loan"
+                    },
+                    "inline": true,
+                    "title": "Loans by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Loans by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loan",
+                      "view": "all_loan"
+                    },
+                    "inline": true,
+                    "title": "Loan amount by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Loan amount by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "loan",
+                      "view": "all_loan"
+                    },
+                    "inline": true,
+                    "title": "Loans by purpose",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Loans by purpose",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "purpose",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "condition",
+                      "view": "all_condition"
+                    },
+                    "inline": true,
+                    "title": "Conditions by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Conditions by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "borrower",
+                      "view": "all_borrower"
+                    },
+                    "inline": true,
+                    "title": "Borrowers by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Borrowers by source",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "partner",
+                      "view": "all_partner"
+                    },
+                    "inline": true,
+                    "title": "Partners by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Partners by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Conditions still open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "condition",
+              "view": "all_condition"
+            },
+            "inline": true,
+            "title": "Conditions still open",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Open or requested",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Requested"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Files in underwriting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "loan",
+              "view": "all_loan"
+            },
+            "inline": true,
+            "title": "Files in underwriting",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Underwriting",
+                "layout": "list",
+                "filters": {
+                  "stage": "Underwriting"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-stages",
+      "parent": "mortgage-broker-pipeline",
+      "title": "Pipeline stages",
+      "icon": {
+        "emoji": "🪜"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every file moves through the same stages. Keep the stage honest."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pre-approval: documents reviewed, letter issued."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Application: disclosures delivered within the required window."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Processing: appraisal, title, verifications."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Underwriting: conditions issued and cleared."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clear to close: closing date confirmed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Funded: file closed out, partner thanked."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-conditions",
+      "parent": "mortgage-broker-pipeline",
+      "title": "Clearing conditions",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Conditions, Today and This week views."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Contact each borrower about anything Open and mark it Requested."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Received when it arrives and Cleared when underwriting agrees."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tips"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell borrowers exactly what to send and in what format."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Escalate anything Overdue to the loan officer the same day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-closing",
+      "parent": "mortgage-broker-pipeline",
+      "title": "Closing countdown",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The closing disclosure must reach the borrower in time. Count back from the closing date."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All conditions cleared"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rate lock covers the closing date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Closing date confirmed with the title company"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three business days before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Closing disclosure delivered and acknowledged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After funding"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark the loan Funded and the borrower Closed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send a thank-you to the referral partner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-partners",
+      "parent": "mortgage-broker-pipeline",
+      "title": "Referral partners",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After every referred file"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update the partner with the milestone reached."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thank them when the file funds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Referral partners, Next 30 days view."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reach out to each partner and update Last contact."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer a short market-update lunch to your top three."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

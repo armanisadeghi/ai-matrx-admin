@@ -1,0 +1,3238 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0418",
+  "version": 1,
+  "title": "Home Inspection Business",
+  "description": "Inspections, referral partners, invoices and licence renewals for an inspector.",
+  "forWho": "Home inspectors and inspection companies",
+  "icon": {
+    "emoji": "🔍"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "realestate",
+  "tags": [
+    "home inspection",
+    "reports",
+    "referrals",
+    "invoices"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-home-inspection-business",
+    "catalogueId": "SP0418",
+    "useCase": "Poppy Ngata schedules for a two-inspector company and uses this to see today's inspections, which reports are still being written, which agents to call this week and which invoices or calibrations need attention.",
+    "industry": "real_estate_property",
+    "vertical": "Home inspection business",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Lanternlight Home Inspections",
+      "describes": "A two-inspector company serving buyers and sellers across a metro area.",
+      "address": {
+        "line1": "2 Saguaro Plaza",
+        "city": "Phoenix",
+        "region": "AZ",
+        "postalCode": "85004",
+        "country": "US"
+      },
+      "phone": "(480) 555-0120",
+      "website": "lanternlightinspect.net",
+      "email": "hello@lanternlightinspect.net",
+      "timezone": "America/Phoenix"
+    },
+    "cleanupTag": "use-case:spaces-home-inspection-business",
+    "tables": [
+      {
+        "token": "inspection",
+        "name": "Inspections",
+        "labelSingular": "Inspection",
+        "labelPlural": "Inspections",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "insp_title",
+        "describes": "Every booked inspection through to a delivered report.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "insp_title",
+            "label": "Inspection",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "address",
+            "label": "Property address",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "agent",
+            "label": "Referred by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "agent",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Full home",
+              "Pre-listing",
+              "Condo",
+              "Re-inspection",
+              "Radon add-on"
+            ],
+            "choiceColors": {
+              "Full home": "blue",
+              "Pre-listing": "green",
+              "Condo": "amber",
+              "Re-inspection": "violet",
+              "Radon add-on": "teal"
+            }
+          },
+          {
+            "key": "when_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Confirmed",
+              "On site",
+              "Writing report",
+              "Delivered",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Cancelled": "red",
+              "Booked": "blue",
+              "Confirmed": "amber",
+              "On site": "violet",
+              "Writing report": "teal",
+              "Delivered": "slate"
+            },
+            "statusGroups": {
+              "Booked": "todo",
+              "Confirmed": "todo",
+              "On site": "in_progress",
+              "Writing report": "in_progress",
+              "Delivered": "in_progress",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Booked"
+          },
+          {
+            "key": "fee",
+            "label": "Fee",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1500
+              }
+            ]
+          },
+          {
+            "key": "inspector",
+            "label": "Inspector",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "scheduler",
+            "label": "Scheduler",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "inv_btn",
+            "label": "Create invoice",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "invoice",
+              "template": "Invoice",
+              "prefill": {
+                "inspection": "@row"
+              }
+            }
+          },
+          {
+            "key": "confirm_btn",
+            "label": "Mark confirmed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inspection_confirm"
+            }
+          },
+          {
+            "key": "onsite_btn",
+            "label": "Start inspection",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inspection_onsite"
+            }
+          },
+          {
+            "key": "writing_btn",
+            "label": "Writing report",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inspection_writing"
+            }
+          },
+          {
+            "key": "delivered_btn",
+            "label": "Mark delivered",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inspection_delivered"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "n01",
+            "values": {
+              "insp_title": "Full home - Pelican Row",
+              "address": "44 Pelican Row",
+              "client_name": "Odalys Marchetti",
+              "agent": "a01",
+              "kind": "Full home",
+              "when_at": "@today 08:30",
+              "status": "On site",
+              "fee": 575,
+              "inspector": "tm-ellis",
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "n02",
+            "values": {
+              "insp_title": "Condo - Wharf Lane",
+              "address": "17 Wharf Lane",
+              "client_name": "Bartholomew Ng",
+              "agent": "a03",
+              "kind": "Condo",
+              "when_at": "@today 13:00",
+              "status": "Confirmed",
+              "fee": 395,
+              "inspector": "tm-rani",
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "n03",
+            "values": {
+              "insp_title": "Pre-listing - Cypress Hollow",
+              "address": "90 Cypress Hollow",
+              "client_name": "Henrietta Voss",
+              "agent": "a05",
+              "kind": "Pre-listing",
+              "when_at": "@mon+2d 09:00",
+              "status": "Booked",
+              "fee": 495,
+              "inspector": "tm-ellis",
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "n04",
+            "values": {
+              "insp_title": "Full home - Magnolia Court",
+              "address": "12 Magnolia Court",
+              "client_name": "Ingrid and Tomas Alvarez",
+              "agent": "a02",
+              "kind": "Full home",
+              "when_at": "@mon+4d 10:00",
+              "status": "Booked",
+              "fee": 650,
+              "inspector": "tm-rani"
+            }
+          },
+          {
+            "key": "n05",
+            "values": {
+              "insp_title": "Re-inspection - Larkin Avenue",
+              "address": "205 Larkin Avenue",
+              "client_name": "Rosalba Finch",
+              "agent": "a04",
+              "kind": "Re-inspection",
+              "when_at": "@today+6d 14:00",
+              "status": "Booked",
+              "fee": 175,
+              "inspector": "tm-rani"
+            }
+          },
+          {
+            "key": "n06",
+            "values": {
+              "insp_title": "Full home - Corbel Street",
+              "address": "33 Corbel Street",
+              "client_name": "Desmond Achebe",
+              "agent": "a01",
+              "kind": "Full home",
+              "when_at": "@today-2d 09:00",
+              "status": "Writing report",
+              "fee": 610,
+              "inspector": "tm-ellis",
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "n07",
+            "values": {
+              "insp_title": "Condo - Tamarind Way",
+              "address": "8 Tamarind Way",
+              "client_name": "Philippa Kwon",
+              "agent": "a02",
+              "kind": "Condo",
+              "when_at": "@today-1d 11:00",
+              "status": "Writing report",
+              "fee": 420,
+              "inspector": "tm-rani",
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "n08",
+            "values": {
+              "insp_title": "Full home - Foxglove Court",
+              "address": "61 Foxglove Court",
+              "client_name": "Cormac Ashworth",
+              "agent": "a05",
+              "kind": "Full home",
+              "when_at": "@today-9d 08:00",
+              "status": "Delivered",
+              "fee": 560,
+              "inspector": "tm-ellis"
+            }
+          },
+          {
+            "key": "n09",
+            "values": {
+              "insp_title": "Radon add-on - Foxglove Court",
+              "address": "61 Foxglove Court",
+              "client_name": "Cormac Ashworth",
+              "agent": "a05",
+              "kind": "Radon add-on",
+              "when_at": "@today-9d 08:00",
+              "status": "Delivered",
+              "fee": 150,
+              "inspector": "tm-ellis"
+            }
+          },
+          {
+            "key": "n10",
+            "values": {
+              "insp_title": "Pre-listing - Pelican Row",
+              "address": "78 Pelican Row",
+              "client_name": "Lucinda Obuya",
+              "agent": "a03",
+              "kind": "Pre-listing",
+              "when_at": "@today-15d 10:00",
+              "status": "Delivered",
+              "fee": 480,
+              "inspector": "tm-rani"
+            }
+          },
+          {
+            "key": "n11",
+            "values": {
+              "insp_title": "Full home - Wharf Lane",
+              "address": "29 Wharf Lane",
+              "client_name": "Theodora Lindqvist",
+              "agent": "a06",
+              "kind": "Full home",
+              "when_at": "@today-20d 09:00",
+              "status": "Cancelled",
+              "fee": 0,
+              "inspector": "tm-ellis"
+            }
+          },
+          {
+            "key": "n12",
+            "values": {
+              "insp_title": "Full home - Cypress Hollow",
+              "address": "4 Cypress Hollow",
+              "client_name": "Marcus Delacroix",
+              "agent": "a01",
+              "kind": "Full home",
+              "when_at": "@today-30d 08:30",
+              "status": "Delivered",
+              "fee": 620,
+              "inspector": "tm-ellis"
+            }
+          }
+        ],
+        "independentOf": {
+          "agent": "The two sides move on their own schedule and status; neither forces the other.",
+          "inspector": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Confirmed"
+            ],
+            "filled": [
+              "address"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "On site"
+            ],
+            "filled": [
+              "address"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Writing report"
+            ],
+            "filled": [
+              "address"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "address"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Inspection",
+            "values": {
+              "status": "Booked",
+              "insp_title": "New inspection"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Agreement signed and payment method on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Access and utilities confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Agent and client given arrival window"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "On site"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos taken in every area"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Report"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Report written and reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Report delivered by the agreed time"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up question window noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "inv_title",
+        "describes": "What each client owes and has paid.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "inv_title",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "inspection",
+            "label": "Inspection",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "inspection",
+            "relationMax": 1
+          },
+          {
+            "key": "base_fee",
+            "label": "Inspection fee",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "inspection",
+            "pick": "fee"
+          },
+          {
+            "key": "addons",
+            "label": "Add-ons",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Total",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Inspection fee} + {Add-ons}"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Unpaid",
+              "Paid",
+              "Refunded"
+            ],
+            "choiceColors": {
+              "Unpaid": "blue",
+              "Paid": "green",
+              "Refunded": "amber"
+            },
+            "statusGroups": {
+              "Unpaid": "todo",
+              "Paid": "done",
+              "Refunded": "done"
+            },
+            "required": true,
+            "default": "Unpaid"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "v01",
+            "values": {
+              "inv_title": "Invoice - Pelican Row",
+              "inspection": "n01",
+              "addons": 0,
+              "status": "Unpaid",
+              "due_on": "@today"
+            }
+          },
+          {
+            "key": "v02",
+            "values": {
+              "inv_title": "Invoice - Wharf Lane condo",
+              "inspection": "n02",
+              "addons": 0,
+              "status": "Unpaid",
+              "due_on": "@today"
+            }
+          },
+          {
+            "key": "v03",
+            "values": {
+              "inv_title": "Invoice - Corbel Street",
+              "inspection": "n06",
+              "addons": 125,
+              "status": "Unpaid",
+              "due_on": "@today-1d"
+            }
+          },
+          {
+            "key": "v04",
+            "values": {
+              "inv_title": "Invoice - Tamarind Way",
+              "inspection": "n07",
+              "addons": 0,
+              "status": "Unpaid",
+              "due_on": "@mon+3d"
+            }
+          },
+          {
+            "key": "v05",
+            "values": {
+              "inv_title": "Invoice - Foxglove Court",
+              "inspection": "n08",
+              "addons": 150,
+              "status": "Paid",
+              "due_on": "@today-9d",
+              "paid_on": "@today-9d"
+            }
+          },
+          {
+            "key": "v06",
+            "values": {
+              "inv_title": "Invoice - Pelican Row pre-listing",
+              "inspection": "n10",
+              "addons": 0,
+              "status": "Paid",
+              "due_on": "@today-15d",
+              "paid_on": "@today-15d"
+            }
+          },
+          {
+            "key": "v07",
+            "values": {
+              "inv_title": "Invoice - Cypress Hollow",
+              "inspection": "n12",
+              "addons": 0,
+              "status": "Paid",
+              "due_on": "@today-30d",
+              "paid_on": "@today-30d"
+            }
+          }
+        ],
+        "independentOf": {
+          "inspection": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "paid_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "addons"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Invoice",
+            "values": {
+              "status": "Unpaid",
+              "inv_title": "New invoice"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before sending"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Add-ons confirmed with the client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment link or method included"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "agent",
+        "name": "Referral partners",
+        "labelSingular": "Referral partner",
+        "labelPlural": "Referral partners",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "agent_name",
+        "describes": "Real estate agents who send business, and when to stay in touch.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "agent_name",
+            "label": "Referral partner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "brokerage",
+            "label": "Brokerage",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "level",
+            "label": "Relationship",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Regular",
+              "Top referrer"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Regular": "green",
+              "Top referrer": "amber"
+            },
+            "default": "New"
+          },
+          {
+            "key": "jobs",
+            "label": "Inspections",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "inspections",
+            "pick": "insp_title",
+            "agg": "count"
+          },
+          {
+            "key": "revenue",
+            "label": "Fees from referrals",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "inspections",
+            "pick": "fee",
+            "agg": "sum"
+          },
+          {
+            "key": "last_contact",
+            "label": "Last contact",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_touch",
+            "label": "Next touch",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "agent_name": "Gwendolyn Aldridge",
+              "brokerage": "Summit Ridge Realty",
+              "phone": "(480) 555-0131",
+              "email": "gwen@summitridgerealty.net",
+              "level": "Top referrer",
+              "last_contact": "@today-12d",
+              "next_touch": "@mon+4d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "agent_name": "Tobias Wickstrom",
+              "brokerage": "Copperline Homes",
+              "phone": "(480) 555-0132",
+              "email": "tobias@copperlinehomes.net",
+              "level": "Regular",
+              "last_contact": "@today-30d",
+              "next_touch": "@today-2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "agent_name": "Marisol Echeverria",
+              "brokerage": "Desert Bloom Properties",
+              "phone": "(480) 555-0133",
+              "email": "marisol@desertbloomprops.net",
+              "level": "Regular",
+              "last_contact": "@today-21d",
+              "next_touch": "@today+6d"
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "agent_name": "Lawrence Okafor",
+              "brokerage": "Saguaro Street Realty",
+              "phone": "(480) 555-0134",
+              "email": "lawrence@saguarostreet.net",
+              "level": "New",
+              "last_contact": "@today-5d",
+              "next_touch": "@today+3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "agent_name": "Imelda Brandvold",
+              "brokerage": "Copperline Homes",
+              "phone": "(480) 555-0135",
+              "email": "imelda@copperlinehomes.net",
+              "level": "Top referrer",
+              "last_contact": "@today-8d",
+              "next_touch": "@today+20d"
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "agent_name": "Percival Tamura",
+              "brokerage": "Ironwood Group",
+              "phone": "(480) 555-0136",
+              "email": "percival@ironwoodgroup.net",
+              "level": "New",
+              "last_contact": "@today-45d",
+              "next_touch": "@today-9d",
+              "owner": "@installer"
+            }
+          }
+        ],
+        "before": [
+          [
+            "last_contact",
+            "next_touch"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "Referral partner",
+            "values": {
+              "level": "New",
+              "agent_name": "New referral partner"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Relationship"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Introduction call made"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sample report sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Booking link shared"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preferences"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "How they like to be contacted"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Typical turnaround they expect"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "credential",
+        "name": "Equipment and licences",
+        "labelSingular": "Equipment or licence",
+        "labelPlural": "Equipment and licences",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shield-check",
+        "titleField": "cred_title",
+        "describes": "Licences, insurance and tool calibrations that must stay current.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "cred_title",
+            "label": "Equipment or licence",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Licence",
+              "Insurance",
+              "Equipment calibration",
+              "Software",
+              "Training"
+            ],
+            "choiceColors": {
+              "Licence": "blue",
+              "Insurance": "green",
+              "Equipment calibration": "amber",
+              "Software": "violet",
+              "Training": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Renews or due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Current",
+              "Due soon",
+              "Overdue"
+            ],
+            "choiceColors": {
+              "Overdue": "red",
+              "Current": "green",
+              "Due soon": "blue"
+            },
+            "statusGroups": {
+              "Current": "done",
+              "Due soon": "in_progress",
+              "Overdue": "in_progress"
+            },
+            "required": true,
+            "default": "Current"
+          },
+          {
+            "key": "owner_tm",
+            "label": "Responsible",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "current_btn",
+            "label": "Mark current",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "credential_current"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "e01",
+            "values": {
+              "cred_title": "Inspector licence - Bramwell",
+              "kind": "Licence",
+              "due_on": "@today+210d",
+              "status": "Current",
+              "owner_tm": "tm-ellis"
+            }
+          },
+          {
+            "key": "e02",
+            "values": {
+              "cred_title": "Inspector licence - Chaudhary",
+              "kind": "Licence",
+              "due_on": "@today+34d",
+              "status": "Current",
+              "owner_tm": "tm-rani"
+            }
+          },
+          {
+            "key": "e03",
+            "values": {
+              "cred_title": "Errors and omissions insurance",
+              "kind": "Insurance",
+              "due_on": "@today+22d",
+              "status": "Due soon",
+              "owner_tm": "tm-ellis"
+            }
+          },
+          {
+            "key": "e04",
+            "values": {
+              "cred_title": "Moisture meter calibration",
+              "kind": "Equipment calibration",
+              "due_on": "@today-6d",
+              "status": "Overdue",
+              "owner_tm": "tm-rani"
+            }
+          },
+          {
+            "key": "e05",
+            "values": {
+              "cred_title": "Thermal camera calibration",
+              "kind": "Equipment calibration",
+              "due_on": "@mon+4d",
+              "status": "Due soon",
+              "owner_tm": "tm-ellis"
+            }
+          },
+          {
+            "key": "e06",
+            "values": {
+              "cred_title": "Report software subscription",
+              "kind": "Software",
+              "due_on": "@today+90d",
+              "status": "Current",
+              "owner_tm": "tm-poppy"
+            }
+          },
+          {
+            "key": "e07",
+            "values": {
+              "cred_title": "Continuing education hours",
+              "kind": "Training",
+              "due_on": "@today+120d",
+              "status": "Current",
+              "owner_tm": "tm-ellis"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner_tm": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Current"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Equipment or licence",
+            "values": {
+              "status": "Current",
+              "cred_title": "New equipment or licence"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Renewal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Renewal started with the issuer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof saved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next date entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each inspection links to one referral partner.",
+        "fromTable": "inspection",
+        "fromField": "agent",
+        "toTable": "agent",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "inspections"
+      },
+      {
+        "describes": "Each inspection links to one team member.",
+        "fromTable": "inspection",
+        "fromField": "inspector",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "inspections_done"
+      },
+      {
+        "describes": "Each invoice links to one inspection.",
+        "fromTable": "invoice",
+        "fromField": "inspection",
+        "toTable": "inspection",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each equipment or licence links to one team member.",
+        "fromTable": "credential",
+        "fromField": "owner_tm",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tracked_items"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-ellis",
+            "values": {
+              "full_name": "Ellis Bramwell",
+              "role": "Lead inspector",
+              "work_email": "ellis@lanternlightinspect.net",
+              "mobile": "(480) 555-0121",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-rani",
+            "values": {
+              "full_name": "Rani Chaudhary",
+              "role": "Inspector",
+              "work_email": "rani@lanternlightinspect.net",
+              "mobile": "(480) 555-0122",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-poppy",
+            "values": {
+              "full_name": "Poppy Ngata",
+              "role": "Office scheduler",
+              "work_email": "poppy@lanternlightinspect.net",
+              "mobile": "(480) 555-0123",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "book_inspection",
+        "name": "Book an inspection",
+        "describes": "How a client or agent requests an inspection.",
+        "audience": "staff",
+        "table": "inspection",
+        "fields": [
+          {
+            "fieldKey": "insp_title",
+            "ask": "What kind of inspection and where?",
+            "required": true
+          },
+          {
+            "fieldKey": "address",
+            "ask": "Property address?"
+          },
+          {
+            "fieldKey": "client_name",
+            "ask": "Client name?"
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "Inspection type?"
+          }
+        ],
+        "submitLabel": "Request inspection",
+        "confirmation": "Received. The scheduler will confirm a time by phone or email."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "inspection_confirm",
+        "table": "inspection",
+        "name": "Mark confirmed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inspection_onsite",
+        "table": "inspection",
+        "name": "Start inspection",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "On site"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inspection_writing",
+        "table": "inspection",
+        "name": "Writing report",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Writing report"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inspection_delivered",
+        "table": "inspection",
+        "name": "Mark delivered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "credential_current",
+        "table": "credential",
+        "name": "Mark current",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Current"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_inspection",
+        "name": "All inspections",
+        "table": "inspection",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "inspection_board",
+        "name": "By status",
+        "table": "inspection",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "inspection_cal",
+        "name": "Calendar",
+        "table": "inspection",
+        "kind": "calendar",
+        "dateField": "when_at",
+        "allDay": false
+      },
+      {
+        "token": "inspection_today",
+        "name": "Today",
+        "table": "inspection",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Confirmed",
+            "On site",
+            "Writing report",
+            "Delivered"
+          ]
+        }
+      },
+      {
+        "token": "inspection_week",
+        "name": "This week",
+        "table": "inspection",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Confirmed",
+            "On site",
+            "Writing report",
+            "Delivered"
+          ]
+        }
+      },
+      {
+        "token": "inspection_next7",
+        "name": "Next 7 days",
+        "table": "inspection",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Confirmed",
+            "On site",
+            "Writing report",
+            "Delivered"
+          ]
+        }
+      },
+      {
+        "token": "inspection_mine",
+        "name": "My inspections",
+        "table": "inspection",
+        "kind": "grid",
+        "me": [
+          "scheduler"
+        ]
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "By status",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_cal",
+        "name": "Calendar",
+        "table": "invoice",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "invoice_today",
+        "name": "Today",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Unpaid"
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "This week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Unpaid"
+        }
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Unpaid"
+        }
+      },
+      {
+        "token": "all_agent",
+        "name": "All referral partners",
+        "table": "agent",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "agent_cal",
+        "name": "Calendar",
+        "table": "agent",
+        "kind": "calendar",
+        "dateField": "next_touch",
+        "allDay": true
+      },
+      {
+        "token": "agent_week",
+        "name": "This week",
+        "table": "agent",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "agent_next30",
+        "name": "Next 30 days",
+        "table": "agent",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "agent_over",
+        "name": "Overdue",
+        "table": "agent",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "agent_mine",
+        "name": "My referral partners",
+        "table": "agent",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_credential",
+        "name": "All equipment and licences",
+        "table": "credential",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "credential_board",
+        "name": "By status",
+        "table": "credential",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "credential_cal",
+        "name": "Calendar",
+        "table": "credential",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "credential_week",
+        "name": "This week",
+        "table": "credential",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due soon",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "credential_next30",
+        "name": "Next 30 days",
+        "table": "credential",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due soon",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "credential_over",
+        "name": "Overdue",
+        "table": "credential",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due soon",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Inspection assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "inspection",
+          "describes": "Every inspection with agent, inspector, status and fee."
+        },
+        {
+          "name": "related_tables",
+          "table": "agent",
+          "describes": "The referral partners behind each inspection."
+        }
+      ],
+      "question": {
+        "ask": "How many reports are still being written?",
+        "whyItMatters": "Agents expect reports within a day; the scheduler checks daily.",
+        "expect": {
+          "table": "inspection",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Writing report"
+          },
+          "answer": 2,
+          "unit": "inspections"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open inspections.",
+        "action": {
+          "kind": "open",
+          "surface": "inspection_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "inspection_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open invoices.",
+        "action": {
+          "kind": "open",
+          "surface": "invoice_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "invoice_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open referral partners.",
+        "action": {
+          "kind": "open",
+          "surface": "all_agent"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_agent",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "copperlinehomes.net",
+        "desertbloomprops.net",
+        "ironwoodgroup.net",
+        "lanternlightinspect.net",
+        "saguarostreet.net",
+        "summitridgerealty.net"
+      ],
+      "fictionalStreets": [
+        "Corbel Street",
+        "Cypress Hollow",
+        "Foxglove Court",
+        "Larkin Avenue",
+        "Magnolia Court",
+        "Pelican Row",
+        "Saguaro Plaza",
+        "Tamarind Way",
+        "Wharf Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "home-inspection-business",
+      "parent": null,
+      "title": "Home Inspection Business",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your inspection business in one place. Run today's Inspections, deliver reports on time, keep Referral partners warm, collect on Invoices, and renew licences and calibrations before they lapse. Operational tracking only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-booking"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-report"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-referrals"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-renewals"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inspection",
+                      "view": "all_inspection"
+                    },
+                    "inline": true,
+                    "title": "Inspections by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Inspections by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inspection",
+                      "view": "all_inspection"
+                    },
+                    "inline": true,
+                    "title": "Fees by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Fees by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "agent",
+                      "view": "all_agent"
+                    },
+                    "inline": true,
+                    "title": "Partners by relationship",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Partners by relationship",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "level",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inspection",
+              "view": "inspection_board"
+            },
+            "inline": true,
+            "title": "Inspections",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Confirmed",
+                    "On site",
+                    "Writing report",
+                    "Delivered"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Confirmed",
+                    "On site",
+                    "Writing report",
+                    "Delivered"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Confirmed",
+                    "On site",
+                    "Writing report",
+                    "Delivered"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_at"
+              },
+              {
+                "id": "vall",
+                "name": "All inspections",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "scheduler"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Unpaid"
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Unpaid"
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Unpaid"
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Referral partners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "agent",
+              "view": "all_agent"
+            },
+            "inline": true,
+            "title": "Referral partners",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_touch": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_touch": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_touch": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_touch"
+              },
+              {
+                "id": "vall",
+                "name": "All referral partners",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "next_touch",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Equipment and licences"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "credential",
+              "view": "credential_board"
+            },
+            "inline": true,
+            "title": "Equipment and licences",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due soon",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due soon",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due soon",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All equipment and licences",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "home-inspection-business",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inspection",
+                      "view": "all_inspection"
+                    },
+                    "inline": true,
+                    "title": "Inspections by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Inspections by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inspection",
+                      "view": "all_inspection"
+                    },
+                    "inline": true,
+                    "title": "Fees by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Fees by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "agent",
+                      "view": "all_agent"
+                    },
+                    "inline": true,
+                    "title": "Partners by relationship",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Partners by relationship",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "level",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "credential",
+                      "view": "all_credential"
+                    },
+                    "inline": true,
+                    "title": "Renewals by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Renewals by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inspection",
+                      "view": "all_inspection"
+                    },
+                    "inline": true,
+                    "title": "Inspections by inspector",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Inspections by inspector",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "inspector",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reports to deliver"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inspection",
+              "view": "all_inspection"
+            },
+            "inline": true,
+            "title": "Reports to deliver",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Writing report",
+                "layout": "list",
+                "filters": {
+                  "status": "Writing report"
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unpaid invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Unpaid invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Unpaid",
+                "layout": "list",
+                "filters": {
+                  "status": "Unpaid"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-booking",
+      "parent": "home-inspection-business",
+      "title": "Booking an inspection",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Agents work against short contingency windows. Fast, clear booking wins repeat referrals."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the request arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the inspection with the address, client and agent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm access, utilities and who will attend."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the agreement and payment link."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Confirmed once the agreement is signed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send the arrival window to the client and the agent."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-report",
+      "parent": "home-inspection-business",
+      "title": "Report delivery standard",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On site"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos in every area"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notes taken as you walk"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Same day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the inspection Writing report."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write and review the report."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Deliver it by the agreed time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Delivered and create the invoice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Offer a short call to answer questions within three days."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-referrals",
+      "parent": "home-inspection-business",
+      "title": "Referral partner routine",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Referrals are the engine of the business. Keep it personal."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After every referred inspection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send the agent a thank-you and a link to the report"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Referral partners and use the Next 30 days view."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call or message each partner and update Last contact."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move good partners up from New to Regular to Top referrer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-renewals",
+      "parent": "home-inspection-business",
+      "title": "Licences and calibrations",
+      "icon": {
+        "emoji": "🛠️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quarterly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Equipment and licences, Next 30 days view."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start each renewal with the issuer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Current when proof arrives."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pause using any overdue equipment until it is calibrated."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

@@ -131,8 +131,8 @@
             ],
             "choiceColors": {
               "Open": "blue",
-              "In progress": "green",
-              "Done": "amber"
+              "In progress": "amber",
+              "Done": "green"
             },
             "statusGroups": {
               "Open": "todo",
@@ -467,13 +467,13 @@
               "Closed"
             ],
             "choiceColors": {
-              "Intake": "blue",
-              "Preparing": "green",
-              "Filed": "amber",
-              "Request for evidence": "violet",
-              "Approved": "teal",
               "Denied": "red",
-              "Closed": "orange"
+              "Intake": "blue",
+              "Preparing": "amber",
+              "Filed": "violet",
+              "Request for evidence": "teal",
+              "Approved": "slate",
+              "Closed": "green"
             },
             "statusGroups": {
               "Intake": "todo",
@@ -947,9 +947,9 @@
             ],
             "choiceColors": {
               "Needed": "blue",
-              "Requested": "green",
-              "Received": "amber",
-              "Verified": "violet"
+              "Requested": "amber",
+              "Received": "violet",
+              "Verified": "green"
             },
             "statusGroups": {
               "Needed": "todo",

@@ -131,10 +131,10 @@
               "Declined"
             ],
             "choiceColors": {
+              "Declined": "red",
               "New": "blue",
-              "Screening": "green",
-              "Signed": "amber",
-              "Declined": "violet"
+              "Screening": "amber",
+              "Signed": "green"
             },
             "statusGroups": {
               "New": "todo",
@@ -513,12 +513,12 @@
             ],
             "choiceColors": {
               "Investigation": "blue",
-              "Treatment": "green",
-              "Records and bills": "amber",
-              "Demand": "violet",
-              "Negotiation": "teal",
-              "Litigation": "red",
-              "Resolved": "orange"
+              "Treatment": "amber",
+              "Records and bills": "violet",
+              "Demand": "teal",
+              "Negotiation": "slate",
+              "Litigation": "yellow",
+              "Resolved": "green"
             },
             "statusGroups": {
               "Investigation": "in_progress",
@@ -991,9 +991,9 @@
             ],
             "choiceColors": {
               "To request": "blue",
-              "Requested": "green",
-              "Received": "amber",
-              "Chased": "violet"
+              "Requested": "amber",
+              "Received": "violet",
+              "Chased": "green"
             },
             "statusGroups": {
               "To request": "todo",

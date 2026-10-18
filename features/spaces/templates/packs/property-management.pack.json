@@ -1,0 +1,3608 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0414",
+  "version": 1,
+  "title": "Property Management",
+  "description": "Properties, units, leases, rent payments and maintenance requests in one place.",
+  "forWho": "Property managers and landlords",
+  "icon": {
+    "emoji": "🏢"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "realestate",
+  "tags": [
+    "property management",
+    "tenants",
+    "rent",
+    "maintenance"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-property-management",
+    "catalogueId": "SP0414",
+    "useCase": "Lorraine Whitcombe manages four small properties and uses this to see which rents are due today, which leases end in the next month, which units are vacant and what repairs are scheduled this week.",
+    "industry": "real_estate_property",
+    "vertical": "Property management",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Foxglove Property Services",
+      "describes": "A small property management company caring for apartments, duplexes and townhomes.",
+      "address": {
+        "line1": "320 Larkin Avenue",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97209",
+        "country": "US"
+      },
+      "phone": "(971) 555-0120",
+      "website": "foxgloveproperty.net",
+      "email": "hello@foxgloveproperty.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-property-management",
+    "tables": [
+      {
+        "token": "payment",
+        "name": "Rent payments",
+        "labelSingular": "Rent payment",
+        "labelPlural": "Rent payments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "banknote",
+        "titleField": "pay_title",
+        "describes": "Each rent charge and whether it has been paid.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "pay_title",
+            "label": "Rent payment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "lease",
+            "label": "Lease",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "lease",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "received",
+            "label": "Received",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Due",
+              "Paid",
+              "Late",
+              "Partial"
+            ],
+            "choiceColors": {
+              "Due": "blue",
+              "Paid": "green",
+              "Late": "amber",
+              "Partial": "violet"
+            },
+            "statusGroups": {
+              "Due": "todo",
+              "Paid": "done",
+              "Late": "in_progress",
+              "Partial": "in_progress"
+            },
+            "required": true,
+            "default": "Due"
+          },
+          {
+            "key": "balance",
+            "label": "Still owed",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Amount} - {Received}"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "payment_paid"
+            }
+          },
+          {
+            "key": "late_btn",
+            "label": "Mark late",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "payment_late"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "y01",
+            "values": {
+              "pay_title": "Rent - Delacroix, this month",
+              "lease": "t01",
+              "due_on": "@today-2d",
+              "amount": 1450,
+              "received": 1450,
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "y02",
+            "values": {
+              "pay_title": "Rent - Abara, this month",
+              "lease": "t02",
+              "due_on": "@today-2d",
+              "amount": 1700,
+              "received": 0,
+              "status": "Late"
+            }
+          },
+          {
+            "key": "y03",
+            "values": {
+              "pay_title": "Rent - Ortega-Lund, this month",
+              "lease": "t03",
+              "due_on": "@today-2d",
+              "amount": 1475,
+              "received": 1475,
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "y04",
+            "values": {
+              "pay_title": "Rent - Pillai, this month",
+              "lease": "t04",
+              "due_on": "@today-2d",
+              "amount": 1600,
+              "received": 800,
+              "status": "Partial"
+            }
+          },
+          {
+            "key": "y05",
+            "values": {
+              "pay_title": "Rent - Okonkwo, this month",
+              "lease": "t05",
+              "due_on": "@today",
+              "amount": 2300,
+              "received": 0,
+              "status": "Due"
+            }
+          },
+          {
+            "key": "y06",
+            "values": {
+              "pay_title": "Rent - Haldane, this month",
+              "lease": "t06",
+              "due_on": "@mon+4d",
+              "amount": 2200,
+              "received": 0,
+              "status": "Due"
+            }
+          },
+          {
+            "key": "y07",
+            "values": {
+              "pay_title": "Rent - Dubois, this month",
+              "lease": "t07",
+              "due_on": "@today+3d",
+              "amount": 1925,
+              "received": 0,
+              "status": "Due"
+            }
+          },
+          {
+            "key": "y08",
+            "values": {
+              "pay_title": "Rent - Abara, last month",
+              "lease": "t02",
+              "due_on": "@today-32d",
+              "amount": 1700,
+              "received": 1700,
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "y09",
+            "values": {
+              "pay_title": "Rent - Pillai, last month",
+              "lease": "t04",
+              "due_on": "@today-32d",
+              "amount": 1600,
+              "received": 1600,
+              "status": "Paid"
+            }
+          }
+        ],
+        "independentOf": {
+          "lease": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "amount"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Late"
+            ],
+            "filled": [
+              "amount"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Rent due",
+            "values": {
+              "status": "Due",
+              "pay_title": "New rent payment"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Collection"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment method noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "If late"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Late notice sent according to the lease"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment plan noted if agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "lease",
+        "name": "Leases",
+        "labelSingular": "Lease",
+        "labelPlural": "Leases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "key",
+        "titleField": "tenant_name",
+        "describes": "Who lives where, for how long, and what they pay.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "tenant_name",
+            "label": "Tenant",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "unit",
+            "relationMax": 1
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "start_on",
+            "label": "Lease start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "end_on",
+            "label": "Lease end",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "rent",
+            "label": "Monthly rent",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "unit",
+            "pick": "rent"
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Renewal offered",
+              "Notice given",
+              "Past"
+            ],
+            "choiceColors": {
+              "Active": "blue",
+              "Renewal offered": "amber",
+              "Notice given": "violet",
+              "Past": "green"
+            },
+            "statusGroups": {
+              "Active": "in_progress",
+              "Renewal offered": "in_progress",
+              "Notice given": "in_progress",
+              "Past": "done"
+            },
+            "required": true,
+            "default": "Active"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pay_btn",
+            "label": "Record rent due",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "payment",
+              "template": "Rent due",
+              "prefill": {
+                "lease": "@row"
+              }
+            }
+          },
+          {
+            "key": "renewal_btn",
+            "label": "Offer renewal",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lease_renewal"
+            }
+          },
+          {
+            "key": "notice_btn",
+            "label": "Notice given",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lease_notice"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "tenant_name": "Marguerite Delacroix",
+              "unit": "u01",
+              "phone": "(971) 555-0131",
+              "email": "marguerite.d@mailbox-demo.net",
+              "start_on": "@today-300d",
+              "end_on": "@today+65d",
+              "deposit": 1000,
+              "status": "Renewal offered",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "tenant_name": "Quentin Abara",
+              "unit": "u02",
+              "phone": "(971) 555-0132",
+              "email": "quentin.a@mailbox-demo.net",
+              "start_on": "@today-700d",
+              "end_on": "@today+28d",
+              "deposit": 1200,
+              "status": "Notice given",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "tenant_name": "Soledad Ortega-Lund",
+              "unit": "u03",
+              "phone": "(971) 555-0133",
+              "email": "soledad.ol@mailbox-demo.net",
+              "start_on": "@today-120d",
+              "end_on": "@today+245d",
+              "deposit": 1000,
+              "status": "Active"
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "tenant_name": "Ravindra Pillai",
+              "unit": "u05",
+              "phone": "(971) 555-0134",
+              "email": "ravi.p@mailbox-demo.net",
+              "start_on": "@today-500d",
+              "end_on": "@today-5d",
+              "deposit": 1100,
+              "status": "Active",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "tenant_name": "The Okonkwo household",
+              "unit": "u07",
+              "phone": "(971) 555-0135",
+              "email": "okonkwos@mailbox-demo.net",
+              "start_on": "@today-60d",
+              "end_on": "@today+305d",
+              "deposit": 1500,
+              "status": "Active"
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "tenant_name": "Beatrix Haldane",
+              "unit": "u08",
+              "phone": "(971) 555-0136",
+              "email": "beatrix.h@mailbox-demo.net",
+              "start_on": "@today-400d",
+              "end_on": "@mon+5d",
+              "deposit": 1500,
+              "status": "Renewal offered"
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "tenant_name": "Anselm Dubois",
+              "unit": "u09",
+              "phone": "(971) 555-0137",
+              "email": "anselm.d@mailbox-demo.net",
+              "start_on": "@today-30d",
+              "end_on": "@today+335d",
+              "deposit": 1300,
+              "status": "Active"
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "tenant_name": "Philippa Lindgren",
+              "unit": "u06",
+              "phone": "(971) 555-0138",
+              "email": "philippa.l@mailbox-demo.net",
+              "start_on": "@today-900d",
+              "end_on": "@today-35d",
+              "deposit": 1100,
+              "status": "Past"
+            }
+          }
+        ],
+        "independentOf": {
+          "unit": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "start_on",
+            "end_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Renewal offered"
+            ],
+            "filled": [
+              "deposit"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Notice given"
+            ],
+            "filled": [
+              "deposit"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Lease",
+            "values": {
+              "status": "Active",
+              "tenant_name": "New lease"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Move-in"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lease signed by all adults"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Deposit received and receipted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Move-in condition report signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Keys and fobs handed over"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Renewal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Renewal offer sent at least 60 days before lease end"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Response recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "request",
+        "name": "Maintenance requests",
+        "labelSingular": "Maintenance request",
+        "labelPlural": "Maintenance requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "req_title",
+        "describes": "Repairs reported, scheduled and finished.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "req_title",
+            "label": "Maintenance request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "unit",
+            "relationMax": 1
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Emergency",
+              "Urgent",
+              "Routine"
+            ],
+            "choiceColors": {
+              "Emergency": "blue",
+              "Urgent": "green",
+              "Routine": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "trade",
+            "label": "Trade",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Plumbing",
+              "Electrical",
+              "Heating",
+              "Appliance",
+              "General",
+              "Pest"
+            ],
+            "choiceColors": {
+              "Plumbing": "blue",
+              "Electrical": "green",
+              "Heating": "amber",
+              "Appliance": "violet",
+              "General": "teal",
+              "Pest": "red"
+            }
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "scheduled_for",
+            "label": "Scheduled for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "cost",
+            "label": "Cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Scheduled",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Scheduled": "amber",
+              "In progress": "violet",
+              "Done": "green"
+            },
+            "statusGroups": {
+              "New": "todo",
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            },
+            "required": true,
+            "default": "New"
+          },
+          {
+            "key": "coordinator",
+            "label": "Coordinator",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "scheduled_btn",
+            "label": "Mark scheduled",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "request_scheduled"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "request_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "q01",
+            "values": {
+              "req_title": "Kitchen faucet dripping - Alderwood east",
+              "unit": "u01",
+              "priority": "Routine",
+              "trade": "Plumbing",
+              "reported_on": "@today-1d",
+              "cost": 0,
+              "status": "New",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "q02",
+            "values": {
+              "req_title": "No heat in bedroom - Millrace upstairs",
+              "unit": "u05",
+              "priority": "Urgent",
+              "trade": "Heating",
+              "vendor": "Fenwick Heating and Air",
+              "reported_on": "@today-2d",
+              "scheduled_for": "@today",
+              "cost": 0,
+              "status": "Scheduled",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "q03",
+            "values": {
+              "req_title": "Garbage disposal jammed - Thistle Hill end",
+              "unit": "u07",
+              "priority": "Routine",
+              "trade": "Appliance",
+              "vendor": "Rowan Appliance Repair",
+              "reported_on": "@today-3d",
+              "scheduled_for": "@today-1d",
+              "cost": 0,
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "q04",
+            "values": {
+              "req_title": "Outlet sparking - Alderwood west",
+              "unit": "u02",
+              "priority": "Emergency",
+              "trade": "Electrical",
+              "vendor": "Kestrel Electric",
+              "reported_on": "@today-1d",
+              "scheduled_for": "@today",
+              "cost": 0,
+              "status": "In progress",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "q05",
+            "values": {
+              "req_title": "Paint touch-up - Millrace downstairs",
+              "unit": "u06",
+              "priority": "Routine",
+              "trade": "General",
+              "vendor": "Tidewater Paint Crew",
+              "reported_on": "@today-14d",
+              "scheduled_for": "@today+4d",
+              "cost": 420,
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "q06",
+            "values": {
+              "req_title": "Window latch broken - Brambleton",
+              "unit": "u09",
+              "priority": "Routine",
+              "trade": "General",
+              "reported_on": "@today-20d",
+              "cost": 85,
+              "status": "Done"
+            }
+          },
+          {
+            "key": "q07",
+            "values": {
+              "req_title": "Water heater replaced - Thistle Hill middle",
+              "unit": "u08",
+              "priority": "Urgent",
+              "trade": "Plumbing",
+              "vendor": "Pellam Plumbing",
+              "reported_on": "@today-30d",
+              "scheduled_for": "@today-28d",
+              "cost": 1180,
+              "status": "Done"
+            }
+          },
+          {
+            "key": "q08",
+            "values": {
+              "req_title": "Ant treatment - Alderwood east",
+              "unit": "u01",
+              "priority": "Routine",
+              "trade": "Pest",
+              "vendor": "Greenleaf Pest Control",
+              "reported_on": "@today-40d",
+              "scheduled_for": "@today-38d",
+              "cost": 160,
+              "status": "Done"
+            }
+          }
+        ],
+        "independentOf": {
+          "unit": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "reported_on",
+            "scheduled_for"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Scheduled"
+            ],
+            "filled": [
+              "trade"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "trade"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Maintenance request",
+            "values": {
+              "status": "New",
+              "req_title": "New maintenance request"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Emergencies are phoned to the vendor first and logged after."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Access"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tenant permission for entry noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Completion"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vendor invoice received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tenant confirmed the fix"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "unit",
+        "name": "Units",
+        "labelSingular": "Unit",
+        "labelPlural": "Units",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "door-open",
+        "titleField": "unit_title",
+        "describes": "Every rentable space, who is in it and what rent it carries.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "unit_title",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "property",
+            "label": "Property",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "property",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Occupied",
+              "Vacant",
+              "Turnover",
+              "Notice given"
+            ],
+            "choiceColors": {
+              "Occupied": "green",
+              "Vacant": "blue",
+              "Turnover": "amber",
+              "Notice given": "violet"
+            },
+            "statusGroups": {
+              "Occupied": "done",
+              "Vacant": "todo",
+              "Turnover": "in_progress",
+              "Notice given": "in_progress"
+            },
+            "required": true,
+            "default": "Occupied"
+          },
+          {
+            "key": "beds",
+            "label": "Bedrooms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Studio",
+              "1",
+              "2",
+              "3"
+            ],
+            "choiceColors": {
+              "Studio": "blue",
+              "1": "green",
+              "2": "amber",
+              "3": "violet"
+            }
+          },
+          {
+            "key": "rent",
+            "label": "Asking rent",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "lease_count",
+            "label": "Leases",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "leases",
+            "pick": "tenant_name",
+            "agg": "count"
+          },
+          {
+            "key": "lease_btn",
+            "label": "Start lease",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "lease",
+              "template": "Lease",
+              "prefill": {
+                "unit": "@row"
+              }
+            }
+          },
+          {
+            "key": "req_btn",
+            "label": "Log request",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "request",
+              "template": "Maintenance request",
+              "prefill": {
+                "unit": "@row"
+              }
+            }
+          },
+          {
+            "key": "vacant_btn",
+            "label": "Mark vacant",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "unit_vacant"
+            }
+          },
+          {
+            "key": "occupied_btn",
+            "label": "Mark occupied",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "unit_occupied"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "u01",
+            "values": {
+              "unit_title": "Alderwood, first floor east",
+              "property": "p01",
+              "status": "Occupied",
+              "beds": "1",
+              "rent": 1450
+            }
+          },
+          {
+            "key": "u02",
+            "values": {
+              "unit_title": "Alderwood, first floor west",
+              "property": "p01",
+              "status": "Notice given",
+              "beds": "2",
+              "rent": 1750
+            }
+          },
+          {
+            "key": "u03",
+            "values": {
+              "unit_title": "Alderwood, second floor east",
+              "property": "p01",
+              "status": "Occupied",
+              "beds": "1",
+              "rent": 1475
+            }
+          },
+          {
+            "key": "u04",
+            "values": {
+              "unit_title": "Alderwood, second floor west",
+              "property": "p01",
+              "status": "Vacant",
+              "beds": "2",
+              "rent": 1790
+            }
+          },
+          {
+            "key": "u05",
+            "values": {
+              "unit_title": "Millrace, upstairs",
+              "property": "p02",
+              "status": "Occupied",
+              "beds": "2",
+              "rent": 1650
+            }
+          },
+          {
+            "key": "u06",
+            "values": {
+              "unit_title": "Millrace, downstairs",
+              "property": "p02",
+              "status": "Turnover",
+              "beds": "2",
+              "rent": 1600
+            }
+          },
+          {
+            "key": "u07",
+            "values": {
+              "unit_title": "Thistle Hill, end townhome",
+              "property": "p03",
+              "status": "Occupied",
+              "beds": "3",
+              "rent": 2300
+            }
+          },
+          {
+            "key": "u08",
+            "values": {
+              "unit_title": "Thistle Hill, middle townhome",
+              "property": "p03",
+              "status": "Occupied",
+              "beds": "3",
+              "rent": 2250
+            }
+          },
+          {
+            "key": "u09",
+            "values": {
+              "unit_title": "Brambleton Cottage",
+              "property": "p04",
+              "status": "Occupied",
+              "beds": "2",
+              "rent": 1925
+            }
+          }
+        ],
+        "independentOf": {
+          "property": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Vacant"
+            ],
+            "filled": [
+              "rent"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Occupied"
+            ],
+            "filled": [
+              "rent"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Unit",
+            "values": {
+              "status": "Vacant",
+              "unit_title": "New unit"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Unit turnover"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Walk-through photos taken"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Keys and fobs returned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cleaning and paint scheduled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Listing photos updated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "property",
+        "name": "Properties",
+        "labelSingular": "Property",
+        "labelPlural": "Properties",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "property_name",
+        "describes": "Each building or complex under management, with its units and open maintenance.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "property_name",
+            "label": "Property",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "street",
+            "label": "Street address",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Apartment building",
+              "Duplex",
+              "Single-family home",
+              "Townhome row"
+            ],
+            "choiceColors": {
+              "Apartment building": "blue",
+              "Duplex": "green",
+              "Single-family home": "amber",
+              "Townhome row": "violet"
+            }
+          },
+          {
+            "key": "unit_count",
+            "label": "Units",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "units",
+            "pick": "unit_title",
+            "agg": "count"
+          },
+          {
+            "key": "vacant",
+            "label": "Vacant units",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "units",
+            "pick": "unit_title",
+            "agg": "count",
+            "filter": {
+              "status": "Vacant"
+            }
+          },
+          {
+            "key": "manager",
+            "label": "Manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "unit_btn",
+            "label": "Add unit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "unit",
+              "template": "Unit",
+              "prefill": {
+                "property": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "p01",
+            "values": {
+              "property_name": "Alderwood Apartments",
+              "street": "1200 Foxglove Court",
+              "kind": "Apartment building",
+              "manager": "tm-lorraine"
+            }
+          },
+          {
+            "key": "p02",
+            "values": {
+              "property_name": "Millrace Duplex",
+              "street": "58 Larkin Avenue",
+              "kind": "Duplex",
+              "manager": "tm-lorraine"
+            }
+          },
+          {
+            "key": "p03",
+            "values": {
+              "property_name": "Thistle Hill Townhomes",
+              "street": "300 Corbel Street",
+              "kind": "Townhome row",
+              "manager": "tm-lorraine"
+            }
+          },
+          {
+            "key": "p04",
+            "values": {
+              "property_name": "Brambleton Cottage",
+              "street": "19 Tamarind Way",
+              "kind": "Single-family home",
+              "manager": "tm-lorraine"
+            }
+          }
+        ],
+        "independentOf": {
+          "manager": "Anyone on the team can take this on, whenever they joined."
+        },
+        "rowTemplates": [
+          {
+            "name": "Property",
+            "values": {
+              "kind": "Apartment building",
+              "property_name": "New property"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Property file"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Insurance and tax details on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Emergency shut-off locations noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vendors assigned for each trade"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each rent payment links to one lease.",
+        "fromTable": "payment",
+        "fromField": "lease",
+        "toTable": "lease",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "payments"
+      },
+      {
+        "describes": "Each lease links to one unit.",
+        "fromTable": "lease",
+        "fromField": "unit",
+        "toTable": "unit",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "leases"
+      },
+      {
+        "describes": "Each maintenance request links to one unit.",
+        "fromTable": "request",
+        "fromField": "unit",
+        "toTable": "unit",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "requests"
+      },
+      {
+        "describes": "Each unit links to one property.",
+        "fromTable": "unit",
+        "fromField": "property",
+        "toTable": "property",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "units"
+      },
+      {
+        "describes": "Each property links to one team member.",
+        "fromTable": "property",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "managed_properties"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-lorraine",
+            "values": {
+              "full_name": "Lorraine Whitcombe",
+              "role": "Property manager",
+              "work_email": "lorraine@foxgloveproperty.net",
+              "mobile": "(971) 555-0121",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-emeka",
+            "values": {
+              "full_name": "Emeka Anyanwu",
+              "role": "Maintenance coordinator",
+              "work_email": "emeka@foxgloveproperty.net",
+              "mobile": "(971) 555-0122",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-pia",
+            "values": {
+              "full_name": "Pia Sandoval",
+              "role": "Leasing agent",
+              "work_email": "pia@foxgloveproperty.net",
+              "mobile": "(971) 555-0123",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "repair_request",
+        "name": "Report a repair",
+        "describes": "How a tenant reports a problem.",
+        "audience": "staff",
+        "table": "request",
+        "fields": [
+          {
+            "fieldKey": "req_title",
+            "ask": "What needs fixing?",
+            "required": true
+          },
+          {
+            "fieldKey": "unit",
+            "ask": "Which unit?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          },
+          {
+            "fieldKey": "trade",
+            "ask": "What kind of problem is it?"
+          }
+        ],
+        "submitLabel": "Send repair request",
+        "confirmation": "Received. The maintenance coordinator will reply with a visit time."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "payment_paid",
+        "table": "payment",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "payment_late",
+        "table": "payment",
+        "name": "Mark late",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Late"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lease_renewal",
+        "table": "lease",
+        "name": "Offer renewal",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Renewal offered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lease_notice",
+        "table": "lease",
+        "name": "Notice given",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Notice given"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "request_scheduled",
+        "table": "request",
+        "name": "Mark scheduled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Scheduled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "request_done",
+        "table": "request",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "unit_vacant",
+        "table": "unit",
+        "name": "Mark vacant",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Vacant"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "unit_occupied",
+        "table": "unit",
+        "name": "Mark occupied",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Occupied"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_payment",
+        "name": "All rent payments",
+        "table": "payment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "payment_board",
+        "name": "By status",
+        "table": "payment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "payment_cal",
+        "name": "Calendar",
+        "table": "payment",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "payment_today",
+        "name": "Today",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due",
+            "Late",
+            "Partial"
+          ]
+        }
+      },
+      {
+        "token": "payment_week",
+        "name": "This week",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due",
+            "Late",
+            "Partial"
+          ]
+        }
+      },
+      {
+        "token": "payment_over",
+        "name": "Overdue",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due",
+            "Late",
+            "Partial"
+          ]
+        }
+      },
+      {
+        "token": "all_lease",
+        "name": "All leases",
+        "table": "lease",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "lease_board",
+        "name": "By status",
+        "table": "lease",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "lease_cal",
+        "name": "Calendar",
+        "table": "lease",
+        "kind": "calendar",
+        "dateField": "end_on",
+        "allDay": true
+      },
+      {
+        "token": "lease_week",
+        "name": "This week",
+        "table": "lease",
+        "kind": "grid",
+        "within": {
+          "end_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Active",
+            "Renewal offered",
+            "Notice given"
+          ]
+        }
+      },
+      {
+        "token": "lease_next30",
+        "name": "Next 30 days",
+        "table": "lease",
+        "kind": "grid",
+        "within": {
+          "end_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Active",
+            "Renewal offered",
+            "Notice given"
+          ]
+        }
+      },
+      {
+        "token": "lease_over",
+        "name": "Overdue",
+        "table": "lease",
+        "kind": "grid",
+        "within": {
+          "end_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Active",
+            "Renewal offered",
+            "Notice given"
+          ]
+        }
+      },
+      {
+        "token": "lease_mine",
+        "name": "My leases",
+        "table": "lease",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_request",
+        "name": "All maintenance requests",
+        "table": "request",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "request_board",
+        "name": "By status",
+        "table": "request",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "request_cal",
+        "name": "Calendar",
+        "table": "request",
+        "kind": "calendar",
+        "dateField": "scheduled_for",
+        "allDay": true
+      },
+      {
+        "token": "request_today",
+        "name": "Today",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "scheduled_for": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Scheduled",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "request_week",
+        "name": "This week",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "scheduled_for": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Scheduled",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "request_over",
+        "name": "Overdue",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "scheduled_for": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Scheduled",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "request_mine",
+        "name": "My maintenance requests",
+        "table": "request",
+        "kind": "grid",
+        "me": [
+          "coordinator"
+        ]
+      },
+      {
+        "token": "all_unit",
+        "name": "All units",
+        "table": "unit",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "unit_board",
+        "name": "By status",
+        "table": "unit",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_property",
+        "name": "All properties",
+        "table": "property",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Property assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "payment",
+          "describes": "Every rent payment with lease, due date and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "lease",
+          "describes": "The leases behind each payment."
+        }
+      ],
+      "question": {
+        "ask": "How many rent payments are late?",
+        "whyItMatters": "The manager calls late tenants every Tuesday.",
+        "expect": {
+          "table": "payment",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Late"
+          },
+          "answer": 1,
+          "unit": "payments"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open rent payments.",
+        "action": {
+          "kind": "open",
+          "surface": "payment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "payment_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open leases.",
+        "action": {
+          "kind": "open",
+          "surface": "lease_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lease_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open maintenance requests.",
+        "action": {
+          "kind": "open",
+          "surface": "request_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "request_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "foxgloveproperty.net",
+        "mailbox-demo.net"
+      ],
+      "fictionalStreets": [
+        "Corbel Street",
+        "Foxglove Court",
+        "Larkin Avenue",
+        "Tamarind Way"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "property-management",
+      "parent": null,
+      "title": "Property Management",
+      "icon": {
+        "emoji": "🏢"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your portfolio in one place. Check Rent payments due, Leases ending soon, Maintenance requests scheduled this week, and which Units are vacant. Operational tracking only; keep signed leases and notices in your document system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-rent"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-turnover"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-maintenance"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-renewals"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "payment",
+                      "view": "all_payment"
+                    },
+                    "inline": true,
+                    "title": "Rent by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Rent by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lease",
+                      "view": "all_lease"
+                    },
+                    "inline": true,
+                    "title": "Leases by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Leases by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_request"
+                    },
+                    "inline": true,
+                    "title": "Requests by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Requests by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rent payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "payment_board"
+            },
+            "inline": true,
+            "title": "Rent payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Late",
+                    "Partial"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Late",
+                    "Partial"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Late",
+                    "Partial"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All rent payments",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lease",
+              "view": "lease_board"
+            },
+            "inline": true,
+            "title": "Leases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "end_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Active",
+                    "Renewal offered",
+                    "Notice given"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "end_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Active",
+                    "Renewal offered",
+                    "Notice given"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "end_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Active",
+                    "Renewal offered",
+                    "Notice given"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "end_on"
+              },
+              {
+                "id": "vall",
+                "name": "All leases",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "end_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Maintenance requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "request_board"
+            },
+            "inline": true,
+            "title": "Maintenance requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "scheduled_for": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "scheduled_for": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "scheduled_for": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "scheduled_for"
+              },
+              {
+                "id": "vall",
+                "name": "All maintenance requests",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "scheduled_for",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "coordinator"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Units"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "unit",
+              "view": "unit_board"
+            },
+            "inline": true,
+            "title": "Units",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vall",
+                "name": "All units",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "vb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "property-management",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "payment",
+                      "view": "all_payment"
+                    },
+                    "inline": true,
+                    "title": "Rent by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Rent by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lease",
+                      "view": "all_lease"
+                    },
+                    "inline": true,
+                    "title": "Leases by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Leases by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_request"
+                    },
+                    "inline": true,
+                    "title": "Requests by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Requests by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_request"
+                    },
+                    "inline": true,
+                    "title": "Requests by trade",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Requests by trade",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "trade",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "unit",
+                      "view": "all_unit"
+                    },
+                    "inline": true,
+                    "title": "Units by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Units by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "unit",
+                      "view": "all_unit"
+                    },
+                    "inline": true,
+                    "title": "Rent by property",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Rent by property",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "property",
+                          "op": "sum",
+                          "field": "rent"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rent to chase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "all_payment"
+            },
+            "inline": true,
+            "title": "Rent to chase",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Late or partial",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Late",
+                    "Partial"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repairs open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "all_request"
+            },
+            "inline": true,
+            "title": "Repairs open",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Not done",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-rent",
+      "parent": "property-management",
+      "title": "Monthly rent routine",
+      "icon": {
+        "emoji": "💵"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Same dates every month make late rent easy to spot."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Start of the month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Use Record rent due on each lease."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send reminders three days before the due date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the due date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark late payments Late and send the notice the lease calls for."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call tenants who are more than three days late."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record partial payments and any payment plan in the notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Month end"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Total Received against Amount and review Still owed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-turnover",
+      "parent": "property-management",
+      "title": "Unit turnover",
+      "icon": {
+        "emoji": "🧹"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notice given"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the lease Notice given and the unit Notice given."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Schedule a pre-move-out inspection."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Move-out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the unit Turnover and log requests for cleaning and repairs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Compare move-in and move-out condition and record any deposit deductions."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ready to rent"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update photos, mark the unit Vacant and list it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-maintenance",
+      "parent": "property-management",
+      "title": "Maintenance triage",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Decide priority first, then who and when."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Priorities"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Emergency: safety or major damage. Call the vendor immediately."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Urgent: no heat or water, security. Same or next day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Routine: schedule within a week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every request"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log it under the unit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose a vendor, schedule and tell the tenant."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Done only after the tenant confirms."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-renewals",
+      "parent": "property-management",
+      "title": "Lease renewals",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ninety days out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Leases, Next 30 days view, and look further ahead on All leases."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check rent against the market and decide the offer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the renewal offer and mark Renewal offered."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If they decline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark Notice given and start the turnover steps."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

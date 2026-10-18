@@ -130,11 +130,11 @@
               "Declined"
             ],
             "choiceColors": {
+              "Declined": "red",
               "New": "blue",
-              "Contacted": "green",
-              "Assessment booked": "amber",
-              "Started": "violet",
-              "Declined": "teal"
+              "Contacted": "amber",
+              "Assessment booked": "violet",
+              "Started": "green"
             },
             "statusGroups": {
               "New": "todo",
@@ -473,11 +473,11 @@
               "Cancelled"
             ],
             "choiceColors": {
+              "Missed": "red",
+              "Cancelled": "orange",
               "Scheduled": "blue",
-              "In progress": "green",
-              "Completed": "amber",
-              "Missed": "violet",
-              "Cancelled": "teal"
+              "In progress": "amber",
+              "Completed": "green"
             },
             "statusGroups": {
               "Scheduled": "todo",
@@ -1231,9 +1231,9 @@
               "Expired"
             ],
             "choiceColors": {
-              "Valid": "blue",
-              "Renewal requested": "green",
-              "Expired": "amber"
+              "Expired": "red",
+              "Valid": "green",
+              "Renewal requested": "blue"
             },
             "statusGroups": {
               "Valid": "done",

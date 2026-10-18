@@ -1,0 +1,3326 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0415",
+  "version": 1,
+  "title": "Short-Term Rental Host",
+  "description": "Bookings, turnovers, issues and revenue for a host running several rentals.",
+  "forWho": "Short-term rental hosts and co-hosts",
+  "icon": {
+    "emoji": "🛎️"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "realestate",
+  "tags": [
+    "short-term rental",
+    "bookings",
+    "turnovers",
+    "host"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-short-term-rental-host",
+    "catalogueId": "SP0415",
+    "useCase": "Sunniva Halvorsen hosts four short-term rentals and uses this to see who arrives today, which turnovers still need a cleaner, what is broken at which property and how much each rental has earned.",
+    "industry": "real_estate_property",
+    "vertical": "Short-term rental host",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Saltmarsh Stays",
+      "describes": "A small host managing four coastal rentals with one cleaner and one handyman.",
+      "address": {
+        "line1": "55 Palmetto Lane",
+        "city": "Charleston",
+        "region": "SC",
+        "postalCode": "29401",
+        "country": "US"
+      },
+      "phone": "(843) 555-0120",
+      "website": "saltmarshstays.net",
+      "email": "hello@saltmarshstays.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-short-term-rental-host",
+    "tables": [
+      {
+        "token": "booking",
+        "name": "Bookings",
+        "labelSingular": "Booking",
+        "labelPlural": "Bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "booking_title",
+        "describes": "Every stay from inquiry to checkout.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "booking_title",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "property",
+            "label": "Rental",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "property",
+            "relationMax": 1
+          },
+          {
+            "key": "guest",
+            "label": "Guest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "check_in",
+            "label": "Check in",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "check_out",
+            "label": "Check out",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "nights",
+            "label": "Nights",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Check out}, {Check in}, \"days\")"
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Direct",
+              "Platform one",
+              "Platform two"
+            ],
+            "choiceColors": {
+              "Direct": "blue",
+              "Platform one": "green",
+              "Platform two": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Confirmed",
+              "Checked in",
+              "Checked out",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Cancelled": "red",
+              "Inquiry": "blue",
+              "Confirmed": "amber",
+              "Checked in": "violet",
+              "Checked out": "green"
+            },
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Confirmed": "todo",
+              "Checked in": "in_progress",
+              "Checked out": "done",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Inquiry"
+          },
+          {
+            "key": "payout",
+            "label": "Payout",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "host",
+            "label": "Host on duty",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "turn_btn",
+            "label": "Add turnover",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "turnover",
+              "template": "Turnover",
+              "prefill": {
+                "booking": "@row"
+              }
+            }
+          },
+          {
+            "key": "confirm_btn",
+            "label": "Confirm booking",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_confirm"
+            }
+          },
+          {
+            "key": "checkin_btn",
+            "label": "Mark arrived",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_checkin"
+            }
+          },
+          {
+            "key": "out_btn",
+            "label": "Mark departed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_out"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "b01",
+            "values": {
+              "booking_title": "Okafor family stay - Beach House",
+              "property": "p01",
+              "guest": "Chidera Okafor",
+              "check_in": "@today",
+              "check_out": "@today+4d",
+              "channel": "Platform one",
+              "status": "Checked in",
+              "payout": 1620,
+              "host": "@installer"
+            }
+          },
+          {
+            "key": "b02",
+            "values": {
+              "booking_title": "Lindqvist weekend - Cabin",
+              "property": "p02",
+              "guest": "Ingrid Lindqvist",
+              "check_in": "@today",
+              "check_out": "@today+2d",
+              "channel": "Direct",
+              "status": "Confirmed",
+              "payout": 430,
+              "host": "@installer"
+            }
+          },
+          {
+            "key": "b03",
+            "values": {
+              "booking_title": "Tanaka couple - Condo",
+              "property": "p03",
+              "guest": "Kenji Tanaka",
+              "check_in": "@mon+3d",
+              "check_out": "@mon+6d",
+              "channel": "Platform two",
+              "status": "Confirmed",
+              "payout": 510,
+              "host": "@installer"
+            }
+          },
+          {
+            "key": "b04",
+            "values": {
+              "booking_title": "Delgado reunion - Beach House",
+              "property": "p01",
+              "guest": "Marisol Delgado",
+              "check_in": "@today+7d",
+              "check_out": "@today+12d",
+              "channel": "Platform one",
+              "status": "Confirmed",
+              "payout": 2050
+            }
+          },
+          {
+            "key": "b05",
+            "values": {
+              "booking_title": "Whitfield retreat - Cabin",
+              "property": "p02",
+              "guest": "Percival Whitfield",
+              "check_in": "@today+3d",
+              "check_out": "@today+6d",
+              "channel": "Direct",
+              "status": "Inquiry",
+              "payout": 650
+            }
+          },
+          {
+            "key": "b06",
+            "values": {
+              "booking_title": "Nwosu stay - Condo",
+              "property": "p03",
+              "guest": "Obiageli Nwosu",
+              "check_in": "@today-9d",
+              "check_out": "@today-5d",
+              "channel": "Platform one",
+              "status": "Checked out",
+              "payout": 660
+            }
+          },
+          {
+            "key": "b07",
+            "values": {
+              "booking_title": "Brandt family - Beach House",
+              "property": "p01",
+              "guest": "Henrik Brandt",
+              "check_in": "@today-20d",
+              "check_out": "@today-14d",
+              "channel": "Platform two",
+              "status": "Checked out",
+              "payout": 2300
+            }
+          },
+          {
+            "key": "b08",
+            "values": {
+              "booking_title": "Castellanos weekend - Cabin",
+              "property": "p02",
+              "guest": "Rosalba Castellanos",
+              "check_in": "@today-12d",
+              "check_out": "@today-10d",
+              "channel": "Direct",
+              "status": "Checked out",
+              "payout": 420
+            }
+          },
+          {
+            "key": "b09",
+            "values": {
+              "booking_title": "Ashworth cancelled - Condo",
+              "property": "p03",
+              "guest": "Desmond Ashworth",
+              "check_in": "@today-3d",
+              "check_out": "@today",
+              "channel": "Platform one",
+              "status": "Cancelled",
+              "payout": 0
+            }
+          },
+          {
+            "key": "b10",
+            "values": {
+              "booking_title": "Maeda week - Beach House",
+              "property": "p01",
+              "guest": "Haruka Maeda",
+              "check_in": "@today-40d",
+              "check_out": "@today-33d",
+              "channel": "Direct",
+              "status": "Checked out",
+              "payout": 2680
+            }
+          }
+        ],
+        "independentOf": {
+          "property": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "check_in",
+            "check_out"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Confirmed"
+            ],
+            "filled": [
+              "guest"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Checked in"
+            ],
+            "filled": [
+              "guest"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Checked out"
+            ],
+            "filled": [
+              "guest"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Booking",
+            "values": {
+              "status": "Inquiry",
+              "booking_title": "New booking"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before arrival"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Guest verified and rules acknowledged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Check-in instructions sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Turnover scheduled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "During the stay"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Mid-stay message sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Review requested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "turnover",
+        "name": "Turnovers",
+        "labelSingular": "Turnover",
+        "labelPlural": "Turnovers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "sparkles",
+        "titleField": "turn_title",
+        "describes": "Cleaning between stays so each rental is ready before the next guest.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "turn_title",
+            "label": "Turnover",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "booking",
+            "label": "Booking",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "booking",
+            "relationMax": 1
+          },
+          {
+            "key": "property",
+            "label": "Rental",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "property",
+            "relationMax": 1
+          },
+          {
+            "key": "cleaner",
+            "label": "Cleaner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "clean_on",
+            "label": "Clean on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To schedule",
+              "Scheduled",
+              "Cleaned",
+              "Needs fix"
+            ],
+            "choiceColors": {
+              "To schedule": "blue",
+              "Scheduled": "amber",
+              "Cleaned": "green",
+              "Needs fix": "violet"
+            },
+            "statusGroups": {
+              "To schedule": "todo",
+              "Scheduled": "todo",
+              "Cleaned": "done",
+              "Needs fix": "in_progress"
+            },
+            "required": true,
+            "default": "To schedule"
+          },
+          {
+            "key": "owner",
+            "label": "Checked by",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "scheduled_btn",
+            "label": "Mark scheduled",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "turnover_scheduled"
+            }
+          },
+          {
+            "key": "cleaned_btn",
+            "label": "Mark cleaned",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "turnover_cleaned"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "turn_title": "Clean after Okafor stay",
+              "booking": "b01",
+              "property": "p01",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today+4d",
+              "status": "To schedule",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "turn_title": "Clean after Lindqvist weekend",
+              "booking": "b02",
+              "property": "p02",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today+2d",
+              "status": "Scheduled",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "turn_title": "Clean before Tanaka arrival",
+              "booking": "b03",
+              "property": "p03",
+              "cleaner": "tm-dolores",
+              "clean_on": "@mon+2d",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "turn_title": "Clean after Delgado reunion",
+              "booking": "b04",
+              "property": "p01",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today+12d",
+              "status": "To schedule"
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "turn_title": "Clean before Lindqvist arrival",
+              "booking": "b02",
+              "property": "p02",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "turn_title": "Clean after Nwosu stay",
+              "booking": "b06",
+              "property": "p03",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today-5d",
+              "status": "Cleaned"
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "turn_title": "Clean after Brandt family",
+              "booking": "b07",
+              "property": "p01",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today-14d",
+              "status": "Cleaned"
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "turn_title": "Clean after Castellanos weekend",
+              "booking": "b08",
+              "property": "p02",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today-10d",
+              "status": "Needs fix",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "turn_title": "Clean before Whitfield retreat",
+              "booking": "b05",
+              "property": "p02",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today+3d",
+              "status": "To schedule"
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "turn_title": "Deep clean after Maeda week",
+              "booking": "b10",
+              "property": "p01",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today-33d",
+              "status": "Cleaned"
+            }
+          }
+        ],
+        "independentOf": {
+          "booking": "The two sides move on their own schedule and status; neither forces the other.",
+          "property": "The two sides move on their own schedule and status; neither forces the other.",
+          "cleaner": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Scheduled"
+            ],
+            "filled": [
+              "cleaner"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Cleaned"
+            ],
+            "filled": [
+              "cleaner"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Turnover",
+            "values": {
+              "status": "To schedule",
+              "turn_title": "New turnover"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Cleaning"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Linens changed and laundry started"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Bathrooms and kitchen cleaned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Supplies restocked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos of every room taken"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Final check"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Locks tested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Anything broken reported as an issue"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "issue",
+        "name": "Issues",
+        "labelSingular": "Issue",
+        "labelPlural": "Issues",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "issue_title",
+        "describes": "Repairs and guest-reported problems.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "issue_title",
+            "label": "Issue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "property",
+            "label": "Rental",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "property",
+            "relationMax": 1
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Guest-impacting",
+              "Soon",
+              "Routine"
+            ],
+            "choiceColors": {
+              "Guest-impacting": "blue",
+              "Soon": "green",
+              "Routine": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Reported",
+              "Scheduled",
+              "Fixed"
+            ],
+            "choiceColors": {
+              "Reported": "blue",
+              "Scheduled": "amber",
+              "Fixed": "green"
+            },
+            "statusGroups": {
+              "Reported": "todo",
+              "Scheduled": "in_progress",
+              "Fixed": "done"
+            },
+            "required": true,
+            "default": "Reported"
+          },
+          {
+            "key": "cost",
+            "label": "Cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "fixer",
+            "label": "Assigned to",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fixed_btn",
+            "label": "Mark fixed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "issue_fixed"
+            }
+          },
+          {
+            "key": "scheduled_btn",
+            "label": "Mark scheduled",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "issue_scheduled"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "i01",
+            "values": {
+              "issue_title": "Outdoor shower running hot only",
+              "property": "p01",
+              "priority": "Guest-impacting",
+              "reported_on": "@today-1d",
+              "status": "Reported",
+              "cost": 0,
+              "fixer": "tm-wade",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i02",
+            "values": {
+              "issue_title": "Deck railing loose",
+              "property": "p01",
+              "priority": "Soon",
+              "reported_on": "@today-4d",
+              "status": "Scheduled",
+              "cost": 0,
+              "fixer": "tm-wade",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i03",
+            "values": {
+              "issue_title": "Dishwasher draining slowly",
+              "property": "p02",
+              "priority": "Routine",
+              "reported_on": "@today-6d",
+              "status": "Scheduled",
+              "cost": 0,
+              "fixer": "tm-wade"
+            }
+          },
+          {
+            "key": "i04",
+            "values": {
+              "issue_title": "Wi-Fi router reset needed",
+              "property": "p03",
+              "priority": "Guest-impacting",
+              "reported_on": "@today-2d",
+              "status": "Reported",
+              "cost": 0,
+              "fixer": "tm-wade",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i05",
+            "values": {
+              "issue_title": "Replace smoke detector battery",
+              "property": "p02",
+              "priority": "Routine",
+              "reported_on": "@today-20d",
+              "status": "Fixed",
+              "cost": 12,
+              "fixer": "tm-wade"
+            }
+          },
+          {
+            "key": "i06",
+            "values": {
+              "issue_title": "Repaint guest suite ceiling",
+              "property": "p04",
+              "priority": "Soon",
+              "reported_on": "@today-15d",
+              "status": "Scheduled",
+              "cost": 320,
+              "fixer": "tm-wade"
+            }
+          },
+          {
+            "key": "i07",
+            "values": {
+              "issue_title": "Fix patio door sticking",
+              "property": "p03",
+              "priority": "Routine",
+              "reported_on": "@today-30d",
+              "status": "Fixed",
+              "cost": 85,
+              "fixer": "tm-wade"
+            }
+          }
+        ],
+        "independentOf": {
+          "property": "The two sides move on their own schedule and status; neither forces the other.",
+          "fixer": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Fixed"
+            ],
+            "filled": [
+              "priority"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Scheduled"
+            ],
+            "filled": [
+              "priority"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Issue",
+            "values": {
+              "status": "Reported",
+              "issue_title": "New issue"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is wrong"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Fix"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photo taken"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fixer assigned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Guests told if affected"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cost recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "property",
+        "name": "Properties",
+        "labelSingular": "Property",
+        "labelPlural": "Properties",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "home",
+        "titleField": "listing_name",
+        "describes": "Each rental with its rate, bookings and revenue.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "listing_name",
+            "label": "Rental",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "street",
+            "label": "Street address",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Beach house",
+              "Cabin",
+              "Condo",
+              "Guest suite"
+            ],
+            "choiceColors": {
+              "Beach house": "blue",
+              "Cabin": "green",
+              "Condo": "amber",
+              "Guest suite": "violet"
+            }
+          },
+          {
+            "key": "nightly",
+            "label": "Nightly rate",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Live",
+              "Paused",
+              "Maintenance"
+            ],
+            "choiceColors": {
+              "Live": "blue",
+              "Paused": "green",
+              "Maintenance": "amber"
+            },
+            "statusGroups": {
+              "Live": "in_progress",
+              "Paused": "done",
+              "Maintenance": "in_progress"
+            },
+            "required": true,
+            "default": "Live"
+          },
+          {
+            "key": "cleaner",
+            "label": "Usual cleaner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "stays",
+            "label": "Stays booked",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_title",
+            "agg": "count",
+            "filter": {
+              "status": "Confirmed"
+            }
+          },
+          {
+            "key": "revenue",
+            "label": "Payouts received",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "payout",
+            "agg": "sum",
+            "filter": {
+              "status": "Checked out"
+            }
+          },
+          {
+            "key": "booking_btn",
+            "label": "Add booking",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "Booking",
+              "prefill": {
+                "property": "@row"
+              }
+            }
+          },
+          {
+            "key": "issue_btn",
+            "label": "Log issue",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "issue",
+              "template": "Issue",
+              "prefill": {
+                "property": "@row"
+              }
+            }
+          },
+          {
+            "key": "pause_btn",
+            "label": "Pause listing",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "property_pause"
+            }
+          },
+          {
+            "key": "live_btn",
+            "label": "Go live",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "property_live"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "p01",
+            "values": {
+              "listing_name": "Saltmarsh Beach House",
+              "street": "12 Pelican Row",
+              "kind": "Beach house",
+              "nightly": 385,
+              "status": "Live",
+              "cleaner": "tm-dolores"
+            }
+          },
+          {
+            "key": "p02",
+            "values": {
+              "listing_name": "Heron Cove Cabin",
+              "street": "40 Cypress Hollow",
+              "kind": "Cabin",
+              "nightly": 210,
+              "status": "Live",
+              "cleaner": "tm-dolores"
+            }
+          },
+          {
+            "key": "p03",
+            "values": {
+              "listing_name": "Harbor View Condo",
+              "street": "8 Wharf Lane",
+              "kind": "Condo",
+              "nightly": 165,
+              "status": "Live",
+              "cleaner": "tm-dolores"
+            }
+          },
+          {
+            "key": "p04",
+            "values": {
+              "listing_name": "Garden Guest Suite",
+              "street": "3 Magnolia Court",
+              "kind": "Guest suite",
+              "nightly": 120,
+              "status": "Maintenance",
+              "cleaner": "tm-dolores"
+            }
+          }
+        ],
+        "independentOf": {
+          "cleaner": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paused"
+            ],
+            "filled": [
+              "nightly"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Live"
+            ],
+            "filled": [
+              "nightly"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Rental",
+            "values": {
+              "status": "Live",
+              "listing_name": "New property"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Listing checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos refreshed this season"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "House rules and check-in guide updated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Smart lock codes tested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Welcome basket restocked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each booking links to one property.",
+        "fromTable": "booking",
+        "fromField": "property",
+        "toTable": "property",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each turnover links to one booking.",
+        "fromTable": "turnover",
+        "fromField": "booking",
+        "toTable": "booking",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "turnovers"
+      },
+      {
+        "describes": "Each turnover links to one property.",
+        "fromTable": "turnover",
+        "fromField": "property",
+        "toTable": "property",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "turnovers"
+      },
+      {
+        "describes": "Each turnover links to one team member.",
+        "fromTable": "turnover",
+        "fromField": "cleaner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "turnovers_done"
+      },
+      {
+        "describes": "Each issue links to one property.",
+        "fromTable": "issue",
+        "fromField": "property",
+        "toTable": "property",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "issues"
+      },
+      {
+        "describes": "Each issue links to one team member.",
+        "fromTable": "issue",
+        "fromField": "fixer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "assigned_issues"
+      },
+      {
+        "describes": "Each property links to one team member.",
+        "fromTable": "property",
+        "fromField": "cleaner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "cleaned_rentals"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-sunniva",
+            "values": {
+              "full_name": "Sunniva Halvorsen",
+              "role": "Host and owner",
+              "work_email": "sunniva@saltmarshstays.net",
+              "mobile": "(843) 555-0121",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-marcus",
+            "values": {
+              "full_name": "Marcus Abernethy",
+              "role": "Co-host",
+              "work_email": "marcus@saltmarshstays.net",
+              "mobile": "(843) 555-0122",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-dolores",
+            "values": {
+              "full_name": "Dolores Pinckney",
+              "role": "Lead cleaner",
+              "work_email": "dolores@saltmarshstays.net",
+              "mobile": "(843) 555-0123",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-wade",
+            "values": {
+              "full_name": "Wade Okonkwo",
+              "role": "Handyman",
+              "work_email": "wade@saltmarshstays.net",
+              "mobile": "(843) 555-0124",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "guest_issue",
+        "name": "Report a problem",
+        "describes": "How a guest reports something wrong at a rental.",
+        "audience": "staff",
+        "table": "issue",
+        "fields": [
+          {
+            "fieldKey": "issue_title",
+            "ask": "What is wrong?",
+            "required": true
+          },
+          {
+            "fieldKey": "property",
+            "ask": "Which rental are you staying in?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "Does it affect your stay?"
+          }
+        ],
+        "submitLabel": "Report problem",
+        "confirmation": "Received. The host will reply with the next step."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "booking_confirm",
+        "table": "booking",
+        "name": "Confirm booking",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_checkin",
+        "table": "booking",
+        "name": "Mark arrived",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked in"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_out",
+        "table": "booking",
+        "name": "Mark departed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked out"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "turnover_scheduled",
+        "table": "turnover",
+        "name": "Mark scheduled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Scheduled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "turnover_cleaned",
+        "table": "turnover",
+        "name": "Mark cleaned",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Cleaned"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "issue_fixed",
+        "table": "issue",
+        "name": "Mark fixed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Fixed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "issue_scheduled",
+        "table": "issue",
+        "name": "Mark scheduled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Scheduled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "property_pause",
+        "table": "property",
+        "name": "Pause listing",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paused"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "property_live",
+        "table": "property",
+        "name": "Go live",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Live"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_booking",
+        "name": "All bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "By status",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "check_in",
+        "allDay": true
+      },
+      {
+        "token": "booking_today",
+        "name": "Today",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "check_in": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "This week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "check_in": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "check_in": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "booking_mine",
+        "name": "My bookings",
+        "table": "booking",
+        "kind": "grid",
+        "me": [
+          "host"
+        ]
+      },
+      {
+        "token": "all_turnover",
+        "name": "All turnovers",
+        "table": "turnover",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "turnover_board",
+        "name": "By status",
+        "table": "turnover",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "turnover_cal",
+        "name": "Calendar",
+        "table": "turnover",
+        "kind": "calendar",
+        "dateField": "clean_on",
+        "allDay": true
+      },
+      {
+        "token": "turnover_today",
+        "name": "Today",
+        "table": "turnover",
+        "kind": "grid",
+        "within": {
+          "clean_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To schedule",
+            "Scheduled",
+            "Needs fix"
+          ]
+        }
+      },
+      {
+        "token": "turnover_week",
+        "name": "This week",
+        "table": "turnover",
+        "kind": "grid",
+        "within": {
+          "clean_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To schedule",
+            "Scheduled",
+            "Needs fix"
+          ]
+        }
+      },
+      {
+        "token": "turnover_over",
+        "name": "Overdue",
+        "table": "turnover",
+        "kind": "grid",
+        "within": {
+          "clean_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To schedule",
+            "Scheduled",
+            "Needs fix"
+          ]
+        }
+      },
+      {
+        "token": "turnover_mine",
+        "name": "My turnovers",
+        "table": "turnover",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_issue",
+        "name": "All issues",
+        "table": "issue",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "issue_board",
+        "name": "By status",
+        "table": "issue",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "issue_cal",
+        "name": "Calendar",
+        "table": "issue",
+        "kind": "calendar",
+        "dateField": "reported_on",
+        "allDay": true
+      },
+      {
+        "token": "issue_mine",
+        "name": "My issues",
+        "table": "issue",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_property",
+        "name": "All properties",
+        "table": "property",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "property_board",
+        "name": "By status",
+        "table": "property",
+        "kind": "kanban",
+        "groupBy": "status"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Host assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "turnover",
+          "describes": "Every turnover with rental, cleaner, date and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "booking",
+          "describes": "The bookings turnovers follow."
+        }
+      ],
+      "question": {
+        "ask": "How many turnovers still need scheduling?",
+        "whyItMatters": "The host books the cleaner a week ahead.",
+        "expect": {
+          "table": "turnover",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "To schedule"
+          },
+          "answer": 3,
+          "unit": "turnovers"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open bookings.",
+        "action": {
+          "kind": "open",
+          "surface": "booking_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "booking_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open turnovers.",
+        "action": {
+          "kind": "open",
+          "surface": "turnover_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "turnover_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open issues.",
+        "action": {
+          "kind": "open",
+          "surface": "issue_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "issue_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "saltmarshstays.net"
+      ],
+      "fictionalStreets": [
+        "Cypress Hollow",
+        "Magnolia Court",
+        "Palmetto Lane",
+        "Pelican Row",
+        "Wharf Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "short-term-rental-host",
+      "parent": null,
+      "title": "Short-Term Rental Host",
+      "icon": {
+        "emoji": "🛎️"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your rentals in one place. Check Bookings arriving today and this week, make sure every Turnover has a cleaner, and keep Issues from reaching guests. Operational tracking only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-turnover"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-guest-comms"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-issues"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-season"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Bookings by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Bookings by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Payouts by channel",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Payouts by channel",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "channel",
+                          "op": "sum",
+                          "field": "payout"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "turnover",
+                      "view": "all_turnover"
+                    },
+                    "inline": true,
+                    "title": "Turnovers by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Turnovers by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "check_in": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "check_in": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "check_in": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "check_in"
+              },
+              {
+                "id": "vall",
+                "name": "All bookings",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "check_in",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "host"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Turnovers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "turnover",
+              "view": "turnover_board"
+            },
+            "inline": true,
+            "title": "Turnovers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "clean_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To schedule",
+                    "Scheduled",
+                    "Needs fix"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "clean_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To schedule",
+                    "Scheduled",
+                    "Needs fix"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "clean_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To schedule",
+                    "Scheduled",
+                    "Needs fix"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "clean_on"
+              },
+              {
+                "id": "vall",
+                "name": "All turnovers",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "clean_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Issues"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "issue",
+              "view": "issue_board"
+            },
+            "inline": true,
+            "title": "Issues",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "reported_on"
+              },
+              {
+                "id": "vall",
+                "name": "All issues",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "reported_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Properties"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "property",
+              "view": "property_board"
+            },
+            "inline": true,
+            "title": "Properties",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vall",
+                "name": "All properties",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "vb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "short-term-rental-host",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Bookings by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Bookings by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Payouts by channel",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Payouts by channel",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "channel",
+                          "op": "sum",
+                          "field": "payout"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "turnover",
+                      "view": "all_turnover"
+                    },
+                    "inline": true,
+                    "title": "Turnovers by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Turnovers by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "issue",
+                      "view": "all_issue"
+                    },
+                    "inline": true,
+                    "title": "Issues by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Issues by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "property",
+                      "view": "all_property"
+                    },
+                    "inline": true,
+                    "title": "Nightly rate by rental",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Nightly rate by rental",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "nightly"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "issue",
+                      "view": "all_issue"
+                    },
+                    "inline": true,
+                    "title": "Issues by priority",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Issues by priority",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "priority",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Turnovers to arrange"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "turnover",
+              "view": "all_turnover"
+            },
+            "inline": true,
+            "title": "Turnovers to arrange",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "To schedule",
+                "layout": "list",
+                "filters": {
+                  "status": "To schedule"
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open issues"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "issue",
+              "view": "all_issue"
+            },
+            "inline": true,
+            "title": "Open issues",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Not fixed",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Reported",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-turnover",
+      "parent": "short-term-rental-host",
+      "title": "Turnover routine",
+      "icon": {
+        "emoji": "🧺"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Reliable turnovers are what guests and reviews depend on."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a booking is confirmed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Add turnover on the booking."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the cleaner and the clean date: the check-out day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Share the booking details and any special requests."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After cleaning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cleaner uploads photos and marks the turnover Cleaned."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything broken becomes an Issue before the next guest arrives."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-guest-comms",
+      "parent": "short-term-rental-host",
+      "title": "Guest communication",
+      "icon": {
+        "emoji": "💬"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Messages to send"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On booking: welcome and house rules."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Three days before: check-in instructions and local tips."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day of arrival: confirmation that the place is ready."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mid-stay: short check-in."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After checkout: thanks and a review request."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tone"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep messages short, warm and specific to the guest."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-issues",
+      "parent": "short-term-rental-host",
+      "title": "Handling issues",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Triage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Guest-impacting: fix or offer an alternative the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Soon: schedule within a week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Routine: batch with the next visit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every issue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take a photo and log it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign the handyman."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Fixed and record the cost."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-season",
+      "parent": "short-term-rental-host",
+      "title": "Seasonal checklist",
+      "icon": {
+        "emoji": "🌞"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before peak season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Refresh listing photos"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review nightly rates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Service heating and cooling"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Restock supplies"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After peak season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deep clean every rental"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review payouts by channel and rental"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

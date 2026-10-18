@@ -135,10 +135,10 @@
               "Lost"
             ],
             "choiceColors": {
+              "Lost": "red",
               "New": "blue",
-              "Called": "green",
-              "Booked": "amber",
-              "Lost": "violet"
+              "Called": "amber",
+              "Booked": "green"
             },
             "statusGroups": {
               "New": "todo",
@@ -475,11 +475,11 @@
               "Cancelled"
             ],
             "choiceColors": {
+              "No-show": "red",
+              "Cancelled": "orange",
               "Scheduled": "blue",
-              "Checked in": "green",
-              "Completed": "amber",
-              "No-show": "violet",
-              "Cancelled": "teal"
+              "Checked in": "amber",
+              "Completed": "green"
             },
             "statusGroups": {
               "Scheduled": "todo",
@@ -1200,9 +1200,9 @@
               "Expired"
             ],
             "choiceColors": {
+              "Expired": "red",
               "Active": "blue",
-              "Used up": "green",
-              "Expired": "amber"
+              "Used up": "green"
             },
             "statusGroups": {
               "Active": "in_progress",
@@ -1304,6 +1304,17 @@
               "price": 420,
               "expires_on": "@today-15d",
               "status": "Expired"
+            }
+          },
+          {
+            "key": "k07",
+            "values": {
+              "pkg_title": "10-visit plan - Beaumont",
+              "patient": "p03",
+              "visits_total": 10,
+              "price": 650,
+              "expires_on": "@today-4d",
+              "status": "Active"
             }
           }
         ],
@@ -1868,7 +1879,7 @@
           "filter": {
             "status": "Active"
           },
-          "answer": 4,
+          "answer": 5,
           "unit": "packages"
         }
       }

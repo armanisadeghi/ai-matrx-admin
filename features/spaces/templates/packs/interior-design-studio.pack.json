@@ -1,0 +1,3948 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0417",
+  "version": 1,
+  "title": "Interior Design Studio",
+  "description": "Clients, projects by phase, furnishings procurement, approvals and fee invoices.",
+  "forWho": "Interior designers and design studios",
+  "icon": {
+    "emoji": "🛋️"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "realestate",
+  "tags": [
+    "interior design",
+    "procurement",
+    "approvals",
+    "projects"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-interior-design-studio",
+    "catalogueId": "SP0417",
+    "useCase": "Nalani Kekoa coordinates procurement at a small interior design studio and uses this to see which furnishings arrive this week, which are still unordered, which client approvals are pending and which fee invoices are overdue.",
+    "industry": "real_estate_property",
+    "vertical": "Interior design studio",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Juniper and Rye Interiors",
+      "describes": "A three-person residential design studio handling concept to installation.",
+      "address": {
+        "line1": "708 Congress Lane",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78701",
+        "country": "US"
+      },
+      "phone": "(512) 555-0140",
+      "website": "juniperrye.net",
+      "email": "hello@juniperrye.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-interior-design-studio",
+    "tables": [
+      {
+        "token": "item",
+        "name": "Furnishings",
+        "labelSingular": "Furnishing",
+        "labelPlural": "Furnishings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "armchair",
+        "titleField": "item_title",
+        "describes": "Every specified piece, its vendor, cost, client price and delivery status.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item_title",
+            "label": "Furnishing",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Living room",
+              "Dining",
+              "Primary suite",
+              "Office",
+              "Entry",
+              "Kitchen"
+            ],
+            "choiceColors": {
+              "Living room": "blue",
+              "Dining": "green",
+              "Primary suite": "amber",
+              "Office": "violet",
+              "Entry": "teal",
+              "Kitchen": "red"
+            }
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Specified",
+              "Approved",
+              "Ordered",
+              "Shipped",
+              "Received",
+              "Installed"
+            ],
+            "choiceColors": {
+              "Specified": "blue",
+              "Approved": "amber",
+              "Ordered": "violet",
+              "Shipped": "teal",
+              "Received": "slate",
+              "Installed": "green"
+            },
+            "statusGroups": {
+              "Specified": "todo",
+              "Approved": "todo",
+              "Ordered": "in_progress",
+              "Shipped": "in_progress",
+              "Received": "in_progress",
+              "Installed": "done"
+            },
+            "required": true,
+            "default": "Specified"
+          },
+          {
+            "key": "trade_price",
+            "label": "Trade price",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "client_price",
+            "label": "Client price",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Margin",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Client price} - {Trade price}"
+          },
+          {
+            "key": "eta",
+            "label": "Expected delivery",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "lead_weeks",
+            "label": "Lead time (weeks)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 52
+              }
+            ]
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approved_btn",
+            "label": "Mark approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "item_approved"
+            }
+          },
+          {
+            "key": "ordered_btn",
+            "label": "Mark ordered",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "item_ordered"
+            }
+          },
+          {
+            "key": "received_btn",
+            "label": "Mark received",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "item_received"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "item_title": "Curved boucle sofa - Ebbesen",
+              "project": "j01",
+              "room": "Living room",
+              "vendor": "Alder and Bright Furniture",
+              "status": "Ordered",
+              "trade_price": 3200,
+              "client_price": 4480,
+              "eta": "@mon+4d",
+              "lead_weeks": 10,
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "item_title": "Walnut dining table - Ebbesen",
+              "project": "j01",
+              "room": "Dining",
+              "vendor": "Millhouse Woodworks",
+              "status": "Shipped",
+              "trade_price": 2650,
+              "client_price": 3710,
+              "eta": "@today+8d",
+              "lead_weeks": 12,
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "item_title": "Linen drapery panels - Ebbesen",
+              "project": "j01",
+              "room": "Living room",
+              "vendor": "Tessera Textile Studio",
+              "status": "Approved",
+              "trade_price": 1180,
+              "client_price": 1650,
+              "lead_weeks": 6
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "item_title": "Brass pendant light - Ebbesen",
+              "project": "j01",
+              "room": "Dining",
+              "vendor": "Lumen Atelier",
+              "status": "Received",
+              "trade_price": 620,
+              "client_price": 870,
+              "eta": "@today-5d",
+              "lead_weeks": 8
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "item_title": "Upholstered bed - Obuya-Hartley",
+              "project": "j02",
+              "room": "Primary suite",
+              "vendor": "Alder and Bright Furniture",
+              "status": "Specified",
+              "trade_price": 2100,
+              "client_price": 2940,
+              "lead_weeks": 10
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "item_title": "Wool area rug - Obuya-Hartley",
+              "project": "j02",
+              "room": "Primary suite",
+              "vendor": "Kestrel Rug Gallery",
+              "status": "Specified",
+              "trade_price": 1450,
+              "client_price": 2030,
+              "lead_weeks": 8
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "item_title": "Standing desk - Marchetti",
+              "project": "j03",
+              "room": "Office",
+              "vendor": "Millhouse Woodworks",
+              "status": "Received",
+              "trade_price": 980,
+              "client_price": 1370,
+              "eta": "@today-9d",
+              "lead_weeks": 6,
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "item_title": "Task chair - Marchetti",
+              "project": "j03",
+              "room": "Office",
+              "vendor": "Foxfield Seating",
+              "status": "Installed",
+              "trade_price": 540,
+              "client_price": 760,
+              "eta": "@today-20d",
+              "lead_weeks": 4
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "item_title": "Built-in bookcase panels - Marchetti",
+              "project": "j03",
+              "room": "Office",
+              "vendor": "Millhouse Woodworks",
+              "status": "Ordered",
+              "trade_price": 1900,
+              "client_price": 2660,
+              "eta": "@today-3d",
+              "lead_weeks": 9,
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "item_title": "Entry bench - Raman",
+              "project": "j05",
+              "room": "Entry",
+              "vendor": "Alder and Bright Furniture",
+              "status": "Specified",
+              "trade_price": 890,
+              "client_price": 1250,
+              "lead_weeks": 6
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "item_title": "Runner rug - Raman",
+              "project": "j05",
+              "room": "Entry",
+              "vendor": "Kestrel Rug Gallery",
+              "status": "Specified",
+              "trade_price": 420,
+              "client_price": 590,
+              "lead_weeks": 5
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "item_title": "Pendant lights - Sorensen-Vaughn",
+              "project": "j04",
+              "room": "Kitchen",
+              "vendor": "Lumen Atelier",
+              "status": "Installed",
+              "trade_price": 760,
+              "client_price": 1060,
+              "eta": "@today-170d",
+              "lead_weeks": 8
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Approved"
+            ],
+            "filled": [
+              "vendor"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Ordered"
+            ],
+            "filled": [
+              "vendor"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "vendor"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Furnishing",
+            "values": {
+              "status": "Specified",
+              "item_title": "New furnishing"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Specification"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Dimensions checked against the room"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Finish and fabric samples approved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lead time confirmed with the vendor"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Order"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client deposit received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Purchase order placed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Delivery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Inspect on arrival and photograph damage"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Delivery scheduled with the client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "approval",
+        "name": "Approvals",
+        "labelSingular": "Approval",
+        "labelPlural": "Approvals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "appr_title",
+        "describes": "Client sign-offs needed before the studio moves on.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "appr_title",
+            "label": "Approval",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Concept board",
+              "Floor plan",
+              "Material selections",
+              "Budget",
+              "Final install walk-through"
+            ],
+            "choiceColors": {
+              "Concept board": "blue",
+              "Floor plan": "green",
+              "Material selections": "amber",
+              "Budget": "violet",
+              "Final install walk-through": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Needed by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Approved",
+              "Changes requested"
+            ],
+            "choiceColors": {
+              "Pending": "blue",
+              "Approved": "green",
+              "Changes requested": "amber"
+            },
+            "statusGroups": {
+              "Pending": "todo",
+              "Approved": "done",
+              "Changes requested": "in_progress"
+            },
+            "required": true,
+            "default": "Pending"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approved_btn",
+            "label": "Mark approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "approval_approved"
+            }
+          },
+          {
+            "key": "changes_btn",
+            "label": "Changes requested",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "approval_changes"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "appr_title": "Material selections - Obuya-Hartley",
+              "project": "j02",
+              "kind": "Material selections",
+              "due_on": "@mon+3d",
+              "status": "Pending",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "appr_title": "Floor plan - Obuya-Hartley",
+              "project": "j02",
+              "kind": "Floor plan",
+              "due_on": "@today+10d",
+              "status": "Changes requested",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "appr_title": "Concept board - Raman",
+              "project": "j05",
+              "kind": "Concept board",
+              "due_on": "@today+6d",
+              "status": "Pending"
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "appr_title": "Budget - Okoro",
+              "project": "j06",
+              "kind": "Budget",
+              "due_on": "@today+20d",
+              "status": "Pending"
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "appr_title": "Final walk-through - Marchetti",
+              "project": "j03",
+              "kind": "Final install walk-through",
+              "due_on": "@mon+4d",
+              "status": "Pending",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "appr_title": "Concept board - Ebbesen",
+              "project": "j01",
+              "kind": "Concept board",
+              "due_on": "@today-80d",
+              "status": "Approved"
+            }
+          },
+          {
+            "key": "a07",
+            "values": {
+              "appr_title": "Material selections - Ebbesen",
+              "project": "j01",
+              "kind": "Material selections",
+              "due_on": "@today-60d",
+              "status": "Approved"
+            }
+          },
+          {
+            "key": "a08",
+            "values": {
+              "appr_title": "Floor plan - Marchetti",
+              "project": "j03",
+              "kind": "Floor plan",
+              "due_on": "@today-110d",
+              "status": "Approved"
+            }
+          },
+          {
+            "key": "a10",
+            "values": {
+              "appr_title": "Concept board revisions - Obuya-Hartley",
+              "project": "j02",
+              "kind": "Concept board",
+              "due_on": "@today",
+              "status": "Pending",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "a09",
+            "values": {
+              "appr_title": "Budget - Raman",
+              "project": "j05",
+              "kind": "Budget",
+              "due_on": "@today-2d",
+              "status": "Pending",
+              "owner": "@installer"
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Approved"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Changes requested"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Approval",
+            "values": {
+              "status": "Pending",
+              "appr_title": "New approval"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the client is approving"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sent"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Presentation or board sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signature or written approval received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Changes recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "palette",
+        "titleField": "project_title",
+        "describes": "Each design project through its phases, with fees, budget and procurement totals.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "project_title",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Discovery",
+              "Concept",
+              "Design development",
+              "Procurement",
+              "Installation",
+              "Complete"
+            ],
+            "choiceColors": {
+              "Discovery": "blue",
+              "Concept": "amber",
+              "Design development": "violet",
+              "Procurement": "teal",
+              "Installation": "slate",
+              "Complete": "green"
+            },
+            "statusGroups": {
+              "Discovery": "todo",
+              "Concept": "in_progress",
+              "Design development": "in_progress",
+              "Procurement": "in_progress",
+              "Installation": "in_progress",
+              "Complete": "done"
+            },
+            "required": true,
+            "default": "Discovery"
+          },
+          {
+            "key": "budget",
+            "label": "Furnishings budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "design_fee",
+            "label": "Design fee",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "designer",
+            "label": "Lead designer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "install_on",
+            "label": "Install date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "client_total",
+            "label": "Specified to client",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "client_price",
+            "agg": "sum"
+          },
+          {
+            "key": "trade_total",
+            "label": "Cost of items",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "trade_price",
+            "agg": "sum"
+          },
+          {
+            "key": "late_items",
+            "label": "Items running late",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_title",
+            "agg": "count",
+            "filter": {
+              "status": "Ordered"
+            }
+          },
+          {
+            "key": "item_btn",
+            "label": "Add furnishing",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "item",
+              "template": "Furnishing",
+              "prefill": {
+                "project": "@row"
+              }
+            }
+          },
+          {
+            "key": "approval_btn",
+            "label": "Add approval",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "approval",
+              "template": "Approval",
+              "prefill": {
+                "project": "@row"
+              }
+            }
+          },
+          {
+            "key": "inv_btn",
+            "label": "Add fee invoice",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "invoice",
+              "template": "Fee invoice",
+              "prefill": {
+                "project": "@row"
+              }
+            }
+          },
+          {
+            "key": "concept_btn",
+            "label": "Move to concept",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_concept"
+            }
+          },
+          {
+            "key": "procure_btn",
+            "label": "Move to procurement",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_procure"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark complete",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "j01",
+            "values": {
+              "project_title": "Ebbesen living room and dining",
+              "client": "c01",
+              "phase": "Procurement",
+              "budget": 65000,
+              "design_fee": 12000,
+              "designer": "tm-odessa",
+              "start_on": "@today-90d",
+              "install_on": "@today+40d"
+            }
+          },
+          {
+            "key": "j02",
+            "values": {
+              "project_title": "Obuya-Hartley primary suite",
+              "client": "c02",
+              "phase": "Design development",
+              "budget": 38000,
+              "design_fee": 7500,
+              "designer": "tm-tomas",
+              "start_on": "@today-30d",
+              "install_on": "@today+95d"
+            }
+          },
+          {
+            "key": "j03",
+            "values": {
+              "project_title": "Marchetti home office",
+              "client": "c03",
+              "phase": "Installation",
+              "budget": 22000,
+              "design_fee": 4800,
+              "designer": "tm-tomas",
+              "start_on": "@today-120d",
+              "install_on": "@mon+3d"
+            }
+          },
+          {
+            "key": "j04",
+            "values": {
+              "project_title": "Sorensen-Vaughn kitchen refresh",
+              "client": "c04",
+              "phase": "Complete",
+              "budget": 41000,
+              "design_fee": 9000,
+              "designer": "tm-odessa",
+              "start_on": "@today-260d",
+              "install_on": "@today-150d"
+            }
+          },
+          {
+            "key": "j05",
+            "values": {
+              "project_title": "Raman entry and stair hall",
+              "client": "c06",
+              "phase": "Concept",
+              "budget": 17500,
+              "design_fee": 3600,
+              "designer": "tm-odessa",
+              "start_on": "@today-12d",
+              "install_on": "@today+20d"
+            }
+          },
+          {
+            "key": "j06",
+            "values": {
+              "project_title": "Okoro condo whole-home plan",
+              "client": "c05",
+              "phase": "Discovery",
+              "budget": 90000,
+              "design_fee": 18000,
+              "designer": "tm-odessa",
+              "start_on": "@today-2d",
+              "install_on": "@today+180d"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "designer": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "start_on",
+            "install_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "phase",
+            "when": [
+              "Concept"
+            ],
+            "filled": [
+              "designer"
+            ]
+          },
+          {
+            "field": "phase",
+            "when": [
+              "Procurement"
+            ],
+            "filled": [
+              "designer"
+            ]
+          },
+          {
+            "field": "phase",
+            "when": [
+              "Complete"
+            ],
+            "filled": [
+              "designer"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Project",
+            "values": {
+              "phase": "Discovery",
+              "project_title": "New project"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Track phase approvals before ordering. Never order against an unapproved selection."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Discovery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Site measurements taken"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Style references collected"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Budget and timeline agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Concept"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Concept board presented"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client approval recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Procurement and install"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Orders placed with deposits"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Delivery and install scheduled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Fee invoices",
+        "labelSingular": "Fee invoice",
+        "labelPlural": "Fee invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "inv_title",
+        "describes": "Design fee billing by phase.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "inv_title",
+            "label": "Fee invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "phase",
+            "label": "For",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Retainer",
+              "Concept",
+              "Design development",
+              "Procurement deposit",
+              "Installation"
+            ],
+            "choiceColors": {
+              "Retainer": "blue",
+              "Concept": "green",
+              "Design development": "amber",
+              "Procurement deposit": "violet",
+              "Installation": "teal"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Paid",
+              "Overdue"
+            ],
+            "choiceColors": {
+              "Overdue": "red",
+              "Draft": "blue",
+              "Sent": "amber",
+              "Paid": "green"
+            },
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Paid": "done",
+              "Overdue": "in_progress"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "sent_btn",
+            "label": "Mark sent",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_sent"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "v01",
+            "values": {
+              "inv_title": "Retainer - Okoro",
+              "project": "j06",
+              "phase": "Retainer",
+              "amount": 3600,
+              "issued_on": "@today-2d",
+              "due_on": "@today+12d",
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "v02",
+            "values": {
+              "inv_title": "Design development - Obuya-Hartley",
+              "project": "j02",
+              "phase": "Design development",
+              "amount": 2500,
+              "issued_on": "@today-5d",
+              "due_on": "@today+9d",
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "v03",
+            "values": {
+              "inv_title": "Concept - Raman",
+              "project": "j05",
+              "phase": "Concept",
+              "amount": 1800,
+              "issued_on": "@today-10d",
+              "due_on": "@mon+1d",
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "v04",
+            "values": {
+              "inv_title": "Procurement deposit - Ebbesen",
+              "project": "j01",
+              "phase": "Procurement deposit",
+              "amount": 14000,
+              "issued_on": "@today-25d",
+              "due_on": "@today-10d",
+              "status": "Overdue"
+            }
+          },
+          {
+            "key": "v05",
+            "values": {
+              "inv_title": "Concept - Ebbesen",
+              "project": "j01",
+              "phase": "Concept",
+              "amount": 4000,
+              "issued_on": "@today-90d",
+              "due_on": "@today-76d",
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "v06",
+            "values": {
+              "inv_title": "Installation - Marchetti",
+              "project": "j03",
+              "phase": "Installation",
+              "amount": 1600,
+              "issued_on": "@today-4d",
+              "due_on": "@today+10d",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "v07",
+            "values": {
+              "inv_title": "Final - Sorensen-Vaughn",
+              "project": "j04",
+              "phase": "Installation",
+              "amount": 3000,
+              "issued_on": "@today-160d",
+              "due_on": "@today-146d",
+              "status": "Paid"
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Sent"
+            ],
+            "filled": [
+              "phase"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "phase"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Fee invoice",
+            "values": {
+              "status": "Draft",
+              "inv_title": "New fee invoice"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before sending"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Milestone reached and approved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Amount matches the design agreement"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After sending"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder set for the due date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "People the studio designs for.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Active",
+              "Past client"
+            ],
+            "choiceColors": {
+              "Inquiry": "blue",
+              "Active": "green",
+              "Past client": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "project_count",
+            "label": "Projects",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_title",
+            "agg": "count"
+          },
+          {
+            "key": "project_btn",
+            "label": "Start project",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "project",
+              "template": "Project",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Rosalind and Cormac Ebbesen",
+              "status": "Active",
+              "phone": "(512) 555-0151",
+              "email": "ebbesens@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Imani Obuya-Hartley",
+              "status": "Active",
+              "phone": "(512) 555-0152",
+              "email": "imani.oh@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Thaddeus Marchetti",
+              "status": "Active",
+              "phone": "(512) 555-0153",
+              "email": "thad.m@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Linnea Sorensen-Vaughn",
+              "status": "Past client",
+              "phone": "(512) 555-0154",
+              "email": "linnea.sv@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Dr. Anselm Okoro",
+              "status": "Inquiry",
+              "phone": "(512) 555-0155",
+              "email": "anselm.o@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Philippa and Dev Raman",
+              "status": "Active",
+              "phone": "(512) 555-0156",
+              "email": "ramans@mailbox-demo.net"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Inquiry",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Discovery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Questionnaire returned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Budget range discussed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Home visit booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agreement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Design agreement signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Deposit received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each furnishing links to one project.",
+        "fromTable": "item",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "items"
+      },
+      {
+        "describes": "Each approval links to one project.",
+        "fromTable": "approval",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "approvals"
+      },
+      {
+        "describes": "Each project links to one client.",
+        "fromTable": "project",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "projects"
+      },
+      {
+        "describes": "Each project links to one team member.",
+        "fromTable": "project",
+        "fromField": "designer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "lead_projects"
+      },
+      {
+        "describes": "Each fee invoice links to one project.",
+        "fromTable": "invoice",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-odessa",
+            "values": {
+              "full_name": "Odessa Quillfeather",
+              "role": "Principal designer",
+              "work_email": "odessa@juniperrye.net",
+              "mobile": "(512) 555-0141",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-tomas",
+            "values": {
+              "full_name": "Tomas Brandvold",
+              "role": "Project designer",
+              "work_email": "tomas@juniperrye.net",
+              "mobile": "(512) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-nalani",
+            "values": {
+              "full_name": "Nalani Kekoa",
+              "role": "Procurement coordinator",
+              "work_email": "nalani@juniperrye.net",
+              "mobile": "(512) 555-0143",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "design_inquiry",
+        "name": "Design inquiry",
+        "describes": "How a prospective client starts a project.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "Your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email?"
+          }
+        ],
+        "submitLabel": "Send inquiry",
+        "confirmation": "Received. The studio will reply to schedule a discovery call."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "item_approved",
+        "table": "item",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "item_ordered",
+        "table": "item",
+        "name": "Mark ordered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ordered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "item_received",
+        "table": "item",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "approval_approved",
+        "table": "approval",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "approval_changes",
+        "table": "approval",
+        "name": "Changes requested",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Changes requested"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "project_concept",
+        "table": "project",
+        "name": "Move to concept",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "phase",
+            "set": "value",
+            "value": "Concept"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "project_procure",
+        "table": "project",
+        "name": "Move to procurement",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "phase",
+            "set": "value",
+            "value": "Procurement"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "project_done",
+        "table": "project",
+        "name": "Mark complete",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "phase",
+            "set": "value",
+            "value": "Complete"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_sent",
+        "table": "invoice",
+        "name": "Mark sent",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sent"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_item",
+        "name": "All furnishings",
+        "table": "item",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "item_board",
+        "name": "By status",
+        "table": "item",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "item_cal",
+        "name": "Calendar",
+        "table": "item",
+        "kind": "calendar",
+        "dateField": "eta",
+        "allDay": true
+      },
+      {
+        "token": "item_week",
+        "name": "This week",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "eta": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Specified",
+            "Approved",
+            "Ordered",
+            "Shipped",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "item_next30",
+        "name": "Next 30 days",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "eta": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Specified",
+            "Approved",
+            "Ordered",
+            "Shipped",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "item_over",
+        "name": "Overdue",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "eta": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Specified",
+            "Approved",
+            "Ordered",
+            "Shipped",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "item_mine",
+        "name": "My furnishings",
+        "table": "item",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_approval",
+        "name": "All approvals",
+        "table": "approval",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "approval_board",
+        "name": "By status",
+        "table": "approval",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "approval_cal",
+        "name": "Calendar",
+        "table": "approval",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "approval_today",
+        "name": "Today",
+        "table": "approval",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Changes requested"
+          ]
+        }
+      },
+      {
+        "token": "approval_week",
+        "name": "This week",
+        "table": "approval",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Changes requested"
+          ]
+        }
+      },
+      {
+        "token": "approval_over",
+        "name": "Overdue",
+        "table": "approval",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Changes requested"
+          ]
+        }
+      },
+      {
+        "token": "approval_mine",
+        "name": "My approvals",
+        "table": "approval",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "project_board",
+        "name": "By status",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "phase"
+      },
+      {
+        "token": "project_cal",
+        "name": "Calendar",
+        "table": "project",
+        "kind": "calendar",
+        "dateField": "install_on",
+        "allDay": true
+      },
+      {
+        "token": "project_week",
+        "name": "This week",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "install_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "phase": [
+            "Discovery",
+            "Concept",
+            "Design development",
+            "Procurement",
+            "Installation"
+          ]
+        }
+      },
+      {
+        "token": "project_next30",
+        "name": "Next 30 days",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "install_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "phase": [
+            "Discovery",
+            "Concept",
+            "Design development",
+            "Procurement",
+            "Installation"
+          ]
+        }
+      },
+      {
+        "token": "all_invoice",
+        "name": "All fee invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "By status",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_cal",
+        "name": "Calendar",
+        "table": "invoice",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "invoice_week",
+        "name": "This week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Studio assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "item",
+          "describes": "Every furnishing with project, vendor, status and delivery date."
+        },
+        {
+          "name": "related_tables",
+          "table": "project",
+          "describes": "The projects furnishings belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many furnishings are specified but not yet approved?",
+        "whyItMatters": "The procurement coordinator cannot order until a client approves.",
+        "expect": {
+          "table": "item",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Specified"
+          },
+          "answer": 4,
+          "unit": "furnishings"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open furnishings.",
+        "action": {
+          "kind": "open",
+          "surface": "item_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "item_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open approvals.",
+        "action": {
+          "kind": "open",
+          "surface": "approval_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "approval_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open projects.",
+        "action": {
+          "kind": "open",
+          "surface": "project_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "juniperrye.net",
+        "mailbox-demo.net"
+      ],
+      "fictionalStreets": [
+        "Congress Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "interior-design-studio",
+      "parent": null,
+      "title": "Interior Design Studio",
+      "icon": {
+        "emoji": "🛋️"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your studio in one place. Move each Project through its phases, track every Furnishing from specified to installed, collect client Approvals before ordering, and keep Fee invoices flowing. Operational tracking only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-phases"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-procurement"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-fees"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-install"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_project"
+                    },
+                    "inline": true,
+                    "title": "Projects by phase",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Projects by phase",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "phase",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "item",
+                      "view": "all_item"
+                    },
+                    "inline": true,
+                    "title": "Furnishings by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Furnishings by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "item",
+                      "view": "all_item"
+                    },
+                    "inline": true,
+                    "title": "Furnishings cost by room",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Furnishings cost by room",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "room",
+                          "op": "sum",
+                          "field": "trade_price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Furnishings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "item_board"
+            },
+            "inline": true,
+            "title": "Furnishings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "eta": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Specified",
+                    "Approved",
+                    "Ordered",
+                    "Shipped",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "eta": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Specified",
+                    "Approved",
+                    "Ordered",
+                    "Shipped",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "eta": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Specified",
+                    "Approved",
+                    "Ordered",
+                    "Shipped",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "eta"
+              },
+              {
+                "id": "vall",
+                "name": "All furnishings",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "eta",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Approvals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "approval",
+              "view": "approval_board"
+            },
+            "inline": true,
+            "title": "Approvals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Changes requested"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Changes requested"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Changes requested"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All approvals",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "project_board"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "install_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "phase": [
+                    "Discovery",
+                    "Concept",
+                    "Design development",
+                    "Procurement",
+                    "Installation"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "install_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "phase": [
+                    "Discovery",
+                    "Concept",
+                    "Design development",
+                    "Procurement",
+                    "Installation"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "phase"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "install_on"
+              },
+              {
+                "id": "vall",
+                "name": "All projects",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "install_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fee invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Fee invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All fee invoices",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "interior-design-studio",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_project"
+                    },
+                    "inline": true,
+                    "title": "Projects by phase",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Projects by phase",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "phase",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "item",
+                      "view": "all_item"
+                    },
+                    "inline": true,
+                    "title": "Furnishings by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Furnishings by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "item",
+                      "view": "all_item"
+                    },
+                    "inline": true,
+                    "title": "Furnishings cost by room",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Furnishings cost by room",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "room",
+                          "op": "sum",
+                          "field": "trade_price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "approval",
+                      "view": "all_approval"
+                    },
+                    "inline": true,
+                    "title": "Approvals by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Approvals by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Fee invoices by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Fee invoices by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Clients by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Approvals pending"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "approval",
+              "view": "all_approval"
+            },
+            "inline": true,
+            "title": "Approvals pending",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Pending or changes",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Changes requested"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Furnishings in transit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "all_item"
+            },
+            "inline": true,
+            "title": "Furnishings in transit",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Ordered or shipped",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Ordered",
+                    "Shipped"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-phases",
+      "parent": "interior-design-studio",
+      "title": "Design phases",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Each phase ends with a client approval. Do not skip the gate."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Phases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Discovery: measurements, questionnaire, budget."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Concept: boards and a first floor plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Design development: specific pieces and finishes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Procurement: orders, deposits, tracking."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Installation: delivery, placement and styling."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At each gate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add an Approval, send the presentation, and record the decision before moving the project on."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-procurement",
+      "parent": "interior-design-studio",
+      "title": "Procurement tracking",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Specify"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each piece with Add item and enter trade and client prices."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm lead time with the vendor."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Collect the client deposit before ordering."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the piece Ordered and set Expected delivery."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Receive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inspect and photograph on arrival."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark Received and schedule installation."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Items past their delivery date appear under Overdue."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-fees",
+      "parent": "interior-design-studio",
+      "title": "Fees and invoicing",
+      "icon": {
+        "emoji": "💳"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fee schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retainer at agreement."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Concept and design development fees at each approval."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Procurement deposit before the first order."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Final installation fee at the walk-through."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create invoices from the project with Add fee invoice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Sent, then Paid."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Follow up the day after the due date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-install",
+      "parent": "interior-design-studio",
+      "title": "Installation day",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm delivery windows"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm access with the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check every piece against the specification"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photograph the finished rooms"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark pieces Installed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send the final invoice and request a review"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

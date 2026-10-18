@@ -132,11 +132,11 @@
               "Not a fit"
             ],
             "choiceColors": {
+              "Not a fit": "red",
               "New": "blue",
-              "Contacted": "green",
-              "Intake booked": "amber",
-              "Waitlist": "violet",
-              "Not a fit": "teal"
+              "Contacted": "amber",
+              "Intake booked": "violet",
+              "Waitlist": "teal"
             },
             "statusGroups": {
               "New": "todo",
@@ -498,11 +498,11 @@
               "Cancelled"
             ],
             "choiceColors": {
+              "Late cancel": "red",
+              "No-show": "orange",
+              "Cancelled": "pink",
               "Scheduled": "blue",
-              "Completed": "green",
-              "Late cancel": "amber",
-              "No-show": "violet",
-              "Cancelled": "teal"
+              "Completed": "green"
             },
             "statusGroups": {
               "Scheduled": "todo",
@@ -1300,10 +1300,10 @@
               "Overdue"
             ],
             "choiceColors": {
+              "Overdue": "red",
               "Draft": "blue",
-              "Sent": "green",
-              "Paid": "amber",
-              "Overdue": "violet"
+              "Sent": "amber",
+              "Paid": "green"
             },
             "statusGroups": {
               "Draft": "todo",
