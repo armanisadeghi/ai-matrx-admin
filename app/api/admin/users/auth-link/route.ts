@@ -1,7 +1,7 @@
 // Super-Admin-only: generate a magic-link or password-recovery link for a user.
 //
 // POST { userId?: string, email?: string, type: "magiclink" | "recovery",
-//        send?: boolean }
+//        send?: boolean, reason?: string }
 //   → generates the link via the service-role admin client (auth.admin
 //     .generateLink), optionally emails it to the user, and returns the
 //     action_link so an admin can also copy/send it directly (support flow).
@@ -15,6 +15,7 @@ import { requireSuperAdmin } from "@/utils/auth/adminUtils";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { sendEmail } from "@/lib/email/client";
 import { extractErrorMessage } from "@/utils/errors";
+import { recordUserAction } from "@/features/admin/users/server/recordUserAction";
 
 function errorResponse(error: unknown) {
   const message = extractErrorMessage(error, "Unknown error");
@@ -46,8 +47,9 @@ function emailBody(type: LinkType, actionLink: string): { subject: string; html:
 }
 
 export async function POST(request: NextRequest) {
+  let actorUserId: string;
   try {
-    await requireSuperAdmin();
+    actorUserId = await requireSuperAdmin();
   } catch (e) {
     return errorResponse(e);
   }
@@ -57,6 +59,8 @@ export async function POST(request: NextRequest) {
     email?: string;
     type?: LinkType;
     send?: boolean;
+    /** Optional: recorded on the admin audit row. */
+    reason?: string;
   } | null;
 
   const type = body?.type;
@@ -96,6 +100,30 @@ export async function POST(request: NextRequest) {
     );
   }
   const actionLink = data.properties.action_link;
+
+  // One admin audit row (admin._audit_user_action). The link itself is never stored.
+  const targetUserId = data.user?.id ?? body?.userId;
+  if (!targetUserId) {
+    return NextResponse.json(
+      { error: "Link generated but the person could not be identified for the audit row" },
+      { status: 500 },
+    );
+  }
+  try {
+    await recordUserAction(admin, {
+      action: type === "magiclink" ? "magic_link_create" : "password_reset_link_create",
+      targetUserId,
+      actorUserId,
+      after: { link_type: type, email_requested: body?.send === true },
+      reason: typeof body?.reason === "string" ? body.reason : null,
+      metadata: { via: "api/admin/users/auth-link" },
+    });
+  } catch (e) {
+    return NextResponse.json(
+      { error: extractErrorMessage(e, "The audit row was not written") },
+      { status: 500 },
+    );
+  }
 
   let emailed = false;
   if (body?.send) {

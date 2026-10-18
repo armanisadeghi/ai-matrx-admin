@@ -170,6 +170,7 @@ cost. The owned ledgers above remain the canonical everyday view.
 - Never create an admin-only organization or membership table. Extend the canonical IAM projection.
 - The browser never receives a secret key and never writes `iam.memberships` directly.
 - Super-admin is verified at both the API boundary and the database mutation boundary.
+- **Every admin action on one person writes one `admin.admin_audit_log` row inside the code that does it** (helper `admin._audit_user_action`; reason in `metadata.reason`): `iam.close_account` (`account_close`, or `account_close_self` when the person closes their own), `iam.reopen_account`, `iam.sign_out_everywhere` (new, platform admins), every support-session event via `admin._support_session_log` (`support_session_created|extended|started|ended`), and the two service-role routes (`PATCH /api/admin/users` onboarded / MCP access, `POST /api/admin/users/auth-link`, both take optional `reason`). Guard: `pnpm check:user-action-audit`.
 - Organizations are equal and anyone may be invited into any organization (law: `common-docs/policies/access-ladder.md`). `admin_manage_organization_membership` still limits an `is_personal` organization to repair operations (restore the creator as owner, remove extra members) — a live defect against the law; it goes with the flag.
 - An organization cannot lose or demote its last owner.
 - Removal is a soft delete. Re-adding the same user reactivates the canonical membership row.
@@ -236,6 +237,7 @@ cost. The owned ledgers above remain the canonical everyday view.
 - Known sibling path (not closed here): the pre-existing `platform_admin_all` RLS policy still lets any platform admin UPDATE the table directly; the RPC is the only sanctioned writer.
 
 ## Change log
+- `2026-10-17` — Admin audit trail for every action on a person: account close/reopen (self-serve close told apart), new sign-out-everywhere, plan clear, free months, usage reset, support-session lifecycle, onboarded/MCP-access and sign-in/reset links all write `admin.admin_audit_log`; guard `check:user-action-audit` (static + rolled-back live run).
 - `2026-10-14` — Support sessions: timed "work as this person" for super admins with a one-time link, countdown/extend/end bar, append-only trail recording whether the person was also signed in, a log tab, the person's in-app notice, and login-detail changes refused inside the session.
 - `2026-10-04` — Free time & coupons tab (`/administration/users/coupons`): coupon table, create (existing-account codes / new-account one-time links), send by DM/email/SMS with a sent log (`billing.coupon_mark_sent`, new super-admin RPC + door row), revoke, and direct free months. Accounts roster gained row + bulk "Give free months…"; Change plan for a person no longer writes an endless grant.
 - `2026-09-30` — Accounts facts now come from `users.admin_account_facts()` (one ~0.5 s database pass replacing 8 guest-row slices and two usage-rollup calls, ~5 s). Added Active days and first AI use; the owner's `crm.party_research` category overrides the automatic kind; new Friends & family slice.

@@ -437,6 +437,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _audit_user_action: {
+        Args: {
+          p_action: string
+          p_actor?: string
+          p_after?: Json
+          p_before?: Json
+          p_metadata?: Json
+          p_reason?: string
+          p_target: string
+        }
+        Returns: string
+      }
       _support_session_close: {
         Args: { p_id: string; p_reason: string; p_via: string }
         Returns: {
@@ -85548,6 +85560,10 @@ export type Database = {
           resource_type: string
           to_target: string
         }[]
+      }
+      sign_out_everywhere: {
+        Args: { p_reason?: string; p_user: string }
+        Returns: Json
       }
       starter_pack_ids_curated_by: {
         Args: { p_uid: string }

@@ -107,6 +107,7 @@ Blank keeps its meaning (unlimited over an existing row, nothing over a missing 
 stale). Used by the Accounts roster and the Organizations admin.
 `fetchOrgPlanAssignments` pages `org_plan_list` with `readAllRows` — every organization has a
 row (~1,800) and a bare call stopped at 1000, showing the rest as "default".
+`billing.user_plan_set`, `billing.free_months_apply` (one row per person granted) and `billing.usage_reset_apply` each write one `admin.admin_audit_log` row (`plan_clear` / `free_months_grant` / `usage_reset`, the note as reason) through `admin._audit_user_action` (2026-10-17; guard `pnpm check:user-action-audit`).
 
 ## Rules this UI must keep
 

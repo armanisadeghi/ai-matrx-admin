@@ -17,6 +17,7 @@ import { ONBOARDING_METADATA_KEY } from "@/utils/onboarding";
 import type { AdminUserRow } from "@/features/admin/users/types";
 import type { Database } from "@/types/database.types";
 import { loadAdminOrganizationDirectory } from "@/features/admin/users/server/organizationMembershipAdmin";
+import { recordUserAction } from "@/features/admin/users/server/recordUserAction";
 import { isJsonObject } from "@/types/json";
 import {
   hasMcpFullAccessPermission,
@@ -392,8 +393,9 @@ export async function GET() {
 // PATCH /api/admin/users — update server-managed account controls.
 // Body: { userId: string, onboardingCompleted?: boolean, mcpFullAccess?: boolean }
 export async function PATCH(request: NextRequest) {
+  let actorUserId: string;
   try {
-    await requireSuperAdmin();
+    actorUserId = await requireSuperAdmin();
   } catch (e) {
     return errorResponse(e);
   }
@@ -402,6 +404,8 @@ export async function PATCH(request: NextRequest) {
     userId?: string;
     onboardingCompleted?: boolean;
     mcpFullAccess?: boolean;
+    /** Optional: recorded on the admin audit row. */
+    reason?: string;
   } | null;
 
   const onboardingSupplied = typeof body?.onboardingCompleted === "boolean";
@@ -454,6 +458,43 @@ export async function PATCH(request: NextRequest) {
   );
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  // One admin audit row per control changed (admin._audit_user_action, the same helper every SQL
+  // door uses). A failed write is reported, never swallowed.
+  const reason = typeof body.reason === "string" ? body.reason : null;
+  try {
+    if (onboardingSupplied) {
+      const before = existing.user.user_metadata?.[ONBOARDING_METADATA_KEY];
+      await recordUserAction(admin, {
+        action: "onboarding_flag_set",
+        targetUserId: body.userId,
+        actorUserId,
+        before: { onboarding_completed: typeof before === "boolean" ? before : null },
+        after: { onboarding_completed: body.onboardingCompleted === true },
+        reason,
+        metadata: { via: "api/admin/users PATCH" },
+      });
+    }
+    if (mcpAccessSupplied) {
+      const appMetadata = isJsonObject(existing.user.app_metadata)
+        ? existing.user.app_metadata
+        : {};
+      await recordUserAction(admin, {
+        action: body.mcpFullAccess === true ? "mcp_full_access_grant" : "mcp_full_access_revoke",
+        targetUserId: body.userId,
+        actorUserId,
+        before: { mcp_full_access: hasMcpFullAccessPermission(appMetadata) },
+        after: { mcp_full_access: body.mcpFullAccess === true },
+        reason,
+        metadata: { via: "api/admin/users PATCH" },
+      });
+    }
+  } catch (e) {
+    return NextResponse.json(
+      { error: extractErrorMessage(e, "The audit row was not written") },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({
