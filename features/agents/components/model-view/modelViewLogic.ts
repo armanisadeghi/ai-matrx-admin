@@ -55,6 +55,8 @@ const LEVEL_LABELS: Record<string, string> = {
   mine: "Mine",
   organization: "Organization",
   org: "Organization",
+  // The server's rung for a block found in the agent's own organization (run in another one).
+  agent_organization: "Agent's organization",
   system: "System",
 };
 

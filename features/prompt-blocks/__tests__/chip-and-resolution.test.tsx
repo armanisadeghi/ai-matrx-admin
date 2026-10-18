@@ -79,6 +79,8 @@ describe("which block wins (the ladder the picker and panel show)", () => {
   it("Model view names the level", () => {
     expect(blockLevelLabel("personal")).toBe("Mine");
     expect(blockLevelLabel("system")).toBe("System");
+    // The server rung for a block found in the agent's own organization (run in another one).
+    expect(blockLevelLabel("agent_organization")).toBe("Agent's organization");
     expect(blockLevelLabel("weird")).toBe("weird");
   });
 });
