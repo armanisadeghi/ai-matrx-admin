@@ -14,10 +14,7 @@ import { packBoards, type PackBoard, type PackBoardPage, type PackBoardTile, typ
 
 import type { BoardDocument, BoardGroup, BoardNode, NodeSource } from "../board/document";
 import { PAGE_COLUMN_W, PAGE_FRAME_PAD, PAGE_FRAME_TOP, PAGE_MIN_FRAME_H, PAGE_SECTION_GAP, PAGE_TILE_GAP } from "../engine/page-layout";
-
-/** The table tile (items/data-items.tsx `TABLE_ENTITY`, `TABLE_LAYOUT_SECTION`): named here so this stays pure (no UI import). */
-export const TABLE_TILE_ENTITY = "data-table";
-export const TABLE_TILE_SECTION = "section";
+import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "../items/table-tile";
 
 /** One board to make: its key and title, its layout, and its document. */
 export interface PlannedBoard {
@@ -33,7 +30,7 @@ function tileSource(tile: PackBoardTile, tables: Record<string, ResolvedTable>):
       const made = tile.table ? tables[tile.table] : undefined;
       // A token with no made table is the checker's finding; at use time it is a bug, said by name.
       if (!made) throw new Error(`The template's "${tile.table ?? "?"}" table was not made, so the "${tile.title}" tile has nothing to show.`);
-      return { kind: "entity", entity: TABLE_TILE_ENTITY, id: made.tableId, ...(tile.layout === "section" ? { meta: { layout: TABLE_TILE_SECTION } } : {}) };
+      return { kind: "entity", entity: TABLE_ENTITY, id: made.tableId, ...(tile.layout === "section" ? { meta: { layout: TABLE_LAYOUT_SECTION } } : {}) };
     }
     case "note":
       // The note is named from its first line (starter-notes.ts files it in the board's organization).

@@ -12,6 +12,14 @@ jest.mock("../persistence/boardsService", () => ({
   createBoardFromDocument: (...a: unknown[]) => createBoardFromDocument(...(a as [])),
 }));
 
+const listBoardPacks = jest.fn(async () => [] as unknown[]);
+const makeBoardFromPack = jest.fn(async () => ({ id: "from-pack" }));
+jest.mock("../templates/board-packs", () => ({
+  isPackKey: (k: string) => k.startsWith("pack:"),
+  listBoardPacks: () => listBoardPacks(),
+  makeBoardFromPack: (...a: unknown[]) => makeBoardFromPack(...(a as [])),
+}));
+
 import { BUILTIN_BOARD_TEMPLATES } from "../templates/builtin";
 import { isBoardTemplate, listBoardTemplates, saveBoardAsTemplate, makeBoardFromTemplate, templateBoardTitle } from "../templates/board-templates";
 import { BOARD_ITEM_TYPES } from "../items/catalog";
@@ -32,6 +40,23 @@ describe("board templates", () => {
       ["Competitor swipe file", true],
       ["Mine", false],
     ]);
+  });
+
+  it("lists published board packs between the built-ins and the saved boards", async () => {
+    listTemplateIds.mockResolvedValue([]);
+    getBoardsByIds.mockResolvedValue([]);
+    const doc = { nodes: [], groups: [], edges: [], shapes: [], camera: { x: 0, y: 0, z: 1 } };
+    listBoardPacks.mockResolvedValueOnce([{ key: "pack:t1", title: "Design system", summary: "s", doc }]);
+    const all = await listBoardTemplates();
+    expect(all.map((t) => t.key)).toEqual([...BUILTIN_BOARD_TEMPLATES.map((t) => t.key), "pack:t1"]);
+  });
+
+  it("Use on a board pack installs through the pack door, with the store", async () => {
+    const dispatch = jest.fn();
+    await makeBoardFromTemplate("pack:t1", "org", "Design system — Oct 17", undefined, undefined, { dispatch: dispatch as never });
+    expect(makeBoardFromPack).toHaveBeenCalledWith("pack:t1", "org", "Design system — Oct 17", dispatch, undefined);
+    await expect(makeBoardFromTemplate("pack:t1", "org", "x")).rejects.toThrow(/store/);
+    expect(duplicateBoard).not.toHaveBeenCalled();
   });
 
   it("saves and un-saves through the board source", async () => {

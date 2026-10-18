@@ -51,8 +51,8 @@ import { dataHomeTables, findTables } from "./record-finders";
 import { GetDataBody } from "../data-fetch/GetDataBody";
 import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
 import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
+import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "./table-tile";
 
-const TABLE_ENTITY = "data-table";
 
 function tableSource(id: string | null): NodeSource {
   return { kind: "entity", entity: TABLE_ENTITY, id };
@@ -63,7 +63,6 @@ function tableSource(id: string | null): NodeSource {
  * titled, grouped, edit-in-place section of a page (records-ui `SectionCard`: a design system's
  * Colors, a case plan's deadlines). Kept on the tile as `meta.layout`; the table is the same record.
  */
-export const TABLE_LAYOUT_SECTION = "section";
 
 export function tableLayoutOf(source: NodeSource): "table" | "section" {
   return source.kind === "entity" && source.meta?.layout === TABLE_LAYOUT_SECTION ? "section" : "table";

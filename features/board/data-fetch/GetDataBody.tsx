@@ -47,8 +47,8 @@ import { provenanceOf, readDataFetchMeta, withDataFetchMeta, type DataFetchDraft
 import { RefusalView } from "../../data-sources/RefusalView";
 import { FetchProgress } from "../../data-sources/FetchProgress";
 import { SourceInputFields, modeOf } from "../../data-sources/SourceInputFields";
+import { TABLE_ENTITY } from "../items/table-tile";
 
-const TABLE_ENTITY = "data-table";
 
 /** The organization a fetch is billed to: the board's own, else the one the person works in. */
 export function useFetchOrganizationId(): string | null {
