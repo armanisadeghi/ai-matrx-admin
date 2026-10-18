@@ -84,6 +84,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAdminUserMenuSection } from "./admin-user-menu-section";
 import { useUserActions } from "../record/useUserActions";
 import { userRecordHref } from "../record/userSurfaces";
+import { AI_REQUESTS_LABEL } from "../record/userOverview";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { readOf } from "@ai-matrx/design-system";
@@ -383,7 +384,7 @@ function AccountsRoster() {
       {
         id: "ai_requests",
         accessorKey: "ai_requests",
-        header: "AI requests",
+        header: AI_REQUESTS_LABEL,
         filter: "number",
         align: "right",
         cell: (row) =>
@@ -1137,6 +1138,9 @@ function AccountsRoster() {
           // A row opens the person's own record page (the Name cell links there too).
           getRowHref={(r) => userRecordHref(r.id)}
           rowClick="page"
+          // onRowOpen is what turns on the table's row hover + pointer; the page click itself
+          // goes through getRowHref above, so this only runs when a row has no href.
+          onRowOpen={(r) => pushAppHref(router, userRecordHref(r.id))}
           isLoading={loading}
           pageSize={ROSTER_PAGE_SIZE}
           // Local filtering, caller-owned query — see `tableQuery` above.

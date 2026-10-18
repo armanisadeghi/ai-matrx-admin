@@ -2,15 +2,17 @@
 
 // Users & Access › Preferences.
 //
-// Two modes, one tab:
-//  - Default: the drift dashboard (all users on a retired shape) + manual heal.
-//  - ?user=<id> (from the Accounts cross-link): that user's ACTUAL preferences,
-//    one canonical row per module, with the full value in the detail panel.
+// Two views, both taking their input as props (the address is read only by
+// PreferencesPageClient, the route's entry):
+//  - DriftDashboard: all users on a retired shape + manual heal.
+//  - UserPreferencesView({ userId }): that user's ACTUAL preferences, one
+//    canonical row per module, with the full value in the detail panel. Also
+//    the Preferences tab of /administration/users/<id>.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AppLink from "@/components/navigation/AppLink";
 import {
   ArrowLeft,
@@ -72,7 +74,7 @@ function PreferencesUserPicker() {
   );
 }
 
-function DriftDashboard() {
+export function DriftDashboard() {
   const [report, setReport] = useState<DriftReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [healing, setHealing] = useState(false);
@@ -537,16 +539,5 @@ export function UserPreferencesView({ userId }: { userId: string }) {
         </div>
       )}
     </div>
-  );
-}
-
-// ── entry ────────────────────────────────────────────────────────────────────
-
-export function PreferencesTabClient() {
-  const focusUser = useSearchParams().get("user");
-  return focusUser ? (
-    <UserPreferencesView userId={focusUser} />
-  ) : (
-    <DriftDashboard />
   );
 }

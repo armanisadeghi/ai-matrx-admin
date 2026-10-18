@@ -17,6 +17,11 @@ const FOLLOW_UNDER = path.join(ROOT, "features/admin") + path.sep;
 const IMPORT_RE = /(?:import|export)\s+(?:type\s+)?(?:[^'"]*?\sfrom\s+)?["']([^"']+)["']|import\(\s*["']([^"']+)["']\s*\)/g;
 const READS_USER_PARAM = /\.get\(\s*["']user["']\s*\)/;
 
+/** Code without comments (a doc comment naming `get("user")` is not a read). */
+function stripComments(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
+}
+
 function resolve(fromFile: string, spec: string): string | null {
   let base: string;
   if (spec.startsWith("@/")) base = path.join(ROOT, spec.slice(2));
@@ -37,7 +42,8 @@ export function offendersFrom(entry: string): string[] {
     if (seen.has(file)) continue;
     seen.add(file);
     const src = fs.readFileSync(file, "utf8");
-    if (src.includes("useSearchParams") && READS_USER_PARAM.test(src)) offenders.push(path.relative(ROOT, file));
+    const code = stripComments(src);
+    if (code.includes("useSearchParams") && READS_USER_PARAM.test(code)) offenders.push(path.relative(ROOT, file));
     for (const m of src.matchAll(IMPORT_RE)) {
       const target = resolve(file, m[1] ?? m[2]);
       if (target && target.startsWith(FOLLOW_UNDER) && !/\.test\.tsx?$/.test(target)) queue.push(target);

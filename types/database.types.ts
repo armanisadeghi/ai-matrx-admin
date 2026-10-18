@@ -43737,6 +43737,10 @@ export type Database = {
           level: Database["public"]["Enums"]["permission_level"]
         }[]
       }
+      opening_view_shape: {
+        Args: { p_organization_id: string; p_table_id: string }
+        Returns: Json
+      }
       organization_clear: {
         Args: {
           p_and_destroy?: boolean

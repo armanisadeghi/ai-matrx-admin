@@ -10,7 +10,8 @@
  * that brand's report / topical map. The brand page lists the same edge from
  * its side (Relationships → Research), and Media → Research filters images by
  * it. Registered pairs (platform.association_types): research_topic →
- * web_brand, project, web_site, web_page, rulebook, plan_node.
+ * web_brand, project, web_site, rulebook. web_page / plan_node are linked from
+ * the page side (not reference-pickable) and listed by ResearchUsedBy.
  */
 
 import {
@@ -23,9 +24,7 @@ const TOPIC_LINK_TOKENS = [
   "web_brand",
   "project",
   "web_site",
-  "web_page",
   "rulebook",
-  "plan_node",
 ] as const satisfies readonly EntityTypeToken[];
 
 export function ResearchTopicLinks({

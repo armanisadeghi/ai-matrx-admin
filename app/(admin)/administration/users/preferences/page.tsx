@@ -2,7 +2,7 @@
 // Thin shell; useSearchParams (?user focus) needs a Suspense boundary.
 
 import { Suspense } from "react";
-import { PreferencesTabClient } from "@/features/admin/users/components/PreferencesTabClient";
+import { PreferencesPageClient } from "@/features/admin/users/components/PreferencesPageClient";
 
 export default function UsersPreferencesPage() {
   return (
@@ -13,7 +13,7 @@ export default function UsersPreferencesPage() {
         </div>
       }
     >
-      <PreferencesTabClient />
+      <PreferencesPageClient />
     </Suspense>
   );
 }

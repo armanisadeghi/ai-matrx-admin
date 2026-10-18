@@ -27,7 +27,7 @@ import { heldRunHref } from "@/features/admin/held-runs/heldRuns";
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { periodLabel } from "@/features/admin/limits/types";
 import { ADMIN_LEVEL_LABEL } from "../constants";
-import { actionSubjectOf, isClosed, personTitle, type UserOverview } from "./userOverview";
+import { AI_REQUESTS_LABEL, actionSubjectOf, isClosed, personTitle, type UserOverview } from "./userOverview";
 
 const SUPPORT_SESSIONS_PATH = "/administration/users/support-sessions";
 
@@ -194,7 +194,7 @@ export function UserOverviewTab({ overview: o, onReopen }: { overview: UserOverv
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]" data-testid="user-overview">
       <div className="flex min-w-0 flex-col gap-4">
         <KpiGrid className="lg:grid-cols-3 2xl:grid-cols-6">
-          <KpiTile label="AI requests · 30d" value={ai ? formatCount(ai.requests_30d) : null} hint={ai ? `${formatCount(ai.requests_total)} all time` : undefined} href={usagePersonHref(o.identity.id)} />
+          <KpiTile label={`${AI_REQUESTS_LABEL} · 30d`} value={ai ? formatCount(ai.requests_30d) : null} hint={ai ? `${formatCount(ai.requests_total)} all time` : undefined} href={usagePersonHref(o.identity.id)} />
           <KpiTile label="AI cost · 30d" value={ai ? formatAdminUsd(ai.cost_30d) : null} hint={ai ? `${formatAdminUsd(ai.cost_total)} all time` : undefined} href={usagePersonHref(o.identity.id)} />
           <KpiTile label="Active days · 30d" value={ai ? formatCount(ai.active_days_30d) : null} hint={ai?.last_ai_at ? `Last AI ${day(ai.last_ai_at)}` : undefined} />
           <KpiTile
