@@ -48,7 +48,9 @@ const render = (onResolve: jest.Mock) =>
 const button = (name: string) =>
   Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === name || b.getAttribute("aria-label") === name) as HTMLButtonElement;
 const click = (el: HTMLElement) => act(() => { el.click(); });
-const radio = (value: string) => container.querySelector(`input[type="radio"][value="${value}"]`) as HTMLInputElement;
+const row = (label: string) => container.querySelector(`[role="button"][aria-label="${label}"]`) as HTMLElement;
+const key = (el: HTMLElement, k: string) =>
+  act(() => { el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true })); });
 
 test("the question and every option's own text are shown before anything is picked", () => {
   render(jest.fn());
@@ -61,7 +63,7 @@ test("the question and every option's own text are shown before anything is pick
 test("a single click on an option resolves it with the option's label", () => {
   const onResolve = jest.fn();
   render(onResolve);
-  click(radio("a"));
+  click(row("Choose Email List"));
   act(() => { jest.advanceTimersByTime(400); });
   expect(onResolve).toHaveBeenCalledTimes(1);
   expect(onResolve).toHaveBeenCalledWith("d1", "<decision/>", "Start with an email waitlist.", "Email List");
@@ -80,7 +82,7 @@ test("the pencil customizes the text, and Cancel clears the selection", () => {
 test("Write my own opens free text and resolves with no label", () => {
   const onResolve = jest.fn();
   render(onResolve);
-  click(radio("custom"));
+  click(row("Write my own"));
   const ta = container.querySelector("textarea") as HTMLTextAreaElement;
   expect(ta.value).toBe("");
   act(() => {
@@ -91,4 +93,24 @@ test("Write my own opens free text and resolves with no label", () => {
   click(button("Use this text"));
   act(() => { jest.advanceTimersByTime(400); });
   expect(onResolve).toHaveBeenCalledWith("d1", "<decision/>", "Do a podcast tour.", null);
+});
+
+test("keyboard: arrows never choose; Enter does; a double press resolves once", () => {
+  const onResolve = jest.fn();
+  render(onResolve);
+  const first = row("Choose Email List");
+  key(first, "ArrowDown");
+  key(first, "ArrowUp");
+  act(() => { jest.advanceTimersByTime(400); });
+  expect(onResolve).not.toHaveBeenCalled();
+  key(row("Choose Communities"), "Enter");
+  click(row("Choose Email List"));
+  act(() => { jest.advanceTimersByTime(400); });
+  expect(onResolve).toHaveBeenCalledTimes(1);
+  expect(onResolve).toHaveBeenCalledWith("d1", "<decision/>", "Start in niche communities.", "Communities");
+});
+
+test("no native radios: two decisions on one page never share a group", () => {
+  render(jest.fn());
+  expect(container.querySelectorAll('input[type="radio"]').length).toBe(0);
 });
