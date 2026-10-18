@@ -43,7 +43,7 @@ jest.mock("@/features/content-ir/studio/components/KindInstanceRender", () => ({
 
 import "@/providers/richContentHost";
 import { ResultValue } from "@ai-matrx/chat/tool-call-visualization/result-fields/ResultValue";
-import { looksLikeMarkdown } from "@ai-matrx/chat/tool-call-visualization/result-fields/shape";
+import { looksLikeMarkdownResult } from "@ai-matrx/chat/tool-call-visualization/result-fields/shape";
 import { withAppStore } from "@/tests/helpers/WithStoreReads";
 
 describe("ResultValue nested Markdown", () => {
@@ -77,7 +77,7 @@ describe("ResultValue nested Markdown", () => {
 
   it("keeps ordinary identifiers and spaced multiplication on the plain path", () => {
     for (const value of ["snake_case_name", "price_per_unit", "2 * 3 * 4", "plain text"]) {
-      expect(looksLikeMarkdown(value)).toBe(false);
+      expect(looksLikeMarkdownResult(value)).toBe(false);
     }
   });
 
