@@ -9,30 +9,33 @@
  * - Cases: the agent's test cases on Agent Evaluation (`StudioCases`: kind='test_case' rows, the
  *   eval runner, checks + judge); "Open" runs one fresh in the center.
  * - Versions: cases × versions from eval results, then the saved versions, each opens.
- * - Battle: the existing model battle with this agent locked in, its input loaded with a test case
- *   (`applySampleToComposer`), or the versions battle.
- * - Debrief: opens Debrief (`@ai-matrx/chat` debrief) on the latest answer in the center, in place.
+ * - Battle: the agent against a challenger (Debrief candidate, another model, a saved version) on its
+ *   test cases, through the eval runner (`StudioBattle`).
+ * - Debrief: opens Debrief (`@ai-matrx/chat` debrief) on the latest answer in the center; its
+ *   proposals (the `agent_debrief` kind) show here as cards — "Try as candidate" applies one through
+ *   the Builder's own edit path (unsaved), "Battle it" runs it on the cases, "Keep" saves it.
  */
 
 import { useEffect, useState } from "react";
-import { Swords } from "lucide-react";
+import { FlaskConical, Swords } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Badge, Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { selectAgentById, selectAgentIsDirty } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
-import { debriefKey, setDebrief } from "@ai-matrx/chat/agents/debrief/debrief-store";
+import { debriefKey, setDebrief, useDebrief } from "@ai-matrx/chat/agents/debrief/debrief-store";
+import { parseAgentDebrief, type DebriefProposal } from "@ai-matrx/chat/agents/debrief/debrief-proposals";
+import { DebriefProposalCards } from "@ai-matrx/chat/agents/debrief/DebriefProposalCards";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { setAgentField } from "@/features/agents/redux/agent-builder.slice";
+import { resetAgentField, setAgentField, setAgentMessages } from "@/features/agents/redux/agent-builder.slice";
 import { saveAgent } from "@/features/agents/redux/builder-write.thunks";
-import { setLockedAgent } from "@/features/agent-comparison/modes/model/redux/thunks";
-import { applySampleToComposer } from "@/features/agents/samples/apply-sample";
-import { fetchTestCaseRows, type TestCaseRow } from "@/features/agent-tests/cases";
+import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
-import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { StudioBattle } from "./StudioBattle";
+import { candidateFromProposal, type StudioCandidate } from "../battle";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -73,6 +76,36 @@ export function StudioControls({
   initialTab = "settings",
 }: StudioControlsProps) {
   const [tab, setTab] = useState<ControlsTab>(initialTab);
+  const dispatch = useAppDispatch();
+  const record = useAppSelector((s) => (agentId ? selectAgentById(s, agentId) : undefined));
+  const [candidate, setCandidate] = useState<StudioCandidate | null>(null);
+
+  /** "Try as candidate": the proposal goes into the Builder's own record (unsaved), never a copy. */
+  const tryProposal = (proposal: DebriefProposal): StudioCandidate | null => {
+    if (!agentId || !record) return null;
+    const made = candidateFromProposal((record.messages ?? []) as { role?: unknown; content?: unknown }[], proposal);
+    if ("error" in made) {
+      toast.error("Not tried", { description: made.error });
+      return null;
+    }
+    const c = made.candidate;
+    if (c.messages) dispatch(setAgentMessages({ id: agentId, messages: c.messages as typeof record.messages }));
+    if (c.modelId) dispatch(setAgentField({ id: agentId, field: "modelId", value: c.modelId }));
+    setCandidate(c);
+    return c;
+  };
+  const discard = () => {
+    if (!agentId) return;
+    dispatch(resetAgentField({ id: agentId, field: "messages" }));
+    dispatch(resetAgentField({ id: agentId, field: "modelId" }));
+    setCandidate(null);
+  };
+  const keep = async () => {
+    if (!agentId) return;
+    await dispatch(saveAgent(agentId)).unwrap();
+    setCandidate(null);
+    onSaved();
+  };
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="shrink-0 overflow-x-auto border-b border-border px-2" data-testid="studio-controls-tabs">
@@ -88,9 +121,20 @@ export function StudioControls({
         ) : tab === "versions" ? (
           <VersionsTab agentId={agentId} />
         ) : tab === "battle" ? (
-          <BattleTab agentId={agentId} casesVersion={casesVersion} />
+          <StudioBattle
+            agentId={agentId}
+            casesVersion={casesVersion}
+            candidate={candidate}
+            onKeep={keep}
+            onDiscard={discard}
+          />
         ) : (
-          <DebriefTab runConversationId={runConversationId} />
+          <DebriefTab
+            runConversationId={runConversationId}
+            candidateId={candidate?.proposalId ?? null}
+            onTry={tryProposal}
+            onBattle={() => setTab("battle")}
+          />
         )}
       </div>
     </div>
@@ -237,81 +281,63 @@ function VersionsTab({ agentId }: { agentId: string }) {
   );
 }
 
-function BattleTab({ agentId, casesVersion }: { agentId: string; casesVersion: number }) {
-  const dispatch = useAppDispatch();
-  const store = useAppStore();
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [cases, setCases] = useState<TestCaseRow[] | null>(null);
-  useEffect(() => {
-    let live = true;
-    void fetchTestCaseRows(agentId)
-      .then((rows) => live && setCases(rows))
-      .catch(() => live && setCases([]));
-    return () => {
-      live = false;
-    };
-  }, [agentId, casesVersion]);
-
-  /** The model battle with this agent locked in; with a case, its input is that case. */
-  const compareModels = async (sample?: TestCaseRow) => {
-    setBusy(true);
-    try {
-      await dispatch(setLockedAgent({ agentId })).unwrap();
-      const inputId = store.getState().agentComparisonModel.inputConversationId;
-      if (sample && inputId) dispatch(applySampleToComposer({ conversationId: inputId, sample }));
-      router.push("/agents/battle/model");
-    } catch (e) {
-      toast.error("Battle did not open", { description: e instanceof Error ? e.message : String(e) });
-      setBusy(false);
-    }
-  };
-  return (
-    <div className="flex flex-col gap-2" data-testid="studio-battle">
-      <Button variant="primary" onClick={() => void compareModels()} disabled={busy}>
-        Compare models on this agent
-      </Button>
-      <Link href="/agents/battle/variations" className="text-xs text-primary hover:underline">
-        Compare versions
-      </Link>
-      {cases && cases.length > 0 && (
-        <div className="flex flex-col gap-1 border-t border-border pt-2">
-          <span className="text-xs font-medium text-muted-foreground">Battle on a test case</span>
-          {cases.slice(0, 12).map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              data-clickable
-              disabled={busy}
-              onClick={() => void compareModels(c)}
-              className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-left text-xs hover:bg-muted"
-            >
-              <Swords className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
-              <span className="truncate text-foreground">{c.label || "Test case"}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DebriefTab({ runConversationId }: { runConversationId: string | null }) {
+function DebriefTab({
+  runConversationId,
+  candidateId,
+  onTry,
+  onBattle,
+}: {
+  runConversationId: string | null;
+  candidateId: string | null;
+  onTry: (p: DebriefProposal) => StudioCandidate | null;
+  onBattle: () => void;
+}) {
   const messageId = useAppSelector((s) =>
     runConversationId ? selectLatestAssistantMessageId(runConversationId)(s) : undefined,
   );
+  const key = runConversationId && messageId ? debriefKey(runConversationId, messageId) : "";
+  const debrief = useDebrief(key);
   if (!runConversationId || !messageId) {
     return <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Run the agent first" line="Debrief reads its latest answer" />;
   }
+  const parsed = debrief?.status === "done" ? parseAgentDebrief(debrief.text) : null;
   return (
     <div className="flex flex-col gap-2" data-testid="studio-debrief">
       <Button
-        variant="primary"
-        onClick={() => setDebrief(debriefKey(runConversationId, messageId), { status: "choosing" })}
+        variant={parsed ? "outline" : "primary"}
+        onClick={() => setDebrief(key, { status: "choosing" })}
       >
-        Debrief the latest answer
+        {debrief ? "Debrief again" : "Debrief the latest answer"}
       </Button>
-      <p className="text-xs text-muted-foreground">Opens under the answer in the center</p>
+      {!debrief ? <p className="text-xs text-muted-foreground">Opens under the answer in the center</p> : null}
+      {debrief?.status === "running" ? <p className="text-xs text-muted-foreground">Reading the run…</p> : null}
+      {debrief?.status === "done" && !parsed ? (
+        <p className="text-xs text-muted-foreground">No proposals could be read from this debrief</p>
+      ) : null}
+      {parsed ? (
+        <DebriefProposalCards
+          debrief={parsed}
+          renderActions={(p) =>
+            candidateId === p.id ? (
+              <>
+                <Badge tone="info">Candidate</Badge>
+                <Button variant="primary" icon={<Swords />} onClick={onBattle} data-testid="studio-proposal-battle">
+                  Battle it
+                </Button>
+              </>
+            ) : p.target === "instructions" || p.target === "model" ? (
+              <Button
+                variant="outline"
+                icon={<FlaskConical />}
+                onClick={() => void onTry(p)}
+                data-testid="studio-proposal-try"
+              >
+                Try as candidate
+              </Button>
+            ) : null
+          }
+        />
+      ) : null}
     </div>
   );
 }

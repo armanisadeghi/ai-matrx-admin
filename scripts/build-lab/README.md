@@ -26,6 +26,11 @@ skill (rule 6 + caveat).
   local production build in an isolated worktree (`~/.cache/matrx-build-lab`),
   measuring exit / compile time / peak RSS / wall, appended to a ledger.
   `pnpm lab:run --results` prints the ledger.
+- `node scripts/build-lab/login-hydrates.mjs <base> --export <dir>` — run it
+  before ANY claim about a `next start` of an export (signs in or not, loads or
+  not): RED when the server is not serving the build on disk (a restart that
+  failed EADDRINUSE leaves the old process serving a gone manifest — every
+  chunk 500s and nothing hydrates), RED when /login never hydrates.
 
 ## Protocol (hard-won)
 

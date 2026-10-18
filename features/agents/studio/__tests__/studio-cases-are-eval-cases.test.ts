@@ -27,7 +27,11 @@ describe("Studio cases are eval cases", () => {
     expect(cases).toContain("launchRun");
     expect(cases).toContain("TestRunPanel");
     const controls = sources.find((s) => s.f === "StudioControls.tsx")!.text;
-    expect(controls).toContain("fetchTestCaseRows");
     expect(controls).toContain("CaseVersionGrid");
+    // Battle runs on the eval cases through the one runner (setups), never a second battle store.
+    const battle = sources.find((s) => s.f === "StudioBattle.tsx")!.text;
+    expect(battle).toContain("fetchTestCaseRows");
+    expect(battle).toContain("launchBattle");
+    expect(battle).toContain("TestRunPanel");
   });
 });
