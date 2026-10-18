@@ -18,10 +18,13 @@ export function TopicHeadline() {
   const { topicId, progress } = useTopicContext();
   const videos = useTopicVideoCounts(topicId);
   if (!progress) return null;
+  // A failed count says so; a count still loading shows the dash.
+  const videoValue = (count: number | undefined) =>
+    videos.error ? "Unavailable" : count == null ? "—" : count.toLocaleString();
 
   const figures: { label: string; value: string; of?: string; href: string }[] = [
     { label: "Sources found", value: progress.total_sources.toLocaleString(), href: hrefFor("sources", topicId) },
-    { label: "Pages read", value: progress.total_content.toLocaleString(), href: hrefFor("content", topicId) },
+    { label: "Captured", value: progress.total_content.toLocaleString(), href: hrefFor("content", topicId) },
     {
       label: "Analyzed",
       value: progress.total_analyses.toLocaleString(),
@@ -30,12 +33,12 @@ export function TopicHeadline() {
     },
     {
       label: "Videos found",
-      value: videos.data ? videos.data.found.toLocaleString() : "—",
+      value: videoValue(videos.data?.found),
       href: hrefFor("youtube", topicId),
     },
     {
       label: "Video transcripts",
-      value: videos.data ? videos.data.transcribed.toLocaleString() : "—",
+      value: videoValue(videos.data?.transcribed),
       href: hrefFor("youtube", topicId),
     },
     {
@@ -48,14 +51,20 @@ export function TopicHeadline() {
   return (
     <dl className="grid grid-cols-2 gap-x-8 gap-y-5 px-4 pb-2 pt-6 sm:grid-cols-3 lg:grid-cols-6">
       {figures.map((figure) => (
-        <Link key={figure.label} href={figure.href} className="group flex flex-col gap-1">
-          <dt className="type-label group-hover:text-foreground">{figure.label}</dt>
+        <div key={figure.label} className="flex flex-col gap-1">
+          <dt className="type-label">
+            <Link href={figure.href} className="hover:text-foreground hover:underline">
+              {figure.label}
+            </Link>
+          </dt>
           <dd className="flex items-baseline gap-1.5">
-            {/* ui-exception: flagship stage — headline figures. */}
-            <span className="text-3xl font-semibold tabular-nums text-foreground">{figure.value}</span>
-            {figure.of && <span className="type-secondary text-muted-foreground">{figure.of}</span>}
+            <Link href={figure.href} className="flex items-baseline gap-1.5" tabIndex={-1} aria-hidden>
+              {/* ui-exception: flagship stage — headline figures. */}
+              <span className="text-3xl font-semibold tabular-nums text-foreground">{figure.value}</span>
+              {figure.of && <span className="type-secondary text-muted-foreground">{figure.of}</span>}
+            </Link>
           </dd>
-        </Link>
+        </div>
       ))}
     </dl>
   );

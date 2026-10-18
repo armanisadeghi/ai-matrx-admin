@@ -756,7 +756,9 @@ export async function getTopicVideoCounts(
       .select("id", { count: "exact", head: true })
       .eq("topic_id", topicId)
       .eq("content_type", "youtube_transcript")
-      .eq("is_good_scrape", true),
+      .eq("is_good_scrape", true)
+      .eq("is_current", true)
+      .is("deleted_at", null),
   ]);
   if (found.error) throw found.error;
   if (transcribed.error) throw transcribed.error;
