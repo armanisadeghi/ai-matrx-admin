@@ -123,3 +123,32 @@ window-restore read. Observed once (admin run): a second WebSocket 1.4 s after t
 
 Guard: `app/__tests__/empty-page-shell-calls.test.ts` (fails 3/4 on the pre-change tree via
 `SHELL_CALLS_ROOT=<old tree>`, passes 4/4 now).
+
+## Notes and Chat module layouts (2026-10-18, page speed lane)
+
+Shared preview, signed in, `scripts/speed-test-census.mjs`. DB = DB calls before / after settle (preflights included). Dev timings are inflated; counts and JS files are the point.
+
+| Route | Who | Before DB | After DB | Before JS files | After JS files |
+|---|---|---|---|---|---|
+| `/notes/speed-test` | admin | 9 / 25 | 0 / 7 (same as `/speed-test`) | 257 | 256 (see open item) |
+| `/notes/speed-test` | member | not measured clean (see note) | 0 / 7 | 244 (mid-change) | 219 (`/speed-test`: 217) |
+| `/notes` | admin | 9 / 25 | 4 / 26 | 256 | 259 |
+| `/notes` | member | not measured clean | 4 / 26 | 244 | 247 |
+| `/chat/speed-test` | admin | 3 / 12 | 2 / 11 | 231 | 231 (`/speed-test`: 229) |
+| `/chat/speed-test` | member | 3 / 10 | 2 / 9 | 219 | 219 (`/speed-test`: 217) |
+| `/chat/new` | admin | 3 / 14 | 2 / 13 | 250 | 249 |
+| `/chat/new` | member | 3 / 12 | 2 / 11 | 238 | 238 |
+
+Note: the member "before" notes rows were taken while the first fixes were hot-reloading into the shared preview, so they are not a clean baseline. The admin rows and all chat rows are clean. Chat code was not changed; its one-call drop is run-to-run variation in the shell's own calls.
+
+What the notes layout dragged in, and where it went:
+1. **The whole notes workspace on every page under `/notes`.** `NotesRouteBody` rendered `NotesView` (list, assists, realtime) under every segment, hiding the page in a `display:none` div, so `/notes/speed-test` ran the full workspace. Now static segments (`speed-test`) and `/diff` are their own pages, and `NotesView` is split at that route condition (`next/dynamic`, SSR on), so its code loads only where it renders. Member JS on the empty page: 244 → 219 files.
+2. **`notes ?select=id … limit=1000` (~570–930 ms).** This came from `NotesAssistStrip` → `fetchAllNoteScopes`, which re-read every visible note id before reading scope tags. The ids now come from the notes already in the store, and the strip's sweep waits for the list and for idle time. The id read is gone on every caller (sidebar scope grouping, Notes window, agent write refresh).
+3. **`rpc get_notes_shared_with_me`.** No longer read on route entry. The "Shared with me" header is always shown once the list is in. Opening it reads the list, and so does opening a note someone else owns. Focus, realtime catch-up and Refresh re-read it only once it has been opened (`fetchSharedNotesList({ ifIdle | ifLoaded })`).
+4. **`rpc list_my_presentable_assists`.** Kept: the canonical `AssistStrip` renders those chips on `/notes`.
+
+Chat layout: it awaits nothing (a sync server layout). On the empty page its reads are `route_seed` (sent by `ChatRouteSeedStart`) and the sidebar history's child-status reads (`conversation`, `user_request`). Both feed the chat sidebar menu, which the route-menu registry renders on every `/chat/*` page. `ChatPasteOffer`'s import graph (data-sources, unified-data) is already in every route through `providers/chatUiRegistrationBase.ts`, so moving it out of the layout would save nothing. The ~19 s first paint is the first compile of the `/chat` segment (and of `/chat/new`'s page), not anything the layout awaits. Warm, `/chat/speed-test` paints in 0.5–1 s.
+
+Guard: `features/notes/__tests__/notes-layout-reads-on-demand.test.tsx` (7 tests; 5 failed before the change, all pass after).
+
+Open: admin `/notes/speed-test` still loads 256 JS files against member's 219, with no notes reads. Its after-settle calls are the shell's (DM summary, `ues_list`, `knob_index`, `user_surface_state` writes), which points at admin surface state restored after a walk. Not traced. Shared notes that RLS also returns in the owner list now show in Recent until "Shared with me" is opened. Before, they moved to that section as soon as the page loaded.
