@@ -1,6 +1,6 @@
 /**
- * BUILT-IN BOARD TEMPLATES (SI-13) — owned by the platform, shipped in code the way the Traveling SMM OS
- * sample is for pages (not a user's saved board, so nothing to delete or lose). Each is a factory returning a
+ * BUILT-IN BOARD TEMPLATES (SI-13) — owned by the platform, shipped in code the way the library's sample
+ * template is for pages (not a user's saved board, so nothing to delete or lose). Each is a factory returning a
  * fresh BoardDocument, so every use gets its own tile ids and its own notes: a note tile with a `seed` creates
  * its own Note the first time it opens, and a chat tile with no id starts its own conversation.
  *
