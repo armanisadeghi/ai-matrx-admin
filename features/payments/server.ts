@@ -267,11 +267,7 @@ export async function settle(sessionId: string, status: SettleStatus, paymentInt
   const { error } = await billing().rpc("payment_settle", {
     p_checkout_session_id: sessionId,
     p_status: status,
-<<<<<<< origin/main
     ...(paymentIntentId ? { p_payment_intent_id: paymentIntentId } : {}),
-=======
-    p_payment_intent_id: paymentIntentId,
->>>>>>> HEAD
   });
   if (error) throw new Error(`billing.payment_settle refused: ${error.message}`);
 }
