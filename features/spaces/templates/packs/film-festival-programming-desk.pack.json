@@ -1,0 +1,3661 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0568",
+  "version": 1,
+  "title": "Film Festival Programming Desk",
+  "description": "Submissions, screenings, venues, guests and volunteers for a film festival.",
+  "forWho": "Film festival programmers and organizers",
+  "icon": {
+    "emoji": "🎬"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "media",
+  "tags": [
+    "film festival",
+    "submissions",
+    "screenings",
+    "venues",
+    "guests"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-film-festival-programming-desk",
+    "catalogueId": "SP0568",
+    "useCase": "Lucinda Brightwater-Osei directs a regional film festival and uses this to see which submissions still need a decision, which screenings are scheduled and which guests have not confirmed travel.",
+    "industry": "media_creators",
+    "vertical": "Film festival",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "High Desert Film Festival",
+      "describes": "A five-day regional film festival showing about 60 features and shorts across four venues, run by a core staff of five and 120 volunteers.",
+      "address": {
+        "line1": "31 Adobe Lane",
+        "city": "Santa Fe",
+        "region": "NM",
+        "postalCode": "87501",
+        "country": "US"
+      },
+      "phone": "(505) 555-0176",
+      "website": "highdesertfilmfest.net",
+      "email": "programming@highdesertfilmfest.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-film-festival-programming-desk",
+    "tables": [
+      {
+        "token": "film",
+        "name": "Film submissions",
+        "labelSingular": "Film",
+        "labelPlural": "Film submissions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "film",
+        "titleField": "film_title",
+        "describes": "Every film submitted, with reviewer scores and the decision.",
+        "subject": "thing",
+        "independentOf": {
+          "programmer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "film_title",
+            "label": "Film",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Submitted",
+              "Under review",
+              "Waitlist",
+              "Selected",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Submitted": "slate",
+              "Under review": "blue",
+              "Waitlist": "amber",
+              "Selected": "violet",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Submitted",
+            "statusGroups": {
+              "Submitted": "in_progress",
+              "Under review": "in_progress",
+              "Waitlist": "in_progress",
+              "Selected": "in_progress",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "choices": [
+              "Feature narrative",
+              "Feature documentary",
+              "Short narrative",
+              "Short documentary",
+              "Animation",
+              "Student film"
+            ],
+            "choiceColors": {
+              "Feature narrative": "slate",
+              "Feature documentary": "blue",
+              "Short narrative": "amber",
+              "Short documentary": "violet",
+              "Animation": "teal",
+              "Student film": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "director",
+            "label": "Director",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "country",
+            "label": "Country",
+            "parityType": "select",
+            "choices": [
+              "United States",
+              "Canada",
+              "Mexico",
+              "Brazil",
+              "Nigeria",
+              "India",
+              "Norway",
+              "South Korea"
+            ],
+            "choiceColors": {
+              "United States": "slate",
+              "Canada": "blue",
+              "Mexico": "amber",
+              "Brazil": "violet",
+              "Nigeria": "teal",
+              "India": "green",
+              "Norway": "orange",
+              "South Korea": "pink"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "minutes",
+            "label": "Runtime (minutes)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "score",
+            "label": "Reviewer score (1 to 10)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "decide_by",
+            "label": "Decide by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "programmer",
+            "label": "Programmer",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "screenings_count",
+            "label": "Screenings scheduled",
+            "parityType": "rollup",
+            "via": "screenings",
+            "pick": "screening_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Draft",
+                "Scheduled",
+                "Held"
+              ]
+            }
+          },
+          {
+            "key": "guests_count",
+            "label": "Guests attending",
+            "parityType": "rollup",
+            "via": "guests",
+            "pick": "guest_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Invited",
+                "Confirmed"
+              ]
+            }
+          },
+          {
+            "key": "btn_review",
+            "label": "Start review",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "film_review"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_select",
+            "label": "Select",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "film_select"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_decline",
+            "label": "Decline",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "film_decline"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "film_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_screening",
+            "label": "Schedule a screening",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "screenings",
+              "template": "New screening",
+              "prefill": {
+                "film": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_guest",
+            "label": "Invite a guest",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "guests",
+              "template": "New guest",
+              "prefill": {
+                "film": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New film",
+            "values": {
+              "film_title": "New film",
+              "status": "Submitted"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Synopsis"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two lines from the submission form."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Strengths, concerns and programming fit."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rights and files"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Screener received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Screening copy format confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Subtitle file received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rights confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Press kit received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "film-1",
+            "values": {
+              "film_title": "Salt Flats Lullaby",
+              "status": "Selected",
+              "category": "Feature narrative",
+              "director": "Imara Nwosu",
+              "country": "United States",
+              "minutes": 96,
+              "score": 8.5,
+              "decide_by": "@today-20d",
+              "email": "imara@mailbox.net",
+              "programmer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "film-2",
+            "values": {
+              "film_title": "The Last Crossing Guard",
+              "status": "Selected",
+              "category": "Short documentary",
+              "director": "Thorvald Lindqvist",
+              "country": "Norway",
+              "minutes": 18,
+              "score": 8,
+              "decide_by": "@today-18d",
+              "email": "thorvald@mailbox.net",
+              "programmer": "tm-2"
+            }
+          },
+          {
+            "key": "film-3",
+            "values": {
+              "film_title": "Paper Moons over Recife",
+              "status": "Selected",
+              "category": "Animation",
+              "director": "Beatriz Carvalho",
+              "country": "Brazil",
+              "minutes": 11,
+              "score": 9,
+              "decide_by": "@today-15d",
+              "email": "beatriz@mailbox.net",
+              "programmer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "film-4",
+            "values": {
+              "film_title": "A Quiet Harvest",
+              "status": "Under review",
+              "category": "Feature documentary",
+              "director": "Anand Deshpande",
+              "country": "India",
+              "minutes": 84,
+              "score": 0,
+              "decide_by": "@today+3d",
+              "email": "anand@mailbox.net",
+              "programmer": "tm-2"
+            }
+          },
+          {
+            "key": "film-5",
+            "values": {
+              "film_title": "Night Bus to Calgary",
+              "status": "Under review",
+              "category": "Short narrative",
+              "director": "Margot Tremblay",
+              "country": "Canada",
+              "minutes": 22,
+              "score": 7,
+              "decide_by": "@today",
+              "email": "margot@mailbox.net",
+              "programmer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "film-6",
+            "values": {
+              "film_title": "Cornfield Opera",
+              "status": "Waitlist",
+              "category": "Short narrative",
+              "director": "Wanjiru Kamau",
+              "country": "United States",
+              "minutes": 17,
+              "score": 7,
+              "decide_by": "@today+5d",
+              "email": "wanjiru@mailbox.net",
+              "programmer": "tm-2"
+            }
+          },
+          {
+            "key": "film-7",
+            "values": {
+              "film_title": "Clay Hands",
+              "status": "Submitted",
+              "category": "Short documentary",
+              "director": "Diego Salazar",
+              "country": "Mexico",
+              "minutes": 14,
+              "score": 0,
+              "decide_by": "@today+9d",
+              "email": "diego@mailbox.net",
+              "programmer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "film-8",
+            "values": {
+              "film_title": "Seoul After Rain",
+              "status": "Submitted",
+              "category": "Feature narrative",
+              "director": "Min-jun Park",
+              "country": "South Korea",
+              "minutes": 102,
+              "score": 0,
+              "decide_by": "@today-2d",
+              "email": "minjun@mailbox.net",
+              "programmer": "tm-2"
+            }
+          },
+          {
+            "key": "film-9",
+            "values": {
+              "film_title": "Orchard Ghosts",
+              "status": "Declined",
+              "category": "Student film",
+              "director": "Hallie Brennan",
+              "country": "United States",
+              "minutes": 9,
+              "score": 4,
+              "decide_by": "@today-25d",
+              "email": "hallie@mailbox.net",
+              "programmer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "film-10",
+            "values": {
+              "film_title": "The Long Lunch",
+              "status": "Selected",
+              "category": "Feature documentary",
+              "director": "Ifeoma Obi",
+              "country": "Nigeria",
+              "minutes": 78,
+              "score": 8.5,
+              "decide_by": "@today-12d",
+              "email": "ifeoma@mailbox.net",
+              "programmer": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "screenings",
+        "name": "Screenings",
+        "labelSingular": "Screening",
+        "labelPlural": "Screenings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clapperboard",
+        "titleField": "screening_name",
+        "describes": "Every showing on the festival schedule, with venue, time and tickets sold.",
+        "subject": "thing",
+        "independentOf": {
+          "film": "Either record can be created or change status before the other.",
+          "venue": "Either record can be created or change status before the other.",
+          "host": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "screening_name",
+            "label": "Screening",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "film",
+            "label": "Film",
+            "parityType": "relation",
+            "relationTarget": "film",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "venue",
+            "label": "Venue",
+            "parityType": "relation",
+            "relationTarget": "venue",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Draft",
+              "Scheduled",
+              "Held",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Scheduled": "blue",
+              "Held": "amber",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "in_progress",
+              "Scheduled": "in_progress",
+              "Held": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "starts_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tickets_sold",
+            "label": "Tickets sold",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "q_and_a",
+            "label": "Q&A planned",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "host",
+            "label": "Host",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_scheduled",
+            "label": "Publish to schedule",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "screenings_scheduled"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_held",
+            "label": "Mark held",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "screenings_held"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "screenings_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New screening",
+            "values": {
+              "screening_name": "New screening",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Run of show"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Intro, film, Q&A and exit, with timings."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Screening copy tested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Subtitles checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Introducer briefed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Volunteers rostered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tickets live"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "screenings-1",
+            "values": {
+              "screening_name": "Salt Flats Lullaby, opening night",
+              "film": "film-1",
+              "venue": "venue-1",
+              "status": "Scheduled",
+              "starts_at": "@today+3d 19:00",
+              "tickets_sold": 310,
+              "q_and_a": true,
+              "host": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "screenings-2",
+            "values": {
+              "screening_name": "The Last Crossing Guard",
+              "film": "film-2",
+              "venue": "venue-2",
+              "status": "Scheduled",
+              "starts_at": "@today+4d 14:00",
+              "tickets_sold": 64,
+              "q_and_a": true,
+              "host": "tm-4"
+            }
+          },
+          {
+            "key": "screenings-3",
+            "values": {
+              "screening_name": "Paper Moons over Recife",
+              "film": "film-3",
+              "venue": "venue-3",
+              "status": "Scheduled",
+              "starts_at": "@today+3d 20:30",
+              "tickets_sold": 180,
+              "q_and_a": false,
+              "host": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "screenings-4",
+            "values": {
+              "screening_name": "The Long Lunch",
+              "film": "film-10",
+              "venue": "venue-1",
+              "status": "Scheduled",
+              "starts_at": "@today+5d 16:00",
+              "tickets_sold": 120,
+              "q_and_a": true,
+              "host": "tm-3"
+            }
+          },
+          {
+            "key": "screenings-5",
+            "values": {
+              "screening_name": "Salt Flats Lullaby, encore",
+              "film": "film-1",
+              "venue": "venue-4",
+              "status": "Draft",
+              "starts_at": "@today+6d 13:00",
+              "tickets_sold": 0,
+              "q_and_a": false,
+              "host": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "screenings-6",
+            "values": {
+              "screening_name": "Night Bus to Calgary",
+              "film": "film-5",
+              "venue": "venue-2",
+              "status": "Draft",
+              "starts_at": "@today",
+              "tickets_sold": 0,
+              "q_and_a": false,
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "screenings-7",
+            "values": {
+              "screening_name": "Seoul After Rain",
+              "film": "film-8",
+              "venue": "venue-1",
+              "status": "Draft",
+              "starts_at": "@today-1d 18:00",
+              "tickets_sold": 0,
+              "q_and_a": true,
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "screenings-8",
+            "values": {
+              "screening_name": "Paper Moons over Recife, family matinee",
+              "film": "film-3",
+              "venue": "venue-3",
+              "status": "Held",
+              "starts_at": "@today-20d 11:00",
+              "tickets_sold": 205,
+              "q_and_a": false,
+              "host": "tm-4"
+            }
+          },
+          {
+            "key": "screenings-9",
+            "values": {
+              "screening_name": "Cornfield Opera, cancelled slot",
+              "film": "film-6",
+              "venue": "venue-2",
+              "status": "Cancelled",
+              "starts_at": "@today-9d 15:00",
+              "tickets_sold": 0,
+              "q_and_a": false,
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "venue",
+        "name": "Venues",
+        "labelSingular": "Venue",
+        "labelPlural": "Venues",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map-pin",
+        "titleField": "venue_name",
+        "describes": "The theaters and rooms the festival uses, with capacity and technical notes.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "venue_name",
+            "label": "Venue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Main theater",
+              "Small cinema",
+              "Outdoor screen",
+              "Gallery space",
+              "Hotel ballroom"
+            ],
+            "choiceColors": {
+              "Main theater": "slate",
+              "Small cinema": "blue",
+              "Outdoor screen": "amber",
+              "Gallery space": "violet",
+              "Hotel ballroom": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "capacity",
+            "label": "Seats",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contact",
+            "label": "Venue contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "screening_slots",
+            "label": "Screenings booked",
+            "parityType": "rollup",
+            "via": "screenings",
+            "pick": "screening_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Draft",
+                "Scheduled"
+              ]
+            }
+          },
+          {
+            "key": "seats_sold",
+            "label": "Tickets sold",
+            "parityType": "rollup",
+            "via": "screenings",
+            "pick": "tickets_sold",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Scheduled",
+                "Held"
+              ]
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New venue",
+            "values": {
+              "venue_name": "New venue"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Technical"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Projection formats, sound, subtitles and booth contact."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Access"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Accessible seating, parking and load-in."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "venue-1",
+            "values": {
+              "venue_name": "Plaza Theater",
+              "kind": "Main theater",
+              "capacity": 420,
+              "contact": "Gloria Ansah"
+            }
+          },
+          {
+            "key": "venue-2",
+            "values": {
+              "venue_name": "Studio Six",
+              "kind": "Small cinema",
+              "capacity": 90,
+              "contact": "Terrence Obuya"
+            }
+          },
+          {
+            "key": "venue-3",
+            "values": {
+              "venue_name": "Courtyard screen",
+              "kind": "Outdoor screen",
+              "capacity": 250,
+              "contact": "Bella Marchetti"
+            }
+          },
+          {
+            "key": "venue-4",
+            "values": {
+              "venue_name": "Gallery Annex",
+              "kind": "Gallery space",
+              "capacity": 60,
+              "contact": "Ravi Kulkarni"
+            }
+          }
+        ]
+      },
+      {
+        "token": "guests",
+        "name": "Guests",
+        "labelSingular": "Guest",
+        "labelPlural": "Guests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "plane",
+        "titleField": "guest_name",
+        "describes": "Filmmakers, panelists and judges invited, with travel and lodging status.",
+        "subject": "thing",
+        "independentOf": {
+          "film": "Either record can be created or change status before the other.",
+          "host": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "arrives_on",
+            "departs_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "guest_name",
+            "label": "Guest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "film",
+            "label": "Film",
+            "parityType": "relation",
+            "relationTarget": "film",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "parityType": "select",
+            "choices": [
+              "Director",
+              "Producer",
+              "Actor",
+              "Panelist",
+              "Juror"
+            ],
+            "choiceColors": {
+              "Director": "slate",
+              "Producer": "blue",
+              "Actor": "amber",
+              "Panelist": "violet",
+              "Juror": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Invited",
+              "Confirmed",
+              "Arrived",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Invited": "slate",
+              "Confirmed": "blue",
+              "Arrived": "amber",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Invited",
+            "statusGroups": {
+              "Invited": "in_progress",
+              "Confirmed": "in_progress",
+              "Arrived": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "arrives_on",
+            "label": "Arrives on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "departs_on",
+            "label": "Departs on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hotel_booked",
+            "label": "Hotel booked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "travel_booked",
+            "label": "Travel booked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "host",
+            "label": "Hosted by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_confirmed",
+            "label": "Mark confirmed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "guests_confirmed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_arrived",
+            "label": "Mark arrived",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "guests_arrived"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "guests_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New guest",
+            "values": {
+              "guest_name": "New guest",
+              "status": "Invited"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Needs"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Dietary, access and travel needs they shared."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Itinerary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Flights booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Airport pickup arranged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Hotel booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Badge printed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Thank-you sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "guests-1",
+            "values": {
+              "guest_name": "Imara Nwosu",
+              "film": "film-1",
+              "role": "Director",
+              "status": "Confirmed",
+              "arrives_on": "@today+2d",
+              "departs_on": "@today+6d",
+              "hotel_booked": true,
+              "travel_booked": true,
+              "host": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-2",
+            "values": {
+              "guest_name": "Thorvald Lindqvist",
+              "film": "film-2",
+              "role": "Director",
+              "status": "Invited",
+              "arrives_on": "@today+3d",
+              "departs_on": "@today+6d",
+              "hotel_booked": false,
+              "travel_booked": false,
+              "host": "tm-3"
+            }
+          },
+          {
+            "key": "guests-3",
+            "values": {
+              "guest_name": "Beatriz Carvalho",
+              "film": "film-3",
+              "role": "Director",
+              "status": "Confirmed",
+              "arrives_on": "@today+3d",
+              "departs_on": "@today+5d",
+              "hotel_booked": true,
+              "travel_booked": false,
+              "host": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-4",
+            "values": {
+              "guest_name": "Ifeoma Obi",
+              "film": "film-10",
+              "role": "Director",
+              "status": "Confirmed",
+              "arrives_on": "@today+4d",
+              "departs_on": "@today+6d",
+              "hotel_booked": true,
+              "travel_booked": true,
+              "host": "tm-3"
+            }
+          },
+          {
+            "key": "guests-5",
+            "values": {
+              "guest_name": "Desmond Kwarteng",
+              "role": "Juror",
+              "status": "Confirmed",
+              "arrives_on": "@today+2d",
+              "departs_on": "@today+7d",
+              "hotel_booked": true,
+              "travel_booked": true,
+              "host": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-6",
+            "values": {
+              "guest_name": "Priscilla Bao",
+              "role": "Panelist",
+              "status": "Invited",
+              "arrives_on": "@today",
+              "departs_on": "@today+3d",
+              "hotel_booked": false,
+              "travel_booked": false,
+              "host": "tm-3"
+            }
+          },
+          {
+            "key": "guests-7",
+            "values": {
+              "guest_name": "Anand Deshpande",
+              "film": "film-4",
+              "role": "Director",
+              "status": "Invited",
+              "arrives_on": "@today-1d",
+              "departs_on": "@today+5d",
+              "hotel_booked": false,
+              "travel_booked": false,
+              "host": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-8",
+            "values": {
+              "guest_name": "Wanjiru Kamau",
+              "film": "film-6",
+              "role": "Director",
+              "status": "Declined",
+              "arrives_on": "@today+5d",
+              "departs_on": "@today+6d",
+              "hotel_booked": false,
+              "travel_booked": false,
+              "host": "tm-3"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each film belongs to one programmer.",
+        "fromTable": "film",
+        "fromField": "programmer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "film_by_programmer"
+      },
+      {
+        "describes": "Each screening belongs to one film.",
+        "fromTable": "screenings",
+        "fromField": "film",
+        "toTable": "film",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "screenings"
+      },
+      {
+        "describes": "Each screening belongs to one venue.",
+        "fromTable": "screenings",
+        "fromField": "venue",
+        "toTable": "venue",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "screenings"
+      },
+      {
+        "describes": "Each screening belongs to one host.",
+        "fromTable": "screenings",
+        "fromField": "host",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "screening_by_host"
+      },
+      {
+        "describes": "Each guest belongs to one film.",
+        "fromTable": "guests",
+        "fromField": "film",
+        "toTable": "film",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "guests"
+      },
+      {
+        "describes": "Each guest belongs to one hosted by.",
+        "fromTable": "guests",
+        "fromField": "host",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "guest_by_host"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Lucinda Brightwater-Osei",
+              "role": "Festival director",
+              "work_email": "lucinda@highdesertfilmfest.net",
+              "mobile": "(505) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Emeka Halloran",
+              "role": "Head of programming",
+              "work_email": "emeka@highdesertfilmfest.net",
+              "mobile": "(505) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Dalia Fernandez-Qureshi",
+              "role": "Guest coordinator",
+              "work_email": "dalia@highdesertfilmfest.net",
+              "mobile": "(505) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Ruben Okafor-Lindgren",
+              "role": "Venue manager",
+              "work_email": "ruben@highdesertfilmfest.net",
+              "mobile": "(505) 555-0144",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Saskia Mbeki",
+              "role": "Volunteer coordinator",
+              "work_email": "saskia@highdesertfilmfest.net",
+              "mobile": "(505) 555-0145",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Film submission",
+        "describes": "Filmmakers submit their film here.",
+        "audience": "staff",
+        "table": "film",
+        "fields": [
+          {
+            "fieldKey": "film_title",
+            "ask": "What is your film called?",
+            "required": true
+          },
+          {
+            "fieldKey": "director",
+            "ask": "Who directed it?",
+            "required": true
+          },
+          {
+            "fieldKey": "category",
+            "ask": "Which category?"
+          },
+          {
+            "fieldKey": "minutes",
+            "ask": "How long is it in minutes?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thank you. The programming team reviews every submission and replies by the notification date."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "film_review",
+        "table": "film",
+        "name": "Start review",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Under review"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "film_select",
+        "table": "film",
+        "name": "Select",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Selected"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "film_decline",
+        "table": "film",
+        "name": "Decline",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Declined"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "film_claim",
+        "table": "film",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "screenings_scheduled",
+        "table": "screenings",
+        "name": "Publish to schedule",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Scheduled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "screenings_held",
+        "table": "screenings",
+        "name": "Mark held",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Held"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "screenings_claim",
+        "table": "screenings",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "guests_confirmed",
+        "table": "guests",
+        "name": "Mark confirmed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "guests_arrived",
+        "table": "guests",
+        "name": "Mark arrived",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Arrived"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "guests_claim",
+        "table": "guests",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_film",
+        "name": "All film submissions",
+        "table": "film",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "film_board",
+        "name": "By status",
+        "table": "film",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "film_cal",
+        "name": "Calendar",
+        "table": "film",
+        "kind": "calendar",
+        "dateField": "decide_by",
+        "allDay": true
+      },
+      {
+        "token": "film_over",
+        "name": "Overdue",
+        "table": "film",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Submitted",
+            "Under review",
+            "Waitlist"
+          ]
+        }
+      },
+      {
+        "token": "film_week",
+        "name": "This week",
+        "table": "film",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Submitted",
+            "Under review",
+            "Waitlist"
+          ]
+        }
+      },
+      {
+        "token": "film_next7",
+        "name": "Next 7 days",
+        "table": "film",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Submitted",
+            "Under review",
+            "Waitlist"
+          ]
+        }
+      },
+      {
+        "token": "film_mine",
+        "name": "My film submissions",
+        "table": "film",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_screenings",
+        "name": "All screenings",
+        "table": "screenings",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "screenings_board",
+        "name": "By status",
+        "table": "screenings",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "screenings_cal",
+        "name": "Calendar",
+        "table": "screenings",
+        "kind": "calendar",
+        "dateField": "starts_at",
+        "allDay": false
+      },
+      {
+        "token": "screenings_today",
+        "name": "Today",
+        "table": "screenings",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "screenings_over",
+        "name": "Overdue",
+        "table": "screenings",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "screenings_week",
+        "name": "This week",
+        "table": "screenings",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "screenings_next7",
+        "name": "Next 7 days",
+        "table": "screenings",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "screenings_mine",
+        "name": "My screenings",
+        "table": "screenings",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_venue",
+        "name": "All venues",
+        "table": "venue",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "venue_board",
+        "name": "By kind",
+        "table": "venue",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_guests",
+        "name": "All guests",
+        "table": "guests",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "guests_board",
+        "name": "By status",
+        "table": "guests",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "guests_cal",
+        "name": "Calendar",
+        "table": "guests",
+        "kind": "calendar",
+        "dateField": "arrives_on",
+        "allDay": true
+      },
+      {
+        "token": "guests_over",
+        "name": "Overdue",
+        "table": "guests",
+        "kind": "grid",
+        "within": {
+          "arrives_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Invited",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "guests_week",
+        "name": "This week",
+        "table": "guests",
+        "kind": "grid",
+        "within": {
+          "arrives_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Invited",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "guests_next7",
+        "name": "Next 7 days",
+        "table": "guests",
+        "kind": "grid",
+        "within": {
+          "arrives_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Invited",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "guests_mine",
+        "name": "My guests",
+        "table": "guests",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Film Festival Programming Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "film",
+          "describes": "Every film submitted, with reviewer scores and the decision."
+        },
+        {
+          "name": "related_tables",
+          "table": "screenings",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many films are selected so far?",
+        "whyItMatters": "The programming team builds the schedule from this list.",
+        "expect": {
+          "table": "film",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Selected"
+          },
+          "answer": 4,
+          "unit": "films"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open film submissions.",
+        "action": {
+          "kind": "open",
+          "surface": "film_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "film_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open screenings.",
+        "action": {
+          "kind": "open",
+          "surface": "screenings_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "screenings_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open venues.",
+        "action": {
+          "kind": "open",
+          "surface": "venue_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "venue_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "highdesertfilmfest.net"
+      ],
+      "fictionalStreets": [
+        "Adobe Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "film-festival-programming-desk",
+      "parent": null,
+      "title": "Film Festival Programming Desk",
+      "icon": {
+        "emoji": "🎬"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The festival from call for entries to closing night. Start with the Dashboard each morning. Decide submissions before their date, schedule only selected films, and confirm every guest's travel two weeks ahead."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:festival-timeline"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:reviewing-submissions"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:volunteer-and-venue-day"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Film submissions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every film submitted, with reviewer scores and the decision."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "film",
+              "view": "film_board"
+            },
+            "inline": true,
+            "title": "Film submissions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "fil-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "fil-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "decide_by"
+              },
+              {
+                "id": "fil-t",
+                "name": "All film submissions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "fil-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "decide_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Submitted",
+                    "Under review",
+                    "Waitlist"
+                  ]
+                }
+              },
+              {
+                "id": "fil-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "decide_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Submitted",
+                    "Under review",
+                    "Waitlist"
+                  ]
+                }
+              },
+              {
+                "id": "fil-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "decide_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Submitted",
+                    "Under review",
+                    "Waitlist"
+                  ]
+                }
+              },
+              {
+                "id": "fil-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "fil-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Screenings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every showing on the festival schedule, with venue, time and tickets sold."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "screenings",
+              "view": "screenings_board"
+            },
+            "inline": true,
+            "title": "Screenings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "scr-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "scr-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_at"
+              },
+              {
+                "id": "scr-t",
+                "name": "All screenings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "scr-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "starts_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "scr-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "starts_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "scr-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "scr-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "scr-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "scr-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Venues"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The theaters and rooms the festival uses, with capacity and technical notes."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "venue",
+              "view": "venue_board"
+            },
+            "inline": true,
+            "title": "Venues",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ven-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "ven-t",
+                "name": "All venues",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "ven-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Filmmakers, panelists and judges invited, with travel and lodging status."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "guests",
+              "view": "guests_board"
+            },
+            "inline": true,
+            "title": "Guests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "gue-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "gue-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "arrives_on"
+              },
+              {
+                "id": "gue-t",
+                "name": "All guests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "gue-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "arrives_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gue-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "arrives_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gue-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "arrives_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gue-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "gue-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "film-festival-programming-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The festival at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "film",
+                      "view": "all_film"
+                    },
+                    "inline": true,
+                    "title": "Submissions by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Submissions by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "film",
+                      "view": "all_film"
+                    },
+                    "inline": true,
+                    "title": "Submissions by category",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Submissions by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "screenings",
+                      "view": "all_screenings"
+                    },
+                    "inline": true,
+                    "title": "Tickets sold by venue",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Tickets sold by venue",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "venue",
+                          "op": "sum",
+                          "field": "tickets_sold"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "guests",
+                      "view": "all_guests"
+                    },
+                    "inline": true,
+                    "title": "Guests by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Guests by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Decisions due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "film",
+              "view": "all_film"
+            },
+            "inline": true,
+            "title": "Decisions due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Decisions due",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "decide_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Submitted",
+                    "Under review",
+                    "Waitlist"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Screenings in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "screenings",
+              "view": "all_screenings"
+            },
+            "inline": true,
+            "title": "Screenings in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Screenings in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guests arriving this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "guests",
+              "view": "all_guests"
+            },
+            "inline": true,
+            "title": "Guests arriving this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Guests arriving this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "arrives_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Screenings booked"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Draft or scheduled screenings in the venue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check for gaps of under 30 minutes between showings"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tickets sold"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tickets across scheduled and held screenings at the venue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with seats to decide on an encore"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Guests attending"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Guests linked to the film who are invited or confirmed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Zero for a selected film means a note to the filmmaker"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "festival-timeline",
+      "parent": "film-festival-programming-desk",
+      "title": "Festival timeline",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A festival is a countdown. Work backward from opening night and tick off each phase."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Phases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Six months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Open the call for entries and book the main venues"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Four months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Close submissions and finish reviews"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Three months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Announce selections and invite guests"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Six weeks out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Publish the schedule and open ticket sales"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two weeks out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirm travel, lodging and volunteers"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Festival days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Run, count and thank"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send thank-yous, pay vendors and write the report"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every Monday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open the Dashboard. If a decision date has passed, decide it. If a guest has not confirmed, call."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "reviewing-submissions",
+      "parent": "film-festival-programming-desk",
+      "title": "Reviewing submissions",
+      "icon": {
+        "emoji": "🍿"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Fair review means every film gets the same attention. Use the same score sheet for everyone."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign each film to two reviewers. Press Start review."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each reviewer gives a score from 1 to 10 and writes two lines."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The programmer averages the scores and enters one number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Discuss borderline films together."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Select, Waitlist or Decline and send the notice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep in mind"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Balance categories, countries and lengths."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write kind, specific declines."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm rights before announcing."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "volunteer-and-venue-day",
+      "parent": "film-festival-programming-desk",
+      "title": "Venue day checklist",
+      "icon": {
+        "emoji": "🎟️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "On festival days the work is people and time. A written checklist keeps each venue calm."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two hours before the first show"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Test projection, sound and subtitles with the real file"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Brief greeters and ushers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set up the box office and accessible seating"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Place signs and the schedule"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Between shows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reset the room and check the next film's file."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count tickets and write the total on the screening."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Walk the room and the lobby for safety."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the last show"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Press Mark held on each screening"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lock the booth and return keys"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank the venue contact"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

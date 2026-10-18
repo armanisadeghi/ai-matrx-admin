@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0102",
-  "version": 3,
+  "version": 4,
   "title": "Product Roadmap",
   "description": "Product teams: a now, next, later roadmap with themes, releases and a status dashboard.",
   "forWho": "Product teams planning a quarter or two ahead",
@@ -316,6 +316,14 @@
             "format": "date"
           },
           {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "customer_visible",
             "label": "Customer-facing",
             "parityType": "checkbox",
@@ -371,7 +379,8 @@
               "customer_visible": true,
               "summary": "Polite reminders before and after an invoice is due.",
               "theme": "th-0",
-              "release": "rl-0"
+              "release": "rl-0",
+              "shipped_on": "@today-35d"
             }
           },
           {
@@ -389,7 +398,8 @@
               "customer_visible": true,
               "summary": "Customers pay from the email without logging in.",
               "theme": "th-0",
-              "release": "rl-0"
+              "release": "rl-0",
+              "shipped_on": "@today-20d"
             }
           },
           {
@@ -1003,6 +1013,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1236,7 +1251,7 @@
         "Larkmoor Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

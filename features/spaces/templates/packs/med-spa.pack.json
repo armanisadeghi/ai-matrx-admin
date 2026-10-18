@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0403",
-  "version": 1,
+  "version": 2,
   "title": "Med Spa",
   "description": "Clients, appointments, memberships with credits and inventory for a med spa.",
   "forWho": "Medical spas and aesthetic clinics",
@@ -104,6 +104,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "datetime"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "service",
@@ -299,7 +307,8 @@
               "when_at": "@today-30d 09:30",
               "service": "Facial",
               "price": 165,
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -311,7 +320,8 @@
               "when_at": "@today-45d 11:00",
               "service": "Microneedling",
               "price": 320,
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -324,7 +334,8 @@
               "when_at": "@today-14d 14:00",
               "service": "Body contouring",
               "price": 480,
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -336,7 +347,8 @@
               "when_at": "@today-28d 13:30",
               "service": "Laser hair removal",
               "price": 260,
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-28d"
             }
           },
           {
@@ -348,7 +360,8 @@
               "when_at": "@today-120d 10:00",
               "service": "Facial",
               "price": 165,
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-120d"
             }
           },
           {
@@ -361,7 +374,8 @@
               "when_at": "@today-35d 10:00",
               "service": "Chemical peel",
               "price": 210,
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-35d"
             }
           },
           {
@@ -374,7 +388,8 @@
               "when_at": "@today-40d 12:00",
               "service": "Facial",
               "price": 165,
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-40d"
             }
           },
           {
@@ -1483,6 +1498,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1798,7 +1818,7 @@
         "Marlow Esplanade"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

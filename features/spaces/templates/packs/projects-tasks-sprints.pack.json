@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 4,
+  "version": 5,
   "title": "Projects, Tasks & Sprints",
   "description": "Product teams that plan by project: tasks, two-week sprints and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -598,6 +598,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "pull_request",
             "label": "Pull request",
             "parityType": "url",
@@ -680,7 +688,8 @@
               "due_on": "@today-28d",
               "pull_request": "https://code.harborline-labs.net/pull/400",
               "project": "pr-checkout",
-              "sprint": "sp-21"
+              "sprint": "sp-21",
+              "completed_on": "@today-28d"
             }
           },
           {
@@ -695,7 +704,8 @@
               "due_on": "@today-24d",
               "pull_request": "https://code.harborline-labs.net/pull/401",
               "project": "pr-checkout",
-              "sprint": "sp-21"
+              "sprint": "sp-21",
+              "completed_on": "@today-24d"
             }
           },
           {
@@ -710,7 +720,8 @@
               "due_on": "@today-12d",
               "pull_request": "https://code.harborline-labs.net/pull/402",
               "project": "pr-checkout",
-              "sprint": "sp-22"
+              "sprint": "sp-22",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -725,7 +736,8 @@
               "due_on": "@today-10d",
               "pull_request": "https://code.harborline-labs.net/pull/403",
               "project": "pr-checkout",
-              "sprint": "sp-22"
+              "sprint": "sp-22",
+              "completed_on": "@today-10d"
             }
           },
           {
@@ -803,7 +815,8 @@
               "due_on": "@today-9d",
               "pull_request": "https://code.harborline-labs.net/pull/408",
               "project": "pr-mobile",
-              "sprint": "sp-22"
+              "sprint": "sp-22",
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -818,7 +831,8 @@
               "due_on": "@today-8d",
               "pull_request": "https://code.harborline-labs.net/pull/409",
               "project": "pr-mobile",
-              "sprint": "sp-22"
+              "sprint": "sp-22",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -876,7 +890,8 @@
               "due_on": "@today-25d",
               "pull_request": "https://code.harborline-labs.net/pull/413",
               "project": "pr-billing",
-              "sprint": "sp-21"
+              "sprint": "sp-21",
+              "completed_on": "@today-25d"
             }
           },
           {
@@ -891,7 +906,8 @@
               "due_on": "@today-22d",
               "pull_request": "https://code.harborline-labs.net/pull/414",
               "project": "pr-billing",
-              "sprint": "sp-21"
+              "sprint": "sp-21",
+              "completed_on": "@today-22d"
             }
           },
           {
@@ -1213,6 +1229,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1467,7 +1488,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

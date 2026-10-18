@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0308",
-  "version": 3,
+  "version": 4,
   "title": "SOP Library",
   "description": "Teams: write down how work gets done, with owners, approvers and review dates.",
   "forWho": "Teams documenting their processes",
@@ -186,6 +186,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_to_review",
             "label": "Days to next review",
             "parityType": "formula",
@@ -290,7 +298,8 @@
               "next_review": "@today+165d",
               "tags": [
                 "Call handling"
-              ]
+              ],
+              "approved_on": "@today-200d"
             }
           },
           {
@@ -307,7 +316,8 @@
               "next_review": "@today+275d",
               "tags": [
                 "Scheduling"
-              ]
+              ],
+              "approved_on": "@today-90d"
             }
           },
           {
@@ -324,7 +334,8 @@
               "next_review": "@today-35d",
               "tags": [
                 "Install"
-              ]
+              ],
+              "approved_on": "@today-35d"
             }
           },
           {
@@ -342,7 +353,8 @@
               "tags": [
                 "Safety"
               ],
-              "audit_note": "Reviewed with insurer checklist."
+              "audit_note": "Reviewed with insurer checklist.",
+              "approved_on": "@today-310d"
             }
           },
           {
@@ -376,7 +388,8 @@
               "next_review": "@today+215d",
               "tags": [
                 "Billing"
-              ]
+              ],
+              "approved_on": "@today-150d"
             }
           },
           {
@@ -410,7 +423,8 @@
               "next_review": "@today+95d",
               "tags": [
                 "Customer care"
-              ]
+              ],
+              "approved_on": "@today-270d"
             }
           },
           {
@@ -444,7 +458,8 @@
               "next_review": "@today+245d",
               "tags": [
                 "Diagnostics"
-              ]
+              ],
+              "approved_on": "@today-120d"
             }
           }
         ],
@@ -925,6 +940,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1154,7 +1174,7 @@
         "Cobblestone Drive"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

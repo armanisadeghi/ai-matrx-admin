@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0408",
-  "version": 1,
+  "version": 2,
   "title": "Law Firm Case Management",
   "description": "Clients, matters, deadlines and time entries for a small law firm.",
   "forWho": "Small law firms and solo attorneys",
@@ -153,6 +153,14 @@
           {
             "key": "opened_on",
             "label": "Opened",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "closed_on",
+            "label": "Closed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -342,7 +350,8 @@
               "attorney": "tm-adaeze",
               "paralegal": "tm-pilar",
               "opened_on": "@today-300d",
-              "budget": 7000
+              "budget": 7000,
+              "closed_on": "@today-300d"
             }
           },
           {
@@ -566,6 +575,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -690,7 +707,8 @@
               "matter": "m03",
               "kind": "Court filing",
               "due_on": "@today-20d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -700,7 +718,8 @@
               "matter": "m07",
               "kind": "Client deliverable",
               "due_on": "@today-280d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-280d"
             }
           },
           {
@@ -720,7 +739,8 @@
               "matter": "m01",
               "kind": "Discovery",
               "due_on": "@today-30d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -1541,6 +1561,11 @@
             "field": "status",
             "set": "value",
             "value": "Closed"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1555,6 +1580,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1790,7 +1820,7 @@
         "Cannery Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

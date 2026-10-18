@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0258",
-  "version": 6,
+  "version": 7,
   "title": "Study Planner & Flashcards",
   "description": "Students preparing for exams: plan study blocks backwards and drill flashcards.",
   "forWho": "Students preparing for exams",
@@ -237,6 +237,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "minutes",
             "label": "Minutes",
             "parityType": "integer",
@@ -332,7 +340,8 @@
               "minutes": 45,
               "method": "Flashcards",
               "done": true,
-              "confidence": "4"
+              "confidence": "4",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -344,7 +353,8 @@
               "minutes": 60,
               "method": "Summarise",
               "done": true,
-              "confidence": "3"
+              "confidence": "3",
+              "completed_on": "@today-1d"
             }
           },
           {
@@ -378,7 +388,8 @@
               "minutes": 60,
               "method": "Practice problems",
               "done": true,
-              "confidence": "4"
+              "confidence": "4",
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -423,7 +434,8 @@
               "minutes": 30,
               "method": "Flashcards",
               "done": true,
-              "confidence": "5"
+              "confidence": "5",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1224,6 +1236,11 @@
             "field": "done",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1462,7 +1479,7 @@
         "Foxglove Parade"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

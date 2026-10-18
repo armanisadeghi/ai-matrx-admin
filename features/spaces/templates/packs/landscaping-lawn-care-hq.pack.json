@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0502",
-  "version": 1,
+  "version": 2,
   "title": "Landscaping and Lawn Care HQ",
   "description": "Plan mowing routes, price seasonal projects, track materials and invoices.",
   "forWho": "Landscaping and lawn care companies",
@@ -582,6 +582,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "quote",
             "label": "Quote (USD)",
             "parityType": "currency",
@@ -873,7 +881,8 @@
               "quote": 60,
               "parts_cost": 0,
               "labor_cost": 35,
-              "hours": 1
+              "hours": 1,
+              "completed_on": "@today-21d"
             }
           },
           {
@@ -889,7 +898,8 @@
               "quote": 365,
               "parts_cost": 35,
               "labor_cost": 135,
-              "hours": 4
+              "hours": 4,
+              "completed_on": "@today-16d"
             }
           },
           {
@@ -905,7 +915,8 @@
               "quote": 1000,
               "parts_cost": 450,
               "labor_cost": 170,
-              "hours": 5
+              "hours": 5,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -921,7 +932,8 @@
               "quote": 235,
               "parts_cost": 80,
               "labor_cost": 85,
-              "hours": 2.5
+              "hours": 2.5,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -937,7 +949,8 @@
               "quote": 225,
               "parts_cost": 5,
               "labor_cost": 70,
-              "hours": 2
+              "hours": 2,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -953,7 +966,8 @@
               "quote": 470,
               "parts_cost": 120,
               "labor_cost": 70,
-              "hours": 2
+              "hours": 2,
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1894,6 +1908,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1908,6 +1927,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2187,7 +2211,7 @@
         "Orchard Gate"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

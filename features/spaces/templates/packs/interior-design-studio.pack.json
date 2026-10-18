@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 1,
+  "version": 2,
   "title": "Interior Design Studio",
   "description": "Clients, projects by phase, furnishings procurement, approvals and fee invoices.",
   "forWho": "Interior designers and design studios",
@@ -197,6 +197,22 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "lead_weeks",
             "label": "Lead time (weeks)",
             "parityType": "integer",
@@ -295,7 +311,8 @@
               "status": "Approved",
               "trade_price": 1180,
               "client_price": 1650,
-              "lead_weeks": 6
+              "lead_weeks": 6,
+              "approved_on": "@today-8d"
             }
           },
           {
@@ -309,7 +326,8 @@
               "trade_price": 620,
               "client_price": 870,
               "eta": "@today-5d",
-              "lead_weeks": 8
+              "lead_weeks": 8,
+              "received_on": "@today-5d"
             }
           },
           {
@@ -350,7 +368,8 @@
               "client_price": 1370,
               "eta": "@today-9d",
               "lead_weeks": 6,
-              "owner": "@installer"
+              "owner": "@installer",
+              "received_on": "@today-9d"
             }
           },
           {
@@ -642,6 +661,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -756,7 +783,8 @@
               "project": "j01",
               "kind": "Concept board",
               "due_on": "@today-80d",
-              "status": "Approved"
+              "status": "Approved",
+              "approved_on": "@today-80d"
             }
           },
           {
@@ -766,7 +794,8 @@
               "project": "j01",
               "kind": "Material selections",
               "due_on": "@today-60d",
-              "status": "Approved"
+              "status": "Approved",
+              "approved_on": "@today-60d"
             }
           },
           {
@@ -776,7 +805,8 @@
               "project": "j03",
               "kind": "Floor plan",
               "due_on": "@today-110d",
-              "status": "Approved"
+              "status": "Approved",
+              "approved_on": "@today-110d"
             }
           },
           {
@@ -1032,6 +1062,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "client_total",
             "label": "Specified to client",
             "parityType": "rollup",
@@ -1193,7 +1231,8 @@
               "design_fee": 9000,
               "designer": "tm-odessa",
               "start_on": "@today-260d",
-              "install_on": "@today-150d"
+              "install_on": "@today-150d",
+              "completed_on": "@today-150d"
             }
           },
           {
@@ -1488,6 +1527,22 @@
             "format": "date"
           },
           {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1547,7 +1602,8 @@
               "amount": 3600,
               "issued_on": "@today-2d",
               "due_on": "@today+12d",
-              "status": "Sent"
+              "status": "Sent",
+              "sent_on": "@today-2d"
             }
           },
           {
@@ -1559,7 +1615,8 @@
               "amount": 2500,
               "issued_on": "@today-5d",
               "due_on": "@today+9d",
-              "status": "Sent"
+              "status": "Sent",
+              "sent_on": "@today-5d"
             }
           },
           {
@@ -1571,7 +1628,8 @@
               "amount": 1800,
               "issued_on": "@today-10d",
               "due_on": "@mon+1d",
-              "status": "Sent"
+              "status": "Sent",
+              "sent_on": "@today-10d"
             }
           },
           {
@@ -1595,7 +1653,8 @@
               "amount": 4000,
               "issued_on": "@today-90d",
               "due_on": "@today-76d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-76d"
             }
           },
           {
@@ -1619,7 +1678,8 @@
               "amount": 3000,
               "issued_on": "@today-160d",
               "due_on": "@today-146d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-146d"
             }
           }
         ],
@@ -2081,6 +2141,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2109,6 +2174,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2123,6 +2193,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2179,6 +2254,11 @@
             "field": "phase",
             "set": "value",
             "value": "Complete"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2193,6 +2273,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2207,6 +2292,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2602,7 +2692,7 @@
         "Congress Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

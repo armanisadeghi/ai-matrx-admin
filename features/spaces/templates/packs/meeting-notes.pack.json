@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0003",
-  "version": 6,
+  "version": 7,
   "title": "Meeting Notes",
   "description": "Teams that meet weekly: notes, decisions and action items for every meeting.",
   "forWho": "Teams that meet every week and want nothing to slip",
@@ -624,6 +624,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "created",
             "label": "Created",
             "parityType": "created_time",
@@ -658,7 +666,8 @@
               "owner": "tm-elena",
               "status": "Done",
               "due_on": "@today-18d",
-              "priority": "Normal"
+              "priority": "Normal",
+              "completed_on": "@today-18d"
             }
           },
           {
@@ -669,7 +678,8 @@
               "owner": "tm-owen",
               "status": "Done",
               "due_on": "@today-12d",
-              "priority": "High"
+              "priority": "High",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -680,7 +690,8 @@
               "owner": "tm-kwame",
               "status": "Done",
               "due_on": "@today-10d",
-              "priority": "Normal"
+              "priority": "Normal",
+              "completed_on": "@today-10d"
             }
           },
           {
@@ -691,7 +702,8 @@
               "owner": "tm-lucia",
               "status": "Done",
               "due_on": "@today-8d",
-              "priority": "High"
+              "priority": "High",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -702,7 +714,8 @@
               "owner": "tm-elena",
               "status": "Done",
               "due_on": "@today-13d",
-              "priority": "Low"
+              "priority": "Low",
+              "completed_on": "@today-13d"
             }
           },
           {
@@ -713,7 +726,8 @@
               "owner": "tm-mira",
               "status": "Done",
               "due_on": "@today-6d",
-              "priority": "Low"
+              "priority": "Low",
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -724,7 +738,8 @@
               "owner": "tm-elena",
               "status": "Done",
               "due_on": "@today-11d",
-              "priority": "Low"
+              "priority": "Low",
+              "completed_on": "@today-11d"
             }
           },
           {
@@ -771,7 +786,8 @@
               "owner": "tm-kwame",
               "status": "Done",
               "due_on": "@today-4d",
-              "priority": "Normal"
+              "priority": "Normal",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -826,7 +842,8 @@
               "owner": "tm-mira",
               "status": "Done",
               "due_on": "@today-19d",
-              "priority": "Low"
+              "priority": "Low",
+              "completed_on": "@today-19d"
             }
           },
           {
@@ -837,7 +854,8 @@
               "owner": "tm-owen",
               "status": "Done",
               "due_on": "@today-17d",
-              "priority": "Normal"
+              "priority": "Normal",
+              "completed_on": "@today-17d"
             }
           }
         ],
@@ -1099,6 +1117,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1320,7 +1343,7 @@
         "Larkspur Bend"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

@@ -42,7 +42,7 @@ export function useSpaceComments(spaceId: string, title: string): SpaceComments 
 
   const reload = () => {
     const mine = ++seq.current;
-    void listSpaceThreads(spaceId).then(
+    void listSpaceThreads(spaceId, () => mine !== seq.current).then(
       (t) => {
         if (mine !== seq.current) return;
         setThreads(t);
@@ -61,6 +61,10 @@ export function useSpaceComments(spaceId: string, title: string): SpaceComments 
     setThreads([]);
     setStatus("loading");
     reload();
+    // Leaving the page makes its read stale: an aborted read is not a failure to report.
+    return () => {
+      seq.current += 1;
+    };
     // Keyed on the page alone; reload reads refs and setters.
   }, [spaceId]);
 

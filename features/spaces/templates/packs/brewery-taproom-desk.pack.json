@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 2,
+  "version": 3,
   "title": "Brewery Taproom Desk",
   "description": "Batches, kegs, tap list, wholesale orders and taproom events for a small brewery.",
   "forWho": "Craft breweries, cideries and taproom operators",
@@ -133,6 +133,14 @@
           {
             "key": "ready_on",
             "label": "Ready",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "packaged_on",
+            "label": "Packaged on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -401,7 +409,8 @@
               "barrels": 7,
               "abv": 7.2,
               "vessel": "Brite tank",
-              "brewer": "tm-1"
+              "brewer": "tm-1",
+              "packaged_on": "@today-20d"
             }
           },
           {
@@ -415,7 +424,8 @@
               "barrels": 3.5,
               "abv": 6.1,
               "vessel": "Fermenter 3",
-              "brewer": "tm-1"
+              "brewer": "tm-1",
+              "packaged_on": "@today-28d"
             }
           },
           {
@@ -457,7 +467,8 @@
               "barrels": 7,
               "abv": 6.8,
               "vessel": "Fermenter 1",
-              "brewer": "tm-1"
+              "brewer": "tm-1",
+              "packaged_on": "@today-14d"
             }
           }
         ]
@@ -1261,6 +1272,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "expected",
             "label": "Expected guests",
             "parityType": "number",
@@ -1424,7 +1443,8 @@
               "event_on": "@today-6d",
               "expected": 60,
               "actual": 72,
-              "host": "tm-5"
+              "host": "tm-5",
+              "closed_on": "@today-6d"
             }
           },
           {
@@ -1436,7 +1456,8 @@
               "event_on": "@today-21d",
               "expected": 110,
               "actual": 138,
-              "host": "tm-2"
+              "host": "tm-2",
+              "closed_on": "@today-21d"
             }
           },
           {
@@ -1626,6 +1647,11 @@
             "field": "status",
             "set": "value",
             "value": "Packaged"
+          },
+          {
+            "field": "packaged_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1654,6 +1680,11 @@
             "field": "status",
             "set": "value",
             "value": "Delivered"
+          },
+          {
+            "field": "delivery_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1668,6 +1699,11 @@
             "field": "status",
             "set": "value",
             "value": "Held"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2084,7 +2120,7 @@
         "Foundry Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0162",
-  "version": 3,
+  "version": 4,
   "title": "Brand Assets Hub",
   "description": "Brand and design teams: a gallery of logos and photos with brand rules and approvals.",
   "forWho": "Brand managers, agencies and in-house design teams",
@@ -266,6 +266,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "tags",
             "label": "Tags",
             "parityType": "multi_select",
@@ -340,7 +348,8 @@
               "tags": [
                 "Primary"
               ],
-              "usage_notes": "Keep clear space equal to the height of the O."
+              "usage_notes": "Keep clear space equal to the height of the O.",
+              "approved_on": "@today-2d"
             }
           },
           {
@@ -361,7 +370,8 @@
                 "Primary",
                 "Dark background"
               ],
-              "usage_notes": "Use on dark green or photography with low detail."
+              "usage_notes": "Use on dark green or photography with low detail.",
+              "approved_on": "@today-90d"
             }
           },
           {
@@ -381,7 +391,8 @@
               "tags": [
                 "Social"
               ],
-              "usage_notes": "Twenty-four icons on a 24 pixel grid."
+              "usage_notes": "Twenty-four icons on a 24 pixel grid.",
+              "approved_on": "@today-45d"
             }
           },
           {
@@ -400,7 +411,8 @@
               "tags": [
                 "Print"
               ],
-              "usage_notes": "Natural light, warm tones."
+              "usage_notes": "Natural light, warm tones.",
+              "approved_on": "@today-120d"
             }
           },
           {
@@ -420,7 +432,8 @@
               "tags": [
                 "Presentation"
               ],
-              "usage_notes": "Update the cover for each client."
+              "usage_notes": "Update the cover for each client.",
+              "approved_on": "@today-20d"
             }
           },
           {
@@ -439,7 +452,8 @@
               "tags": [
                 "Print"
               ],
-              "usage_notes": "The reference for voice, color and type."
+              "usage_notes": "The reference for voice, color and type.",
+              "approved_on": "@today-30d"
             }
           },
           {
@@ -459,7 +473,8 @@
               "tags": [
                 "Primary"
               ],
-              "usage_notes": "Never place on dark blue."
+              "usage_notes": "Never place on dark blue.",
+              "approved_on": "@today-60d"
             }
           },
           {
@@ -500,7 +515,8 @@
                 "Primary",
                 "Seasonal"
               ],
-              "usage_notes": "Use the stacked version in small spaces."
+              "usage_notes": "Use the stacked version in small spaces.",
+              "approved_on": "@today-75d"
             }
           },
           {
@@ -540,7 +556,8 @@
                 "Print",
                 "Seasonal"
               ],
-              "usage_notes": "Fits a standard badge holder."
+              "usage_notes": "Fits a standard badge holder.",
+              "approved_on": "@today-200d"
             }
           },
           {
@@ -783,6 +800,11 @@
             "field": "approved",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -955,7 +977,7 @@
         "Cedar Tinsel Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

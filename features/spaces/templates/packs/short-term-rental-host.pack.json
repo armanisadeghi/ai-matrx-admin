@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 1,
+  "version": 2,
   "title": "Short-Term Rental Host",
   "description": "Bookings, turnovers, issues and revenue for a host running several rentals.",
   "forWho": "Short-term rental hosts and co-hosts",
@@ -567,6 +567,14 @@
             "format": "date"
           },
           {
+            "key": "cleaned_on",
+            "label": "Cleaned on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -689,7 +697,8 @@
               "property": "p03",
               "cleaner": "tm-dolores",
               "clean_on": "@today-5d",
-              "status": "Cleaned"
+              "status": "Cleaned",
+              "cleaned_on": "@today-5d"
             }
           },
           {
@@ -700,7 +709,8 @@
               "property": "p01",
               "cleaner": "tm-dolores",
               "clean_on": "@today-14d",
-              "status": "Cleaned"
+              "status": "Cleaned",
+              "cleaned_on": "@today-14d"
             }
           },
           {
@@ -734,7 +744,8 @@
               "property": "p01",
               "cleaner": "tm-dolores",
               "clean_on": "@today-33d",
-              "status": "Cleaned"
+              "status": "Cleaned",
+              "cleaned_on": "@today-33d"
             }
           }
         ],
@@ -925,6 +936,14 @@
             "format": "date"
           },
           {
+            "key": "fixed_on",
+            "label": "Fixed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1067,7 +1086,8 @@
               "reported_on": "@today-20d",
               "status": "Fixed",
               "cost": 12,
-              "fixer": "tm-wade"
+              "fixer": "tm-wade",
+              "fixed_on": "@today-20d"
             }
           },
           {
@@ -1091,7 +1111,8 @@
               "reported_on": "@today-30d",
               "status": "Fixed",
               "cost": 85,
-              "fixer": "tm-wade"
+              "fixer": "tm-wade",
+              "fixed_on": "@today-30d"
             }
           }
         ],
@@ -1386,6 +1407,14 @@
               "do": "run_action",
               "action": "property_live"
             }
+          },
+          {
+            "key": "live_on",
+            "label": "Went live on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -1397,7 +1426,8 @@
               "kind": "Beach house",
               "nightly": 385,
               "status": "Live",
-              "cleaner": "tm-dolores"
+              "cleaner": "tm-dolores",
+              "live_on": "@today-2d"
             }
           },
           {
@@ -1408,7 +1438,8 @@
               "kind": "Cabin",
               "nightly": 210,
               "status": "Live",
-              "cleaner": "tm-dolores"
+              "cleaner": "tm-dolores",
+              "live_on": "@today-5d"
             }
           },
           {
@@ -1419,7 +1450,8 @@
               "kind": "Condo",
               "nightly": 165,
               "status": "Live",
-              "cleaner": "tm-dolores"
+              "cleaner": "tm-dolores",
+              "live_on": "@today-8d"
             }
           },
           {
@@ -1743,6 +1775,11 @@
             "field": "status",
             "set": "value",
             "value": "Cleaned"
+          },
+          {
+            "field": "cleaned_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1757,6 +1794,11 @@
             "field": "status",
             "set": "value",
             "value": "Fixed"
+          },
+          {
+            "field": "fixed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1799,6 +1841,11 @@
             "field": "status",
             "set": "value",
             "value": "Live"
+          },
+          {
+            "field": "live_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2111,7 +2158,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

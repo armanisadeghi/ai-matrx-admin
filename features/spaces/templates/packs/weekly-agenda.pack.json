@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 4,
+  "version": 5,
   "title": "Weekly Agenda",
   "description": "Solo consultants and small teams: tasks and meetings by day, with a Friday review.",
   "forWho": "Solo consultants and small teams",
@@ -97,6 +97,14 @@
           {
             "key": "on",
             "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -216,7 +224,8 @@
               "priority": "High",
               "minutes": 120,
               "owner": "tm-celeste",
-              "on": "@mon"
+              "on": "@mon",
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -228,7 +237,8 @@
               "priority": "Medium",
               "minutes": 20,
               "owner": "tm-maeve",
-              "on": "@mon"
+              "on": "@mon",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -880,6 +890,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1162,7 +1177,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

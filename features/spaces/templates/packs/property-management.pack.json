@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 1,
+  "version": 2,
   "title": "Property Management",
   "description": "Properties, units, leases, rent payments and maintenance requests in one place.",
   "forWho": "Property managers and landlords",
@@ -82,6 +82,14 @@
           {
             "key": "due_on",
             "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -192,7 +200,8 @@
               "due_on": "@today-2d",
               "amount": 1450,
               "received": 1450,
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-2d"
             }
           },
           {
@@ -214,7 +223,8 @@
               "due_on": "@today-2d",
               "amount": 1475,
               "received": 1475,
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-2d"
             }
           },
           {
@@ -269,7 +279,8 @@
               "due_on": "@today-32d",
               "amount": 1700,
               "received": 1700,
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-32d"
             }
           },
           {
@@ -280,7 +291,8 @@
               "due_on": "@today-32d",
               "amount": 1600,
               "received": 1600,
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-32d"
             }
           }
         ],
@@ -888,6 +900,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "cost",
             "label": "Cost",
             "parityType": "currency",
@@ -1044,7 +1064,8 @@
               "trade": "General",
               "reported_on": "@today-20d",
               "cost": 85,
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -1058,7 +1079,8 @@
               "reported_on": "@today-30d",
               "scheduled_for": "@today-28d",
               "cost": 1180,
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-28d"
             }
           },
           {
@@ -1072,7 +1094,8 @@
               "reported_on": "@today-40d",
               "scheduled_for": "@today-38d",
               "cost": 160,
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-38d"
             }
           }
         ],
@@ -1882,6 +1905,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1952,6 +1980,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2344,7 +2377,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

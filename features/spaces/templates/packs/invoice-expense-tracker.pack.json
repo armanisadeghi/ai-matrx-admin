@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0313",
-  "version": 3,
+  "version": 4,
   "title": "Invoicing & Expenses for Small Business",
   "description": "Small business owners: bill clients, chase late payers and watch monthly spending.",
   "forWho": "Small business owners",
@@ -457,6 +457,14 @@
             "format": "date"
           },
           {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_late",
             "label": "Days past due",
             "parityType": "formula",
@@ -543,7 +551,8 @@
               "amount": 2400,
               "issued_on": "@today-10d",
               "due_on": "@today+20d",
-              "memo": "Event highlights reel"
+              "memo": "Event highlights reel",
+              "sent_on": "@today-10d"
             }
           },
           {
@@ -577,7 +586,8 @@
               "amount": 1350,
               "issued_on": "@today-6d",
               "due_on": "@today+8d",
-              "memo": "Studio rental and crew"
+              "memo": "Studio rental and crew",
+              "sent_on": "@today-6d"
             }
           },
           {
@@ -633,7 +643,8 @@
               "amount": 2750,
               "issued_on": "@today-12d",
               "due_on": "@today+18d",
-              "memo": "Behind the scenes edit"
+              "memo": "Behind the scenes edit",
+              "sent_on": "@today-12d"
             }
           },
           {
@@ -1118,6 +1129,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1132,6 +1148,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1374,7 +1395,7 @@
         "Linnet Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

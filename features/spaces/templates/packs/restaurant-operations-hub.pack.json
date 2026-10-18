@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 2,
+  "version": 3,
   "title": "Restaurant Operations Hub",
   "description": "Dishes with food cost, inventory with par levels, suppliers, orders and shifts.",
   "forWho": "Independent restaurants and small restaurant groups",
@@ -1192,6 +1192,14 @@
             "format": "date"
           },
           {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "total",
             "label": "Order total (USD)",
             "parityType": "currency",
@@ -1336,7 +1344,8 @@
               "delivery_on": "@today-2d",
               "total": 840,
               "supplier": "supplier-3",
-              "placed_by": "tm-3"
+              "placed_by": "tm-3",
+              "received_on": "@today-2d"
             }
           },
           {
@@ -1383,7 +1392,8 @@
               "delivery_on": "@today-4d",
               "total": 320,
               "supplier": "supplier-7",
-              "placed_by": "tm-2"
+              "placed_by": "tm-2",
+              "received_on": "@today-4d"
             }
           },
           {
@@ -1395,7 +1405,8 @@
               "delivery_on": "@today-5d",
               "total": 275,
               "supplier": "supplier-1",
-              "placed_by": "tm-3"
+              "placed_by": "tm-3",
+              "received_on": "@today-5d"
             }
           }
         ]
@@ -1819,6 +1830,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2071,7 +2087,7 @@
         "Foundry Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

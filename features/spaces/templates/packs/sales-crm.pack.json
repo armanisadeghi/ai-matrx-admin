@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 6,
+  "version": 7,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -645,6 +645,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "priority",
             "label": "Priority",
             "parityType": "select",
@@ -771,7 +779,8 @@
               "contact": "ct05",
               "owner": "tm-03",
               "expected_close": "@today-9d",
-              "priority": "High"
+              "priority": "High",
+              "closed_on": "@today-9d"
             }
           },
           {
@@ -810,7 +819,8 @@
               "contact": "ct08",
               "owner": "tm-04",
               "expected_close": "@today-30d",
-              "priority": "Low"
+              "priority": "Low",
+              "closed_on": "@today-30d"
             }
           },
           {
@@ -823,7 +833,8 @@
               "contact": "ct09",
               "owner": "tm-03",
               "expected_close": "@today-21d",
-              "priority": "Medium"
+              "priority": "Medium",
+              "closed_on": "@today-21d"
             }
           },
           {
@@ -1033,6 +1044,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "state",
             "label": "State",
             "parityType": "status",
@@ -1082,7 +1101,8 @@
               "kind": "Call",
               "happened_on": "@today-40d",
               "state": "Done",
-              "notes": "Rosalind wants live location and exception alerts."
+              "notes": "Rosalind wants live location and exception alerts.",
+              "completed_on": "@today-40d"
             }
           },
           {
@@ -1094,7 +1114,8 @@
               "kind": "Email",
               "happened_on": "@today-22d",
               "state": "Done",
-              "notes": "Asked for annual billing option."
+              "notes": "Asked for annual billing option.",
+              "completed_on": "@today-22d"
             }
           },
           {
@@ -1106,7 +1127,8 @@
               "kind": "Meeting",
               "happened_on": "@today-6d",
               "state": "Done",
-              "notes": "Legal wants a 60-day exit clause."
+              "notes": "Legal wants a 60-day exit clause.",
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -1130,7 +1152,8 @@
               "kind": "Demo",
               "happened_on": "@today-12d",
               "state": "Done",
-              "notes": "Loved the daily keg report."
+              "notes": "Loved the daily keg report.",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -1154,7 +1177,8 @@
               "kind": "Call",
               "happened_on": "@today-8d",
               "state": "Done",
-              "notes": "Eleven chairs across two offices."
+              "notes": "Eleven chairs across two offices.",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -1178,7 +1202,8 @@
               "kind": "Meeting",
               "happened_on": "@today-15d",
               "state": "Done",
-              "notes": "Felix brought his CFO."
+              "notes": "Felix brought his CFO.",
+              "completed_on": "@today-15d"
             }
           },
           {
@@ -1190,7 +1215,8 @@
               "kind": "Email",
               "happened_on": "@today-4d",
               "state": "Done",
-              "notes": "Reply expected within two weeks."
+              "notes": "Reply expected within two weeks.",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1214,7 +1240,8 @@
               "kind": "Note",
               "happened_on": "@today-9d",
               "state": "Done",
-              "notes": "Added two seats."
+              "notes": "Added two seats.",
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1226,7 +1253,8 @@
               "kind": "Demo",
               "happened_on": "@today-5d",
               "state": "Done",
-              "notes": "Noor wants a sandbox first."
+              "notes": "Noor wants a sandbox first.",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1510,6 +1538,11 @@
             "field": "stage",
             "set": "value",
             "value": "Won"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1524,6 +1557,11 @@
             "field": "stage",
             "set": "value",
             "value": "Lost"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1538,6 +1576,11 @@
             "field": "state",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1817,7 +1860,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

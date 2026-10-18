@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0310",
-  "version": 4,
+  "version": 5,
   "title": "Brand Deals Tracker",
   "description": "Influencers and UGC creators: manage sponsored deals from pitch to payment.",
   "forWho": "Influencers and UGC creators",
@@ -177,6 +177,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "contact",
             "label": "Brand contact",
             "parityType": "email",
@@ -325,7 +333,8 @@
               "terms": 30,
               "follow_up": "@today+2d",
               "contact": "media@trailkindgear.net",
-              "usage": "90 days paid usage"
+              "usage": "90 days paid usage",
+              "closed_on": "@today-2d"
             }
           },
           {
@@ -598,6 +607,14 @@
             "format": "date"
           },
           {
+            "key": "live_on",
+            "label": "Went live on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "deal",
             "label": "Deal",
             "parityType": "relation",
@@ -626,7 +643,8 @@
               "platform": "Instagram",
               "item": "Three carousel posts",
               "due_on": "@today-20d",
-              "status": "Live"
+              "status": "Live",
+              "live_on": "@today-20d"
             }
           },
           {
@@ -636,7 +654,8 @@
               "platform": "TikTok",
               "item": "Unboxing video",
               "due_on": "@today-12d",
-              "status": "Live"
+              "status": "Live",
+              "live_on": "@today-12d"
             }
           },
           {
@@ -1090,6 +1109,11 @@
             "field": "status",
             "set": "value",
             "value": "Closed"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1104,6 +1128,11 @@
             "field": "status",
             "set": "value",
             "value": "Live"
+          },
+          {
+            "field": "live_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1118,6 +1147,11 @@
             "field": "received",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1380,7 +1414,7 @@
         "Sandpiper Terrace"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

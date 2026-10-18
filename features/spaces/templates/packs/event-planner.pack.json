@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 4,
+  "version": 5,
   "title": "Event Planner",
   "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
@@ -1193,6 +1193,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "relation",
@@ -1237,7 +1245,8 @@
               "task_name": "Send save-the-dates",
               "status": "Done",
               "owner": "tm-june",
-              "due_on": "@today-14d"
+              "due_on": "@today-14d",
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -1330,7 +1339,8 @@
               "task_name": "Collect client feedback survey",
               "status": "Done",
               "owner": "tm-june",
-              "due_on": "@today-18d"
+              "due_on": "@today-18d",
+              "completed_on": "@today-18d"
             }
           }
         ],
@@ -2080,6 +2090,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2350,7 +2365,7 @@
         "Starling Passage"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0353",
-  "version": 3,
+  "version": 4,
   "title": "Public Roadmap & Feedback Forms",
   "description": "Product teams: publish a roadmap and take feature and bug reports by form.",
   "forWho": "Product teams with outside customers",
@@ -194,6 +194,14 @@
               "do": "run_action",
               "action": "item_shipped"
             }
+          },
+          {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -271,7 +279,8 @@
               "status": "Shipped",
               "quarter": "Q3",
               "public": true,
-              "summary": "A restful low-light look across the whole app."
+              "summary": "A restful low-light look across the whole app.",
+              "shipped_on": "@today-9d"
             }
           },
           {
@@ -282,7 +291,8 @@
               "status": "Shipped",
               "quarter": "Q2",
               "public": true,
-              "summary": "Upload a spreadsheet and map columns in four steps."
+              "summary": "Upload a spreadsheet and map columns in four steps.",
+              "shipped_on": "@today-12d"
             }
           },
           {
@@ -762,6 +772,14 @@
               "do": "run_action",
               "action": "bug_fixed"
             }
+          },
+          {
+            "key": "fixed_on",
+            "label": "Fixed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -812,7 +830,8 @@
               "steps": "Two identical reminders are sent for recurring visits.",
               "severity": "S2",
               "status": "Fixed",
-              "reporter": "tyler@marshallroofing.net"
+              "reporter": "tyler@marshallroofing.net",
+              "fixed_on": "@today-3d"
             }
           }
         ],
@@ -979,6 +998,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -993,6 +1017,11 @@
             "field": "status",
             "set": "value",
             "value": "Fixed"
+          },
+          {
+            "field": "fixed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1187,7 +1216,7 @@
         "Larkspur Mews"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

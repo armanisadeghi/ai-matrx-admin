@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0516",
-  "version": 1,
+  "version": 2,
   "title": "Online Store Operations Hub",
   "description": "Run orders, fulfillment, stock levels, suppliers and returns for an online store.",
   "forWho": "Shopify-style online store owners",
@@ -1107,6 +1107,14 @@
             "format": "date"
           },
           {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "packer",
             "label": "Packer",
             "parityType": "member",
@@ -1359,7 +1367,8 @@
               "quantity": 1,
               "total": 18,
               "channel": "Marketplace",
-              "ship_by": "@today"
+              "ship_by": "@today",
+              "shipped_on": "@today-7d"
             }
           },
           {
@@ -1680,6 +1689,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1901,7 +1915,7 @@
         "Cobbler Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

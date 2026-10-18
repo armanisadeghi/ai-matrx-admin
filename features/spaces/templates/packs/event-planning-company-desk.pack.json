@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0462",
-  "version": 2,
+  "version": 3,
   "title": "Event Planning Company Desk",
   "description": "Clients, events, vendors, bookings and planning tasks for an event planning company.",
   "forWho": "Event planners and event production companies",
@@ -431,6 +431,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "guests",
             "label": "Guests",
             "parityType": "number",
@@ -751,7 +759,8 @@
               "budget": 48000,
               "client": "client-5",
               "planner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "closed_on": "@today-45d"
             }
           },
           {
@@ -1390,6 +1399,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "event",
             "label": "Event",
             "parityType": "relation",
@@ -1574,7 +1591,8 @@
               "due_on": "@today-5d",
               "event": "event-5",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1585,7 +1603,8 @@
               "phase": "Vendors",
               "due_on": "@today-20d",
               "event": "event-5",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -1780,6 +1799,11 @@
             "field": "status",
             "set": "value",
             "value": "Wrapped"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1808,6 +1832,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2183,7 +2212,7 @@
         "Harbor Lantern Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

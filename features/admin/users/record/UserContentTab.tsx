@@ -45,13 +45,13 @@ export function UserContentTab({ userId }: UserTabBodyProps) {
         emptyTitle="Owns nothing yet"
         onRefresh={reload}
       />
-      {data?.none.length ? (
+      {!error && data?.none.length ? (
         <details className="type-secondary text-muted-foreground" data-testid="user-content-none">
           <summary data-clickable="">None in {data.none.length} types</summary>
           <p className="mt-1">{data.none.join(", ")}</p>
         </details>
       ) : null}
-      {data?.unavailable.length ? (
+      {!error && data?.unavailable.length ? (
         <details className="type-secondary text-muted-foreground" data-testid="user-content-unavailable">
           <summary data-clickable="">{data.unavailable.length} types unavailable</summary>
           <p className="mt-1">{data.unavailable.join(", ")}</p>

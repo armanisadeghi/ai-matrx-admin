@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 6,
+  "version": 7,
   "title": "Incident Postmortems",
   "description": "Engineering and ops teams: log incidents, write blameless postmortems, track the fixes.",
   "forWho": "Engineering and operations teams",
@@ -116,6 +116,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -174,7 +182,8 @@
               "owner": "tm-bruno",
               "due_on": "@today-45d",
               "status": "Done",
-              "incident": "in-01"
+              "incident": "in-01",
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -185,7 +194,8 @@
               "owner": "tm-amara",
               "due_on": "@today-30d",
               "status": "Done",
-              "incident": "in-01"
+              "incident": "in-01",
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -208,7 +218,8 @@
               "owner": "tm-keiko",
               "due_on": "@today-35d",
               "status": "Done",
-              "incident": "in-02"
+              "incident": "in-02",
+              "completed_on": "@today-35d"
             }
           },
           {
@@ -219,7 +230,8 @@
               "owner": "tm-amara",
               "due_on": "@today-28d",
               "status": "Done",
-              "incident": "in-02"
+              "incident": "in-02",
+              "completed_on": "@today-28d"
             }
           },
           {
@@ -1207,6 +1219,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1448,7 +1465,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

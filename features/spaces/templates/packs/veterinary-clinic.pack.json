@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0404",
-  "version": 1,
+  "version": 2,
   "title": "Veterinary Clinic",
   "description": "Owners, pets, appointments and vaccine reminders for a small animal clinic.",
   "forWho": "Veterinary clinics and animal hospitals",
@@ -95,6 +95,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "datetime"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "reason",
@@ -271,7 +279,8 @@
               "vet": "tm-joaquin",
               "when_at": "@today-40d 10:00",
               "reason": "Vaccination",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-40d"
             }
           },
           {
@@ -282,7 +291,8 @@
               "vet": "tm-aurelia",
               "when_at": "@today-12d 08:00",
               "reason": "Surgery",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -293,7 +303,8 @@
               "vet": "tm-joaquin",
               "when_at": "@today-3d 16:00",
               "reason": "Follow-up",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -315,7 +326,8 @@
               "vet": "tm-aurelia",
               "when_at": "@today-60d 10:00",
               "reason": "Wellness exam",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-60d"
             }
           },
           {
@@ -326,7 +338,8 @@
               "vet": "tm-aurelia",
               "when_at": "@today-365d 09:00",
               "reason": "Wellness exam",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-365d"
             }
           },
           {
@@ -1481,6 +1494,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1788,7 +1806,7 @@
         "Tamarack Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

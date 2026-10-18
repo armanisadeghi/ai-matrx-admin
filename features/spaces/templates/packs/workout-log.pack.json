@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 6,
+  "version": 7,
   "title": "Workout Log",
   "description": "Lifters and runners: log sessions, exercises and sets, with totals and personal bests.",
   "forWho": "Lifters and runners",
@@ -339,6 +339,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "type",
             "label": "Type",
             "parityType": "select",
@@ -483,7 +491,8 @@
               "duration": 62,
               "effort": 7,
               "notes": "Felt strong, benched a new best",
-              "done": true
+              "done": true,
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -495,7 +504,8 @@
               "duration": 58,
               "effort": 8,
               "notes": "Grip gave out on deadlifts",
-              "done": true
+              "done": true,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -507,7 +517,8 @@
               "duration": 70,
               "effort": 9,
               "notes": "Squats heavy but clean",
-              "done": true
+              "done": true,
+              "completed_on": "@today-10d"
             }
           },
           {
@@ -519,7 +530,8 @@
               "duration": 40,
               "effort": 5,
               "notes": "Conversation pace",
-              "done": true
+              "done": true,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -531,7 +543,8 @@
               "duration": 60,
               "effort": 7,
               "notes": "Added a rep to every set",
-              "done": true
+              "done": true,
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -543,7 +556,8 @@
               "duration": 30,
               "effort": 9,
               "notes": "Four rounds, tough",
-              "done": true
+              "done": true,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -555,7 +569,8 @@
               "duration": 57,
               "effort": 7,
               "notes": "Pull-ups moving well",
-              "done": true
+              "done": true,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -567,7 +582,8 @@
               "duration": 35,
               "effort": 3,
               "notes": "Hips finally loosening",
-              "done": true
+              "done": true,
+              "completed_on": "@today-1d"
             }
           },
           {
@@ -1456,6 +1472,11 @@
             "field": "done",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1673,7 +1694,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

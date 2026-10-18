@@ -101,7 +101,39 @@ export interface PackIdentity {
   tags: string[];
 }
 
+/** The design-system profile a design pack carries, so an agent can match a brand to a starter by filter and distance. */
+export const DESIGN_MOODS = ["calm", "loud", "warm", "formal", "playful", "technical", "luxurious", "caring"] as const;
+export const DESIGN_TYPE_CLASSES = ["system", "humanist-sans", "grotesque-display", "serif-editorial", "rounded", "mono-technical", "display-serif"] as const;
+export interface DesignProfile {
+  /** Industries it fits, lowercase ("software", "clinics"); "any" for a fallback. */
+  industries: string[];
+  avoidFor: string[];
+  mood: Array<(typeof DESIGN_MOODS)[number]>;
+  /** 1 casual … 5 formal. */
+  formality: number;
+  /** 1 quiet … 5 energetic. */
+  energy: number;
+  density: "compact" | "medium" | "airy";
+  shape: "sharp" | "soft" | "round" | "pill";
+  contrast: "standard" | "high";
+  defaultTheme: "light" | "dark";
+  typeClass: (typeof DESIGN_TYPE_CLASSES)[number];
+  fonts: Array<{ family: string; role: string; source: "system" | "google" | "embedded" }>;
+  primary: { light: string; dark: string };
+  /** False when the brand colour is a neutral (near-black, graphite). */
+  chromatic: boolean;
+  a11y: { level: "AA" | "AAA-leaning"; minTarget: number; minBody: number };
+  /** Token names an agent changes first when adapting to a brand. */
+  adaptFirst: string[];
+  /** Token names that carry the starter's character or accessibility promise: keep them. */
+  lockedTokens: string[];
+  /** The starter to use when nothing else fits. */
+  fallback: boolean;
+}
+
 export interface SpaceTemplatePack extends PackIdentity {
+  /** Design packs only: the typed profile agents match a brand against. */
+  designProfile?: DesignProfile;
   packVersion: typeof SPACE_PACK_VERSION;
   /** Equals spec.catalogueId. */
   catalogueId: string;

@@ -1,0 +1,3765 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0567",
+  "version": 1,
+  "title": "Publishing House Title Desk",
+  "description": "Authors, titles in production, schedule steps and royalty statements for a publisher.",
+  "forWho": "Independent book publishers and small presses",
+  "icon": {
+    "emoji": "📖"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "media",
+  "tags": [
+    "publishing",
+    "books",
+    "production schedule",
+    "royalties",
+    "authors"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-publishing-house-title-desk",
+    "catalogueId": "SP0567",
+    "useCase": "Rosalind Achebe-Hargreaves is managing editor at an independent press and uses this to see which production steps are late, which titles publish this season and which authors are owed royalty statements.",
+    "industry": "media_creators",
+    "vertical": "Book publishing house",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Foxglove Lane Press",
+      "describes": "An independent press publishing about 18 books a year in fiction, nonfiction and children's titles, with a staff of nine and a network of freelancers.",
+      "address": {
+        "line1": "9 Bookbinder Alley",
+        "city": "Boston",
+        "region": "MA",
+        "postalCode": "02108",
+        "country": "US"
+      },
+      "phone": "(617) 555-0123",
+      "website": "foxglovelanepress.net",
+      "email": "editorial@foxglovelanepress.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-publishing-house-title-desk",
+    "tables": [
+      {
+        "token": "author",
+        "name": "Authors",
+        "labelSingular": "Author",
+        "labelPlural": "Authors",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "pen-tool",
+        "titleField": "author_name",
+        "describes": "Everyone the press publishes or is courting, with agent, contact and money owed.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "author_name",
+            "label": "Author",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Prospect",
+              "Under contract",
+              "Published author",
+              "Parted ways"
+            ],
+            "choiceColors": {
+              "Prospect": "slate",
+              "Under contract": "blue",
+              "Published author": "amber",
+              "Parted ways": "violet"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Under contract": "in_progress",
+              "Published author": "in_progress",
+              "Parted ways": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "genre",
+            "label": "Writes",
+            "parityType": "select",
+            "choices": [
+              "Literary fiction",
+              "Mystery",
+              "Memoir",
+              "History",
+              "Children's picture books",
+              "Poetry"
+            ],
+            "choiceColors": {
+              "Literary fiction": "slate",
+              "Mystery": "blue",
+              "Memoir": "amber",
+              "History": "violet",
+              "Children's picture books": "teal",
+              "Poetry": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "agent",
+            "label": "Agent or representative",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "titles_count",
+            "label": "Titles",
+            "parityType": "rollup",
+            "via": "titles",
+            "pick": "title_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "advances",
+            "label": "Advances (USD)",
+            "parityType": "rollup",
+            "via": "titles",
+            "pick": "advance",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "royalties_due",
+            "label": "Royalties due (USD)",
+            "parityType": "rollup",
+            "via": "statements",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Draft",
+                "Ready to pay"
+              ]
+            }
+          },
+          {
+            "key": "royalties_paid",
+            "label": "Royalties paid (USD)",
+            "parityType": "rollup",
+            "via": "statements",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "author_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_title",
+            "label": "Add a title",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "titles",
+              "template": "New title",
+              "prefill": {
+                "author": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_statement",
+            "label": "Add a royalty statement",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "statements",
+              "template": "New royalty statement",
+              "prefill": {
+                "author": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New author",
+            "values": {
+              "author_name": "New author",
+              "status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Their work"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Genre, past books and what makes the voice distinct."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Advance, royalty rates and rights discussed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contact preferences"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How and how often they like to hear from us."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "author-1",
+            "values": {
+              "author_name": "Marguerite Olawale-Finch",
+              "status": "Published author",
+              "genre": "Literary fiction",
+              "email": "marguerite.of@mailbox.net",
+              "phone": "(617) 555-0131",
+              "agent": "Thorne Literary",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "author-2",
+            "values": {
+              "author_name": "Elias Brandvold",
+              "status": "Under contract",
+              "genre": "Memoir",
+              "email": "elias.b@mailbox.net",
+              "phone": "(617) 555-0132"
+            }
+          },
+          {
+            "key": "author-3",
+            "values": {
+              "author_name": "Sakura Ibarra-Whitlock",
+              "status": "Under contract",
+              "genre": "Mystery",
+              "email": "sakura.iw@mailbox.net",
+              "phone": "(617) 555-0133",
+              "agent": "Quill and Key Agency",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "author-4",
+            "values": {
+              "author_name": "Cornelius Adebayo",
+              "status": "Published author",
+              "genre": "History",
+              "email": "cornelius.a@mailbox.net",
+              "phone": "(617) 555-0134"
+            }
+          },
+          {
+            "key": "author-5",
+            "values": {
+              "author_name": "Dolores Hartmann-Nwosu",
+              "status": "Published author",
+              "genre": "Children's picture books",
+              "email": "dolores.hn@mailbox.net",
+              "phone": "(617) 555-0135",
+              "agent": "Brightpage Agency",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "author-6",
+            "values": {
+              "author_name": "Tobias Eriksen-Mbeki",
+              "status": "Prospect",
+              "genre": "Poetry",
+              "email": "tobias.em@mailbox.net",
+              "phone": "(617) 555-0136"
+            }
+          },
+          {
+            "key": "author-7",
+            "values": {
+              "author_name": "Imogen Castellano",
+              "status": "Under contract",
+              "genre": "Literary fiction",
+              "email": "imogen.c@mailbox.net",
+              "phone": "(617) 555-0137",
+              "agent": "Thorne Literary",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "author-8",
+            "values": {
+              "author_name": "Hollis Quigley",
+              "status": "Parted ways",
+              "genre": "Mystery"
+            }
+          }
+        ]
+      },
+      {
+        "token": "titles",
+        "name": "Titles",
+        "labelSingular": "Title",
+        "labelPlural": "Titles",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book",
+        "titleField": "title_name",
+        "describes": "Every book from acquisition to publication, with its publication date, price and production health.",
+        "subject": "thing",
+        "independentOf": {
+          "author": "Either record can be created or change status before the other.",
+          "editor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "delivery_due",
+            "pub_date"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "title_name",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "relationTarget": "author",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Acquired",
+              "Editing",
+              "Copyedit",
+              "Design",
+              "Proofs",
+              "At printer",
+              "Published",
+              "Out of print"
+            ],
+            "choiceColors": {
+              "Acquired": "slate",
+              "Editing": "blue",
+              "Copyedit": "amber",
+              "Design": "violet",
+              "Proofs": "teal",
+              "At printer": "green",
+              "Published": "orange",
+              "Out of print": "pink"
+            },
+            "required": true,
+            "default": "Acquired",
+            "statusGroups": {
+              "Acquired": "todo",
+              "Editing": "in_progress",
+              "Copyedit": "in_progress",
+              "Design": "in_progress",
+              "Proofs": "in_progress",
+              "At printer": "in_progress",
+              "Published": "in_progress",
+              "Out of print": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "choices": [
+              "Hardcover",
+              "Paperback",
+              "Ebook only",
+              "Picture book"
+            ],
+            "choiceColors": {
+              "Hardcover": "slate",
+              "Paperback": "blue",
+              "Ebook only": "amber",
+              "Picture book": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "delivery_due",
+            "label": "Manuscript due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pub_date",
+            "label": "Publication date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "advance",
+            "label": "Advance (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "list_price",
+            "label": "List price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "editor",
+            "label": "Editor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "steps_open",
+            "label": "Production steps open",
+            "parityType": "rollup",
+            "via": "steps",
+            "pick": "step_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "To do",
+                "In progress",
+                "Blocked"
+              ]
+            }
+          },
+          {
+            "key": "steps_late",
+            "label": "Steps blocked",
+            "parityType": "rollup",
+            "via": "steps",
+            "pick": "step_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Blocked"
+            }
+          },
+          {
+            "key": "health",
+            "label": "Schedule health",
+            "parityType": "formula",
+            "formula": "IF({Steps blocked} > 0, \"Blocked\", IF({Production steps open} = 0, \"On track\", \"Open steps\"))",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_copyedit",
+            "label": "Send to copyedit",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "titles_copyedit"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_design",
+            "label": "Send to design",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "titles_design"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_proofs",
+            "label": "Send to proofs",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "titles_proofs"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_printer",
+            "label": "Send to printer",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "titles_printer"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "titles_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_step",
+            "label": "Add a production step",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "steps",
+              "template": "New production step",
+              "prefill": {
+                "title": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New title",
+            "values": {
+              "title_name": "New title",
+              "status": "Acquired"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The book"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One paragraph for the catalog and a longer pitch for sales."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rights and terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Territories, formats and options."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Production plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Manuscript delivered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Developmental edit"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Copyedit"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cover design"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Interior design"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proofread"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Index (nonfiction)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Files to printer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Metadata and ISBN"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "titles-1",
+            "values": {
+              "title_name": "The Salt Road",
+              "author": "author-1",
+              "status": "Proofs",
+              "format": "Hardcover",
+              "delivery_due": "@today-200d",
+              "pub_date": "@today+40d",
+              "advance": 8000,
+              "list_price": 26,
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "titles-2",
+            "values": {
+              "title_name": "Letters from the Night Ferry",
+              "author": "author-3",
+              "status": "Copyedit",
+              "format": "Paperback",
+              "delivery_due": "@today-90d",
+              "pub_date": "@today+5d",
+              "advance": 6000,
+              "list_price": 18,
+              "editor": "tm-2"
+            }
+          },
+          {
+            "key": "titles-3",
+            "values": {
+              "title_name": "A Small History of Harbors",
+              "author": "author-4",
+              "status": "Published",
+              "format": "Hardcover",
+              "delivery_due": "@today-400d",
+              "pub_date": "@today-60d",
+              "advance": 7500,
+              "list_price": 29,
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "titles-4",
+            "values": {
+              "title_name": "Moss and the Moon",
+              "author": "author-5",
+              "status": "Design",
+              "format": "Picture book",
+              "delivery_due": "@today-120d",
+              "pub_date": "@today",
+              "advance": 4500,
+              "list_price": 17,
+              "editor": "tm-2"
+            }
+          },
+          {
+            "key": "titles-5",
+            "values": {
+              "title_name": "What the River Kept",
+              "author": "author-7",
+              "status": "Editing",
+              "format": "Hardcover",
+              "delivery_due": "@today-30d",
+              "pub_date": "@today+150d",
+              "advance": 9000,
+              "list_price": 27,
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "titles-6",
+            "values": {
+              "title_name": "Winter at Larkspur",
+              "author": "author-1",
+              "status": "Published",
+              "format": "Paperback",
+              "delivery_due": "@today-700d",
+              "pub_date": "@today-420d",
+              "advance": 5000,
+              "list_price": 16,
+              "editor": "tm-2"
+            }
+          },
+          {
+            "key": "titles-7",
+            "values": {
+              "title_name": "The Cartographer's Daughter",
+              "author": "author-2",
+              "status": "Acquired",
+              "format": "Hardcover",
+              "delivery_due": "@today+60d",
+              "pub_date": "@today+260d",
+              "advance": 12000,
+              "list_price": 28,
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "titles-8",
+            "values": {
+              "title_name": "Counting Stars Backwards",
+              "author": "author-5",
+              "status": "At printer",
+              "format": "Picture book",
+              "delivery_due": "@today-60d",
+              "pub_date": "@today-2d",
+              "advance": 4500,
+              "list_price": 17,
+              "editor": "tm-2"
+            }
+          },
+          {
+            "key": "titles-9",
+            "values": {
+              "title_name": "The Lost Edition",
+              "author": "author-8",
+              "status": "Out of print",
+              "format": "Paperback",
+              "delivery_due": "@today-1200d",
+              "pub_date": "@today-900d",
+              "advance": 2000,
+              "list_price": 14,
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "steps",
+        "name": "Production steps",
+        "labelSingular": "Production step",
+        "labelPlural": "Production steps",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "step_name",
+        "describes": "The dated steps each title passes through: edit, copyedit, design, proofs and files.",
+        "subject": "thing",
+        "independentOf": {
+          "title": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "step_name",
+            "label": "Production step",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "relation",
+            "relationTarget": "titles",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Developmental edit",
+              "Copyedit",
+              "Cover design",
+              "Interior design",
+              "Proofread",
+              "Index",
+              "Files to printer",
+              "Metadata and ISBN",
+              "Marketing copy"
+            ],
+            "choiceColors": {
+              "Developmental edit": "slate",
+              "Copyedit": "blue",
+              "Cover design": "amber",
+              "Interior design": "violet",
+              "Proofread": "teal",
+              "Index": "green",
+              "Files to printer": "orange",
+              "Metadata and ISBN": "pink",
+              "Marketing copy": "yellow"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "To do",
+              "In progress",
+              "Blocked",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Blocked": "amber",
+              "Done": "violet"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Blocked": "in_progress",
+              "Done": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "freelancer",
+            "label": "Freelancer or vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_start",
+            "label": "Start",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "steps_start"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "steps_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_blocked",
+            "label": "Mark blocked",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "steps_blocked"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "steps_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New production step",
+            "values": {
+              "step_name": "New production step",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Brief"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What must be delivered and in what form."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Queries, decisions and what changed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "steps-1",
+            "values": {
+              "step_name": "Proofread, The Salt Road",
+              "title": "titles-1",
+              "kind": "Proofread",
+              "status": "In progress",
+              "due_on": "@today+2d",
+              "freelancer": "Maren Duquesne",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "steps-2",
+            "values": {
+              "step_name": "Index, The Salt Road",
+              "title": "titles-1",
+              "kind": "Index",
+              "status": "To do",
+              "due_on": "@today+6d",
+              "freelancer": "Oskar Lindroth",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "steps-3",
+            "values": {
+              "step_name": "Files to printer, The Salt Road",
+              "title": "titles-1",
+              "kind": "Files to printer",
+              "status": "To do",
+              "due_on": "@today+15d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "steps-4",
+            "values": {
+              "step_name": "Copyedit, Letters from the Night Ferry",
+              "title": "titles-2",
+              "kind": "Copyedit",
+              "status": "In progress",
+              "due_on": "@today+4d",
+              "freelancer": "Priya Anand",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "steps-5",
+            "values": {
+              "step_name": "Cover design, Moss and the Moon",
+              "title": "titles-4",
+              "kind": "Cover design",
+              "status": "Blocked",
+              "due_on": "@today-2d",
+              "freelancer": "Hamish Reyes",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "steps-6",
+            "values": {
+              "step_name": "Interior layout, Moss and the Moon",
+              "title": "titles-4",
+              "kind": "Interior design",
+              "status": "To do",
+              "due_on": "@today",
+              "freelancer": "Hamish Reyes",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "steps-7",
+            "values": {
+              "step_name": "Developmental edit, What the River Kept",
+              "title": "titles-5",
+              "kind": "Developmental edit",
+              "status": "In progress",
+              "due_on": "@today+9d",
+              "freelancer": "Quentin Alvarado",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "steps-8",
+            "values": {
+              "step_name": "Metadata, Counting Stars Backwards",
+              "title": "titles-8",
+              "kind": "Metadata and ISBN",
+              "status": "To do",
+              "due_on": "@today+1d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "steps-9",
+            "values": {
+              "step_name": "Marketing copy, Moss and the Moon",
+              "title": "titles-4",
+              "kind": "Marketing copy",
+              "status": "To do",
+              "due_on": "@today+5d",
+              "freelancer": "Tamsin Oduya",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "steps-10",
+            "values": {
+              "step_name": "Proofread, Counting Stars Backwards",
+              "title": "titles-8",
+              "kind": "Proofread",
+              "status": "Done",
+              "due_on": "@today-12d",
+              "freelancer": "Maren Duquesne",
+              "owner": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "statements",
+        "name": "Royalty statements",
+        "labelSingular": "Royalty statement",
+        "labelPlural": "Royalty statements",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "statement_name",
+        "describes": "The royalty statement owed to each author each period, with amounts and payment dates.",
+        "subject": "thing",
+        "independentOf": {
+          "author": "Either record can be created or change status before the other.",
+          "preparer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "pay_by",
+            "paid_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "statement_name",
+            "label": "Royalty statement",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "relationTarget": "author",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "period",
+            "label": "Period",
+            "parityType": "select",
+            "choices": [
+              "First half",
+              "Second half"
+            ],
+            "choiceColors": {
+              "First half": "slate",
+              "Second half": "blue"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Royalties earned (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Draft",
+              "Ready to pay",
+              "Paid",
+              "Disputed"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Ready to pay": "blue",
+              "Paid": "amber",
+              "Disputed": "violet"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "in_progress",
+              "Ready to pay": "in_progress",
+              "Paid": "done",
+              "Disputed": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pay_by",
+            "label": "Pay by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "preparer",
+            "label": "Prepared by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_ready",
+            "label": "Mark ready to pay",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "statements_ready"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_paid",
+            "label": "Mark paid",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "statements_paid"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "statements_claim"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New royalty statement",
+            "values": {
+              "statement_name": "New royalty statement",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sales basis"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Units by format and channel, returns and reserves."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rates match the contract"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Advance earned out calculated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reserve held and released"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment details confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "statements-1",
+            "values": {
+              "statement_name": "Olawale-Finch, second half",
+              "author": "author-1",
+              "period": "Second half",
+              "amount": 1840,
+              "status": "Draft",
+              "pay_by": "@today+6d",
+              "preparer": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "statements-2",
+            "values": {
+              "statement_name": "Adebayo, second half",
+              "author": "author-4",
+              "period": "Second half",
+              "amount": 2260,
+              "status": "Ready to pay",
+              "pay_by": "@today",
+              "preparer": "tm-3"
+            }
+          },
+          {
+            "key": "statements-3",
+            "values": {
+              "statement_name": "Hartmann-Nwosu, second half",
+              "author": "author-5",
+              "period": "Second half",
+              "amount": 3120,
+              "status": "Draft",
+              "pay_by": "@today-2d",
+              "preparer": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "statements-4",
+            "values": {
+              "statement_name": "Olawale-Finch, first half",
+              "author": "author-1",
+              "period": "First half",
+              "amount": 1590,
+              "status": "Paid",
+              "pay_by": "@today-180d",
+              "preparer": "tm-3",
+              "paid_on": "@today-179d"
+            }
+          },
+          {
+            "key": "statements-5",
+            "values": {
+              "statement_name": "Adebayo, first half",
+              "author": "author-4",
+              "period": "First half",
+              "amount": 1940,
+              "status": "Paid",
+              "pay_by": "@today-181d",
+              "preparer": "tm-3",
+              "paid_on": "@today-180d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "statements-6",
+            "values": {
+              "statement_name": "Hartmann-Nwosu, first half",
+              "author": "author-5",
+              "period": "First half",
+              "amount": 2840,
+              "status": "Paid",
+              "pay_by": "@today-181d",
+              "preparer": "tm-3",
+              "paid_on": "@today-178d"
+            }
+          },
+          {
+            "key": "statements-7",
+            "values": {
+              "statement_name": "Castellano, advance earn-out check",
+              "author": "author-7",
+              "period": "Second half",
+              "amount": 0,
+              "status": "Disputed",
+              "pay_by": "@today+3d",
+              "preparer": "tm-3",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each title belongs to one author.",
+        "fromTable": "titles",
+        "fromField": "author",
+        "toTable": "author",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "titles"
+      },
+      {
+        "describes": "Each title belongs to one editor.",
+        "fromTable": "titles",
+        "fromField": "editor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "title_by_editor"
+      },
+      {
+        "describes": "Each production step belongs to one title.",
+        "fromTable": "steps",
+        "fromField": "title",
+        "toTable": "titles",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "steps"
+      },
+      {
+        "describes": "Each production step belongs to one owner.",
+        "fromTable": "steps",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "step_by_owner"
+      },
+      {
+        "describes": "Each royalty statement belongs to one author.",
+        "fromTable": "statements",
+        "fromField": "author",
+        "toTable": "author",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "statements"
+      },
+      {
+        "describes": "Each royalty statement belongs to one prepared by.",
+        "fromTable": "statements",
+        "fromField": "preparer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "statement_by_preparer"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Rosalind Achebe-Hargreaves",
+              "role": "Managing editor",
+              "work_email": "rosalind@foxglovelanepress.net",
+              "mobile": "(617) 555-0141",
+              "start_date": "@today-12y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Quentin Alvarado",
+              "role": "Acquiring editor",
+              "work_email": "quentin@foxglovelanepress.net",
+              "mobile": "(617) 555-0142",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Mirabelle Okoro-Lindgren",
+              "role": "Production manager",
+              "work_email": "mirabelle@foxglovelanepress.net",
+              "mobile": "(617) 555-0143",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Hamish Reyes",
+              "role": "Designer",
+              "work_email": "hamish@foxglovelanepress.net",
+              "mobile": "(617) 555-0144",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Tamsin Oduya",
+              "role": "Publicist",
+              "work_email": "tamsin@foxglovelanepress.net",
+              "mobile": "(617) 555-0145",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Manuscript submission",
+        "describes": "Authors and agents submit a project here.",
+        "audience": "staff",
+        "table": "author",
+        "fields": [
+          {
+            "fieldKey": "author_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "genre",
+            "ask": "What do you write?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thank you. The acquiring editor reads every submission and replies within eight weeks."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "author_claim",
+        "table": "author",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "titles_copyedit",
+        "table": "titles",
+        "name": "Send to copyedit",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Copyedit"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "titles_design",
+        "table": "titles",
+        "name": "Send to design",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Design"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "titles_proofs",
+        "table": "titles",
+        "name": "Send to proofs",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Proofs"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "titles_printer",
+        "table": "titles",
+        "name": "Send to printer",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "At printer"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "titles_claim",
+        "table": "titles",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "steps_start",
+        "table": "steps",
+        "name": "Start",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "steps_done",
+        "table": "steps",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "steps_blocked",
+        "table": "steps",
+        "name": "Mark blocked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Blocked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "steps_claim",
+        "table": "steps",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "statements_ready",
+        "table": "statements",
+        "name": "Mark ready to pay",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready to pay"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "statements_paid",
+        "table": "statements",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "statements_claim",
+        "table": "statements",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_author",
+        "name": "All authors",
+        "table": "author",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "author_board",
+        "name": "By status",
+        "table": "author",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "author_mine",
+        "name": "My authors",
+        "table": "author",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_titles",
+        "name": "All titles",
+        "table": "titles",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "titles_board",
+        "name": "By status",
+        "table": "titles",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "titles_cal",
+        "name": "Calendar",
+        "table": "titles",
+        "kind": "calendar",
+        "dateField": "pub_date",
+        "allDay": true
+      },
+      {
+        "token": "titles_over",
+        "name": "Overdue",
+        "table": "titles",
+        "kind": "grid",
+        "within": {
+          "pub_date": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Acquired",
+            "Editing",
+            "Copyedit",
+            "Design",
+            "Proofs",
+            "At printer"
+          ]
+        }
+      },
+      {
+        "token": "titles_week",
+        "name": "This week",
+        "table": "titles",
+        "kind": "grid",
+        "within": {
+          "pub_date": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Acquired",
+            "Editing",
+            "Copyedit",
+            "Design",
+            "Proofs",
+            "At printer"
+          ]
+        }
+      },
+      {
+        "token": "titles_next7",
+        "name": "Next 7 days",
+        "table": "titles",
+        "kind": "grid",
+        "within": {
+          "pub_date": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Acquired",
+            "Editing",
+            "Copyedit",
+            "Design",
+            "Proofs",
+            "At printer"
+          ]
+        }
+      },
+      {
+        "token": "titles_mine",
+        "name": "My titles",
+        "table": "titles",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_steps",
+        "name": "All production steps",
+        "table": "steps",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "steps_board",
+        "name": "By status",
+        "table": "steps",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "steps_cal",
+        "name": "Calendar",
+        "table": "steps",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "steps_over",
+        "name": "Overdue",
+        "table": "steps",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "steps_week",
+        "name": "This week",
+        "table": "steps",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "steps_next7",
+        "name": "Next 7 days",
+        "table": "steps",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "steps_mine",
+        "name": "My production steps",
+        "table": "steps",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_statements",
+        "name": "All royalty statements",
+        "table": "statements",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "statements_board",
+        "name": "By status",
+        "table": "statements",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "statements_cal",
+        "name": "Calendar",
+        "table": "statements",
+        "kind": "calendar",
+        "dateField": "pay_by",
+        "allDay": true
+      },
+      {
+        "token": "statements_over",
+        "name": "Overdue",
+        "table": "statements",
+        "kind": "grid",
+        "within": {
+          "pay_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Ready to pay"
+          ]
+        }
+      },
+      {
+        "token": "statements_week",
+        "name": "This week",
+        "table": "statements",
+        "kind": "grid",
+        "within": {
+          "pay_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Ready to pay"
+          ]
+        }
+      },
+      {
+        "token": "statements_next7",
+        "name": "Next 7 days",
+        "table": "statements",
+        "kind": "grid",
+        "within": {
+          "pay_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Ready to pay"
+          ]
+        }
+      },
+      {
+        "token": "statements_mine",
+        "name": "My royalty statements",
+        "table": "statements",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Publishing House Title Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "titles",
+          "describes": "Every book from acquisition to publication, with its publication date, price and production health."
+        },
+        {
+          "name": "related_tables",
+          "table": "author",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many titles are at the proofs stage?",
+        "whyItMatters": "The production manager schedules the printer around them.",
+        "expect": {
+          "table": "titles",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Proofs"
+          },
+          "answer": 1,
+          "unit": "titles"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open authors.",
+        "action": {
+          "kind": "open",
+          "surface": "author_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "author_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open titles.",
+        "action": {
+          "kind": "open",
+          "surface": "titles_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "titles_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open production steps.",
+        "action": {
+          "kind": "open",
+          "surface": "steps_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "steps_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "foxglovelanepress.net"
+      ],
+      "fictionalStreets": [
+        "Bookbinder Alley"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "publishing-house-title-desk",
+      "parent": null,
+      "title": "Publishing House Title Desk",
+      "icon": {
+        "emoji": "📖"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The list in one place: authors, every title in production, the dated steps behind each, and the royalty statements owed. Start with the Dashboard each Monday. Anything marked Blocked gets a call that day, and nothing goes to the printer while Schedule health shows Blocked."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:book-production-calendar"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:royalty-statement-routine"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:acquisitions-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Authors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone the press publishes or is courting, with agent, contact and money owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "author",
+              "view": "author_board"
+            },
+            "inline": true,
+            "title": "Authors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "aut-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "aut-t",
+                "name": "All authors",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "aut-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "aut-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Titles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every book from acquisition to publication, with its publication date, price and production health."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "titles",
+              "view": "titles_board"
+            },
+            "inline": true,
+            "title": "Titles",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tit-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tit-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "pub_date"
+              },
+              {
+                "id": "tit-t",
+                "name": "All titles",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tit-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "pub_date": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Acquired",
+                    "Editing",
+                    "Copyedit",
+                    "Design",
+                    "Proofs",
+                    "At printer"
+                  ]
+                }
+              },
+              {
+                "id": "tit-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "pub_date": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Acquired",
+                    "Editing",
+                    "Copyedit",
+                    "Design",
+                    "Proofs",
+                    "At printer"
+                  ]
+                }
+              },
+              {
+                "id": "tit-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "pub_date": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Acquired",
+                    "Editing",
+                    "Copyedit",
+                    "Design",
+                    "Proofs",
+                    "At printer"
+                  ]
+                }
+              },
+              {
+                "id": "tit-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tit-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Production steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The dated steps each title passes through: edit, copyedit, design, proofs and files."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "steps",
+              "view": "steps_board"
+            },
+            "inline": true,
+            "title": "Production steps",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ste-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ste-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "ste-t",
+                "name": "All production steps",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ste-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              },
+              {
+                "id": "ste-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              },
+              {
+                "id": "ste-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              },
+              {
+                "id": "ste-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ste-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Royalty statements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The royalty statement owed to each author each period, with amounts and payment dates."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "statements",
+              "view": "statements_board"
+            },
+            "inline": true,
+            "title": "Royalty statements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sta-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sta-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "pay_by"
+              },
+              {
+                "id": "sta-t",
+                "name": "All royalty statements",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sta-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "pay_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Ready to pay"
+                  ]
+                }
+              },
+              {
+                "id": "sta-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "pay_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Ready to pay"
+                  ]
+                }
+              },
+              {
+                "id": "sta-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "pay_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Ready to pay"
+                  ]
+                }
+              },
+              {
+                "id": "sta-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sta-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "publishing-house-title-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The list at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "titles",
+                      "view": "all_titles"
+                    },
+                    "inline": true,
+                    "title": "Titles by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Titles by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "titles",
+                      "view": "all_titles"
+                    },
+                    "inline": true,
+                    "title": "Advances by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Advances by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "advance"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "steps",
+                      "view": "all_steps"
+                    },
+                    "inline": true,
+                    "title": "Production steps by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Production steps by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "statements",
+                      "view": "all_statements"
+                    },
+                    "inline": true,
+                    "title": "Royalties by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Royalties by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps due in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "steps",
+              "view": "all_steps"
+            },
+            "inline": true,
+            "title": "Steps due in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Steps due in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "steps",
+              "view": "all_steps"
+            },
+            "inline": true,
+            "title": "Steps overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Steps overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statements to prepare or pay"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "statements",
+              "view": "all_statements"
+            },
+            "inline": true,
+            "title": "Statements to prepare or pay",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Statements to prepare or pay",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Ready to pay"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Schedule health"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Blocked when any step on the title is marked Blocked; On track when no steps are open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Never move a title forward while Blocked"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Royalties due (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Statements for the author not yet paid"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pay within the contract deadline and keep the statement with the payment"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Advances (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sum of advances across the author's titles"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with royalties earned to see who has earned out"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "book-production-calendar",
+      "parent": "publishing-house-title-desk",
+      "title": "Book production calendar",
+      "icon": {
+        "emoji": "📆"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A book is a chain of handoffs. The calendar works backward from the publication date."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Typical schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weeks before publication"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "52 to 40"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Manuscript delivered and developmental edit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "36 to 28"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Copyedit and cover design"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "26 to 18"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Interior layout and first proofs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "16 to 10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Proofread, index and corrections"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "10 to 8"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Files to printer, metadata to retailers"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "0"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Publication day"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to use it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the title and its publication date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add one production step for each row in the calendar and set due dates backward."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark blocked the moment a step cannot start."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the title forward only when the previous step is Done."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "royalty-statement-routine",
+      "parent": "publishing-house-title-desk",
+      "title": "Royalty statement routine",
+      "icon": {
+        "emoji": "💷"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Authors trust a press that pays correctly and on time. Make the routine boring and dependable."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Twice a year"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pull sales for the period by format and channel."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Apply returns reserves per the contract."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create a statement for each author who earned or still owes an advance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check each figure against the rates in the contract."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark ready to pay, pay it and press Mark paid."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If an author disputes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark the statement Disputed, write what they asked, and reply with the supporting numbers within five working days."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "acquisitions-guide",
+      "parent": "publishing-house-title-desk",
+      "title": "Acquisitions guide",
+      "icon": {
+        "emoji": "📚"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Say yes to books you can sell and champion for years. A clear process makes the yes and the no both kinder."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading a submission"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Read the first fifty pages before reading the pitch."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Note the audience in one sentence."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the sample against titles already on the list."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write a two line reason for yes or no."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making an offer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree the editor and publisher want it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Calculate the break-even and the advance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Get approval and send the offer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the author as Under contract and create the title row."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

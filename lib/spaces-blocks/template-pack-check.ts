@@ -22,6 +22,8 @@ import { contrastRatio, readColorPair, readMotion, readOpacity, readShadowPair, 
 import { buildSpaceSnapshotSchema } from "./jsonSchema";
 import { validateSnapshot } from "./schema";
 import {
+  DESIGN_MOODS,
+  DESIGN_TYPE_CLASSES,
   LEGACY_PACK_IDS,
   PACK_BOARD_COLUMN,
   PACK_BOARD_TILE_KINDS,
@@ -94,6 +96,8 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   if (!cats.includes(String(pack.category))) say("category", `"${String(pack.category)}" is not a category. Use one of: ${cats.join(", ")}.`);
   if (!Array.isArray(pack.tags) || pack.tags.length < 1 || pack.tags.length > 6) say("tags", "Give 1 to 6 search tags.");
   else pack.tags.forEach((t, i) => (typeof t === "string" && TAG.test(t) ? null : say(`tags[${i}]`, `"${String(t)}" must be lowercase words (letters, digits, spaces, & or -), at most 24 characters.`)));
+
+  if (pack.designProfile !== undefined) checkDesignProfile(pack.designProfile, say);
 
   // ── 2. the spec agrees with the pack ───────────────────────────────────────
   const spec = pack.spec as TemplateSpec | undefined;
@@ -301,14 +305,51 @@ function checkLookValues(t: TemplateSpec["tables"][number], say: (at: string, sa
         const base = (t.rows ?? []).find((x) => nameOf(x) === ground);
         const under = base ? readColorPair((base.values as Record<string, unknown>)?.[f.key]) : null;
         if (!ink || !under) return;
+        // Lines (control edges, field outlines, focus) need 3:1 (WCAG 1.4.11); every other colour is text, 4.5:1.
+        const isLine = (r.values as Record<string, unknown>)?.group === "Lines";
+        const need = isLine ? 3 : 4.5;
         for (const theme of ["light", "dark"] as const) {
           const ratio = contrastRatio(ink[theme] ?? ink.light, under[theme] ?? under.light);
-          if (ratio !== null && ratio < 4.5)
-            say(where, `"${nameOf(r)}" on "${ground}" reads at ${ratio}:1 in ${theme}; seeded text colours reach 4.5:1 on what they are read on.`);
+          if (ratio !== null && ratio < need)
+            say(where, `"${nameOf(r)}" on "${ground}" reads at ${ratio}:1 in ${theme}; ${isLine ? "a Lines colour reaches 3:1" : "seeded text colours reach 4.5:1"} on what it is read on.`);
         }
       }
     });
   }
+}
+
+/** A design pack's typed profile: every field present, enums and ranges real, colours hex. */
+function checkDesignProfile(p: unknown, say: (at: string, says: string) => void) {
+  const at = "designProfile";
+  if (!isObj(p)) return say(at, "A design profile is an object (see DesignProfile in template-pack.ts).");
+  const strs = (k: string, min = 0) => {
+    const v = p[k];
+    if (!Array.isArray(v) || v.length < min || !v.every((x) => typeof x === "string" && x.trim() !== "")) say(`${at}.${k}`, `Give a list of ${min ? "at least " + min + " " : ""}words.`);
+  };
+  const oneOf = (k: string, allowed: readonly string[]) => (allowed.includes(String(p[k])) ? null : say(`${at}.${k}`, `"${String(p[k])}" is not one of: ${allowed.join(", ")}.`));
+  const scale = (k: string) => (Number.isInteger(p[k]) && (p[k] as number) >= 1 && (p[k] as number) <= 5 ? null : say(`${at}.${k}`, "A whole number from 1 to 5."));
+  strs("industries", 1);
+  strs("avoidFor");
+  strs("adaptFirst", 1);
+  strs("lockedTokens");
+  if (!Array.isArray(p.mood) || p.mood.length < 1 || !p.mood.every((m) => (DESIGN_MOODS as readonly string[]).includes(String(m)))) say(`${at}.mood`, `One or more of: ${DESIGN_MOODS.join(", ")}.`);
+  scale("formality");
+  scale("energy");
+  oneOf("density", ["compact", "medium", "airy"]);
+  oneOf("shape", ["sharp", "soft", "round", "pill"]);
+  oneOf("contrast", ["standard", "high"]);
+  oneOf("defaultTheme", ["light", "dark"]);
+  oneOf("typeClass", DESIGN_TYPE_CLASSES);
+  const fonts = p.fonts;
+  if (!Array.isArray(fonts) || fonts.length < 1) say(`${at}.fonts`, "Name each font family: { family, role, source: system|google|embedded }.");
+  else fonts.forEach((f, i) => (isObj(f) && str(f.family) && str(f.role) && ["system", "google", "embedded"].includes(String(f.source)) ? null : say(`${at}.fonts[${i}]`, "{ family, role, source: system|google|embedded }.")));
+  const hex = /^#[0-9a-f]{6}$/i;
+  const pr = p.primary;
+  if (!isObj(pr) || !hex.test(String(pr.light)) || !hex.test(String(pr.dark))) say(`${at}.primary`, '{ "light": "#rrggbb", "dark": "#rrggbb" }.');
+  if (typeof p.chromatic !== "boolean") say(`${at}.chromatic`, "true or false.");
+  if (typeof p.fallback !== "boolean") say(`${at}.fallback`, "true or false.");
+  const a = p.a11y;
+  if (!isObj(a) || !["AA", "AAA-leaning"].includes(String(a.level)) || !(Number(a.minTarget) >= 24) || !(Number(a.minBody) >= 12)) say(`${at}.a11y`, '{ "level": "AA"|"AAA-leaning", "minTarget": px ≥ 24, "minBody": px ≥ 12 }.');
 }
 
 const BOARD_KEY = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

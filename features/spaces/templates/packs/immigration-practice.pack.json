@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0409",
-  "version": 1,
+  "version": 2,
   "title": "Immigration Practice",
   "description": "Cases, agency notices with due dates, and an evidence checklist for immigration.",
   "forWho": "Immigration attorneys and legal practices",
@@ -119,6 +119,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -217,7 +225,8 @@
               "kind": "Receipt",
               "received_on": "@today-40d",
               "action_due": "@today-35d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-35d"
             }
           },
           {
@@ -228,7 +237,8 @@
               "kind": "Receipt",
               "received_on": "@today-68d",
               "action_due": "@today-60d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-60d"
             }
           },
           {
@@ -239,7 +249,8 @@
               "kind": "Transfer",
               "received_on": "@today-60d",
               "action_due": "@today-55d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-55d"
             }
           },
           {
@@ -250,7 +261,8 @@
               "kind": "Approval",
               "received_on": "@today-390d",
               "action_due": "@today-385d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-385d"
             }
           },
           {
@@ -273,7 +285,8 @@
               "kind": "Receipt",
               "received_on": "@today-115d",
               "action_due": "@today-110d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-110d"
             }
           }
         ],
@@ -529,6 +542,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "open_notices",
             "label": "Open notices",
             "parityType": "rollup",
@@ -694,7 +715,8 @@
               "attorney": "tm-farah",
               "paralegal": "tm-wen",
               "receipt_no": "RCPT-4471-0019",
-              "filed_on": "@today-410d"
+              "filed_on": "@today-410d",
+              "approved_on": "@today-410d"
             }
           },
           {
@@ -977,6 +999,14 @@
             "format": "date"
           },
           {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "requested_btn",
             "label": "Mark requested",
             "parityType": "button",
@@ -1029,7 +1059,8 @@
               "kind": "Employment",
               "status": "Received",
               "asked_on": "@today-30d",
-              "needed_by": "@today-10d"
+              "needed_by": "@today-10d",
+              "received_on": "@today-10d"
             }
           },
           {
@@ -1617,6 +1648,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1631,6 +1667,11 @@
             "field": "status",
             "set": "value",
             "value": "Filed"
+          },
+          {
+            "field": "filed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1645,6 +1686,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1673,6 +1719,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2015,7 +2066,7 @@
         "Alder Way"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

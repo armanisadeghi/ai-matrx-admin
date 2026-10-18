@@ -84,6 +84,7 @@ import {
   type StoredBasics,
 } from "../tools/item-surfaces";
 import { BOARD_ITEM_TYPES, itemTypeByKey, itemTypeFor } from "../items/catalog";
+import { coverOf, coverSource } from "../items/cover-source";
 import { startNewEntries, type BoardItemType, type ItemBasicValues, type PickerProps, type PlacedItem, type StartNewEntry } from "../items/types";
 import { filesToBoardItems } from "../items/file-drop";
 import { noteSeedEdit } from "../items/work-sources";
@@ -1442,6 +1443,9 @@ function agentTile(
       if (input.html) return { id, rect, title: input.title ?? "Page", source: { kind: "html", html: input.html } };
       if (input.url) return { id, rect, title: input.title ?? "Page", source: { kind: "html", url: input.url } };
       return { ok: false, error: "An html tile needs `html` (a complete document) or `url`." };
+    case "cover":
+      if (!input.hero && !input.text) return { ok: false, error: "A cover needs a `hero` (HTML) or `text` (markdown prose)." };
+      return { id, rect, title: input.title ?? "Cover", source: coverSource({ hero: input.hero ?? "", markdown: input.text ?? "" }) };
     case "image":
       if (!input.url) return { ok: false, error: "An image tile needs `url`." };
       return { id, rect, title: input.title ?? "Image", source: { kind: "image", url: input.url } };
@@ -1453,6 +1457,10 @@ function agentEdit(tile: UserBoardTile, input: EditTileInput): Partial<UserBoard
   if (s.kind === "text" && input.text !== undefined) return { source: { kind: "text", markdown: input.text } };
   if (s.kind === "label" && input.text !== undefined) return { source: { kind: "label", text: input.text } };
   if (s.kind === "html" && input.html !== undefined) return { source: { kind: "html", html: input.html } };
+  const cover = coverOf(s);
+  if (cover && (input.hero !== undefined || input.text !== undefined)) {
+    return { source: coverSource({ hero: input.hero ?? cover.hero, markdown: input.text ?? cover.markdown }) };
+  }
   if (s.kind === "entity" && s.entity === "note" && input.text !== undefined) {
     // Text for a note that does not exist yet becomes its content; a real
     // note's text changes through the notes surface (`note_content`).

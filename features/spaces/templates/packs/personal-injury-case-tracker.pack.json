@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0410",
-  "version": 1,
+  "version": 2,
   "title": "Personal Injury Intake and Cases",
   "description": "Intakes, case stages, medical records requests and offers for a personal injury practice.",
   "forWho": "Personal injury firms",
@@ -154,6 +154,22 @@
             "format": "date"
           },
           {
+            "key": "signed_on",
+            "label": "Signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -250,7 +266,8 @@
               "incident": "Product",
               "received_on": "@today-9d",
               "status": "Signed",
-              "call_by": "@today-7d"
+              "call_by": "@today-7d",
+              "signed_on": "@today-7d"
             }
           },
           {
@@ -261,7 +278,8 @@
               "incident": "Auto collision",
               "received_on": "@today-12d",
               "status": "Signed",
-              "call_by": "@today-10d"
+              "call_by": "@today-10d",
+              "signed_on": "@today-10d"
             }
           },
           {
@@ -272,7 +290,8 @@
               "incident": "Slip and fall",
               "received_on": "@today-15d",
               "status": "Declined",
-              "call_by": "@today-13d"
+              "call_by": "@today-13d",
+              "decided_on": "@today-13d"
             }
           },
           {
@@ -567,6 +586,14 @@
             "format": "date"
           },
           {
+            "key": "resolved_on",
+            "label": "Resolved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "bills",
             "label": "Medical bills",
             "parityType": "rollup",
@@ -741,7 +768,8 @@
               "attorney": "tm-ambrose",
               "manager": "tm-nadia",
               "opened_on": "@today-420d",
-              "demand_due": "@today-290d"
+              "demand_due": "@today-290d",
+              "resolved_on": "@today-290d"
             }
           },
           {
@@ -1013,6 +1041,14 @@
             "format": "date"
           },
           {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -1078,7 +1114,8 @@
               "requested_on": "@today-30d",
               "bills": 1100,
               "status": "Received",
-              "follow_up_on": "@today-16d"
+              "follow_up_on": "@today-16d",
+              "received_on": "@today-16d"
             }
           },
           {
@@ -1102,7 +1139,8 @@
               "requested_on": "@today-120d",
               "bills": 640,
               "status": "Received",
-              "follow_up_on": "@today-100d"
+              "follow_up_on": "@today-100d",
+              "received_on": "@today-100d"
             }
           },
           {
@@ -1114,7 +1152,8 @@
               "requested_on": "@today-130d",
               "bills": 9800,
               "status": "Received",
-              "follow_up_on": "@today-110d"
+              "follow_up_on": "@today-110d",
+              "received_on": "@today-110d"
             }
           },
           {
@@ -1139,7 +1178,8 @@
               "requested_on": "@today-250d",
               "bills": 1450,
               "status": "Received",
-              "follow_up_on": "@today-230d"
+              "follow_up_on": "@today-230d",
+              "received_on": "@today-230d"
             }
           },
           {
@@ -1645,6 +1685,11 @@
             "field": "status",
             "set": "value",
             "value": "Signed"
+          },
+          {
+            "field": "signed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1659,6 +1704,11 @@
             "field": "status",
             "set": "value",
             "value": "Declined"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1687,6 +1737,11 @@
             "field": "stage",
             "set": "value",
             "value": "Resolved"
+          },
+          {
+            "field": "resolved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1715,6 +1770,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2067,7 +2127,7 @@
         "Beale Avenue"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 1,
+  "version": 2,
   "title": "Real Estate Brokerage",
   "description": "Leads, listings, transactions and closing milestones for a small brokerage.",
   "forWho": "Real estate brokerages and teams",
@@ -175,6 +175,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -336,7 +344,8 @@
               "email": "bart.n@mailbox-demo.net",
               "source": "Website",
               "agent": "tm-aiyana",
-              "follow_up_on": "@today-40d"
+              "follow_up_on": "@today-40d",
+              "closed_on": "@today-40d"
             }
           }
         ],
@@ -553,6 +562,14 @@
             "format": "date"
           },
           {
+            "key": "sold_on",
+            "label": "Sold on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "agent",
             "label": "Listing agent",
             "parityType": "relation",
@@ -684,7 +701,8 @@
               "price": 385000,
               "listed_on": "@today-75d",
               "agent": "tm-desmond",
-              "beds": 1
+              "beds": 1,
+              "sold_on": "@today-75d"
             }
           },
           {
@@ -991,6 +1009,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "coordinator",
             "label": "Coordinator",
             "parityType": "relation",
@@ -1090,7 +1116,8 @@
               "commission_pct": 2.5,
               "accepted_on": "@today-70d",
               "closing_on": "@today-40d",
-              "coordinator": "tm-bertrand"
+              "coordinator": "tm-bertrand",
+              "closed_on": "@today-40d"
             }
           },
           {
@@ -1330,6 +1357,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1456,7 +1491,8 @@
               "task_title": "Closing statement review - Marina condo",
               "transaction": "x03",
               "due_on": "@today-42d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-42d"
             }
           },
           {
@@ -1465,7 +1501,8 @@
               "task_title": "Inspection - Tamarind Way",
               "transaction": "x04",
               "due_on": "@today-4d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-4d"
             }
           }
         ],
@@ -1715,6 +1752,11 @@
             "field": "stage",
             "set": "value",
             "value": "Lost"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1743,6 +1785,11 @@
             "field": "status",
             "set": "value",
             "value": "Sold"
+          },
+          {
+            "field": "sold_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1757,6 +1804,11 @@
             "field": "stage",
             "set": "value",
             "value": "Closed"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1785,6 +1837,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2129,7 +2186,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

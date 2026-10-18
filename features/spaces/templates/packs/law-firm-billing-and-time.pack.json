@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 1,
+  "version": 2,
   "title": "Law Firm Billing and Time",
   "description": "Time entries, invoices and outstanding balances for a small law firm's billing desk.",
   "forWho": "Small law firms and billing administrators",
@@ -91,6 +91,14 @@
           {
             "key": "worked_on",
             "label": "Worked",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "billed_on",
+            "label": "Billed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -255,7 +263,8 @@
               "worked_on": "@today-12d",
               "hours": 2.5,
               "rate": 120,
-              "status": "Billed"
+              "status": "Billed",
+              "billed_on": "@today-12d"
             }
           },
           {
@@ -267,7 +276,8 @@
               "worked_on": "@today-18d",
               "hours": 1.2,
               "rate": 320,
-              "status": "Billed"
+              "status": "Billed",
+              "billed_on": "@today-18d"
             }
           },
           {
@@ -279,7 +289,8 @@
               "worked_on": "@today-20d",
               "hours": 4.3,
               "rate": 260,
-              "status": "Billed"
+              "status": "Billed",
+              "billed_on": "@today-20d"
             }
           },
           {
@@ -291,7 +302,8 @@
               "worked_on": "@today-30d",
               "hours": 0.8,
               "rate": 240,
-              "status": "Billed"
+              "status": "Billed",
+              "billed_on": "@today-30d"
             }
           },
           {
@@ -303,7 +315,8 @@
               "worked_on": "@today-90d",
               "hours": 2.0,
               "rate": 120,
-              "status": "Billed"
+              "status": "Billed",
+              "billed_on": "@today-90d"
             }
           },
           {
@@ -494,6 +507,22 @@
             "format": "date"
           },
           {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -563,7 +592,8 @@
               "paid_amount": 2880,
               "issued_on": "@today-50d",
               "due_on": "@today-20d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-20d"
             }
           },
           {
@@ -601,7 +631,8 @@
               "paid_amount": 0,
               "issued_on": "@today-6d",
               "due_on": "@mon+3d",
-              "status": "Sent"
+              "status": "Sent",
+              "sent_on": "@today-6d"
             }
           },
           {
@@ -614,7 +645,8 @@
               "issued_on": "@today-10d",
               "due_on": "@today+20d",
               "status": "Sent",
-              "collector": "@installer"
+              "collector": "@installer",
+              "sent_on": "@today-10d"
             }
           },
           {
@@ -626,7 +658,8 @@
               "paid_amount": 190,
               "issued_on": "@today-30d",
               "due_on": "@today-30d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-30d"
             }
           },
           {
@@ -650,7 +683,8 @@
               "paid_amount": 3600,
               "issued_on": "@today-100d",
               "due_on": "@today-70d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-70d"
             }
           },
           {
@@ -1439,6 +1473,11 @@
             "field": "status",
             "set": "value",
             "value": "Billed"
+          },
+          {
+            "field": "billed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1453,6 +1492,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1467,6 +1511,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1712,7 +1761,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

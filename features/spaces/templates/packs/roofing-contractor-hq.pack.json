@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 1,
+  "version": 2,
   "title": "Roofing Contractor HQ",
   "description": "Move roofing leads from inspection to estimate to crew day, with orders and invoices.",
   "forWho": "Roofing contractors and exterior remodelers",
@@ -582,6 +582,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "quote",
             "label": "Quote (USD)",
             "parityType": "currency",
@@ -884,7 +892,8 @@
               "quote": 500,
               "parts_cost": 125,
               "labor_cost": 240,
-              "hours": 5
+              "hours": 5,
+              "completed_on": "@today-21d"
             }
           },
           {
@@ -900,7 +909,8 @@
               "quote": 12265,
               "parts_cost": 6130,
               "labor_cost": 1920,
-              "hours": 40
+              "hours": 40,
+              "completed_on": "@today-16d"
             }
           },
           {
@@ -916,7 +926,8 @@
               "quote": 1695,
               "parts_cost": 475,
               "labor_cost": 290,
-              "hours": 6
+              "hours": 6,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -932,7 +943,8 @@
               "quote": 1245,
               "parts_cost": 560,
               "labor_cost": 480,
-              "hours": 10
+              "hours": 10,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -948,7 +960,8 @@
               "quote": 2000,
               "parts_cost": 1000,
               "labor_cost": 430,
-              "hours": 9
+              "hours": 9,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -964,7 +977,8 @@
               "quote": 295,
               "parts_cost": 5,
               "labor_cost": 70,
-              "hours": 1.5
+              "hours": 1.5,
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1901,6 +1915,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1915,6 +1934,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2194,7 +2218,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

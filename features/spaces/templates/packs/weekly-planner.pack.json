@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0205",
-  "version": 3,
+  "version": 4,
   "title": "Weekly Time-Block Planner",
   "description": "Students and professionals: block out each day by the hour, with weekly goals.",
   "forWho": "Students and professionals who plan by the hour",
@@ -100,6 +100,14 @@
           {
             "key": "on",
             "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -256,7 +264,8 @@
               "done": true,
               "minutes": 30,
               "notes": "Bring the printed notes",
-              "goal": "wg1"
+              "goal": "wg1",
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -272,7 +281,8 @@
               "done": true,
               "minutes": 90,
               "notes": "Leave early if traffic",
-              "goal": "wg1"
+              "goal": "wg1",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -288,7 +298,8 @@
               "done": true,
               "minutes": 45,
               "notes": "Pack a water bottle",
-              "goal": "wg4"
+              "goal": "wg4",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -920,6 +931,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1117,7 +1133,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

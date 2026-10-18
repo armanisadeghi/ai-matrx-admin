@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0359",
-  "version": 3,
+  "version": 4,
   "title": "Invoice Tracker",
   "description": "Freelancers: track invoices from draft to paid, flag late ones, see what clients owe.",
   "forWho": "Freelancers and solo consultants",
@@ -507,6 +507,14 @@
             "format": "date"
           },
           {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "invoice_file",
             "label": "Invoice file",
             "parityType": "attachment",
@@ -636,7 +644,8 @@
               "amount": 2750,
               "tax": 220,
               "status": "Sent",
-              "memo": "Reception redesign, phase two"
+              "memo": "Reception redesign, phase two",
+              "sent_on": "@today-21d"
             }
           },
           {
@@ -648,7 +657,8 @@
               "amount": 1800,
               "tax": 144,
               "status": "Sent",
-              "memo": "Spring catalogue layout"
+              "memo": "Spring catalogue layout",
+              "sent_on": "@today-14d"
             }
           },
           {
@@ -660,7 +670,8 @@
               "amount": 4100,
               "tax": 328,
               "status": "Sent",
-              "memo": "Treatment room fit-out plan"
+              "memo": "Treatment room fit-out plan",
+              "sent_on": "@today-6d"
             }
           },
           {
@@ -672,7 +683,8 @@
               "amount": 820,
               "tax": 65.6,
               "status": "Sent",
-              "memo": "Seasonal menu boards"
+              "memo": "Seasonal menu boards",
+              "sent_on": "@today-2d"
             }
           },
           {
@@ -942,6 +954,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -956,6 +973,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1154,7 +1176,7 @@
         "Juniper Grist Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

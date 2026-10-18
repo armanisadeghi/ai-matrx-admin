@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0161",
-  "version": 4,
+  "version": 5,
   "title": "Partnerships Tracker",
   "description": "Partner and business development teams: partners, milestones and referral revenue share.",
   "forWho": "Business development and partner teams",
@@ -533,6 +533,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -633,7 +641,8 @@
               "start_on": "@today-10d",
               "due_on": "@today-3d",
               "status": "Done",
-              "assignee": "tm-02"
+              "assignee": "tm-02",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -677,7 +686,8 @@
               "start_on": "@today-20d",
               "due_on": "@today-6d",
               "status": "Done",
-              "assignee": "tm-03"
+              "assignee": "tm-03",
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -1032,6 +1042,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1292,7 +1307,7 @@
         "Embarcadero Mews"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

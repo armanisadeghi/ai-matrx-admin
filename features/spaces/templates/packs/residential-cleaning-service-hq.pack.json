@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 1,
+  "version": 2,
   "title": "Residential Cleaning Service HQ",
   "description": "Schedule recurring cleans, assign teams, track supplies and invoices.",
   "forWho": "Residential cleaning businesses",
@@ -578,6 +578,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "quote",
             "label": "Quote (USD)",
             "parityType": "currency",
@@ -916,7 +924,8 @@
               "quote": 130,
               "parts_cost": 10,
               "labor_cost": 65,
-              "hours": 2.5
+              "hours": 2.5,
+              "completed_on": "@today-21d"
             }
           },
           {
@@ -932,7 +941,8 @@
               "quote": 370,
               "parts_cost": 30,
               "labor_cost": 130,
-              "hours": 5
+              "hours": 5,
+              "completed_on": "@today-16d"
             }
           },
           {
@@ -948,7 +958,8 @@
               "quote": 525,
               "parts_cost": 40,
               "labor_cost": 155,
-              "hours": 6
+              "hours": 6,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -964,7 +975,8 @@
               "quote": 120,
               "parts_cost": 5,
               "labor_cost": 50,
-              "hours": 2
+              "hours": 2,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -980,7 +992,8 @@
               "quote": 610,
               "parts_cost": 60,
               "labor_cost": 180,
-              "hours": 7
+              "hours": 7,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -996,7 +1009,8 @@
               "quote": 90,
               "parts_cost": 10,
               "labor_cost": 25,
-              "hours": 1
+              "hours": 1,
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1937,6 +1951,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1951,6 +1970,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2230,7 +2254,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

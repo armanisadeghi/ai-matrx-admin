@@ -1,0 +1,1208 @@
+{
+ "organization": "226be635-194d-42dd-87c8-7a9562f70939",
+ "organization_name": "Safety Net Real Tests",
+ "built_at": "2026-10-18T08:25:24+00:00",
+ "built_by": "fixture lane (review 2 tooling fix), read live as admin@admin.com through the project's API",
+ "hash_rule": "sha256 of json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False); field sets are in fixture_check.py (agent_hashes, COMPARED) and each row entry's `fields`",
+ "rebaseline": "an owner re-baselines one entry by running `fixture_check.py --snapshot KEY` and pasting the printed values; drop `drifted` only after review",
+ "not_in_manifest": [
+  "PB-01 skill 'Compass dispatch ref' (not built yet)",
+  "PB-04/PB-06 second organization admin's Workspace itself (only its fixture rows are listed)",
+  "test@test.com seat (a person, not a fixture)"
+ ],
+ "playbooks": {
+  "PB-01": [
+   "routing_desk",
+   "routing_desk_v3",
+   "lane_planner",
+   "weather_desk",
+   "notes_binding",
+   "org_override",
+   "note_4471",
+   "note_4466",
+   "file_move_4471",
+   "gate_code",
+   "gate_log",
+   "yard_notes",
+   "twin_yard_notes",
+   "row_4471_ref",
+   "picklist_compass",
+   "block_compass",
+   "tool_agent"
+  ],
+  "PB-02": [
+   "mandate_desk",
+   "mandate_desk_v2",
+   "mandate_desk_v3",
+   "platform_routing_desk",
+   "dispatcher",
+   "lane_planner",
+   "weather_desk",
+   "mandate_routing_line",
+   "mandate_routing_line_org",
+   "binding_org_v2",
+   "binding_user_v3",
+   "binding_org_only",
+   "workflow_routing",
+   "gate_code",
+   "row_4471_ref",
+   "picklist_compass",
+   "block_compass"
+  ],
+  "PB-03": [
+   "settings_a",
+   "settings_o",
+   "settings_g",
+   "gate_code",
+   "row_4471_ref",
+   "picklist_compass",
+   "block_compass"
+  ],
+  "PB-04": [
+   "kestrel_desk",
+   "picklist_kestrel",
+   "apt_3318_hold",
+   "dock_status",
+   "note_kestrel"
+  ],
+  "PB-05": [
+   "alder_desk",
+   "file_pdf",
+   "file_jpg",
+   "file_csv",
+   "file_txt",
+   "file_docx",
+   "note_alder",
+   "page_alder",
+   "lodi_gate",
+   "lodi_contact",
+   "task_lodi"
+  ],
+  "PB-06": [
+   "ledger_desk",
+   "lane_planner",
+   "weather_desk",
+   "file_move_4471",
+   "fee_pacific_crest",
+   "fee_golden_state",
+   "fee_harbor",
+   "page_road_rates",
+   "tool_agent",
+   "tool_table",
+   "tool_web"
+  ],
+  "PB-07": [
+   "canary",
+   "canary_together",
+   "canary_caller",
+   "block_pb07",
+   "canary_note",
+   "mandate_pb07",
+   "binding_pb07",
+   "workflow_pb07",
+   "knob_canary",
+   "knob_canary_together",
+   "tool_agent"
+  ],
+  "PB-08": [
+   "ops_lead",
+   "verse_desk",
+   "card_desk",
+   "ideas_desk",
+   "history_desk",
+   "tool_agent",
+   "tool_send_message",
+   "tool_task_stop",
+   "tool_list_agents",
+   "tool_schedule_wakeup",
+   "tool_time_in_zone"
+  ]
+ },
+ "fixtures": {
+  "routing_desk": {
+   "kind": "agent",
+   "id": "9d690b07-ce9b-4547-a6a9-a9e1f6b11e67",
+   "name": "Compass Routing Desk",
+   "spec_changed": [
+    "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only"
+   ],
+   "live_version": 5,
+   "live_version_id": "6fb45092-794d-49d1-b4e6-db2960f299b0",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "4aa8f60e1fd30a5a210400e27af802d38ec21b11955ff3e98a605d101907c688",
+   "definition_sha256": "a063e3a7e17c03b96cb752dcb3b19efee5515f1e79465bfe79ad8a92d301d4c8",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": null
+  },
+  "routing_desk_v3": {
+   "kind": "agent_version",
+   "id": "8936cc7a-5ef5-45f1-8332-f62bb6cc18a8",
+   "name": "Compass Routing Desk v3 (the Notes binding's pin)",
+   "agent_id": "9d690b07-ce9b-4547-a6a9-a9e1f6b11e67",
+   "version_number": 3,
+   "row_version": 2,
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "221e0b24594cb5ac859c87e77c9d2d3e312ccc544b590452dce535c4f009dd35",
+   "variables_sha256": "4aa8f60e1fd30a5a210400e27af802d38ec21b11955ff3e98a605d101907c688",
+   "definition_sha256": "0bb3b40efcf290d2f0ba2729cb5bd9cefe1af14105ec4ee0fdbe2678ee416e3c",
+   "tools": [
+    "agent"
+   ],
+   "reasoning_effort": null
+  },
+  "lane_planner": {
+   "kind": "agent",
+   "id": "20624bc2-1828-4fe2-9379-2aabc1ceca44",
+   "name": "Lane Planner",
+   "spec_changed": [
+    "live version is v5 (ledger says v3): tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only"
+   ],
+   "live_version": 5,
+   "live_version_id": "39d21d87-0d76-4fa4-a0a5-f271bc6e3cde",
+   "model_id": "eabcd5b0-53dc-4cef-bcd0-067d4bac56ed",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "8083d0c115cd413947a634a83f5a558816b47d4c1e75f4d556ea2d06ac3e416a",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": null
+  },
+  "weather_desk": {
+   "kind": "agent",
+   "id": "286035d7-ff2f-444a-9d75-54d0f08dfd8f",
+   "name": "Weather Desk",
+   "live_version": 2,
+   "live_version_id": "f1303577-bd46-4f5d-b9cd-a949ccee7f1a",
+   "model_id": "0ecf2a12-d825-4f34-9317-525e8743c4f9",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "322aa5b908f6ad84eecb55da904b18c532fa7bc271fcbd735bfb05f7d9a85b78",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "mandate_desk": {
+   "kind": "agent",
+   "id": "d7fbe234-1adf-415d-aeb5-9f5343df9725",
+   "name": "Compass Mandate Desk",
+   "spec_changed": [
+    "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only"
+   ],
+   "live_version": 5,
+   "live_version_id": "a8f64206-6506-45f7-a608-b5484b4b20cb",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
+   "definition_sha256": "07895d03ab84950aac1e2b380a63c484cbcdcdaee82113f3eac19632d8a9aaa0",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": null
+  },
+  "mandate_desk_v2": {
+   "kind": "agent_version",
+   "id": "b9cf1dbf-13f0-4859-90e1-177e0d39dd51",
+   "name": "Compass Mandate Desk v2 (organization binding pin)",
+   "agent_id": "d7fbe234-1adf-415d-aeb5-9f5343df9725",
+   "version_number": 2,
+   "row_version": 2,
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "221e0b24594cb5ac859c87e77c9d2d3e312ccc544b590452dce535c4f009dd35",
+   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
+   "definition_sha256": "a70c295cf3e470ff30dbc860c378f7608feb2313401d83bc8141db7db873de2a",
+   "tools": [
+    "agent"
+   ],
+   "reasoning_effort": null
+  },
+  "mandate_desk_v3": {
+   "kind": "agent_version",
+   "id": "1589bea0-345e-4422-9ed9-d5103f71c3c3",
+   "name": "Compass Mandate Desk v3 (user binding pin)",
+   "agent_id": "d7fbe234-1adf-415d-aeb5-9f5343df9725",
+   "version_number": 3,
+   "row_version": 2,
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "221e0b24594cb5ac859c87e77c9d2d3e312ccc544b590452dce535c4f009dd35",
+   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
+   "definition_sha256": "d81d94a4ce681ff6a3737c5a1b5e850e1cf6c8ab45119920e1275feb16a45c62",
+   "tools": [
+    "agent"
+   ],
+   "reasoning_effort": null
+  },
+  "platform_routing_desk": {
+   "kind": "agent",
+   "id": "641d9cd8-5d62-4a71-a782-288a93efb331",
+   "name": "Platform Routing Desk",
+   "version_may_advance": true,
+   "note": "pb02 call 6 edits then restores it, adding two versions per run: the version may advance, every content hash must still match",
+   "live_version": 4,
+   "live_version_id": "7cb5f1a1-4105-40f8-b66f-1764f136a728",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
+   "definition_sha256": "f93faa8b8d9c0c81369fb3fb73856ede15df6d43a5b4b5296b88916e37379e11",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": null
+  },
+  "dispatcher": {
+   "kind": "agent",
+   "id": "53661c82-052e-4569-b151-49a016a7dba9",
+   "name": "Compass Dispatcher",
+   "live_version": 2,
+   "live_version_id": "54ec743a-a561-445c-be7c-ef41eb362ee0",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "b526a692a854d48e27807b6af5aface1b2cbeef352d51b38c2af428275fd861d",
+   "variables_sha256": "7418305ff59b930c8ed7070777cdf1069e7d6ad575d8fda567436e630d6a6a25",
+   "definition_sha256": "20ca98740f8d9699eee8680c6cee19e4b11950222152f3b1456077fc3edb2c3b",
+   "tools": [
+    "mandate_call"
+   ],
+   "reasoning_effort": null
+  },
+  "settings_a": {
+   "kind": "agent",
+   "id": "dc479b11-c274-4d80-b4ae-3f8db31f9721",
+   "name": "Settings Desk A",
+   "spec_changed": [
+    "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only",
+    "reasoning_effort restored to high (the spec) 2026-10-18 through PATCH /agent-service/agents after aidream migration 20261018120000_agent_factory_birth_effort_knobs set it to low at 07:00:16Z; settings now equal the spec version key for key"
+   ],
+   "live_version": 5,
+   "live_version_id": "97992730-d2fb-420c-9010-a84eb1df412e",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "24bcedc0e72c5146154faae5d8f74eb1b022df5063beca7c350977bfbad5f974",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
+   "definition_sha256": "d700bd4a11a040379546e98c305f0eb68067a260df57982802ffaa13f6c5a0ff",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": "high"
+  },
+  "settings_o": {
+   "kind": "agent",
+   "id": "9f6bf0cd-f555-4c3a-a87c-2a66a6c52453",
+   "name": "Settings Desk O",
+   "spec_changed": [
+    "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only",
+    "reasoning_effort restored to high (the spec) 2026-10-18 through PATCH /agent-service/agents after aidream migration 20261018120000_agent_factory_birth_effort_knobs set it to low at 07:00:16Z; settings now equal the spec version key for key"
+   ],
+   "live_version": 7,
+   "live_version_id": "710b159b-e0c8-4ad4-8b9e-8bfac99977de",
+   "model_id": "e665a26a-6326-43ce-9a51-c24f6d468424",
+   "settings_sha256": "24bcedc0e72c5146154faae5d8f74eb1b022df5063beca7c350977bfbad5f974",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
+   "definition_sha256": "d865b6d95092a6708e3eab6db3f202eada595a42e3e6d6e19411bd94747b6535",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": "high"
+  },
+  "settings_g": {
+   "kind": "agent",
+   "id": "95e4fec5-b7bb-495e-868a-3b3da74ea2f7",
+   "name": "Settings Desk G",
+   "spec_changed": [
+    "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only",
+    "reasoning_effort restored to high (the spec) 2026-10-18 through PATCH /agent-service/agents after aidream migration 20261018120000_agent_factory_birth_effort_knobs set it to low at 07:00:16Z; settings now equal the spec version key for key"
+   ],
+   "live_version": 7,
+   "live_version_id": "197c9b8e-539c-48bd-b621-4c48e0f6baf0",
+   "model_id": "7e2df678-5d36-46e1-854c-4ef017d8fb77",
+   "settings_sha256": "24bcedc0e72c5146154faae5d8f74eb1b022df5063beca7c350977bfbad5f974",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
+   "definition_sha256": "cc303464b74aa9d36ea8182721c778bc68cd608a5b00b2f733d8aec6e92a5e73",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": "high"
+  },
+  "kestrel_desk": {
+   "kind": "agent",
+   "id": "29162da7-331b-4736-b05d-51afecc60e7d",
+   "name": "Kestrel Dock Desk",
+   "live_version": 2,
+   "live_version_id": "1f6dcd51-4722-405a-be01-5d02b50e9517",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "95d9cc62002cb1532e3e18cc2938a244984aae5633aa2d1a8d55333ab82b9e87",
+   "definition_sha256": "9f1f6e59944ecbb16d1d56c8ab52127ebe4e1439697e4e9e8db02fcd477e5203",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "alder_desk": {
+   "kind": "agent",
+   "id": "3d9d94fc-2867-4477-93b7-e7ac6be6a01e",
+   "name": "Alder Creek Receiving Desk",
+   "live_version": 4,
+   "live_version_id": "dffcf68a-9112-4188-9f24-af85fd25a25a",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "455562d4e123ed8c1806e69c9b0265cf08fd4f010d15e9a0016b971b6926270e",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "ledger_desk": {
+   "kind": "agent",
+   "id": "1f11faa5-7c56-4154-898d-d34b852cff3b",
+   "name": "Compass Ledger Desk",
+   "spec_changed": [
+    "declares no tools; PB-06 turn 2 adds them by registry name, and the name agent_call is now an INACTIVE tool: pb06-send.py now adds `agent` (2026-10-18)"
+   ],
+   "live_version": 1,
+   "live_version_id": "d00e2a2b-260e-460d-8bba-a5b54be842a6",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "8d4ffc6995d51522b5cadae5b4e47ed156fb04fcebdff75016814c9c66e18754",
+   "definition_sha256": "9c5a34fdfd2b66666be69c6272a5b76c197889e736f67e114b3601632c5d824d",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "canary": {
+   "kind": "agent",
+   "id": "40379907-a685-4d59-93db-6533c5fdcb75",
+   "name": "PB-07 Canary",
+   "live_version": 1,
+   "live_version_id": "9878c1bf-0a5c-4e67-b4e4-58423d049542",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "cd05723abd0a1ef397b03cb8d1bfef13653ecbe27e29b5746df777797efd1195",
+   "definition_sha256": "c07d0f74b0e4bab678f86aa7162dc2e047900e7f5844fba1c213e21e171af75a",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "canary_together": {
+   "kind": "agent",
+   "id": "76c1f930-3c08-40db-b156-6eeab958725d",
+   "name": "PB-07 Canary (Together)",
+   "live_version": 1,
+   "live_version_id": "158f22d8-10d3-4d53-a0fc-2b13fc22ab19",
+   "model_id": "0ecf2a12-d825-4f34-9317-525e8743c4f9",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "cd05723abd0a1ef397b03cb8d1bfef13653ecbe27e29b5746df777797efd1195",
+   "definition_sha256": "9fd9f1506bdcdd323b3a8f3fdd7c8651ff21f72b584748fc97cc24d03eb7f17c",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "canary_caller": {
+   "kind": "agent",
+   "id": "a9cf243e-90b3-435d-96e2-f21e56fe08f5",
+   "name": "PB-07 Canary Caller",
+   "spec_changed": [
+    "live v3 (ledger says v1): tool agent_call -> agent and tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only"
+   ],
+   "live_version": 3,
+   "live_version_id": "eb06e649-ba7b-421a-801f-d55d0fd0d8e9",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "65ef0aa7ed739b3824749846443a73c249113f538299f1840c2c16ddcfc95500",
+   "tools": [
+    "agent",
+    "send_message"
+   ],
+   "reasoning_effort": null
+  },
+  "ops_lead": {
+   "kind": "agent",
+   "id": "1ed4e846-8ab2-43c5-b044-3e00c7068669",
+   "name": "Halcyon Ops Lead",
+   "live_version": 3,
+   "live_version_id": "76099bfc-2810-4d83-8f52-052a74031a07",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "06a84269c6600512b8384103e522026781db6146339939dcb63f89bcc5a06a89",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "6a270976471bfcafeaa7ec303b87418bcd5dbab01653562ee523cfa013949571",
+   "tools": [
+    "agent",
+    "task_stop",
+    "schedule_wakeup",
+    "list_agents",
+    "send_message"
+   ],
+   "reasoning_effort": null
+  },
+  "verse_desk": {
+   "kind": "agent",
+   "id": "ad15587c-8cd8-4023-b673-b43410ee8847",
+   "name": "Tidewell Verse Desk",
+   "live_version": 1,
+   "live_version_id": "a44f5d1a-dae0-4db4-9cee-f543b4c97530",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "0ea6cc031535c6df327e8552640b97da7c7b0c58b79ea0d36eaf4ec07afe96f0",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "card_desk": {
+   "kind": "agent",
+   "id": "93bccbdd-cc6b-410d-8b19-273d8a0cb284",
+   "name": "Ares Card Desk",
+   "live_version": 1,
+   "live_version_id": "2d264984-edcd-4942-8a7e-364ee0db29e6",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "a3b435bab3c582f4a45aaefb82f8839caf9062b0a0e822453481c844c108c68a",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "ideas_desk": {
+   "kind": "agent",
+   "id": "58f176a0-8678-4859-b1fb-b85a17b1d461",
+   "name": "Ledgerline Ideas Desk",
+   "live_version": 1,
+   "live_version_id": "c261defc-98c1-4aee-971c-5ab6efde8a2b",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "53f6b39edeca03e6641009368c591f37ef385b38d49aceca6dbdd2815d547198",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "8301dc3286c7efff0cb10a202e4cdad5bfa5250c35e56c13ac1e375ef3bd9a58",
+   "tools": [
+    "current_time_in_zone"
+   ],
+   "reasoning_effort": null
+  },
+  "history_desk": {
+   "kind": "agent",
+   "id": "74092732-0cbc-4c29-909a-5df9fcac55c0",
+   "name": "Brennagh History Desk",
+   "live_version": 1,
+   "live_version_id": "ca43e311-58ff-4dc8-a708-8434634d2916",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "a0756550965b7481ddae232f535dead74f29cc1b4d321b30e9d83c63cf24b4ca",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "notes_binding": {
+   "kind": "row",
+   "schema": "platform",
+   "table": "associations",
+   "id": "6ab372e9-e79a-4eac-899f-f2299e9a7449",
+   "name": "Notes surface binding",
+   "fields": [
+    "source_type",
+    "source_id",
+    "target_type",
+    "target_id",
+    "payload_kind",
+    "payload",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "77b354babf4b87ee91591629ec177e72ccf23a49f899439bc565cd0fae99f632",
+   "version": 1,
+   "note": "intended (coordinator 2026-10-18; PB-01 fixture table): pinned to Compass Routing Desk v3 (8936cc7a) by another session (fix session, defect 12)"
+  },
+  "org_override": {
+   "kind": "row",
+   "schema": "context",
+   "table": "system_context_item_org_value",
+   "id": "c7b17c0b-6812-4a04-9bd7-6de4062f1e19",
+   "name": "organization override of company_name",
+   "fields": [
+    "system_context_item_id",
+    "value",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "708ae51c7cea5d33b2a51c1b7398f65fbe9608bc1ae024b49f5d1ba29d138ed9",
+   "version": 1,
+   "note": "intended (coordinator 2026-10-18; PB-01 fixture table): organization override 'Tidewater Compass Movers' installed by the fix session (defect 5)"
+  },
+  "mandate_routing_line": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "definition",
+   "id": "64d48c2d-79a3-4fba-b506-0ca0a240a28a",
+   "name": "mandate realtests.routing_line",
+   "fields": [
+    "mandate_key",
+    "default_holder_type",
+    "default_holder_id",
+    "default_holder_version_id",
+    "default_consumption_map",
+    "draft_inputs",
+    "provision_key",
+    "is_enabled",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "d4aab0b56a644260dbd88dc81ce2ab05c22f9161972a52e504bfe6db71c062a1",
+   "version": 2
+  },
+  "mandate_routing_line_org": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "definition",
+   "id": "cbb8a73e-effe-4163-88fb-141506f9338b",
+   "name": "mandate realtests.routing_line_org",
+   "fields": [
+    "mandate_key",
+    "default_holder_type",
+    "default_holder_id",
+    "default_holder_version_id",
+    "default_consumption_map",
+    "draft_inputs",
+    "provision_key",
+    "is_enabled",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "cb60918bae17fd91be61bc3f4998baa2829dd7da0cd07e268eddf8c71fc980f4",
+   "version": 2
+  },
+  "binding_org_v2": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "binding",
+   "id": "f4cc4747-12ad-4044-b655-c690fe12172f",
+   "name": "organization binding -> Mandate Desk pinned v2",
+   "fields": [
+    "mandate_id",
+    "principal_type",
+    "subject_user_id",
+    "holder_type",
+    "holder_id",
+    "holder_version_id",
+    "consumption_map",
+    "config_overrides",
+    "is_enabled",
+    "auto_run",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "e63494f14abb91d0c0f5c466ecbe8d6946a6b4f56816c99a1f06651fb9108919",
+   "version": 1
+  },
+  "binding_user_v3": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "binding",
+   "id": "4243ed0e-3f04-435f-b9f7-74a57aa02401",
+   "name": "user binding -> Mandate Desk pinned v3",
+   "fields": [
+    "mandate_id",
+    "principal_type",
+    "subject_user_id",
+    "holder_type",
+    "holder_id",
+    "holder_version_id",
+    "consumption_map",
+    "config_overrides",
+    "is_enabled",
+    "auto_run",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "209dde0ea82cce5dc477a9b59bd389b13598f995db701b6bbb2e424fbe376085",
+   "version": 1
+  },
+  "binding_org_only": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "binding",
+   "id": "1bf29910-ba0c-4fdc-8f09-fa7abeead106",
+   "name": "routing_line_org organization binding",
+   "fields": [
+    "mandate_id",
+    "principal_type",
+    "subject_user_id",
+    "holder_type",
+    "holder_id",
+    "holder_version_id",
+    "consumption_map",
+    "config_overrides",
+    "is_enabled",
+    "auto_run",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "0ccc9d584d82c9f47439ce9dd6120e586abbbc413259c9d8b05063b79d4a90ba",
+   "version": 1
+  },
+  "workflow_routing": {
+   "kind": "row",
+   "schema": "workflow",
+   "table": "definition",
+   "id": "1fef39d6-bd61-4d74-8ad9-3930b9ce3859",
+   "name": "workflow Compass routing via mandate",
+   "fields": [
+    "nodes",
+    "edges",
+    "variables",
+    "is_active",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "927a15c5119ff6d525898984a2c469302cbe383df1a0abe0a401e60f5475c1fa",
+   "version": 1
+  },
+  "mandate_pb07": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "definition",
+   "id": "c4f4752f-b357-4073-b5d6-84a4479bd762",
+   "name": "mandate realtests.pb07_canary",
+   "fields": [
+    "mandate_key",
+    "default_holder_type",
+    "default_holder_id",
+    "default_holder_version_id",
+    "default_consumption_map",
+    "draft_inputs",
+    "provision_key",
+    "is_enabled",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "fb0cc84502f82f027f3d6654ac73ae6654ee267566b4ef0ef0cc6a470a35abb2",
+   "version": 1
+  },
+  "binding_pb07": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "binding",
+   "id": "7ad71b93-1b6a-4286-a2ae-c989c21615a0",
+   "name": "pb07 organization binding -> canary",
+   "fields": [
+    "mandate_id",
+    "principal_type",
+    "subject_user_id",
+    "holder_type",
+    "holder_id",
+    "holder_version_id",
+    "consumption_map",
+    "config_overrides",
+    "is_enabled",
+    "auto_run",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "d066f04852e02d028f7c36e70cb30bd3d360719a96f38170fdb8332be12da766",
+   "version": 1
+  },
+  "workflow_pb07": {
+   "kind": "row",
+   "schema": "workflow",
+   "table": "definition",
+   "id": "ccd49351-9b2d-46a1-874e-16909a2b8eda",
+   "name": "workflow PB-07 canary via workflow",
+   "fields": [
+    "nodes",
+    "edges",
+    "variables",
+    "is_active",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "61a660805336c62a39d22b90f6c5f13008f8f9f721b697f16d511f3a1305588e",
+   "version": 1
+  },
+  "knob_canary": {
+   "kind": "row",
+   "schema": "platform",
+   "table": "knob_override",
+   "id": "f997d333-7eb8-4d5f-aae1-a7e08dc8ceaf",
+   "name": "knob system_notes_disabled on the canary",
+   "fields": [
+    "feature",
+    "key",
+    "scope_kind",
+    "scope_id",
+    "value"
+   ],
+   "sha256": "5f31c100b1709458ecdea33f628fbd61af4677b5880191c4d91a80847ed7614f",
+   "version": 4
+  },
+  "knob_canary_together": {
+   "kind": "row",
+   "schema": "platform",
+   "table": "knob_override",
+   "id": "ce7f857b-f6c3-443f-b8ff-7162e9123102",
+   "name": "knob system_notes_disabled on the Together canary",
+   "fields": [
+    "feature",
+    "key",
+    "scope_kind",
+    "scope_id",
+    "value"
+   ],
+   "sha256": "8bd6c17f6b0291586b77925ecd09bba24375fea47324c2c3387489d2403a6afa",
+   "version": 1
+  },
+  "block_compass": {
+   "kind": "row",
+   "schema": "agent",
+   "table": "prompt_block",
+   "id": "31f86f52-ed74-49d6-b21b-4c022f2f644e",
+   "name": "prompt block compass_lane_safety",
+   "fields": [
+    "name",
+    "content",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "3203e391fb0f9c3e36ed678ca37caaf76eda835ef89fd1426a01a8b51c7938db",
+   "version": 1
+  },
+  "block_pb07": {
+   "kind": "row",
+   "schema": "agent",
+   "table": "prompt_block",
+   "id": "5067650e-aa3c-4a11-ac0a-4e6649bd637b",
+   "name": "prompt block pb07_canary_block",
+   "fields": [
+    "name",
+    "content",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "3fc43d8b437daadf7b1f745da5159facb14b146981b04325090be0f073159688",
+   "version": 1
+  },
+  "note_4471": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "f0131226-4c69-4006-8ddf-63543aa626f9",
+   "name": "note Move 4471 routing",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "f2732c6ecfecb6cbb387d800da7d75bcac9f9b650468662ce2a606b032995170",
+   "version": 1
+  },
+  "note_4466": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "256e6a29-ae97-4597-bbf9-8bc1e09ac936",
+   "name": "note Move 4466 checklist (restored to canonical 2026-10-18)",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "9399be23f90bb30c9ee2d6d6d5b056958d999082f0605731ccb12e26c024a956",
+   "version": 5
+  },
+  "note_kestrel": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "09c8fe3d-e72d-44bd-9d16-49c1b1adffd6",
+   "name": "note Kestrel gate memo",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "092c885b2d42a427c82460f74357088c94a488952e05b86f0a2ff10023e24178",
+   "version": 1
+  },
+  "note_alder": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "c208c61b-0cc2-4b78-a8f4-f19d29604795",
+   "name": "note Alder Creek dock memo",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "6ad5d8ef977515a7208488e23ee2278c6ee6ba5e8d9517b34b4dc35b93b3e077",
+   "version": 1
+  },
+  "page_alder": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "fa4fa742-0c88-44e0-985c-ea0d0c3c7ed1",
+   "name": "published page Alder Creek pickup window",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "1a7bf841bb9216555ab44bc6f46366ced4dd910913796cba5fc9cb696928204c",
+   "version": 2
+  },
+  "page_road_rates": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "18244cbf-dd26-455f-b37e-7f4c9550b3fa",
+   "name": "published page Compass road rates",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "2fc7d3994ad47db3e6c931e068a914ded7d97c1b00d4f2efbfa7ac21c6e4a16b",
+   "version": 2
+  },
+  "file_move_4471": {
+   "kind": "row",
+   "schema": "files",
+   "table": "files",
+   "id": "b9a3f1f8-a84a-4b83-9827-ce9dbbef7b4f",
+   "name": "file move-4471.md",
+   "fields": [
+    "file_name",
+    "checksum",
+    "size_bytes",
+    "current_version",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "74e65309ff19e52f46007e5f60f53af1f77f7cd1e840cde7d0b9de15d36a03c9",
+   "version": 1
+  },
+  "file_pdf": {
+   "kind": "row",
+   "schema": "files",
+   "table": "files",
+   "id": "fd6656e3-a078-4c92-9544-5f987161ab47",
+   "name": "file inbound-handling-procedures.pdf",
+   "fields": [
+    "file_name",
+    "checksum",
+    "size_bytes",
+    "current_version",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "0ef03e540d2a04984a9a83907aa23440a7791c7e8eb42e5ecc14712d99477073",
+   "version": 2
+  },
+  "file_jpg": {
+   "kind": "row",
+   "schema": "files",
+   "table": "files",
+   "id": "4e01f58b-704a-4ac1-86f5-11b32c5cbf92",
+   "name": "file IMG_2291.jpg",
+   "fields": [
+    "file_name",
+    "checksum",
+    "size_bytes",
+    "current_version",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "b99bdd485c81383e3d6b50138504d8bfda2b1fa2d05d44a00a4ecfe659c9a442",
+   "version": 2
+  },
+  "file_csv": {
+   "kind": "row",
+   "schema": "files",
+   "table": "files",
+   "id": "ff66152f-707a-454d-988e-afaccea05eb1",
+   "name": "file inbound-oct16.csv",
+   "fields": [
+    "file_name",
+    "checksum",
+    "size_bytes",
+    "current_version",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "62cb00ba5de0e43a0d0a6a071cfa462ff67ee4a2694efff727def99d3b732532",
+   "version": 4
+  },
+  "file_txt": {
+   "kind": "row",
+   "schema": "files",
+   "table": "files",
+   "id": "7c3a7fe7-7162-4cd2-a63b-1849c1f304f0",
+   "name": "file night-shift-log.txt",
+   "fields": [
+    "file_name",
+    "checksum",
+    "size_bytes",
+    "current_version",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "5d87aaf796b57c77d3cfebd9f922bb24c39db592cbcc43a3cd9c9b556f804251",
+   "version": 2
+  },
+  "file_docx": {
+   "kind": "row",
+   "schema": "files",
+   "table": "files",
+   "id": "e820ba04-0fdc-4adf-a139-e98601e6339a",
+   "name": "file handover-note.docx",
+   "fields": [
+    "file_name",
+    "checksum",
+    "size_bytes",
+    "current_version",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "32f05c001cbedc20d010a2efa2d59ef0ad61cfb843ee7d28e9237eed4e1bbf28",
+   "version": 1
+  },
+  "task_lodi": {
+   "kind": "row",
+   "schema": "projects",
+   "table": "tasks",
+   "id": "244bd30d-27c2-4929-9821-7237bf371892",
+   "name": "task Re-probe Lodi pallets",
+   "fields": [
+    "title",
+    "description",
+    "status",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "567a28799dce7811635ab6132a28e214373d96b646209916c210ae8913a5c13e",
+   "version": 1
+  },
+  "gate_code": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "9a4e5ff6-833a-4b6d-986b-26eaf3893e28",
+   "key": "gate_code",
+   "name": "Port of Oakland lane gate_code",
+   "sha256": "2e9008f2c0765767cde71027bac1494e33fcdc79daffe31de124e6f8f4679703",
+   "value_version": 1
+  },
+  "gate_log": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "9a4e5ff6-833a-4b6d-986b-26eaf3893e28",
+   "key": "gate_log",
+   "name": "Port of Oakland lane gate_log",
+   "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+   "value_version": 1
+  },
+  "yard_notes": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "9a4e5ff6-833a-4b6d-986b-26eaf3893e28",
+   "key": "yard_notes",
+   "name": "Port of Oakland lane yard_notes",
+   "sha256": "dc4a856496434ee677baa87702866264cbaef76905f56d1b64aa444898d00b95",
+   "value_version": 1
+  },
+  "twin_yard_notes": {
+   "kind": "value",
+   "organization_id": "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f",
+   "record_id": "89d08e8e-d465-435f-b6ea-444a98ff5569",
+   "key": "yard_notes",
+   "name": "admin's Workspace twin yard_notes",
+   "sha256": "6ecda1f8ef2607ccef5f14fdb89c1df275bce10064eba15e50b01495f742160a",
+   "value_version": 2
+  },
+  "row_4471_ref": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "736ce9ab-d88b-461f-a712-00a1296c55ba",
+   "key": "shipper_reference",
+   "name": "row 4471 shipper_reference",
+   "sha256": "4eb3a6a46bdcafec1bd44c8885b1dccbd4624f8d5edbe0f91d0793da3cc582e9",
+   "value_version": 1
+  },
+  "canary_note": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "e380eb0b-1196-49b6-a47c-1e9fc5f96aac",
+   "key": "canary_note",
+   "name": "PB-07 canary scope canary_note",
+   "sha256": "31cee5e93110eb72405206d29dc011a4f4b925e6e454bbe9cacfee4ab5f481c2",
+   "value_version": 1
+  },
+  "lodi_gate": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "d1a2fd40-0a7f-4e5a-840d-f2b5df794875",
+   "key": "gate",
+   "name": "Lodi row gate",
+   "sha256": "73959e327901a9533b8d7963969aac8b5e9d629c263b6d12ad3f396061467a31",
+   "value_version": 1
+  },
+  "lodi_contact": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "d1a2fd40-0a7f-4e5a-840d-f2b5df794875",
+   "key": "contact",
+   "name": "Lodi row contact",
+   "sha256": "334eba6fea10f66138cf2650597999b1edac7436407f7a383747579a4c1e127d",
+   "value_version": 1
+  },
+  "fee_pacific_crest": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "fe93cc0b-ad90-4f34-97cc-3983ce1e82c2",
+   "key": "accessorial_fee",
+   "name": "Pacific Crest accessorial_fee",
+   "sha256": "6740813800d774e310e20650da1729fd8023ccd7fc6f429632a7ae446c0041c4",
+   "value_version": 1
+  },
+  "fee_golden_state": {
+   "kind": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "c5400f08-42df-4770-aea9-396f14d7a358",
+   "key": "accessorial_fee",
+   "name": "Golden State accessorial_fee",
+   "sha256": "32626e5d2e03bf139e3a6f0f7a28345b6aa588030df48ef93d209bf0aca2edb7",
+   "value_version": 1
+  },
+  "fee_harbor": {
+   "kind": "value",
+   "organization_id": "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f",
+   "record_id": "98f14c10-9678-4ab6-a539-94a7467e9c88",
+   "key": "fee",
+   "name": "Harbor Freight partner fee (admin's Workspace)",
+   "sha256": "a722dc7fff58c32e9617a18900d5dcbcdbceb50bbf387894b61cf3371ba021cb",
+   "value_version": 1
+  },
+  "picklist_compass": {
+   "kind": "pick_list",
+   "id": "3a881421-95f0-425f-a7b6-2ad274f66d97",
+   "name": "pick list Compass carrier families",
+   "note": "restored to canonical 2026-10-18; recorded as read back",
+   "sha256": "0de4ef2af76cec247a8bc3474d2ec149d786ebc9ad98bad09f132127bee8e47c"
+  },
+  "picklist_kestrel": {
+   "kind": "presence",
+   "via": "pick_list",
+   "id": "8ebbac58-96a5-46b8-9bb6-5b2b8fad715d",
+   "name": "pick list Kestrel carriers",
+   "note": "pb04-send writes its start state and verifies it each run",
+   "present": true
+  },
+  "apt_3318_hold": {
+   "kind": "presence",
+   "via": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "8ad69d91-0570-4477-a54b-6ef3ca25f0e2",
+   "key": "hold_code",
+   "name": "row APT-3318 hold_code",
+   "note": "pb04-send writes its start state and verifies it each run",
+   "present": true
+  },
+  "dock_status": {
+   "kind": "presence",
+   "via": "value",
+   "organization_id": "226be635-194d-42dd-87c8-7a9562f70939",
+   "record_id": "90a18213-5bed-432b-af46-d58f971eac99",
+   "key": "dock_status",
+   "name": "Stockton cold dock dock_status",
+   "note": "pb04-send writes its start state and verifies it each run",
+   "present": true
+  },
+  "tool_agent": {
+   "kind": "tool",
+   "id": "1cfc3a49-1993-4526-8712-943e05014615",
+   "name": "agent",
+   "is_active": true,
+   "deleted": false
+  },
+  "tool_table": {
+   "kind": "tool",
+   "id": "57953f50-24eb-43ad-b8e9-9c1fe73433a7",
+   "name": "table",
+   "is_active": true,
+   "deleted": false
+  },
+  "tool_web": {
+   "kind": "tool",
+   "id": "55bc14b4-a166-4a33-a0bc-a2b0dcf66de0",
+   "name": "web",
+   "is_active": true,
+   "deleted": false
+  },
+  "tool_send_message": {
+   "kind": "tool",
+   "id": "be5202db-66d0-45d2-bcc8-ef3184768bed",
+   "name": "send_message",
+   "is_active": true,
+   "deleted": false
+  },
+  "tool_task_stop": {
+   "kind": "tool",
+   "id": "1d9c6c4a-749e-4681-ba8c-85f4ed402f51",
+   "name": "task_stop",
+   "is_active": true,
+   "deleted": false
+  },
+  "tool_list_agents": {
+   "kind": "tool",
+   "id": "929708c1-bdfa-4617-ada1-c57749b1f1b6",
+   "name": "list_agents",
+   "is_active": true,
+   "deleted": false
+  },
+  "tool_schedule_wakeup": {
+   "kind": "tool",
+   "id": "2e02cbfe-2dca-4457-8ae7-4457534df6ee",
+   "name": "schedule_wakeup",
+   "is_active": true,
+   "deleted": false
+  },
+  "tool_time_in_zone": {
+   "kind": "tool",
+   "id": "819c8e98-2382-4845-b01c-7dc71e1435a5",
+   "name": "current_time_in_zone",
+   "is_active": true,
+   "deleted": false
+  }
+ }
+}

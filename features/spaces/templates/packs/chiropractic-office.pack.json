@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0402",
-  "version": 1,
+  "version": 2,
   "title": "Chiropractic Office",
   "description": "Inquiries, patients, visits and prepaid packages for a chiropractic office.",
   "forWho": "Chiropractors and wellness clinics",
@@ -443,6 +443,14 @@
             "format": "datetime"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "kind",
             "label": "Visit type",
             "parityType": "select",
@@ -605,7 +613,8 @@
               "provider": "tm-gideon",
               "when_at": "@today-3d 08:30",
               "kind": "Adjustment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -617,7 +626,8 @@
               "provider": "tm-noor",
               "when_at": "@today-4d 09:15",
               "kind": "Adjustment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -628,7 +638,8 @@
               "provider": "tm-gideon",
               "when_at": "@today-12d 17:00",
               "kind": "Adjustment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -640,7 +651,8 @@
               "provider": "tm-lucinda",
               "when_at": "@today-9d 12:00",
               "kind": "Massage",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -663,7 +675,8 @@
               "provider": "tm-noor",
               "when_at": "@today-20d 10:00",
               "kind": "Adjustment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -675,7 +688,8 @@
               "provider": "tm-noor",
               "when_at": "@today-11d 09:15",
               "kind": "Adjustment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-11d"
             }
           },
           {
@@ -687,7 +701,8 @@
               "provider": "tm-gideon",
               "when_at": "@today-10d 08:30",
               "kind": "Adjustment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-10d"
             }
           }
         ],
@@ -1593,6 +1608,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1937,7 +1957,7 @@
         "Pecan Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 2,
+  "version": 3,
   "title": "Food Truck Operations",
   "description": "Service stops and sales, permits, commissary prep and private bookings for a food truck.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
@@ -128,6 +128,14 @@
           {
             "key": "stop_on",
             "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "closed_on",
+            "label": "Closed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -440,7 +448,8 @@
               "sales": 1620,
               "spot_fee": 0,
               "hours": 5,
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "closed_on": "@today-6d"
             }
           },
           {
@@ -455,7 +464,8 @@
               "sales": 2480,
               "spot_fee": 120,
               "hours": 6,
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "closed_on": "@today-2d"
             }
           },
           {
@@ -470,7 +480,8 @@
               "sales": 760,
               "spot_fee": 60,
               "hours": 3,
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "closed_on": "@today-5d"
             }
           },
           {
@@ -500,7 +511,8 @@
               "sales": 1710,
               "spot_fee": 0,
               "hours": 5,
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "closed_on": "@today-9d"
             }
           }
         ]
@@ -1449,6 +1461,11 @@
             "field": "status",
             "set": "value",
             "value": "Served"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1463,6 +1480,11 @@
             "field": "status",
             "set": "value",
             "value": "Valid"
+          },
+          {
+            "field": "issued_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1901,7 +1923,7 @@
         "Depot Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

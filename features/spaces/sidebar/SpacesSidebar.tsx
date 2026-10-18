@@ -36,6 +36,7 @@ import { toast } from "@/lib/toast";
 import type { SpaceId, SpaceSummary } from "../contract";
 import { SpaceIcon } from "../page/SpaceIcon";
 import { EXPANDED_KEY, useSpaces, type DropPlacement } from "../state/SpacesProvider";
+import { RowLink } from "./row-link";
 import { ImportButton } from "./ImportMenu";
 import { SitesPopover } from "./SitesPopover";
 import { TemplateGallery } from "./TemplateGallery";
@@ -286,6 +287,7 @@ function TreeRow({
             if (e.key === "ArrowLeft") toggle(space.id, false);
           }}
         >
+          <RowLink id={space.id} title={space.title} />
           <span className="spaces-row-icon">
             <span className="spaces-row-glyph">
               <SpaceIcon media={space.icon} size={17} />

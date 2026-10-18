@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 4,
+  "version": 5,
   "title": "Freelancer OS",
   "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -547,6 +547,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_left",
             "label": "Days to due date",
             "parityType": "formula",
@@ -781,7 +789,8 @@
               "type": "Branding",
               "start_on": "@today-120d",
               "due_on": "@today-70d",
-              "budget": 2400
+              "budget": 2400,
+              "completed_on": "@today-70d"
             }
           },
           {
@@ -793,7 +802,8 @@
               "type": "Website",
               "start_on": "@today-200d",
               "due_on": "@today-160d",
-              "budget": 2100
+              "budget": 2100,
+              "completed_on": "@today-160d"
             }
           }
         ],
@@ -1003,6 +1013,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "estimate",
             "label": "Estimate (hours)",
             "parityType": "number",
@@ -1089,7 +1107,8 @@
               "status": "Done",
               "priority": "Medium",
               "due_on": "@today-24d",
-              "estimate": 4
+              "estimate": 4,
+              "completed_on": "@today-24d"
             }
           },
           {
@@ -1133,7 +1152,8 @@
               "status": "Done",
               "priority": "High",
               "due_on": "@today-14d",
-              "estimate": 8
+              "estimate": 8,
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -1177,7 +1197,8 @@
               "status": "Done",
               "priority": "Medium",
               "due_on": "@today-3d",
-              "estimate": 2
+              "estimate": 2,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1188,7 +1209,8 @@
               "status": "Done",
               "priority": "Low",
               "due_on": "@today-70d",
-              "estimate": 1
+              "estimate": 1,
+              "completed_on": "@today-70d"
             }
           },
           {
@@ -1678,6 +1700,14 @@
             "format": "date"
           },
           {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_late",
             "label": "Days late",
             "parityType": "formula",
@@ -1776,7 +1806,8 @@
               "amount": 2820,
               "issued_on": "@today-6d",
               "due_on": "@today+8d",
-              "memo": "Physio site, build phase"
+              "memo": "Physio site, build phase",
+              "sent_on": "@today-6d"
             }
           },
           {
@@ -1837,7 +1868,8 @@
               "amount": 2040,
               "issued_on": "@today-2d",
               "due_on": "@today+12d",
-              "memo": "Bakery brand identity, milestone two"
+              "memo": "Bakery brand identity, milestone two",
+              "sent_on": "@today-2d"
             }
           }
         ],
@@ -2090,6 +2122,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_to",
             "label": "Days to follow-up",
             "parityType": "formula",
@@ -2187,7 +2227,8 @@
               "source": "Event",
               "value": 3100,
               "follow_up": "@today+14d",
-              "email": "front@marlowclimb.net"
+              "email": "front@marlowclimb.net",
+              "closed_on": "@today-11d"
             }
           },
           {
@@ -2198,7 +2239,8 @@
               "source": "Referral",
               "value": 2900,
               "follow_up": "@today-9d",
-              "email": "orders@tessalytea.net"
+              "email": "orders@tessalytea.net",
+              "closed_on": "@today-9d"
             }
           }
         ],
@@ -2375,6 +2417,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2389,6 +2436,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2403,6 +2455,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2417,6 +2474,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2431,6 +2493,11 @@
             "field": "stage",
             "set": "value",
             "value": "Won"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2445,6 +2512,11 @@
             "field": "stage",
             "set": "value",
             "value": "Lost"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2839,7 +2911,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

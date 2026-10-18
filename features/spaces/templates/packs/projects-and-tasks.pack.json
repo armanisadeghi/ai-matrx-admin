@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0002",
-  "version": 4,
+  "version": 5,
   "title": "Projects & Tasks",
   "description": "Small teams: run projects and tasks on a board, calendar and timeline.",
   "forWho": "Small teams running client or internal projects",
@@ -578,6 +578,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "estimate",
             "label": "Estimate (hours)",
             "parityType": "number",
@@ -638,7 +646,8 @@
               "assignee": "tm-mateo",
               "start_on": "@today-24d",
               "due_on": "@today-20d",
-              "estimate": 4
+              "estimate": 4,
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -651,7 +660,8 @@
               "assignee": "tm-mateo",
               "start_on": "@today-19d",
               "due_on": "@today-12d",
-              "estimate": 10
+              "estimate": 10,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -721,7 +731,8 @@
               "assignee": "tm-samir",
               "start_on": "@today-15d",
               "due_on": "@today-11d",
-              "estimate": 6
+              "estimate": 6,
+              "completed_on": "@today-11d"
             }
           },
           {
@@ -734,7 +745,8 @@
               "assignee": "tm-mateo",
               "start_on": "@today-11d",
               "due_on": "@today-5d",
-              "estimate": 12
+              "estimate": 12,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -799,7 +811,8 @@
               "assignee": "tm-mateo",
               "start_on": "@today-60d",
               "due_on": "@today-45d",
-              "estimate": 8
+              "estimate": 8,
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -812,7 +825,8 @@
               "assignee": "tm-mateo",
               "start_on": "@today-45d",
               "due_on": "@today-30d",
-              "estimate": 10
+              "estimate": 10,
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -825,7 +839,8 @@
               "assignee": "tm-mateo",
               "start_on": "@today-30d",
               "due_on": "@today-12d",
-              "estimate": 6
+              "estimate": 6,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -838,7 +853,8 @@
               "assignee": "tm-grace",
               "start_on": "@today-12d",
               "due_on": "@today-8d",
-              "estimate": 2
+              "estimate": 2,
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -851,7 +867,8 @@
               "assignee": "tm-samir",
               "start_on": "@today-10d",
               "due_on": "@today-4d",
-              "estimate": 5
+              "estimate": 5,
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -929,7 +946,8 @@
               "assignee": "tm-jonas",
               "start_on": "@today-40d",
               "due_on": "@today-30d",
-              "estimate": 6
+              "estimate": 6,
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -981,7 +999,8 @@
               "assignee": "tm-priya",
               "start_on": "@today-5d",
               "due_on": "@today-2d",
-              "estimate": 5
+              "estimate": 5,
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -1256,6 +1275,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1512,7 +1536,7 @@
         "Quillmoss Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

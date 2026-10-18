@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
-  "version": 3,
+  "version": 4,
   "title": "Agency Client Portal",
   "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
   "forWho": "Agencies sharing work with several clients",
@@ -412,6 +412,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "feedback",
             "label": "Client feedback",
             "parityType": "text",
@@ -445,7 +453,8 @@
               "project": "pj01",
               "state": "Approved",
               "due_on": "@today-25d",
-              "feedback": "Approved with one change to the footer."
+              "feedback": "Approved with one change to the footer.",
+              "approved_on": "@today-25d"
             }
           },
           {
@@ -454,7 +463,8 @@
               "deliverable_name": "Home page design",
               "project": "pj01",
               "state": "Approved",
-              "due_on": "@today-10d"
+              "due_on": "@today-10d",
+              "approved_on": "@today-10d"
             }
           },
           {
@@ -492,7 +502,8 @@
               "deliverable_name": "Table cards",
               "project": "pj02",
               "state": "Approved",
-              "due_on": "@today-6d"
+              "due_on": "@today-6d",
+              "approved_on": "@today-6d"
             }
           },
           {
@@ -528,7 +539,8 @@
               "deliverable_name": "Photo shot list",
               "project": "pj04",
               "state": "Approved",
-              "due_on": "@today-70d"
+              "due_on": "@today-70d",
+              "approved_on": "@today-70d"
             }
           },
           {
@@ -538,7 +550,8 @@
               "project": "pj04",
               "state": "Approved",
               "due_on": "@today-50d",
-              "feedback": "Delighted with the edit."
+              "feedback": "Delighted with the edit.",
+              "approved_on": "@today-50d"
             }
           }
         ],
@@ -620,6 +633,14 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -682,7 +703,8 @@
               "amount": 6400,
               "issued_on": "@today-80d",
               "due_on": "@today-50d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-50d"
             }
           },
           {
@@ -1122,6 +1144,11 @@
             "field": "state",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1136,6 +1163,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1435,7 +1467,7 @@
         "Moss Lantern Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

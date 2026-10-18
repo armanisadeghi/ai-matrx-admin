@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0214",
-  "version": 3,
+  "version": 4,
   "title": "Moving Checklist",
   "description": "Anyone moving house: a timeline checklist, box inventory and address-change tracker.",
   "forWho": "Anyone moving house",
@@ -144,6 +144,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -186,7 +194,8 @@
               "category": "Admin",
               "status": "Done",
               "due_on": "@today-50d",
-              "notes": "Use the shared checklist"
+              "notes": "Use the shared checklist",
+              "completed_on": "@today-50d"
             }
           },
           {
@@ -197,7 +206,8 @@
               "category": "Admin",
               "status": "Done",
               "due_on": "@today-45d",
-              "notes": "Ask about weekend rates"
+              "notes": "Ask about weekend rates",
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -208,7 +218,8 @@
               "category": "Admin",
               "status": "Done",
               "due_on": "@today-40d",
-              "notes": "Keep the receipt"
+              "notes": "Keep the receipt",
+              "completed_on": "@today-40d"
             }
           },
           {
@@ -230,7 +241,8 @@
               "category": "Packing",
               "status": "Done",
               "due_on": "@today-7d",
-              "notes": "Confirm by email"
+              "notes": "Confirm by email",
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -241,7 +253,8 @@
               "category": "Admin",
               "status": "Done",
               "due_on": "@today-12d",
-              "notes": "Check the lease terms"
+              "notes": "Check the lease terms",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -865,6 +878,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -918,7 +939,8 @@
               "done": true,
               "due_on": "@today+28d",
               "method": "Online",
-              "account": "Acct ending 4471"
+              "account": "Acct ending 4471",
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -968,7 +990,8 @@
               "done": true,
               "due_on": "@today-5d",
               "method": "Phone",
-              "account": "Line 503-555-0192"
+              "account": "Line 503-555-0192",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1038,6 +1061,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1053,6 +1081,11 @@
             "field": "done",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1305,7 +1338,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

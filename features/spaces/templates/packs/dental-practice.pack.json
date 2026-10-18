@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 1,
+  "version": 2,
   "title": "Dental Practice",
   "description": "Patients, appointments, treatment plans, claims and supplies for a small dental office.",
   "forWho": "Dental offices and solo dentists",
@@ -95,6 +95,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "datetime"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "visit_type",
@@ -284,7 +292,8 @@
               "provider": "tm-marcus",
               "when_at": "@today-2d 16:15",
               "visit_type": "Emergency",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -295,7 +304,8 @@
               "provider": "tm-priya",
               "when_at": "@today-14d 10:00",
               "visit_type": "Hygiene visit",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -317,7 +327,8 @@
               "provider": "tm-marcus",
               "when_at": "@today-45d 11:30",
               "visit_type": "Crown",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -328,7 +339,8 @@
               "provider": "tm-priya",
               "when_at": "@today-100d 09:30",
               "visit_type": "Hygiene visit",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-100d"
             }
           },
           {
@@ -350,7 +362,8 @@
               "provider": "tm-priya",
               "when_at": "@today-70d 09:00",
               "visit_type": "Hygiene visit",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-70d"
             }
           },
           {
@@ -361,7 +374,8 @@
               "provider": "tm-marcus",
               "when_at": "@today-5d 13:30",
               "visit_type": "New patient exam",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-5d"
             }
           }
         ],
@@ -1084,6 +1098,22 @@
             "format": "date"
           },
           {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "urgency",
             "label": "Priority",
             "parityType": "select",
@@ -1225,7 +1255,8 @@
               "status": "Completed",
               "fee": 1380,
               "presented_on": "@today-45d",
-              "urgency": "Routine"
+              "urgency": "Routine",
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -1236,7 +1267,8 @@
               "status": "Accepted",
               "fee": 2900,
               "presented_on": "@today-2d",
-              "urgency": "Urgent"
+              "urgency": "Urgent",
+              "decided_on": "@today-2d"
             }
           },
           {
@@ -1247,7 +1279,8 @@
               "status": "Completed",
               "fee": 240,
               "presented_on": "@today-30d",
-              "urgency": "Routine"
+              "urgency": "Routine",
+              "completed_on": "@today-30d"
             }
           }
         ],
@@ -1504,6 +1537,14 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "payer",
             "label": "Payer",
             "parityType": "text",
@@ -1557,7 +1598,8 @@
               "status": "Paid",
               "submitted_on": "@today-40d",
               "follow_up_on": "@today-12d",
-              "payer": "Summit Dental PPO"
+              "payer": "Summit Dental PPO",
+              "paid_on": "@today-12d"
             }
           },
           {
@@ -1582,7 +1624,8 @@
               "status": "Paid",
               "submitted_on": "@today-28d",
               "follow_up_on": "@today-5d",
-              "payer": "Harbor Mutual"
+              "payer": "Harbor Mutual",
+              "paid_on": "@today-5d"
             }
           },
           {
@@ -1642,7 +1685,8 @@
               "status": "Paid",
               "submitted_on": "@today-150d",
               "follow_up_on": "@today-120d",
-              "payer": "Summit Dental PPO"
+              "payer": "Summit Dental PPO",
+              "paid_on": "@today-120d"
             }
           },
           {
@@ -1654,7 +1698,8 @@
               "status": "Paid",
               "submitted_on": "@today-5d",
               "follow_up_on": "@today+9d",
-              "payer": "Summit Dental PPO"
+              "payer": "Summit Dental PPO",
+              "paid_on": "@today-5d"
             }
           }
         ],
@@ -2169,6 +2214,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2183,6 +2233,11 @@
             "field": "status",
             "set": "value",
             "value": "Accepted"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2197,6 +2252,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2211,6 +2271,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2540,7 +2605,7 @@
         "Meridian Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

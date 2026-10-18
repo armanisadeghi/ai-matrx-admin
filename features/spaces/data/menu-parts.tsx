@@ -218,7 +218,7 @@ export function ViewerSortButton({
 }
 
 /** An open menu, popover or dialog owns Esc first (Radix closes it); the peek waits for the next Esc. */
-function layerOpen(): boolean {
+export function layerOpen(): boolean {
   return Boolean(document.querySelector('[data-radix-popper-content-wrapper], [role="dialog"][data-state="open"], [role="menu"], [role="listbox"]'));
 }
 

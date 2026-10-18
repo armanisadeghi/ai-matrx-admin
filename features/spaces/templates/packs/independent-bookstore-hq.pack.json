@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0521",
-  "version": 1,
+  "version": 2,
   "title": "Independent Bookstore HQ",
   "description": "Manage titles, special orders, publishers, events and readers for a bookstore.",
   "forWho": "Independent bookstores and book sellers",
@@ -1107,6 +1107,14 @@
             "format": "date"
           },
           {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "packer",
             "label": "Bookseller",
             "parityType": "member",
@@ -1348,7 +1356,8 @@
               "quantity": 1,
               "total": 35,
               "channel": "Online",
-              "ship_by": "@today"
+              "ship_by": "@today",
+              "shipped_on": "@today-7d"
             }
           },
           {
@@ -1669,6 +1678,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1890,7 +1904,7 @@
         "Chapter Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

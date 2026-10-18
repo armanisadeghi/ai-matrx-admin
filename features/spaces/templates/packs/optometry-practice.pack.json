@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0407",
-  "version": 1,
+  "version": 2,
   "title": "Optometry Practice",
   "description": "Patients and recalls, exams, frames inventory and optical orders for an eye care practice.",
   "forWho": "Optometrists and optical shops",
@@ -95,6 +95,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "datetime"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "kind",
@@ -258,7 +266,8 @@
               "doctor": "tm-corwin",
               "when_at": "@today-20d 09:00",
               "kind": "Comprehensive",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -269,7 +278,8 @@
               "doctor": "tm-corwin",
               "when_at": "@today-100d 13:00",
               "kind": "Follow-up",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-100d"
             }
           },
           {
@@ -280,7 +290,8 @@
               "doctor": "tm-neha",
               "when_at": "@today-390d 10:00",
               "kind": "Comprehensive",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-390d"
             }
           },
           {
@@ -291,7 +302,8 @@
               "doctor": "tm-corwin",
               "when_at": "@today-60d 15:00",
               "kind": "Comprehensive",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-60d"
             }
           },
           {
@@ -313,7 +325,8 @@
               "doctor": "tm-corwin",
               "when_at": "@today-3d 10:15",
               "kind": "Follow-up",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-3d"
             }
           }
         ],
@@ -1576,6 +1589,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1938,7 +1956,7 @@
         "Piedmont Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

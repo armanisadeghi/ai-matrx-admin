@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0108",
-  "version": 4,
+  "version": 5,
   "title": "Tech Spec & RFC Library",
   "description": "Engineering teams: write technical proposals, get them reviewed and log the decision.",
   "forWho": "Engineering teams that review designs before building",
@@ -164,6 +164,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "risk",
             "label": "Risk",
             "parityType": "select",
@@ -284,7 +292,8 @@
               "review_by": "@today-20d",
               "risk": "Low",
               "doc_link": "https://design.fathomgrid.net/specs/42",
-              "related": "sx-01"
+              "related": "sx-01",
+              "approved_on": "@today-14d"
             }
           },
           {
@@ -298,7 +307,8 @@
               "decided_on": "@today-8d",
               "review_by": "@today-12d",
               "risk": "Medium",
-              "doc_link": "https://design.fathomgrid.net/specs/43"
+              "doc_link": "https://design.fathomgrid.net/specs/43",
+              "approved_on": "@today-8d"
             }
           },
           {
@@ -940,6 +950,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1147,7 +1162,7 @@
         "Edgewater Quay"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

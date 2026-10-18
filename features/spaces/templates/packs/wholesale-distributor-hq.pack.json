@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 1,
+  "version": 2,
   "title": "Wholesale Distributor HQ",
   "description": "Run wholesale accounts, sales orders, stock and supplier purchasing in one workspace.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -1111,6 +1111,14 @@
             "format": "date"
           },
           {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "packer",
             "label": "Picker",
             "parityType": "member",
@@ -1363,7 +1371,8 @@
               "quantity": 20,
               "total": 1160,
               "channel": "Email",
-              "ship_by": "@today"
+              "ship_by": "@today",
+              "shipped_on": "@today-7d"
             }
           },
           {
@@ -1694,6 +1703,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1915,7 +1929,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 4,
+  "version": 5,
   "title": "Team Offsite Planner",
   "description": "Team leads: plan a retreat with agenda, venues, attendees and budget.",
   "forWho": "People teams and team leads planning retreats",
@@ -455,6 +455,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -620,7 +628,8 @@
               "due_on": "@today+2d",
               "status": "Done",
               "category": "Travel",
-              "budget_item": "bd04"
+              "budget_item": "bd04",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -769,6 +778,14 @@
               "do": "run_action",
               "action": "bu_paid"
             }
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -779,7 +796,8 @@
               "category": "Venue",
               "estimate": 9000,
               "actual": 9000,
-              "paid": true
+              "paid": true,
+              "paid_on": "@today-2d"
             }
           },
           {
@@ -809,7 +827,8 @@
               "category": "Travel",
               "estimate": 1500,
               "actual": 1380,
-              "paid": true
+              "paid": true,
+              "paid_on": "@today-11d"
             }
           },
           {
@@ -829,7 +848,8 @@
               "category": "Venue",
               "estimate": 1200,
               "actual": 1200,
-              "paid": true
+              "paid": true,
+              "paid_on": "@today-6d"
             }
           },
           {
@@ -1395,6 +1415,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1410,6 +1435,11 @@
             "field": "paid",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1697,7 +1727,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

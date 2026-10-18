@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0261",
-  "version": 4,
+  "version": 5,
   "title": "Teacher Lesson Planner",
   "description": "Teachers: weekly lesson plans linked to standards and resources, with reflections.",
   "forWho": "Teachers planning weekly lessons",
@@ -589,6 +589,14 @@
             "format": "date"
           },
           {
+            "key": "taught_on",
+            "label": "Taught on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "objective",
             "label": "Objective",
             "parityType": "text",
@@ -745,7 +753,8 @@
               "status": "Taught",
               "reflection": "4",
               "reflection_notes": "Make parts cards next time",
-              "homework": "Finish the exit ticket"
+              "homework": "Finish the exit ticket",
+              "taught_on": "@today-12d"
             }
           },
           {
@@ -765,7 +774,8 @@
               "status": "Taught",
               "reflection": "3",
               "reflection_notes": "Needs a lab rotation",
-              "homework": "Finish the exit ticket"
+              "homework": "Finish the exit ticket",
+              "taught_on": "@today-9d"
             }
           },
           {
@@ -785,7 +795,8 @@
               "status": "Taught",
               "reflection": "5",
               "reflection_notes": "Great discussion",
-              "homework": "Finish the exit ticket"
+              "homework": "Finish the exit ticket",
+              "taught_on": "@today-5d"
             }
           },
           {
@@ -805,7 +816,8 @@
               "status": "Taught",
               "reflection": "4",
               "reflection_notes": "Add a data table",
-              "homework": "Finish the exit ticket"
+              "homework": "Finish the exit ticket",
+              "taught_on": "@today-4d"
             }
           },
           {
@@ -826,7 +838,8 @@
               "status": "Taught",
               "reflection": "4",
               "reflection_notes": "Students loved the video",
-              "homework": "Finish the exit ticket"
+              "homework": "Finish the exit ticket",
+              "taught_on": "@today-1d"
             }
           },
           {
@@ -863,7 +876,8 @@
               "status": "Taught",
               "reflection": "2",
               "reflection_notes": "Stations ran long; trim one",
-              "homework": "Finish the exit ticket"
+              "homework": "Finish the exit ticket",
+              "taught_on": "@today-3d"
             }
           },
           {
@@ -1228,6 +1242,11 @@
             "field": "status",
             "set": "value",
             "value": "Taught"
+          },
+          {
+            "field": "taught_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1442,7 +1461,7 @@
         "Orchard Finch Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

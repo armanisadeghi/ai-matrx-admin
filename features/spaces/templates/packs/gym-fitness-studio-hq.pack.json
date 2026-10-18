@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 1,
+  "version": 2,
   "title": "Gym and Fitness Studio HQ",
   "description": "Track memberships, freezes and churn, classes and trainers, and failed payments.",
   "forWho": "Gyms and boutique fitness studios",
@@ -930,6 +930,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "visit_type",
             "label": "Kind",
             "parityType": "select",
@@ -1108,7 +1116,8 @@
               "when_on": "@today-12d",
               "visit_type": "Class",
               "minutes": 60,
-              "price": 65
+              "price": 65,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -1122,7 +1131,8 @@
               "when_on": "@today-9d",
               "visit_type": "Personal training",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1136,7 +1146,8 @@
               "when_on": "@today-7d",
               "visit_type": "Orientation",
               "minutes": 75,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -1150,7 +1161,8 @@
               "when_on": "@today-5d",
               "visit_type": "Tour",
               "minutes": 60,
-              "price": 65
+              "price": 65,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1164,7 +1176,8 @@
               "when_on": "@today-3d",
               "visit_type": "Class",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1512,6 +1525,14 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "method",
             "label": "Method",
             "parityType": "select",
@@ -1559,7 +1580,8 @@
               "client": "client-3",
               "amount": 39,
               "due_on": "@today-30d",
-              "method": "Card on file"
+              "method": "Card on file",
+              "paid_on": "@today-30d"
             }
           },
           {
@@ -1570,7 +1592,8 @@
               "client": "client-8",
               "amount": 590,
               "due_on": "@today-28d",
-              "method": "Bank transfer"
+              "method": "Bank transfer",
+              "paid_on": "@today-28d"
             }
           },
           {
@@ -1581,7 +1604,8 @@
               "client": "client-13",
               "amount": 59,
               "due_on": "@today-14d",
-              "method": "Cash"
+              "method": "Cash",
+              "paid_on": "@today-14d"
             }
           },
           {
@@ -1592,7 +1616,8 @@
               "client": "client-4",
               "amount": 120,
               "due_on": "@today-10d",
-              "method": "Gift card"
+              "method": "Gift card",
+              "paid_on": "@today-10d"
             }
           },
           {
@@ -1658,7 +1683,8 @@
               "client": "client-6",
               "amount": 15,
               "due_on": "@today-6d",
-              "method": "Bank transfer"
+              "method": "Bank transfer",
+              "paid_on": "@today-6d"
             }
           },
           {
@@ -1848,6 +1874,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1862,6 +1893,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2123,7 +2159,7 @@
         "Mercer Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

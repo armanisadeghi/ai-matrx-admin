@@ -403,6 +403,23 @@
 .spaces-row:has(.spaces-row-chevron:focus-visible) .spaces-row-glyph {
   opacity: 0;
 }
+/* The row's real link: it fills the row under the icon, title and buttons, which let the pointer through
+   except the buttons (the chevron and the actions stay pressable). */
+.spaces-row-link {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+}
+.spaces-row-icon,
+.spaces-row-title {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+.spaces-row-actions {
+  position: relative;
+  z-index: 2;
+}
 .spaces-row-title {
   flex: 1 1 auto;
   min-width: 0;

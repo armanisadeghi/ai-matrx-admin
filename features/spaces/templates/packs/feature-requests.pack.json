@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0351",
-  "version": 3,
+  "version": 4,
   "title": "Feature Requests",
   "description": "Product teams: collect requests, count votes and customers, and decide what is next.",
   "forWho": "Product and support teams",
@@ -258,6 +258,14 @@
               "do": "run_action",
               "action": "request_decline"
             }
+          },
+          {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -384,7 +392,8 @@
               ],
               "area": "Reporting",
               "owner": "tm-lena",
-              "details": "One customer wanted a fixed order; not enough interest."
+              "details": "One customer wanted a fixed order; not enough interest.",
+              "decided_on": "@today-12d"
             }
           },
           {
@@ -833,6 +842,11 @@
             "field": "status",
             "set": "value",
             "value": "Declined"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -994,7 +1008,7 @@
         "Alder Lantern Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

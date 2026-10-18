@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0453",
-  "version": 2,
+  "version": 3,
   "title": "PR Agency Desk",
   "description": "Clients, campaigns, a media contact book, pitches and earned coverage for a PR agency.",
   "forWho": "Public relations and communications agencies",
@@ -1180,6 +1180,14 @@
             "format": "date"
           },
           {
+            "key": "covered_on",
+            "label": "Covered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "angle",
             "label": "Angle",
             "parityType": "text",
@@ -1311,7 +1319,8 @@
               "contact": "media_contact-2",
               "sent_on": "@today-18d",
               "follow_up_on": "@today-12d",
-              "angle": "First look at the forecasting engine"
+              "angle": "First look at the forecasting engine",
+              "covered_on": "@today-12d"
             }
           },
           {
@@ -1394,7 +1403,8 @@
               "contact": "media_contact-5",
               "sent_on": "@today-28d",
               "follow_up_on": "@today-22d",
-              "angle": "Free flu shots, extended hours"
+              "angle": "Free flu shots, extended hours",
+              "covered_on": "@today-22d"
             }
           },
           {
@@ -1912,6 +1922,11 @@
             "field": "status",
             "set": "value",
             "value": "Covered"
+          },
+          {
+            "field": "covered_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2249,7 +2264,7 @@
         "Candlewick Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

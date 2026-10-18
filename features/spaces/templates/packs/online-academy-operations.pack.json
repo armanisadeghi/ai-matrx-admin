@@ -675,7 +675,7 @@
             "parityType": "button",
             "button": {
               "do": "add_row",
-              "table": "enrollments",
+              "table": "enrollment",
               "template": "New enrollment",
               "prefill": {
                 "cohort": "@row"
@@ -918,7 +918,17 @@
         "independentOf": {
           "cohort": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "equals": {
+              "progress": 100
+            }
+          }
+        ],
         "fields": [
           {
             "key": "learner_name",
@@ -1376,7 +1386,7 @@
           },
           {
             "key": "owner",
-            "label": "Assigned to",
+            "label": "Handled by",
             "parityType": "relation",
             "relationTarget": "team_member",
             "relationMax": 1,
@@ -1599,7 +1609,7 @@
         "inverseKey": "help_requests"
       },
       {
-        "describes": "Each help request belongs to one assigned to.",
+        "describes": "Each help request belongs to one handled by.",
         "fromTable": "help_request",
         "fromField": "owner",
         "toTable": "team_member",
@@ -1968,57 +1978,6 @@
         "table": "enrollment",
         "kind": "kanban",
         "groupBy": "status"
-      },
-      {
-        "token": "enrollment_cal",
-        "name": "Calendar",
-        "table": "enrollment",
-        "kind": "calendar",
-        "dateField": "applied_on",
-        "allDay": true
-      },
-      {
-        "token": "enrollment_over",
-        "name": "Overdue",
-        "table": "enrollment",
-        "kind": "grid",
-        "within": {
-          "applied_on": {
-            "relative": "before_today"
-          }
-        },
-        "filters": {
-          "status": "Applied"
-        }
-      },
-      {
-        "token": "enrollment_week",
-        "name": "This week",
-        "table": "enrollment",
-        "kind": "grid",
-        "within": {
-          "applied_on": {
-            "relative": "this_week"
-          }
-        },
-        "filters": {
-          "status": "Applied"
-        }
-      },
-      {
-        "token": "enrollment_next7",
-        "name": "Next 7 days",
-        "table": "enrollment",
-        "kind": "grid",
-        "within": {
-          "applied_on": {
-            "relative": "next_days",
-            "n": 7
-          }
-        },
-        "filters": {
-          "status": "Applied"
-        }
       },
       {
         "token": "enrollment_mine",
@@ -2572,60 +2531,10 @@
                 "groupField": "status"
               },
               {
-                "id": "enr-c",
-                "name": "Calendar",
-                "layout": "calendar",
-                "icon": "Calendar",
-                "dateField": "applied_on"
-              },
-              {
                 "id": "enr-t",
                 "name": "All enrollments",
                 "layout": "grid",
                 "icon": "Table"
-              },
-              {
-                "id": "enr-o",
-                "name": "Overdue",
-                "layout": "list",
-                "icon": "TriangleAlert",
-                "within": {
-                  "applied_on": {
-                    "relative": "before_today"
-                  }
-                },
-                "filters": {
-                  "status": "Applied"
-                }
-              },
-              {
-                "id": "enr-w",
-                "name": "This week",
-                "layout": "list",
-                "icon": "CalendarDays",
-                "within": {
-                  "applied_on": {
-                    "relative": "this_week"
-                  }
-                },
-                "filters": {
-                  "status": "Applied"
-                }
-              },
-              {
-                "id": "enr-n",
-                "name": "Next 7 days",
-                "layout": "list",
-                "icon": "Clock",
-                "within": {
-                  "applied_on": {
-                    "relative": "next_days",
-                    "n": 7
-                  }
-                },
-                "filters": {
-                  "status": "Applied"
-                }
               },
               {
                 "id": "enr-m",

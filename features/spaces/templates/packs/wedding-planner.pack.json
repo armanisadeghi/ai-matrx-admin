@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0213",
-  "version": 3,
+  "version": 4,
   "title": "Wedding Planner",
   "description": "Couples: tasks, guest list, vendors, budget and seating for your wedding.",
   "forWho": "Couples planning a wedding",
@@ -1160,6 +1160,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -1221,7 +1229,8 @@
               "status": "Done",
               "due_on": "@today-120d",
               "owner": "Both",
-              "vendor": "v1"
+              "vendor": "v1",
+              "completed_on": "@today-120d"
             }
           },
           {
@@ -1232,7 +1241,8 @@
               "status": "Done",
               "due_on": "@today-90d",
               "owner": "Elena",
-              "vendor": "v2"
+              "vendor": "v2",
+              "completed_on": "@today-90d"
             }
           },
           {
@@ -1242,7 +1252,8 @@
               "category": "Paper",
               "status": "Done",
               "due_on": "@today-80d",
-              "owner": "Samuel"
+              "owner": "Samuel",
+              "completed_on": "@today-80d"
             }
           },
           {
@@ -1253,7 +1264,8 @@
               "status": "Done",
               "due_on": "@today-60d",
               "owner": "Both",
-              "vendor": "v3"
+              "vendor": "v3",
+              "completed_on": "@today-60d"
             }
           },
           {
@@ -1263,7 +1275,8 @@
               "category": "Attire",
               "status": "Done",
               "due_on": "@today-45d",
-              "owner": "Elena"
+              "owner": "Elena",
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -1541,6 +1554,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1773,7 +1791,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

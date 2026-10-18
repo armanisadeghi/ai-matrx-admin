@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0419",
-  "version": 1,
+  "version": 2,
   "title": "Mortgage Broker Pipeline",
   "description": "Borrowers, loan files by stage, conditions and referral partners. Tracking only.",
   "forWho": "Mortgage brokers and loan officers",
@@ -196,6 +196,14 @@
             "format": "date"
           },
           {
+            "key": "funded_on",
+            "label": "Funded on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "officer",
             "label": "Loan officer",
             "parityType": "relation",
@@ -364,7 +372,8 @@
               "lock_ends": "@today-40d",
               "closing_on": "@today-30d",
               "officer": "tm-geraldine",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "funded_on": "@today-30d"
             }
           },
           {
@@ -694,6 +703,22 @@
             "format": "date"
           },
           {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "cleared_on",
+            "label": "Cleared on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -785,7 +810,8 @@
               "loan": "l03",
               "kind": "Credit",
               "status": "Received",
-              "due_on": "@today-2d"
+              "due_on": "@today-2d",
+              "received_on": "@today-2d"
             }
           },
           {
@@ -806,7 +832,8 @@
               "loan": "l06",
               "kind": "Income",
               "status": "Cleared",
-              "due_on": "@today-6d"
+              "due_on": "@today-6d",
+              "cleared_on": "@today-6d"
             }
           },
           {
@@ -836,7 +863,8 @@
               "loan": "l05",
               "kind": "Assets",
               "status": "Cleared",
-              "due_on": "@today-50d"
+              "due_on": "@today-50d",
+              "cleared_on": "@today-50d"
             }
           }
         ],
@@ -1671,6 +1699,11 @@
             "field": "stage",
             "set": "value",
             "value": "Funded"
+          },
+          {
+            "field": "funded_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1699,6 +1732,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1713,6 +1751,11 @@
             "field": "status",
             "set": "value",
             "value": "Cleared"
+          },
+          {
+            "field": "cleared_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2048,7 +2091,7 @@
         "Trade Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

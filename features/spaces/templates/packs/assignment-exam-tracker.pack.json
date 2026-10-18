@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0254",
-  "version": 3,
+  "version": 4,
   "title": "Assignment & Exam Tracker",
   "description": "Students: deadlines, weights and grades for every course in one view.",
   "forWho": "Students tracking coursework",
@@ -298,6 +298,14 @@
             "format": "datetime"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -444,7 +452,8 @@
               "weight": 8,
               "grade": 91,
               "submitted": true,
-              "hours": 2
+              "hours": 2,
+              "completed_on": "@today-11d"
             }
           },
           {
@@ -487,7 +496,8 @@
               "weight": 5,
               "grade": 82,
               "submitted": true,
-              "hours": 1
+              "hours": 1,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -544,7 +554,8 @@
               "weight": 25,
               "grade": 87,
               "submitted": true,
-              "hours": 8
+              "hours": 8,
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -573,7 +584,8 @@
               "weight": 10,
               "grade": 94,
               "submitted": true,
-              "hours": 3
+              "hours": 3,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -644,7 +656,8 @@
               "weight": 5,
               "grade": 98,
               "submitted": true,
-              "hours": 1
+              "hours": 1,
+              "completed_on": "@today-15d"
             }
           },
           {
@@ -839,6 +852,11 @@
             "field": "submitted",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1031,7 +1049,7 @@
         "Thornwick Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

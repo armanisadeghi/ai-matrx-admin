@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 5,
+  "version": 6,
   "title": "Scrum Sprint Board",
   "description": "Scrum teams: epics and stories with points, sprint ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -659,6 +659,14 @@
             "parityType": "member",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -673,7 +681,8 @@
               "assignee": "tm-fatou",
               "pull_request": "https://git.lumenhaus-games.net/pull/300",
               "epic": "ep-1",
-              "sprint": "sp-1"
+              "sprint": "sp-1",
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -687,7 +696,8 @@
               "assignee": "tm-fatou",
               "pull_request": "https://git.lumenhaus-games.net/pull/301",
               "epic": "ep-1",
-              "sprint": "sp-1"
+              "sprint": "sp-1",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -701,7 +711,8 @@
               "assignee": "tm-nora",
               "pull_request": "https://git.lumenhaus-games.net/pull/302",
               "epic": "ep-1",
-              "sprint": "sp-1"
+              "sprint": "sp-1",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -715,7 +726,8 @@
               "assignee": "tm-sven",
               "pull_request": "https://git.lumenhaus-games.net/pull/303",
               "epic": "ep-1",
-              "sprint": "sp-1"
+              "sprint": "sp-1",
+              "completed_on": "@today-11d"
             }
           },
           {
@@ -729,7 +741,8 @@
               "assignee": "tm-emeka",
               "pull_request": "https://git.lumenhaus-games.net/pull/304",
               "epic": "ep-4",
-              "sprint": "sp-1"
+              "sprint": "sp-1",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -743,7 +756,8 @@
               "assignee": "tm-nora",
               "pull_request": "https://git.lumenhaus-games.net/pull/305",
               "epic": "ep-2",
-              "sprint": "sp-2"
+              "sprint": "sp-2",
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -757,7 +771,8 @@
               "assignee": "tm-fatou",
               "pull_request": "https://git.lumenhaus-games.net/pull/306",
               "epic": "ep-2",
-              "sprint": "sp-2"
+              "sprint": "sp-2",
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -771,7 +786,8 @@
               "assignee": "tm-fatou",
               "pull_request": "https://git.lumenhaus-games.net/pull/307",
               "epic": "ep-2",
-              "sprint": "sp-2"
+              "sprint": "sp-2",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -785,7 +801,8 @@
               "assignee": "tm-sven",
               "pull_request": "https://git.lumenhaus-games.net/pull/308",
               "epic": "ep-4",
-              "sprint": "sp-2"
+              "sprint": "sp-2",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -799,7 +816,8 @@
               "assignee": "tm-sven",
               "pull_request": "https://git.lumenhaus-games.net/pull/309",
               "epic": "ep-2",
-              "sprint": "sp-2"
+              "sprint": "sp-2",
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -813,7 +831,8 @@
               "assignee": "tm-nora",
               "pull_request": "https://git.lumenhaus-games.net/pull/310",
               "epic": "ep-3",
-              "sprint": "sp-3"
+              "sprint": "sp-3",
+              "completed_on": "@today-10d"
             }
           },
           {
@@ -1371,6 +1390,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1567,7 +1591,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

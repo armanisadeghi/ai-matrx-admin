@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 2,
+  "version": 3,
   "title": "Digital Marketing Agency HQ",
   "description": "Clients, retainers, campaigns, deliverables and monthly reports for a marketing agency.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -693,6 +693,22 @@
             "format": "date"
           },
           {
+            "key": "live_on",
+            "label": "Went live on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "budget",
             "label": "Ad budget (USD)",
             "parityType": "currency",
@@ -964,7 +980,8 @@
               "spend": 5100,
               "client": "client-1",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "live_on": "@today-25d"
             }
           },
           {
@@ -978,7 +995,8 @@
               "budget": 6000,
               "spend": 3900,
               "client": "client-1",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "live_on": "@today-120d"
             }
           },
           {
@@ -993,7 +1011,8 @@
               "spend": 0,
               "client": "client-2",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "live_on": "@today-40d"
             }
           },
           {
@@ -1007,7 +1026,8 @@
               "budget": 7500,
               "spend": 5200,
               "client": "client-3",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "live_on": "@today-60d"
             }
           },
           {
@@ -1051,7 +1071,8 @@
               "spend": 0,
               "client": "client-6",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "live_on": "@today-90d"
             }
           },
           {
@@ -1094,7 +1115,8 @@
               "budget": 5400,
               "spend": 2900,
               "client": "client-9",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "live_on": "@today-18d"
             }
           },
           {
@@ -1138,7 +1160,8 @@
               "spend": 0,
               "client": "client-10",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "closed_on": "@today-90d"
             }
           }
         ]
@@ -1218,6 +1241,14 @@
           {
             "key": "due_on",
             "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1397,7 +1428,8 @@
               "estimate": 4,
               "campaign": "campaign-2",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1484,7 +1516,8 @@
               "due_on": "@today-14d",
               "estimate": 4,
               "campaign": "campaign-7",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -1522,7 +1555,8 @@
               "estimate": 9,
               "campaign": "campaign-11",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -2338,6 +2372,11 @@
             "field": "status",
             "set": "value",
             "value": "Live"
+          },
+          {
+            "field": "live_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2352,6 +2391,11 @@
             "field": "status",
             "set": "value",
             "value": "Closed"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2366,6 +2410,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2380,6 +2429,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2823,7 +2877,7 @@
         "Alder Quay"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

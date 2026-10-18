@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0457",
-  "version": 2,
+  "version": 3,
   "title": "Accounting Firm Desk",
   "description": "Clients, monthly closes, filing deadlines and document requests for an accounting firm.",
   "forWho": "Bookkeeping and accounting firms",
@@ -1161,6 +1161,14 @@
             "format": "date"
           },
           {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "client",
             "label": "Client",
             "parityType": "relation",
@@ -1260,7 +1268,8 @@
               "status": "Received",
               "asked_on": "@today-10d",
               "due_on": "@today-5d",
-              "client": "client-4"
+              "client": "client-4",
+              "received_on": "@today-5d"
             }
           },
           {
@@ -1300,7 +1309,8 @@
               "status": "Received",
               "asked_on": "@today-8d",
               "due_on": "@today-3d",
-              "client": "client-1"
+              "client": "client-1",
+              "received_on": "@today-3d"
             }
           },
           {
@@ -1475,6 +1485,11 @@
             "field": "status",
             "set": "value",
             "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1489,6 +1504,11 @@
             "field": "status",
             "set": "value",
             "value": "Filed"
+          },
+          {
+            "field": "filed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1503,6 +1523,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1852,7 +1877,7 @@
         "Linden Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

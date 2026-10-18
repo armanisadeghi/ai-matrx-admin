@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "version": 4,
+  "version": 5,
   "title": "Personal To-Do List",
   "description": "Anyone with a long to-do list: capture tasks, sort by priority, use smart lists.",
   "forWho": "Anyone with a long to-do list",
@@ -242,6 +242,14 @@
           {
             "key": "due_on",
             "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -492,7 +500,8 @@
               "done": true,
               "repeats": "Never",
               "minutes": 5,
-              "notes": "Check the spare key"
+              "notes": "Check the spare key",
+              "completed_on": "@today-1d"
             }
           },
           {
@@ -507,7 +516,8 @@
               "done": true,
               "repeats": "Yearly",
               "minutes": 35,
-              "notes": "Use the shared folder"
+              "notes": "Use the shared folder",
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -522,7 +532,8 @@
               "done": true,
               "repeats": "Weekly",
               "minutes": 10,
-              "notes": "Confirm by email afterward"
+              "notes": "Confirm by email afterward",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -582,7 +593,8 @@
               "done": true,
               "repeats": "Never",
               "minutes": 30,
-              "notes": "Check the spare key"
+              "notes": "Check the spare key",
+              "completed_on": "@today-4d"
             }
           }
         ],
@@ -739,6 +751,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -938,7 +955,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

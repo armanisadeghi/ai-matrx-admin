@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 1,
+  "version": 2,
   "title": "Yoga Studio HQ",
   "description": "Manage class passes and memberships, teachers and schedules, and payments.",
   "forWho": "Yoga and pilates studios",
@@ -919,6 +919,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "visit_type",
             "label": "Kind",
             "parityType": "select",
@@ -1097,7 +1105,8 @@
               "when_on": "@today-12d",
               "visit_type": "Group class",
               "minutes": 150,
-              "price": 45
+              "price": 45,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -1111,7 +1120,8 @@
               "when_on": "@today-9d",
               "visit_type": "Private",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1125,7 +1135,8 @@
               "when_on": "@today-7d",
               "visit_type": "Workshop",
               "minutes": 75,
-              "price": 20
+              "price": 20,
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -1139,7 +1150,8 @@
               "when_on": "@today-5d",
               "visit_type": "Teacher training",
               "minutes": 150,
-              "price": 45
+              "price": 45,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1153,7 +1165,8 @@
               "when_on": "@today-3d",
               "visit_type": "Group class",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1501,6 +1514,14 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "method",
             "label": "Method",
             "parityType": "select",
@@ -1548,7 +1569,8 @@
               "client": "client-3",
               "amount": 130,
               "due_on": "@today-30d",
-              "method": "Card on file"
+              "method": "Card on file",
+              "paid_on": "@today-30d"
             }
           },
           {
@@ -1559,7 +1581,8 @@
               "client": "client-8",
               "amount": 70,
               "due_on": "@today-28d",
-              "method": "Cash"
+              "method": "Cash",
+              "paid_on": "@today-28d"
             }
           },
           {
@@ -1570,7 +1593,8 @@
               "client": "client-13",
               "amount": 108,
               "due_on": "@today-14d",
-              "method": "Bank transfer"
+              "method": "Bank transfer",
+              "paid_on": "@today-14d"
             }
           },
           {
@@ -1581,7 +1605,8 @@
               "client": "client-4",
               "amount": 20,
               "due_on": "@today-10d",
-              "method": "Gift card"
+              "method": "Gift card",
+              "paid_on": "@today-10d"
             }
           },
           {
@@ -1647,7 +1672,8 @@
               "client": "client-6",
               "amount": 45,
               "due_on": "@today-6d",
-              "method": "Cash"
+              "method": "Cash",
+              "paid_on": "@today-6d"
             }
           },
           {
@@ -1837,6 +1863,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1851,6 +1882,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2112,7 +2148,7 @@
         "Alder Walk"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

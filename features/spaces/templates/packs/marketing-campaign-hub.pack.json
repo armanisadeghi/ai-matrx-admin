@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0152",
-  "version": 3,
+  "version": 4,
   "title": "Marketing Campaign Hub",
   "description": "Campaign managers: track each campaign's content, budget and results in one place.",
   "forWho": "Marketing leads and campaign managers",
@@ -701,6 +701,14 @@
             "format": "date"
           },
           {
+            "key": "live_on",
+            "label": "Went live on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "author",
             "label": "Author",
             "parityType": "relation",
@@ -758,7 +766,8 @@
               "due_on": "@today-18d",
               "publish_on": "@today-16d",
               "author": "tm-03",
-              "cost": 400
+              "cost": 400,
+              "live_on": "@today-16d"
             }
           },
           {
@@ -771,7 +780,8 @@
               "due_on": "@today-17d",
               "publish_on": "@today-15d",
               "author": "tm-05",
-              "cost": 150
+              "cost": 150,
+              "live_on": "@today-15d"
             }
           },
           {
@@ -784,7 +794,8 @@
               "due_on": "@today-21d",
               "publish_on": "@today-19d",
               "author": "tm-05",
-              "cost": 1200
+              "cost": 1200,
+              "live_on": "@today-19d"
             }
           },
           {
@@ -862,7 +873,8 @@
               "due_on": "@today-40d",
               "publish_on": "@today-35d",
               "author": "tm-03",
-              "cost": 800
+              "cost": 800,
+              "live_on": "@today-35d"
             }
           },
           {
@@ -875,7 +887,8 @@
               "due_on": "@today-22d",
               "publish_on": "@today-18d",
               "author": "tm-03",
-              "cost": 800
+              "cost": 800,
+              "live_on": "@today-18d"
             }
           },
           {
@@ -914,7 +927,8 @@
               "due_on": "@today-110d",
               "publish_on": "@today-105d",
               "author": "tm-03",
-              "cost": 350
+              "cost": 350,
+              "live_on": "@today-105d"
             }
           },
           {
@@ -927,7 +941,8 @@
               "due_on": "@today-115d",
               "publish_on": "@today-110d",
               "author": "tm-05",
-              "cost": 1500
+              "cost": 1500,
+              "live_on": "@today-110d"
             }
           }
         ],
@@ -1278,6 +1293,11 @@
             "field": "stage",
             "set": "value",
             "value": "Live"
+          },
+          {
+            "field": "live_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1538,7 +1558,7 @@
         "Gullwing Quay"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

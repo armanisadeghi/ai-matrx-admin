@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 2,
+  "version": 3,
   "title": "Web Design Studio HQ",
   "description": "Clients, site projects, page inventory, revision requests and invoices for a web studio.",
   "forWho": "Web design and development studios",
@@ -992,6 +992,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "project",
             "label": "Project",
             "parityType": "relation",
@@ -1191,7 +1199,8 @@
               "due_on": "@today-12d",
               "project": "project-4",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approved_on": "@today-12d"
             }
           },
           {
@@ -1225,7 +1234,8 @@
               "page_type": "About",
               "due_on": "@today-10d",
               "project": "project-4",
-              "owner": "tm-5"
+              "owner": "tm-5",
+              "approved_on": "@today-10d"
             }
           },
           {
@@ -1283,7 +1293,8 @@
               "due_on": "@today-50d",
               "project": "project-6",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approved_on": "@today-50d"
             }
           },
           {
@@ -1382,6 +1393,14 @@
           {
             "key": "requested_on",
             "label": "Requested",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1489,7 +1508,8 @@
               "hours": 1,
               "requested_on": "@today-14d",
               "in_scope": true,
-              "project": "project-1"
+              "project": "project-1",
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -1549,7 +1569,8 @@
               "hours": 4,
               "requested_on": "@today-9d",
               "in_scope": false,
-              "project": "project-4"
+              "project": "project-4",
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1585,7 +1606,8 @@
               "hours": 0.5,
               "requested_on": "@today-8d",
               "in_scope": true,
-              "project": "project-3"
+              "project": "project-3",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -2092,6 +2114,11 @@
             "field": "status",
             "set": "value",
             "value": "Launched"
+          },
+          {
+            "field": "launch_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2106,6 +2133,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2120,6 +2152,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2134,6 +2171,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2534,7 +2576,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

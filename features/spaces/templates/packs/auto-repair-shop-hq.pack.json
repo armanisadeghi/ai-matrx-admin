@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 1,
+  "version": 2,
   "title": "Auto Repair Shop HQ",
   "description": "Track repair orders from estimate to pickup, manage parts stock and unpaid invoices.",
   "forWho": "Independent auto repair shops and garages",
@@ -582,6 +582,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "quote",
             "label": "Quote (USD)",
             "parityType": "currency",
@@ -873,7 +881,8 @@
               "quote": 95,
               "parts_cost": 25,
               "labor_cost": 45,
-              "hours": 0.8
+              "hours": 0.8,
+              "completed_on": "@today-21d"
             }
           },
           {
@@ -889,7 +898,8 @@
               "quote": 595,
               "parts_cost": 285,
               "labor_cost": 160,
-              "hours": 2.8
+              "hours": 2.8,
+              "completed_on": "@today-16d"
             }
           },
           {
@@ -905,7 +915,8 @@
               "quote": 220,
               "parts_cost": 10,
               "labor_cost": 85,
-              "hours": 1.5
+              "hours": 1.5,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -921,7 +932,8 @@
               "quote": 75,
               "parts_cost": 5,
               "labor_cost": 45,
-              "hours": 0.8
+              "hours": 0.8,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -937,7 +949,8 @@
               "quote": 280,
               "parts_cost": 155,
               "labor_cost": 60,
-              "hours": 1
+              "hours": 1,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -953,7 +966,8 @@
               "quote": 315,
               "parts_cost": 95,
               "labor_cost": 85,
-              "hours": 1.5
+              "hours": 1.5,
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1888,6 +1902,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1902,6 +1921,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2181,7 +2205,7 @@
         "Foundry Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

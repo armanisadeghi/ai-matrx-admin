@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 4,
+  "version": 5,
   "title": "Creator Studio",
   "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
@@ -141,6 +141,14 @@
           {
             "key": "follow_up",
             "label": "Follow-up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -934,6 +942,14 @@
               "do": "run_action",
               "action": "idea_approve"
             }
+          },
+          {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -954,7 +970,8 @@
               "topic": "Weeknight dinners",
               "demand": "High",
               "verdict": "Approved",
-              "hook": "Five minutes on Sunday saves five dinners"
+              "hook": "Five minutes on Sunday saves five dinners",
+              "approved_on": "@today-5d"
             }
           },
           {
@@ -974,7 +991,8 @@
               "topic": "Basics",
               "demand": "High",
               "verdict": "Approved",
-              "hook": "Restaurant crust at home"
+              "hook": "Restaurant crust at home",
+              "approved_on": "@today-11d"
             }
           },
           {
@@ -1569,6 +1587,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1583,6 +1606,11 @@
             "field": "status",
             "set": "value",
             "value": "Published"
+          },
+          {
+            "field": "publish_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1597,6 +1625,11 @@
             "field": "verdict",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1861,7 +1894,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

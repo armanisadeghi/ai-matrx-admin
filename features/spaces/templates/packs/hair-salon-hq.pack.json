@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 1,
+  "version": 2,
   "title": "Hair Salon HQ",
   "description": "Run stylists, appointments, client history, retail stock and payments in one place.",
   "forWho": "Hair salons and stylist teams",
@@ -913,6 +913,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "visit_type",
             "label": "Kind",
             "parityType": "select",
@@ -1127,7 +1135,8 @@
               "when_on": "@today-12d",
               "visit_type": "Appointment",
               "minutes": 90,
-              "price": 120
+              "price": 120,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -1141,7 +1150,8 @@
               "when_on": "@today-9d",
               "visit_type": "Consultation",
               "minutes": 90,
-              "price": 95
+              "price": 95,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1155,7 +1165,8 @@
               "when_on": "@today-7d",
               "visit_type": "Walk-in",
               "minutes": 180,
-              "price": 210
+              "price": 210,
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -1169,7 +1180,8 @@
               "when_on": "@today-5d",
               "visit_type": "Bridal",
               "minutes": 30,
-              "price": 35
+              "price": 35,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1183,7 +1195,8 @@
               "when_on": "@today-3d",
               "visit_type": "Appointment",
               "minutes": 60,
-              "price": 68
+              "price": 68,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1531,6 +1544,14 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "method",
             "label": "Method",
             "parityType": "select",
@@ -1578,7 +1599,8 @@
               "client": "client-3",
               "amount": 165,
               "due_on": "@today-30d",
-              "method": "Card"
+              "method": "Card",
+              "paid_on": "@today-30d"
             }
           },
           {
@@ -1589,7 +1611,8 @@
               "client": "client-8",
               "amount": 68,
               "due_on": "@today-28d",
-              "method": "Cash"
+              "method": "Cash",
+              "paid_on": "@today-28d"
             }
           },
           {
@@ -1600,7 +1623,8 @@
               "client": "client-13",
               "amount": 35,
               "due_on": "@today-14d",
-              "method": "Gift card"
+              "method": "Gift card",
+              "paid_on": "@today-14d"
             }
           },
           {
@@ -1611,7 +1635,8 @@
               "client": "client-4",
               "amount": 210,
               "due_on": "@today-10d",
-              "method": "Prepaid package"
+              "method": "Prepaid package",
+              "paid_on": "@today-10d"
             }
           },
           {
@@ -1677,7 +1702,8 @@
               "client": "client-6",
               "amount": 35,
               "due_on": "@today-6d",
-              "method": "Cash"
+              "method": "Cash",
+              "paid_on": "@today-6d"
             }
           },
           {
@@ -1867,6 +1893,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1881,6 +1912,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2142,7 +2178,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

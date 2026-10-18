@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0250",
-  "version": 4,
+  "version": 5,
   "title": "Student OS",
   "description": "Students: classes, tasks, notes and study time in one dashboard for the term.",
   "forWho": "Students in high school and college",
@@ -394,6 +394,14 @@
             "format": "datetime"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -533,7 +541,8 @@
               "priority": "High",
               "weight": 10,
               "score": 92,
-              "hours": 5
+              "hours": 5,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -573,7 +582,8 @@
               "priority": "Medium",
               "weight": 5,
               "score": 88,
-              "hours": 4
+              "hours": 4,
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -626,7 +636,8 @@
               "priority": "Low",
               "weight": 5,
               "score": 95,
-              "hours": 2
+              "hours": 2,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -666,7 +677,8 @@
               "priority": "Medium",
               "weight": 5,
               "score": 84,
-              "hours": 2
+              "hours": 2,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -719,7 +731,8 @@
               "priority": "Medium",
               "weight": 10,
               "score": 90,
-              "hours": 3
+              "hours": 3,
+              "completed_on": "@today-6d"
             }
           }
         ],
@@ -1348,6 +1361,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1591,7 +1609,7 @@
         "Alder Quill Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

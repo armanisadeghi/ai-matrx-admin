@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0406",
-  "version": 1,
+  "version": 2,
   "title": "Home Health Agency",
   "description": "Referrals, clients, shifts with hours and caregiver credentials for a home care agency.",
   "forWho": "Home care and home health agencies",
@@ -443,6 +443,14 @@
             "format": "datetime"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "hours",
             "label": "Hours",
             "parityType": "number",
@@ -611,7 +619,8 @@
               "starts_at": "@today-1d 08:00",
               "hours": 4,
               "status": "Completed",
-              "verified": true
+              "verified": true,
+              "completed_on": "@today-1d"
             }
           },
           {
@@ -623,7 +632,8 @@
               "starts_at": "@today-2d 17:00",
               "hours": 4,
               "status": "Completed",
-              "verified": true
+              "verified": true,
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -635,7 +645,8 @@
               "starts_at": "@today-3d 09:00",
               "hours": 5,
               "status": "Completed",
-              "verified": true
+              "verified": true,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -659,7 +670,8 @@
               "starts_at": "@today-6d 08:00",
               "hours": 4,
               "status": "Completed",
-              "verified": true
+              "verified": true,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -671,7 +683,8 @@
               "starts_at": "@today-20d 10:00",
               "hours": 6,
               "status": "Completed",
-              "verified": true
+              "verified": true,
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -683,7 +696,8 @@
               "starts_at": "@today-5d 17:00",
               "hours": 4,
               "status": "Completed",
-              "verified": false
+              "verified": false,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -695,7 +709,8 @@
               "starts_at": "@today-40d 14:00",
               "hours": 3,
               "status": "Completed",
-              "verified": true
+              "verified": true,
+              "completed_on": "@today-40d"
             }
           }
         ],
@@ -1636,6 +1651,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2014,7 +2034,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

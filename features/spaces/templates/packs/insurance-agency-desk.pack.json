@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0459",
-  "version": 2,
+  "version": 3,
   "title": "Insurance Agency Desk",
   "description": "Insureds, policies, renewals, claims and follow-ups for an independent insurance agency.",
   "forWho": "Independent insurance agencies and brokers",
@@ -1234,6 +1234,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "policy",
             "label": "Policy",
             "parityType": "relation",
@@ -1395,7 +1403,8 @@
               "due_on": "@today-8d",
               "policy": "policy-10",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -1418,7 +1427,8 @@
               "due_on": "@today-3d",
               "policy": "policy-9",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-3d"
             }
           }
         ]
@@ -1611,6 +1621,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1937,7 +1952,7 @@
         "Chandler Plaza"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

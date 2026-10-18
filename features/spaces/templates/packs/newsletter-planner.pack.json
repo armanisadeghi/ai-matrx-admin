@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0156",
-  "version": 3,
+  "version": 4,
   "title": "Newsletter Planner",
   "description": "Newsletter editors: keep an idea bank and a send calendar for every issue.",
   "forWho": "Newsletter editors and small publishers",
@@ -287,6 +287,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "writer",
             "label": "Writer",
             "parityType": "relation",
@@ -424,7 +432,8 @@
               "preview": "Five readers on what changed",
               "sponsor": "sp01",
               "open_rate": 47,
-              "click_rate": 6
+              "click_rate": 6,
+              "published_on": "@today-45d"
             }
           },
           {
@@ -439,7 +448,8 @@
               "subject_line": "Ten reads for your commute",
               "preview": "Our staff picks",
               "open_rate": 52,
-              "click_rate": 8
+              "click_rate": 8,
+              "published_on": "@today-38d"
             }
           },
           {
@@ -455,7 +465,8 @@
               "preview": "A conversation about slow work",
               "sponsor": "sp02",
               "open_rate": 44,
-              "click_rate": 5
+              "click_rate": 5,
+              "published_on": "@today-31d"
             }
           },
           {
@@ -471,7 +482,8 @@
               "preview": "Twelve titles, no spoilers",
               "sponsor": "sp01",
               "open_rate": 49,
-              "click_rate": 9
+              "click_rate": 9,
+              "published_on": "@today-24d"
             }
           },
           {
@@ -486,7 +498,8 @@
               "subject_line": "Short is not always better",
               "preview": "A case for length",
               "open_rate": 41,
-              "click_rate": 4
+              "click_rate": 4,
+              "published_on": "@today-17d"
             }
           },
           {
@@ -502,7 +515,8 @@
               "preview": "Where the interesting books come from",
               "sponsor": "sp02",
               "open_rate": 50,
-              "click_rate": 7
+              "click_rate": 7,
+              "published_on": "@today-10d"
             }
           },
           {
@@ -807,6 +821,11 @@
             "field": "status",
             "set": "value",
             "value": "Published"
+          },
+          {
+            "field": "published_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1047,7 +1066,7 @@
         "Salt Marsh Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

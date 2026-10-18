@@ -61,11 +61,7 @@ export const APPROVAL_STATUS_LABEL: Record<ApprovalStatus, string> = {
   rejected: "Rejected",
 };
 
-/** A waiting record the agent's owner decision already covers: it is not waiting anywhere (list, counts, dock). */
-export const isCovered = (r: Pick<SpendApprovalRow, "status" | "covered_by_id">): boolean => r.status === "waiting" && r.covered_by_id != null;
-/** Waiting and nobody has decided it, directly or through the agent. */
-export const isWaiting = (r: Pick<SpendApprovalRow, "status" | "covered_by_id">): boolean => r.status === "waiting" && r.covered_by_id == null;
-export const COVERED_LABEL = "Covered by the agent's approval";
+export { COVERED_LABEL, isCovered, isWaiting } from "./coveredApprovals";
 
 /** Whole days until a temporary approval's expiry (0 on its last day; negative once past). */
 export function daysUntil(iso: string | null, now: number = Date.now()): number | null {

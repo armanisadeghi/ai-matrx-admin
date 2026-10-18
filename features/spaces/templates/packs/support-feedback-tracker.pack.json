@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0315",
-  "version": 3,
+  "version": 4,
   "title": "Support and Feedback Tracker",
   "description": "Small support teams: triage tickets, track feature requests, link help articles.",
   "forWho": "Small teams handling customer support",
@@ -446,6 +446,14 @@
               "do": "run_action",
               "action": "fb_shipped"
             }
+          },
+          {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -486,7 +494,8 @@
               "source": "Support ticket",
               "status": "Shipped",
               "votes": 32,
-              "theme": "Integration"
+              "theme": "Integration",
+              "shipped_on": "@today-11d"
             }
           },
           {
@@ -738,6 +747,14 @@
             "format": "date"
           },
           {
+            "key": "resolved_on",
+            "label": "Resolved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "age",
             "label": "Days open",
             "parityType": "formula",
@@ -846,7 +863,8 @@
               "requester": "Dmitri Alvarez",
               "requester_email": "dmitri@customermail.net",
               "opened_on": "@today-9d",
-              "due_on": "@today-2d"
+              "due_on": "@today-2d",
+              "resolved_on": "@today-2d"
             }
           },
           {
@@ -934,7 +952,8 @@
               "requester": "Anwen Rojas",
               "requester_email": "anwen@customermail.net",
               "opened_on": "@today-12d",
-              "due_on": "@today-10d"
+              "due_on": "@today-10d",
+              "resolved_on": "@today-10d"
             }
           },
           {
@@ -1194,6 +1213,11 @@
             "field": "status",
             "set": "value",
             "value": "Resolved"
+          },
+          {
+            "field": "resolved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1236,6 +1260,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1462,7 +1491,7 @@
         "Ferrule Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

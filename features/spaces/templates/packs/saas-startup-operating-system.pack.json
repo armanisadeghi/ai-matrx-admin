@@ -1,0 +1,3537 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0562",
+  "version": 1,
+  "title": "SaaS Startup Operating System",
+  "description": "Customers, roadmap, support tickets and monthly metrics for a software startup.",
+  "forWho": "Founders running a small subscription software product",
+  "icon": {
+    "emoji": "🧭"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "tech",
+  "tags": [
+    "saas",
+    "customers",
+    "roadmap",
+    "support",
+    "metrics"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-saas-startup-operating-system",
+    "catalogueId": "SP0562",
+    "useCase": "Priyanka Vandenberg-Okoye is a founder of a small scheduling-software startup and uses this to see which customers are at risk, which roadmap items customers ask for most and how monthly recurring revenue is moving.",
+    "industry": "software_it",
+    "vertical": "SaaS startup",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Tidewater Software",
+      "describes": "A seven-person startup selling team-scheduling software on monthly and annual plans to small service businesses.",
+      "address": {
+        "line1": "501 Gantry Street",
+        "city": "San Francisco",
+        "region": "CA",
+        "postalCode": "94107",
+        "country": "US"
+      },
+      "phone": "(415) 555-0147",
+      "website": "tidewatersoft.net",
+      "email": "team@tidewatersoft.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-saas-startup-operating-system",
+    "tables": [
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building",
+        "titleField": "customer_name",
+        "describes": "Every account with its plan, monthly revenue, health and renewal date.",
+        "subject": "thing",
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "signed_up_on",
+            "renews_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Trial",
+              "Active",
+              "At risk",
+              "Churned"
+            ],
+            "choiceColors": {
+              "Trial": "slate",
+              "Active": "blue",
+              "At risk": "amber",
+              "Churned": "red"
+            },
+            "required": true,
+            "default": "Trial",
+            "statusGroups": {
+              "Trial": "in_progress",
+              "Active": "in_progress",
+              "At risk": "in_progress",
+              "Churned": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plan",
+            "label": "Plan",
+            "parityType": "select",
+            "choices": [
+              "Starter",
+              "Team",
+              "Business"
+            ],
+            "choiceColors": {
+              "Starter": "slate",
+              "Team": "blue",
+              "Business": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "mrr",
+            "label": "Monthly revenue (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "signed_up_on",
+            "label": "Signed up on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "renews_on",
+            "label": "Renews on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Customer owner",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tickets_open",
+            "label": "Open tickets",
+            "parityType": "rollup",
+            "via": "tickets",
+            "pick": "ticket_title",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "New",
+                "In progress",
+                "Waiting on customer"
+              ]
+            }
+          },
+          {
+            "key": "tickets_all",
+            "label": "Tickets ever",
+            "parityType": "rollup",
+            "via": "tickets",
+            "pick": "ticket_title",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "revenue_per_seat",
+            "label": "Revenue per seat (USD)",
+            "parityType": "formula",
+            "formula": "IF({Seats} > 0, ROUND({Monthly revenue (USD)} / {Seats}, 2), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_risk",
+            "label": "Flag at risk",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "customer_risk"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_active",
+            "label": "Mark active",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "customer_active"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_ticket",
+            "label": "Log a ticket",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "tickets",
+              "template": "New ticket",
+              "prefill": {
+                "customer": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New customer",
+            "values": {
+              "customer_name": "New customer",
+              "status": "Trial"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why they bought"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The problem they came to solve, in their words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Integrations, import and the first value moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Success plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Kickoff call"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First schedule built"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Week two check-in"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Renewal review set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "customer-1",
+            "values": {
+              "customer_name": "Harbor Physio Group",
+              "status": "Active",
+              "plan": "Business",
+              "mrr": 420,
+              "seats": 14,
+              "signed_up_on": "@today-420d",
+              "renews_on": "@today+11d",
+              "email": "ops@harborphysio.net",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "customer-2",
+            "values": {
+              "customer_name": "Fernhill Cleaning Co",
+              "status": "Active",
+              "plan": "Team",
+              "mrr": 120,
+              "seats": 6,
+              "signed_up_on": "@today-300d",
+              "renews_on": "@today+66d",
+              "email": "office@fernhillclean.net",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "customer-3",
+            "values": {
+              "customer_name": "Lumen Dental Studio",
+              "status": "At risk",
+              "plan": "Team",
+              "mrr": 150,
+              "seats": 8,
+              "signed_up_on": "@today-250d",
+              "renews_on": "@today",
+              "email": "admin@lumendental.net",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "customer-4",
+            "values": {
+              "customer_name": "Oakline Landscaping",
+              "status": "Active",
+              "plan": "Starter",
+              "mrr": 40,
+              "seats": 2,
+              "signed_up_on": "@today-60d",
+              "renews_on": "@today+30d",
+              "email": "jo@oaklinelandscape.net",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "customer-5",
+            "values": {
+              "customer_name": "Pinecrest Tutoring",
+              "status": "Trial",
+              "plan": "Team",
+              "mrr": 0,
+              "seats": 5,
+              "signed_up_on": "@today-9d",
+              "renews_on": "@today+5d",
+              "email": "hello@pinecresttutor.net",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "customer-6",
+            "values": {
+              "customer_name": "Brightside Salon",
+              "status": "Active",
+              "plan": "Team",
+              "mrr": 90,
+              "seats": 5,
+              "signed_up_on": "@today-180d",
+              "renews_on": "@today+3d",
+              "email": "bookings@brightsidesalon.net",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "customer-7",
+            "values": {
+              "customer_name": "Riverside Vet Clinic",
+              "status": "At risk",
+              "plan": "Business",
+              "mrr": 360,
+              "seats": 12,
+              "signed_up_on": "@today-500d",
+              "renews_on": "@today-4d",
+              "email": "office@riversidevet.net",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "customer-8",
+            "values": {
+              "customer_name": "Copperkettle Catering",
+              "status": "Active",
+              "plan": "Starter",
+              "mrr": 35,
+              "seats": 2,
+              "signed_up_on": "@today-90d",
+              "renews_on": "@today+60d",
+              "email": "hello@copperkettle.net",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "customer-9",
+            "values": {
+              "customer_name": "Quill and Brush Studio",
+              "status": "Churned",
+              "plan": "Starter",
+              "mrr": 0,
+              "seats": 3,
+              "signed_up_on": "@today-400d",
+              "renews_on": "@today-30d",
+              "email": "q@quillbrushstudio.net",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "customer-10",
+            "values": {
+              "customer_name": "Maple Street Movers",
+              "status": "Trial",
+              "plan": "Starter",
+              "mrr": 0,
+              "seats": 3,
+              "signed_up_on": "@today-3d",
+              "renews_on": "@today+11d",
+              "email": "dispatch@maplestmovers.net",
+              "owner": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "tickets",
+        "name": "Support tickets",
+        "labelSingular": "Support ticket",
+        "labelPlural": "Support tickets",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "life-buoy",
+        "titleField": "ticket_title",
+        "describes": "Questions, bugs and feature requests from customers, each tied to the customer and, where it applies, to a roadmap item.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "feature": "Either record can be created or change status before the other.",
+          "assignee": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "ticket_title",
+            "label": "Support ticket",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "relationTarget": "customer",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "feature",
+            "label": "Roadmap item",
+            "parityType": "relation",
+            "relationTarget": "feature",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Question",
+              "Bug",
+              "Feature request",
+              "Billing"
+            ],
+            "choiceColors": {
+              "Question": "slate",
+              "Bug": "blue",
+              "Feature request": "amber",
+              "Billing": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "New",
+              "In progress",
+              "Waiting on customer",
+              "Solved"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "In progress": "blue",
+              "Waiting on customer": "amber",
+              "Solved": "violet"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "In progress": "in_progress",
+              "Waiting on customer": "in_progress",
+              "Solved": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "choices": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Normal": "blue",
+              "High": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reply_by",
+            "label": "Reply by",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "assignee",
+            "label": "Handled by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_start",
+            "label": "Start",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "tickets_start"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_solved",
+            "label": "Mark solved",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "tickets_solved"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New ticket",
+            "values": {
+              "ticket_title": "New ticket",
+              "status": "New"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What happened"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Steps, screenshots and what they expected."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reply sent"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What we told them and when."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "tickets-1",
+            "values": {
+              "ticket_title": "Shifts do not repeat weekly",
+              "customer": "customer-1",
+              "feature": "feature-1",
+              "kind": "Feature request",
+              "status": "In progress",
+              "priority": "High",
+              "reply_by": "@today+1d 12:00",
+              "assignee": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tickets-2",
+            "values": {
+              "ticket_title": "Export invoices to our accounting tool",
+              "customer": "customer-1",
+              "feature": "feature-3",
+              "kind": "Feature request",
+              "status": "New",
+              "priority": "Normal",
+              "reply_by": "@today 17:00",
+              "assignee": "tm-3"
+            }
+          },
+          {
+            "key": "tickets-3",
+            "values": {
+              "ticket_title": "Reminder text sent twice",
+              "customer": "customer-3",
+              "kind": "Bug",
+              "status": "New",
+              "priority": "High",
+              "reply_by": "@today-1d 17:00",
+              "assignee": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tickets-4",
+            "values": {
+              "ticket_title": "Cannot add a new teammate",
+              "customer": "customer-4",
+              "kind": "Question",
+              "status": "Waiting on customer",
+              "priority": "Low",
+              "reply_by": "@today+2d 12:00",
+              "assignee": "tm-3"
+            }
+          },
+          {
+            "key": "tickets-5",
+            "values": {
+              "ticket_title": "Sync with our calendar",
+              "customer": "customer-6",
+              "feature": "feature-2",
+              "kind": "Feature request",
+              "status": "New",
+              "priority": "Normal",
+              "reply_by": "@today+3d 12:00",
+              "assignee": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tickets-6",
+            "values": {
+              "ticket_title": "Change plan to Business",
+              "customer": "customer-2",
+              "kind": "Billing",
+              "status": "In progress",
+              "priority": "Normal",
+              "reply_by": "@today 12:00",
+              "assignee": "tm-1"
+            }
+          },
+          {
+            "key": "tickets-7",
+            "values": {
+              "ticket_title": "Need swap shifts on phone",
+              "customer": "customer-7",
+              "feature": "feature-4",
+              "kind": "Feature request",
+              "status": "New",
+              "priority": "High",
+              "reply_by": "@today-2d 12:00",
+              "assignee": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tickets-8",
+            "values": {
+              "ticket_title": "How do I set a holiday?",
+              "customer": "customer-5",
+              "kind": "Question",
+              "status": "New",
+              "priority": "Low",
+              "reply_by": "@today+4d 12:00",
+              "assignee": "tm-3"
+            }
+          },
+          {
+            "key": "tickets-9",
+            "values": {
+              "ticket_title": "Weekly hours report for payroll",
+              "customer": "customer-8",
+              "feature": "feature-6",
+              "kind": "Feature request",
+              "status": "Waiting on customer",
+              "priority": "Normal",
+              "reply_by": "@today+6d 12:00",
+              "assignee": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tickets-10",
+            "values": {
+              "ticket_title": "App freezes on login",
+              "customer": "customer-3",
+              "kind": "Bug",
+              "status": "Solved",
+              "priority": "High",
+              "reply_by": "@today-6d 12:00",
+              "assignee": "tm-4"
+            }
+          },
+          {
+            "key": "tickets-11",
+            "values": {
+              "ticket_title": "Invoice shows wrong tax",
+              "customer": "customer-1",
+              "kind": "Billing",
+              "status": "Solved",
+              "priority": "Normal",
+              "reply_by": "@today-9d 12:00",
+              "assignee": "tm-1",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "feature",
+        "name": "Roadmap",
+        "labelSingular": "Roadmap item",
+        "labelPlural": "Roadmap",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map",
+        "titleField": "feature_name",
+        "describes": "Everything the team might build, with its stage, target date and how many customers asked for it.",
+        "subject": "thing",
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Shipped"
+            ],
+            "filled": [
+              "shipped_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "target_on",
+            "shipped_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "feature_name",
+            "label": "Roadmap item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Idea",
+              "Planned",
+              "In build",
+              "Shipped",
+              "Dropped"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "Planned": "blue",
+              "In build": "amber",
+              "Shipped": "violet",
+              "Dropped": "teal"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Planned": "in_progress",
+              "In build": "in_progress",
+              "Shipped": "done",
+              "Dropped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "select",
+            "choices": [
+              "Scheduling",
+              "Billing",
+              "Integrations",
+              "Mobile",
+              "Reports",
+              "Admin"
+            ],
+            "choiceColors": {
+              "Scheduling": "slate",
+              "Billing": "blue",
+              "Integrations": "amber",
+              "Mobile": "violet",
+              "Reports": "teal",
+              "Admin": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "size",
+            "label": "Size",
+            "parityType": "select",
+            "choices": [
+              "Small",
+              "Medium",
+              "Large"
+            ],
+            "choiceColors": {
+              "Small": "slate",
+              "Medium": "blue",
+              "Large": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "target_on",
+            "label": "Target date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "asks",
+            "label": "Tickets asking for it",
+            "parityType": "rollup",
+            "via": "tickets",
+            "pick": "ticket_title",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "asking_mrr",
+            "label": "Feature-request tickets",
+            "parityType": "rollup",
+            "via": "tickets",
+            "pick": "ticket_title",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "kind": "Feature request"
+            }
+          },
+          {
+            "key": "btn_plan",
+            "label": "Mark planned",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "feature_plan"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_build",
+            "label": "Start build",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "feature_build"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_shipped",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "feature_shipped"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New roadmap item",
+            "values": {
+              "feature_name": "New roadmap item",
+              "status": "Idea"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The problem"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who has it and how they work around it today."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done looks like"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The smallest version that solves it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Launch checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Built and reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Help article written"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Customers told"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Release note posted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "feature-1",
+            "values": {
+              "feature_name": "Recurring shifts",
+              "status": "In build",
+              "area": "Scheduling",
+              "size": "Large",
+              "target_on": "@today+6d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "feature-2",
+            "values": {
+              "feature_name": "Calendar sync, two-way",
+              "status": "Planned",
+              "area": "Integrations",
+              "size": "Large",
+              "target_on": "@today+30d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "feature-3",
+            "values": {
+              "feature_name": "Invoice export",
+              "status": "In build",
+              "area": "Billing",
+              "size": "Medium",
+              "target_on": "@today",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "feature-4",
+            "values": {
+              "feature_name": "Mobile shift swap",
+              "status": "Planned",
+              "area": "Mobile",
+              "size": "Large",
+              "target_on": "@today+45d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "feature-5",
+            "values": {
+              "feature_name": "Team time-off request",
+              "status": "Idea",
+              "area": "Scheduling",
+              "size": "Medium",
+              "target_on": "@today-3d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "feature-6",
+            "values": {
+              "feature_name": "Weekly hours report",
+              "status": "Planned",
+              "area": "Reports",
+              "size": "Small",
+              "target_on": "@today+3d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "feature-7",
+            "values": {
+              "feature_name": "Role permissions",
+              "status": "Idea",
+              "area": "Admin",
+              "size": "Medium",
+              "target_on": "@today+60d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "feature-8",
+            "values": {
+              "feature_name": "Text message reminders",
+              "status": "Shipped",
+              "area": "Scheduling",
+              "size": "Medium",
+              "target_on": "@today-45d",
+              "owner": "tm-4",
+              "shipped_on": "@today-40d"
+            }
+          },
+          {
+            "key": "feature-9",
+            "values": {
+              "feature_name": "Dark mode",
+              "status": "Dropped",
+              "area": "Admin",
+              "size": "Small",
+              "target_on": "@today-90d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "metric_month",
+        "name": "Monthly metrics",
+        "labelSingular": "Monthly metric",
+        "labelPlural": "Monthly metrics",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "line-chart",
+        "titleField": "month_label",
+        "describes": "One row per month for recurring revenue, new and churned accounts and cash.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "month_label",
+            "label": "Month",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "month_start",
+            "label": "Month starting",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "mrr_end",
+            "label": "Revenue at month end (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "new_accounts",
+            "label": "New accounts",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lost_accounts",
+            "label": "Lost accounts",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "spend",
+            "label": "Monthly spend (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "trend",
+            "label": "Trend",
+            "parityType": "select",
+            "choices": [
+              "Up",
+              "Flat",
+              "Down"
+            ],
+            "choiceColors": {
+              "Up": "slate",
+              "Flat": "blue",
+              "Down": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "net_accounts",
+            "label": "Net new accounts",
+            "parityType": "formula",
+            "formula": "{New accounts} - {Lost accounts}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New month",
+            "values": {
+              "month_label": "New month"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What moved the number"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The two biggest reasons revenue went up or down."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decisions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What we will do differently next month."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "metric_month-1",
+            "values": {
+              "month_label": "Launch month",
+              "month_start": "@today-180d",
+              "mrr_end": 6100,
+              "new_accounts": 9,
+              "lost_accounts": 2,
+              "spend": 210000,
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "metric_month-2",
+            "values": {
+              "month_label": "Pricing change month",
+              "month_start": "@today-150d",
+              "mrr_end": 6800,
+              "new_accounts": 10,
+              "lost_accounts": 3,
+              "spend": 198000,
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "metric_month-3",
+            "values": {
+              "month_label": "Conference month",
+              "month_start": "@today-120d",
+              "mrr_end": 7200,
+              "new_accounts": 6,
+              "lost_accounts": 2,
+              "spend": 187000,
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "metric_month-4",
+            "values": {
+              "month_label": "Holiday slowdown",
+              "month_start": "@today-90d",
+              "mrr_end": 7300,
+              "new_accounts": 5,
+              "lost_accounts": 4,
+              "spend": 176000,
+              "trend": "Flat"
+            }
+          },
+          {
+            "key": "metric_month-5",
+            "values": {
+              "month_label": "Text reminders release",
+              "month_start": "@today-60d",
+              "mrr_end": 8100,
+              "new_accounts": 11,
+              "lost_accounts": 2,
+              "spend": 168000,
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "metric_month-6",
+            "values": {
+              "month_label": "Best month so far",
+              "month_start": "@today-30d",
+              "mrr_end": 8500,
+              "new_accounts": 7,
+              "lost_accounts": 3,
+              "spend": 155000,
+              "trend": "Up"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each customer belongs to one customer owner.",
+        "fromTable": "customer",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "customer_by_owner"
+      },
+      {
+        "describes": "Each support ticket belongs to one customer.",
+        "fromTable": "tickets",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tickets"
+      },
+      {
+        "describes": "Each support ticket belongs to one roadmap item.",
+        "fromTable": "tickets",
+        "fromField": "feature",
+        "toTable": "feature",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tickets"
+      },
+      {
+        "describes": "Each support ticket belongs to one handled by.",
+        "fromTable": "tickets",
+        "fromField": "assignee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "ticket_by_assignee"
+      },
+      {
+        "describes": "Each roadmap item belongs to one owner.",
+        "fromTable": "feature",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "feature_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Priyanka Vandenberg-Okoye",
+              "role": "Co-founder, product",
+              "work_email": "priyanka@tidewatersoft.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Oluwaseun Brandt",
+              "role": "Co-founder, engineering",
+              "work_email": "oluwaseun@tidewatersoft.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Tallulah Reyes-Hammond",
+              "role": "Customer success",
+              "work_email": "tallulah@tidewatersoft.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Magnus Eriksen-Patel",
+              "role": "Engineer",
+              "work_email": "magnus@tidewatersoft.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Florentina Adebayo",
+              "role": "Designer",
+              "work_email": "florentina@tidewatersoft.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Customer question",
+        "describes": "Customers send a question or a request here.",
+        "audience": "staff",
+        "table": "tickets",
+        "fields": [
+          {
+            "fieldKey": "ticket_title",
+            "ask": "What do you need help with?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "Is it a question, a bug or an idea?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. Support will reply by email."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "customer_risk",
+        "table": "customer",
+        "name": "Flag at risk",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "At risk"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "customer_active",
+        "table": "customer",
+        "name": "Mark active",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "tickets_start",
+        "table": "tickets",
+        "name": "Start",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "tickets_solved",
+        "table": "tickets",
+        "name": "Mark solved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Solved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "feature_plan",
+        "table": "feature",
+        "name": "Mark planned",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Planned"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "feature_build",
+        "table": "feature",
+        "name": "Start build",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In build"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "feature_shipped",
+        "table": "feature",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "By status",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "customer_cal",
+        "name": "Calendar",
+        "table": "customer",
+        "kind": "calendar",
+        "dateField": "renews_on",
+        "allDay": true
+      },
+      {
+        "token": "customer_over",
+        "name": "Overdue",
+        "table": "customer",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Trial",
+            "Active",
+            "At risk"
+          ]
+        }
+      },
+      {
+        "token": "customer_week",
+        "name": "This week",
+        "table": "customer",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Trial",
+            "Active",
+            "At risk"
+          ]
+        }
+      },
+      {
+        "token": "customer_next7",
+        "name": "Next 7 days",
+        "table": "customer",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Trial",
+            "Active",
+            "At risk"
+          ]
+        }
+      },
+      {
+        "token": "customer_mine",
+        "name": "My customers",
+        "table": "customer",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_tickets",
+        "name": "All support tickets",
+        "table": "tickets",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "tickets_board",
+        "name": "By status",
+        "table": "tickets",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "tickets_cal",
+        "name": "Calendar",
+        "table": "tickets",
+        "kind": "calendar",
+        "dateField": "reply_by",
+        "allDay": false
+      },
+      {
+        "token": "tickets_today",
+        "name": "Today",
+        "table": "tickets",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress",
+            "Waiting on customer"
+          ]
+        }
+      },
+      {
+        "token": "tickets_over",
+        "name": "Overdue",
+        "table": "tickets",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress",
+            "Waiting on customer"
+          ]
+        }
+      },
+      {
+        "token": "tickets_week",
+        "name": "This week",
+        "table": "tickets",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress",
+            "Waiting on customer"
+          ]
+        }
+      },
+      {
+        "token": "tickets_next7",
+        "name": "Next 7 days",
+        "table": "tickets",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress",
+            "Waiting on customer"
+          ]
+        }
+      },
+      {
+        "token": "tickets_mine",
+        "name": "My support tickets",
+        "table": "tickets",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_feature",
+        "name": "All roadmap",
+        "table": "feature",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "feature_board",
+        "name": "By status",
+        "table": "feature",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "feature_cal",
+        "name": "Calendar",
+        "table": "feature",
+        "kind": "calendar",
+        "dateField": "target_on",
+        "allDay": true
+      },
+      {
+        "token": "feature_over",
+        "name": "Overdue",
+        "table": "feature",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Planned",
+            "In build"
+          ]
+        }
+      },
+      {
+        "token": "feature_week",
+        "name": "This week",
+        "table": "feature",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Planned",
+            "In build"
+          ]
+        }
+      },
+      {
+        "token": "feature_next7",
+        "name": "Next 7 days",
+        "table": "feature",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Planned",
+            "In build"
+          ]
+        }
+      },
+      {
+        "token": "feature_mine",
+        "name": "My roadmap",
+        "table": "feature",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_metric_month",
+        "name": "All monthly metrics",
+        "table": "metric_month",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "metric_month_board",
+        "name": "By trend",
+        "table": "metric_month",
+        "kind": "kanban",
+        "groupBy": "trend"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "SaaS Startup Operating System assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "customer",
+          "describes": "Every account with its plan, monthly revenue, health and renewal date."
+        },
+        {
+          "name": "related_tables",
+          "table": "tickets",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many customers are at risk?",
+        "whyItMatters": "Customer success calls every at-risk account on Mondays.",
+        "expect": {
+          "table": "customer",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "At risk"
+          },
+          "answer": 2,
+          "unit": "customers"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open support tickets.",
+        "action": {
+          "kind": "open",
+          "surface": "tickets_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "tickets_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open roadmap.",
+        "action": {
+          "kind": "open",
+          "surface": "feature_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "feature_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "tidewatersoft.net"
+      ],
+      "fictionalStreets": [
+        "Gantry Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "saas-startup-operating-system",
+      "parent": null,
+      "title": "SaaS Startup Operating System",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The company's operating view in one place: customers and their renewal dates, the roadmap and who asked for what, support tickets and the monthly numbers. Start every Monday with the Dashboard and the At risk view. Log a ticket the moment a customer asks, and link it to the roadmap item it is about."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-founder-review"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:customer-health-playbook"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:prioritizing-the-roadmap"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every account with its plan, monthly revenue, health and renewal date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cus-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "renews_on"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cus-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "renews_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Trial",
+                    "Active",
+                    "At risk"
+                  ]
+                }
+              },
+              {
+                "id": "cus-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "renews_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Trial",
+                    "Active",
+                    "At risk"
+                  ]
+                }
+              },
+              {
+                "id": "cus-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Trial",
+                    "Active",
+                    "At risk"
+                  ]
+                }
+              },
+              {
+                "id": "cus-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Support tickets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Questions, bugs and feature requests from customers, each tied to the customer and, where it applies, to a roadmap item."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tickets",
+              "view": "tickets_board"
+            },
+            "inline": true,
+            "title": "Support tickets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tic-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tic-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "reply_by"
+              },
+              {
+                "id": "tic-t",
+                "name": "All support tickets",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tic-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "reply_by": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on customer"
+                  ]
+                }
+              },
+              {
+                "id": "tic-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "reply_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on customer"
+                  ]
+                }
+              },
+              {
+                "id": "tic-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "reply_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on customer"
+                  ]
+                }
+              },
+              {
+                "id": "tic-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "reply_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on customer"
+                  ]
+                }
+              },
+              {
+                "id": "tic-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tic-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Roadmap"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything the team might build, with its stage, target date and how many customers asked for it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "feature",
+              "view": "feature_board"
+            },
+            "inline": true,
+            "title": "Roadmap",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "fea-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "fea-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "target_on"
+              },
+              {
+                "id": "fea-t",
+                "name": "All roadmap",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "fea-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "target_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Planned",
+                    "In build"
+                  ]
+                }
+              },
+              {
+                "id": "fea-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "target_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Planned",
+                    "In build"
+                  ]
+                }
+              },
+              {
+                "id": "fea-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "target_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Planned",
+                    "In build"
+                  ]
+                }
+              },
+              {
+                "id": "fea-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "fea-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly metrics"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One row per month for recurring revenue, new and churned accounts and cash."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "metric_month",
+              "view": "metric_month_board"
+            },
+            "inline": true,
+            "title": "Monthly metrics",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "met-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "trend"
+              },
+              {
+                "id": "met-t",
+                "name": "All monthly metrics",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "met-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "saas-startup-operating-system",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The business at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "customer",
+                      "view": "all_customer"
+                    },
+                    "inline": true,
+                    "title": "Customers by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Customers by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "customer",
+                      "view": "all_customer"
+                    },
+                    "inline": true,
+                    "title": "Revenue by plan (USD per month)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Revenue by plan (USD per month)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "plan",
+                          "op": "sum",
+                          "field": "mrr"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "tickets",
+                      "view": "all_tickets"
+                    },
+                    "inline": true,
+                    "title": "Tickets by kind",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Tickets by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "metric_month",
+                      "view": "all_metric_month"
+                    },
+                    "inline": true,
+                    "title": "Revenue at month end (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Revenue at month end (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "line",
+                          "groupBy": "month_label",
+                          "op": "sum",
+                          "field": "mrr_end"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewing in the next 14 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "all_customer"
+            },
+            "inline": true,
+            "title": "Renewing in the next 14 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Renewing in the next 14 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Trial",
+                    "Active",
+                    "At risk"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tickets waiting on us"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tickets",
+              "view": "all_tickets"
+            },
+            "inline": true,
+            "title": "Tickets waiting on us",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Tickets waiting on us",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Roadmap items in build"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "feature",
+              "view": "all_feature"
+            },
+            "inline": true,
+            "title": "Roadmap items in build",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Roadmap items in build",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "In build"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Open tickets"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tickets for the customer not yet solved"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two or more open on a Business account means a call, not an email"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tickets asking for it"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tickets linked to the roadmap item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The count of asks helps decide the order; ties go to the larger accounts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Net new accounts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "New accounts minus lost accounts for the month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three negative months in a row is a conversation about retention, not marketing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-founder-review",
+      "parent": "saas-startup-operating-system",
+      "title": "Weekly review",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Thirty minutes every Monday keeps a small company honest. Same agenda, same order."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Agenda"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Metrics: open the Dashboard and read last month's row aloud."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Customers: walk through At risk and Renewing in the next 14 days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Support: any ticket older than two days and anything marked High."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Roadmap: what shipped, what is in build, what is stuck."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Decisions: write each decision in the weekly notes with an owner and date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No new roadmap items added during the review."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything over 5 minutes of discussion becomes its own meeting."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The meeting ends with three things nobody has to ask about again."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "customer-health-playbook",
+      "parent": "saas-startup-operating-system",
+      "title": "Customer health playbook",
+      "icon": {
+        "emoji": "❤️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Churn rarely arrives as a surprise. The signals are usually there weeks before the cancellation email."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Signals of trouble"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Signal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it often means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No logins for 14 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The tool is not part of their routine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer a 20 minute re-setup call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two bugs in a month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Trust is slipping"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix the bug, then call personally"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Seat count dropping"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The team is shrinking or switching"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask about the business, not the product"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Renewal in 30 days with no contact"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "They have forgotten you"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send a short value summary"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a customer cancels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press Flag at risk early, not after the email."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask what would have changed their mind and write it on the customer row."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thank them and leave the door open."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "prioritizing-the-roadmap",
+      "parent": "saas-startup-operating-system",
+      "title": "Prioritizing the roadmap",
+      "icon": {
+        "emoji": "🗺️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A roadmap is a list of bets, ranked. The ranking should be something you can defend in two sentences."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions to ask"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How many customers asked, and how much revenue do they represent?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Does it make the next sale easier?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How big is it, honestly?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What do we stop doing to make room?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Process"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link every request ticket to a roadmap item."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review asks and size each month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move items to Planned only when someone owns them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the customers who asked when it ships."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

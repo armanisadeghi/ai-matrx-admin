@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
-  "version": 4,
+  "version": 5,
   "title": "Proposals Tracker",
   "description": "Agencies and freelancers: track proposals from draft to decision, with line items.",
   "forWho": "Agencies and freelancers",
@@ -177,6 +177,14 @@
             "format": "date"
           },
           {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_left",
             "label": "Days left",
             "parityType": "formula",
@@ -299,7 +307,8 @@
               "valid_until": "@today-10d",
               "owner": "tm-02",
               "document": "https://ashgrovecreative.net/p/linden-brand",
-              "reason": "Won on fit"
+              "reason": "Won on fit",
+              "decided_on": "@today-10d"
             }
           },
           {
@@ -352,7 +361,8 @@
               "valid_until": "@today-25d",
               "owner": "tm-03",
               "document": "https://ashgrovecreative.net/p/bluebird-packaging",
-              "reason": "Price"
+              "reason": "Price",
+              "decided_on": "@today-25d"
             }
           },
           {
@@ -403,7 +413,8 @@
               "valid_until": "@today",
               "owner": "tm-03",
               "document": "https://ashgrovecreative.net/p/starling-audit",
-              "reason": "Scope"
+              "reason": "Scope",
+              "decided_on": "@today-30d"
             }
           },
           {
@@ -916,6 +927,11 @@
             "field": "status",
             "set": "value",
             "value": "Accepted"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -930,6 +946,11 @@
             "field": "status",
             "set": "value",
             "value": "Declined"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1137,7 +1158,7 @@
         "Hollis Mill Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

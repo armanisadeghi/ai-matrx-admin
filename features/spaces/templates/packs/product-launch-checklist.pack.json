@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0354",
-  "version": 4,
+  "version": 5,
   "title": "Product Launch Checklist",
   "description": "Product marketers: a phased launch checklist with owners and a progress count.",
   "forWho": "Product marketing teams",
@@ -396,6 +396,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "done",
             "label": "Done",
             "parityType": "checkbox",
@@ -473,7 +481,8 @@
               "channel": [
                 "Docs"
               ],
-              "assigned_to": "@installer"
+              "assigned_to": "@installer",
+              "completed_on": "@today-25d"
             }
           },
           {
@@ -488,7 +497,8 @@
               "channel": [
                 "Blog"
               ],
-              "assigned_to": "@installer"
+              "assigned_to": "@installer",
+              "completed_on": "@today-22d"
             }
           },
           {
@@ -503,7 +513,8 @@
               "channel": [
                 "Docs"
               ],
-              "assigned_to": "@installer"
+              "assigned_to": "@installer",
+              "completed_on": "@today-20d"
             }
           },
           {
@@ -517,7 +528,8 @@
               "launch": "l1",
               "channel": [
                 "Docs"
-              ]
+              ],
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -528,7 +540,8 @@
               "owner": "tm-carlos",
               "due_on": "@today-4d",
               "done": true,
-              "launch": "l1"
+              "launch": "l1",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -935,6 +948,11 @@
             "field": "done",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1121,7 +1139,7 @@
         "Marlowe Quay"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

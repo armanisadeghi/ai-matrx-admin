@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 1,
+  "version": 2,
   "title": "Subscription Box Business HQ",
   "description": "Plan each box cycle, track subscribers and churn, stock and shipments in one place.",
   "forWho": "Subscription box and curated gift businesses",
@@ -1109,6 +1109,14 @@
             "format": "date"
           },
           {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "packer",
             "label": "Packer",
             "parityType": "member",
@@ -1361,7 +1369,8 @@
               "quantity": 1,
               "total": 0.6,
               "channel": "Gift purchase",
-              "ship_by": "@today"
+              "ship_by": "@today",
+              "shipped_on": "@today-7d"
             }
           },
           {
@@ -1682,6 +1691,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1903,7 +1917,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

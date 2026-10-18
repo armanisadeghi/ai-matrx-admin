@@ -965,6 +965,12 @@
         "describes": "The school's dual-control cars, with service dates and miles.",
         "subject": "thing",
         "statusImplies": [],
+        "before": [
+          [
+            "service_due",
+            "inspection_due"
+          ]
+        ],
         "fields": [
           {
             "key": "vehicle_name",
@@ -2015,8 +2021,11 @@
             "relative": "before_today"
           }
         },
-        "filters": {
-          "status": "In service"
+        "anyOf": {
+          "status": [
+            "In service",
+            "In the shop"
+          ]
         }
       },
       {
@@ -2029,8 +2038,11 @@
             "relative": "this_week"
           }
         },
-        "filters": {
-          "status": "In service"
+        "anyOf": {
+          "status": [
+            "In service",
+            "In the shop"
+          ]
         }
       },
       {
@@ -2044,8 +2056,11 @@
             "n": 7
           }
         },
-        "filters": {
-          "status": "In service"
+        "anyOf": {
+          "status": [
+            "In service",
+            "In the shop"
+          ]
         }
       },
       {
@@ -2623,8 +2638,11 @@
                     "relative": "before_today"
                   }
                 },
-                "filters": {
-                  "status": "In service"
+                "anyOf": {
+                  "status": [
+                    "In service",
+                    "In the shop"
+                  ]
                 }
               },
               {
@@ -2637,8 +2655,11 @@
                     "relative": "this_week"
                   }
                 },
-                "filters": {
-                  "status": "In service"
+                "anyOf": {
+                  "status": [
+                    "In service",
+                    "In the shop"
+                  ]
                 }
               },
               {
@@ -2652,8 +2673,11 @@
                     "n": 7
                   }
                 },
-                "filters": {
-                  "status": "In service"
+                "anyOf": {
+                  "status": [
+                    "In service",
+                    "In the shop"
+                  ]
                 }
               }
             ],

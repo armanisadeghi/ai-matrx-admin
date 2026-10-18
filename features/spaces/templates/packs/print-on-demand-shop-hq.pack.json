@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0520",
-  "version": 1,
+  "version": 2,
   "title": "Print on Demand Shop HQ",
   "description": "Track designs, print partners, orders, quality issues and returns.",
   "forWho": "Print-on-demand store owners and merch creators",
@@ -1097,6 +1097,14 @@
             "format": "date"
           },
           {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "packer",
             "label": "Order handler",
             "parityType": "member",
@@ -1349,7 +1357,8 @@
               "quantity": 1,
               "total": 70,
               "channel": "Marketplace",
-              "ship_by": "@today"
+              "ship_by": "@today",
+              "shipped_on": "@today-7d"
             }
           },
           {
@@ -1660,6 +1669,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1881,7 +1895,7 @@
         "Inkwell Alley"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

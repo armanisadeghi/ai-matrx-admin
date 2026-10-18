@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0262",
-  "version": 4,
+  "version": 5,
   "title": "Thesis & Research Tracker",
   "description": "Graduate students: chapters, sources, tasks and advisor meetings, from outline to defence.",
   "forWho": "Graduate students and researchers",
@@ -788,6 +788,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -947,7 +955,8 @@
               "chapter": "ch2",
               "due_on": "@today-15d",
               "status": "Done",
-              "type": "Revise"
+              "type": "Revise",
+              "completed_on": "@today-15d"
             }
           },
           {
@@ -957,7 +966,8 @@
               "chapter": "ch3",
               "due_on": "@today-25d",
               "status": "Done",
-              "type": "Write"
+              "type": "Write",
+              "completed_on": "@today-25d"
             }
           },
           {
@@ -1366,6 +1376,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1645,7 +1660,7 @@
         "Quillfeather Place"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

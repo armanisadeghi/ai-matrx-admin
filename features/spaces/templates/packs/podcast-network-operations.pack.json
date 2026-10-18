@@ -1,0 +1,3652 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0566",
+  "version": 1,
+  "title": "Podcast Network Operations Desk",
+  "description": "Shows, episodes, guests and sponsorship deals for a podcast network.",
+  "forWho": "Podcast networks and multi-show audio studios",
+  "icon": {
+    "emoji": "🎙️"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "media",
+  "tags": [
+    "podcast network",
+    "shows",
+    "episodes",
+    "sponsors"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-podcast-network-operations",
+    "catalogueId": "SP0566",
+    "useCase": "Benedikt Alvarado-Whitfield runs operations for a small podcast network and uses this to see which episodes are due to publish, which sponsor reads are owed and how each show is performing.",
+    "industry": "media_creators",
+    "vertical": "Podcast network",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Longwave Audio Collective",
+      "describes": "A podcast network with seven shows, nine hosts and an in-house producer team, funded by sponsorships and listener support.",
+      "address": {
+        "line1": "260 Vinyl Street",
+        "city": "Los Angeles",
+        "region": "CA",
+        "postalCode": "90012",
+        "country": "US"
+      },
+      "phone": "(323) 555-0185",
+      "website": "longwaveaudio.net",
+      "email": "hello@longwaveaudio.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-podcast-network-operations",
+    "tables": [
+      {
+        "token": "show",
+        "name": "Shows",
+        "labelSingular": "Show",
+        "labelPlural": "Shows",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "radio",
+        "titleField": "show_name",
+        "describes": "Each show in the network, its schedule, producer and performance.",
+        "subject": "thing",
+        "independentOf": {
+          "producer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "show_name",
+            "label": "Show",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "In development",
+              "Active",
+              "On break",
+              "Ended"
+            ],
+            "choiceColors": {
+              "In development": "slate",
+              "Active": "blue",
+              "On break": "amber",
+              "Ended": "violet"
+            },
+            "required": true,
+            "default": "In development",
+            "statusGroups": {
+              "In development": "in_progress",
+              "Active": "in_progress",
+              "On break": "in_progress",
+              "Ended": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "genre",
+            "label": "Genre",
+            "parityType": "select",
+            "choices": [
+              "Interview",
+              "Storytelling",
+              "News and talk",
+              "Comedy",
+              "Education"
+            ],
+            "choiceColors": {
+              "Interview": "slate",
+              "Storytelling": "blue",
+              "News and talk": "amber",
+              "Comedy": "violet",
+              "Education": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cadence",
+            "label": "Cadence",
+            "parityType": "select",
+            "choices": [
+              "Weekly",
+              "Every two weeks",
+              "Monthly",
+              "Seasonal"
+            ],
+            "choiceColors": {
+              "Weekly": "slate",
+              "Every two weeks": "blue",
+              "Monthly": "amber",
+              "Seasonal": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hosts",
+            "label": "Hosts",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "producer",
+            "label": "Producer",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "episodes_published",
+            "label": "Episodes published",
+            "parityType": "rollup",
+            "via": "episodes",
+            "pick": "episode_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Published"
+            }
+          },
+          {
+            "key": "avg_downloads",
+            "label": "Average downloads per episode",
+            "parityType": "rollup",
+            "via": "episodes",
+            "pick": "downloads",
+            "agg": "avg",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Published"
+            }
+          },
+          {
+            "key": "in_pipeline",
+            "label": "Episodes in the pipeline",
+            "parityType": "rollup",
+            "via": "episodes",
+            "pick": "episode_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Idea",
+                "Booked",
+                "Recorded",
+                "Editing",
+                "Scheduled"
+              ]
+            }
+          },
+          {
+            "key": "sponsor_value",
+            "label": "Sponsor value booked (USD)",
+            "parityType": "rollup",
+            "via": "deals",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Booked",
+                "Delivering",
+                "Delivered"
+              ]
+            }
+          },
+          {
+            "key": "add_episode",
+            "label": "Plan an episode",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "episodes",
+              "template": "New episode",
+              "prefill": {
+                "show": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_deal",
+            "label": "Add a sponsor deal",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "deals",
+              "template": "New deal",
+              "prefill": {
+                "show": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New show",
+            "values": {
+              "show_name": "New show",
+              "status": "In development"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The idea"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who it is for and why it will be different."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Format"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Length, segments and recurring features."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Launch plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Name and artwork"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Three episodes in the bank"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Trailer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Feed submitted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First sponsor pitch"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "show-1",
+            "values": {
+              "show_name": "The Long Way Round",
+              "status": "Active",
+              "genre": "Storytelling",
+              "cadence": "Weekly",
+              "hosts": "Mirela and Dev",
+              "producer": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "show-2",
+            "values": {
+              "show_name": "Small Rooms",
+              "status": "Active",
+              "genre": "Interview",
+              "cadence": "Every two weeks",
+              "hosts": "Kofi Annan-Reyes",
+              "producer": "tm-5"
+            }
+          },
+          {
+            "key": "show-3",
+            "values": {
+              "show_name": "Ledger Lines",
+              "status": "Active",
+              "genre": "Education",
+              "cadence": "Weekly",
+              "hosts": "Priya and Anton",
+              "producer": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "show-4",
+            "values": {
+              "show_name": "Night Shift Radio",
+              "status": "Active",
+              "genre": "News and talk",
+              "cadence": "Weekly",
+              "hosts": "Odalys Quintero",
+              "producer": "tm-3"
+            }
+          },
+          {
+            "key": "show-5",
+            "values": {
+              "show_name": "Overheard in the Stacks",
+              "status": "On break",
+              "genre": "Comedy",
+              "cadence": "Monthly",
+              "hosts": "The Stacks crew",
+              "producer": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "show-6",
+            "values": {
+              "show_name": "Fieldwork",
+              "status": "In development",
+              "genre": "Storytelling",
+              "cadence": "Seasonal",
+              "hosts": "Wren Calloway",
+              "producer": "tm-3"
+            }
+          },
+          {
+            "key": "show-7",
+            "values": {
+              "show_name": "Static",
+              "status": "Ended",
+              "genre": "Comedy",
+              "cadence": "Weekly",
+              "hosts": "Hollis and Mina",
+              "producer": "tm-5",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "episodes",
+        "name": "Episodes",
+        "labelSingular": "Episode",
+        "labelPlural": "Episodes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "mic",
+        "titleField": "episode_name",
+        "describes": "Every episode from idea to published, with recording and publish dates.",
+        "subject": "thing",
+        "independentOf": {
+          "show": "Either record can be created or change status before the other.",
+          "guest": "Either record can be created or change status before the other.",
+          "editor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "record_on",
+            "publish_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "episode_name",
+            "label": "Episode",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "show",
+            "label": "Show",
+            "parityType": "relation",
+            "relationTarget": "show",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Idea",
+              "Booked",
+              "Recorded",
+              "Editing",
+              "Scheduled",
+              "Published",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "Booked": "blue",
+              "Recorded": "amber",
+              "Editing": "violet",
+              "Scheduled": "teal",
+              "Published": "green",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Booked": "in_progress",
+              "Recorded": "in_progress",
+              "Editing": "in_progress",
+              "Scheduled": "in_progress",
+              "Published": "in_progress",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "record_on",
+            "label": "Record on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "publish_on",
+            "label": "Publish on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guest",
+            "label": "Guest",
+            "parityType": "relation",
+            "relationTarget": "guests",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "minutes",
+            "label": "Length (minutes)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "downloads",
+            "label": "Downloads in first 30 days",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "editor",
+            "label": "Editor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_recorded",
+            "label": "Mark recorded",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "episodes_recorded"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_editing",
+            "label": "Send to editing",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "episodes_editing"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_scheduled",
+            "label": "Mark scheduled",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "episodes_scheduled"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New episode",
+            "values": {
+              "episode_name": "New episode",
+              "status": "Idea"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Angle"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What listeners will learn or feel."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Run sheet"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Segments, timings and sponsor reads."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Production checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Guest confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Questions sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Edited"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Show notes written"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sponsor reads placed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Scheduled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "episodes-1",
+            "values": {
+              "episode_name": "The mapmaker's last commission",
+              "show": "show-1",
+              "status": "Editing",
+              "record_on": "@today-6d",
+              "publish_on": "@today+2d",
+              "guest": "guests-1",
+              "minutes": 42,
+              "editor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "episodes-2",
+            "values": {
+              "episode_name": "Why ledgers lie",
+              "show": "show-3",
+              "status": "Scheduled",
+              "record_on": "@today-10d",
+              "publish_on": "@today+1d",
+              "guest": "guests-2",
+              "minutes": 35,
+              "editor": "tm-3"
+            }
+          },
+          {
+            "key": "episodes-3",
+            "values": {
+              "episode_name": "A conversation with a lighthouse keeper",
+              "show": "show-2",
+              "status": "Booked",
+              "record_on": "@today+3d",
+              "publish_on": "@today+14d",
+              "guest": "guests-3",
+              "minutes": 50,
+              "editor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "episodes-4",
+            "values": {
+              "episode_name": "Overnight at the dispatch center",
+              "show": "show-4",
+              "status": "Recorded",
+              "record_on": "@today-2d",
+              "publish_on": "@today",
+              "minutes": 38,
+              "editor": "tm-3"
+            }
+          },
+          {
+            "key": "episodes-5",
+            "values": {
+              "episode_name": "Rent, repairs and rights",
+              "show": "show-4",
+              "status": "Idea",
+              "record_on": "@today+6d",
+              "publish_on": "@today+13d",
+              "minutes": 0,
+              "editor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "episodes-6",
+            "values": {
+              "episode_name": "Taxes without tears",
+              "show": "show-3",
+              "status": "Editing",
+              "record_on": "@today-4d",
+              "publish_on": "@today-1d",
+              "guest": "guests-4",
+              "minutes": 33,
+              "editor": "tm-3"
+            }
+          },
+          {
+            "key": "episodes-7",
+            "values": {
+              "episode_name": "Letters from the field, part one",
+              "show": "show-6",
+              "status": "Idea",
+              "record_on": "@today+10d",
+              "publish_on": "@today+30d",
+              "minutes": 0,
+              "editor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "episodes-8",
+            "values": {
+              "episode_name": "The cartographer returns",
+              "show": "show-1",
+              "status": "Published",
+              "record_on": "@today-20d",
+              "publish_on": "@today-13d",
+              "guest": "guests-1",
+              "minutes": 44,
+              "downloads": 9800,
+              "editor": "tm-3"
+            }
+          },
+          {
+            "key": "episodes-9",
+            "values": {
+              "episode_name": "Budgeting a small studio",
+              "show": "show-3",
+              "status": "Published",
+              "record_on": "@today-15d",
+              "publish_on": "@today-8d",
+              "minutes": 31,
+              "downloads": 12400,
+              "editor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "episodes-10",
+            "values": {
+              "episode_name": "Sound of a closing mill",
+              "show": "show-2",
+              "status": "Published",
+              "record_on": "@today-30d",
+              "publish_on": "@today-23d",
+              "guest": "guests-5",
+              "minutes": 47,
+              "downloads": 7100,
+              "editor": "tm-3"
+            }
+          },
+          {
+            "key": "episodes-11",
+            "values": {
+              "episode_name": "Season finale recap",
+              "show": "show-7",
+              "status": "Published",
+              "record_on": "@today-200d",
+              "publish_on": "@today-193d",
+              "minutes": 28,
+              "downloads": 5200,
+              "editor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "episodes-12",
+            "values": {
+              "episode_name": "Cancelled crossover episode",
+              "show": "show-5",
+              "status": "Cancelled",
+              "record_on": "@today-9d",
+              "publish_on": "@today+10d",
+              "minutes": 0,
+              "editor": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "guests",
+        "name": "Guests",
+        "labelSingular": "Guest",
+        "labelPlural": "Guests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-round",
+        "titleField": "guest_name",
+        "describes": "People invited to appear, with their status and recording day.",
+        "subject": "thing",
+        "independentOf": {
+          "booker": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "guest_name",
+            "label": "Guest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "expertise",
+            "label": "Known for",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Idea",
+              "Invited",
+              "Confirmed",
+              "Recorded",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "Invited": "blue",
+              "Confirmed": "amber",
+              "Recorded": "violet",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Invited": "in_progress",
+              "Confirmed": "in_progress",
+              "Recorded": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "record_day",
+            "label": "Recording day",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "booker",
+            "label": "Booked by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_confirmed",
+            "label": "Mark confirmed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "guests_confirmed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New guest",
+            "values": {
+              "guest_name": "New guest",
+              "status": "Idea"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why this guest"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Their story and why our listeners care."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Prep"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Links, past interviews and topics they love or avoid."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "guests-1",
+            "values": {
+              "guest_name": "Imelda Ostrander",
+              "expertise": "Retired cartographer",
+              "status": "Recorded",
+              "record_day": "@today-6d",
+              "email": "imelda.o@mailbox.net",
+              "booker": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-2",
+            "values": {
+              "guest_name": "Tomasz Vidal",
+              "expertise": "Accountant and author",
+              "status": "Recorded",
+              "record_day": "@today-10d",
+              "email": "tomasz.v@mailbox.net",
+              "booker": "tm-5"
+            }
+          },
+          {
+            "key": "guests-3",
+            "values": {
+              "guest_name": "Anneliese Roux",
+              "expertise": "Lighthouse keeper",
+              "status": "Confirmed",
+              "record_day": "@today+3d",
+              "email": "anneliese.r@mailbox.net",
+              "booker": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-4",
+            "values": {
+              "guest_name": "Dr. Chidinma Eze",
+              "expertise": "Tax researcher",
+              "status": "Recorded",
+              "record_day": "@today-4d",
+              "email": "chidinma.e@mailbox.net",
+              "booker": "tm-5"
+            }
+          },
+          {
+            "key": "guests-5",
+            "values": {
+              "guest_name": "Rafael Jimenez-Holm",
+              "expertise": "Boatbuilder",
+              "status": "Invited",
+              "record_day": "@today-2d",
+              "email": "rafael.jh@mailbox.net",
+              "booker": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-6",
+            "values": {
+              "guest_name": "Philippa Nakamura",
+              "expertise": "Union organizer",
+              "status": "Invited",
+              "record_day": "@today",
+              "email": "philippa.n@mailbox.net",
+              "booker": "tm-5"
+            }
+          },
+          {
+            "key": "guests-7",
+            "values": {
+              "guest_name": "Gunther Albrecht",
+              "expertise": "Mill historian",
+              "status": "Declined",
+              "record_day": "@today-20d",
+              "email": "gunther.a@mailbox.net",
+              "booker": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "guests-8",
+            "values": {
+              "guest_name": "Yetunde Okeke",
+              "expertise": "Radio dispatcher",
+              "status": "Idea",
+              "email": "yetunde.o@mailbox.net",
+              "booker": "tm-5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "deals",
+        "name": "Sponsor deals",
+        "labelSingular": "Sponsor deal",
+        "labelPlural": "Sponsor deals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "deal_name",
+        "describes": "Sponsorships sold on each show with amount, flight dates and what is owed.",
+        "subject": "thing",
+        "independentOf": {
+          "show": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "proof_sent_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "flight_starts",
+            "flight_ends"
+          ],
+          [
+            "flight_ends",
+            "proof_sent_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "deal_name",
+            "label": "Sponsor deal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "show",
+            "label": "Show",
+            "parityType": "relation",
+            "relationTarget": "show",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Pitched",
+              "Booked",
+              "Delivering",
+              "Delivered",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Pitched": "slate",
+              "Booked": "blue",
+              "Delivering": "amber",
+              "Delivered": "violet",
+              "Lost": "red"
+            },
+            "required": true,
+            "default": "Pitched",
+            "statusGroups": {
+              "Pitched": "todo",
+              "Booked": "in_progress",
+              "Delivering": "in_progress",
+              "Delivered": "in_progress",
+              "Lost": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "flight_starts",
+            "label": "Flight starts",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "flight_ends",
+            "label": "Flight ends",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "proof_sent_on",
+            "label": "Proof sent on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reads_owed",
+            "label": "Reads owed",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reads_done",
+            "label": "Reads delivered",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reads_left",
+            "label": "Reads left",
+            "parityType": "formula",
+            "formula": "MAX(0, {Reads owed} - {Reads delivered})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Sold by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_booked",
+            "label": "Mark booked",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "deals_booked"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_delivered",
+            "label": "Mark delivered",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "deals_delivered"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New deal",
+            "values": {
+              "deal_name": "New deal",
+              "status": "Pitched"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they want"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Audience, message and any must-say lines."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Delivery plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Brief received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Read recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Placement approved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof of airing sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invoice sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "deals-1",
+            "values": {
+              "deal_name": "Hollis Hardware, spring flight",
+              "show": "show-1",
+              "status": "Delivering",
+              "amount": 3200,
+              "flight_starts": "@today-20d",
+              "flight_ends": "@today+10d",
+              "reads_owed": 8,
+              "reads_done": 5,
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deals-2",
+            "values": {
+              "deal_name": "Tidal Bank, tax season",
+              "show": "show-3",
+              "status": "Delivering",
+              "amount": 4500,
+              "flight_starts": "@today-10d",
+              "flight_ends": "@today+5d",
+              "reads_owed": 6,
+              "reads_done": 2,
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "deals-3",
+            "values": {
+              "deal_name": "Cedar Coffee, six episode run",
+              "show": "show-2",
+              "status": "Booked",
+              "amount": 2400,
+              "flight_starts": "@today+3d",
+              "flight_ends": "@today+60d",
+              "reads_owed": 6,
+              "reads_done": 0,
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deals-4",
+            "values": {
+              "deal_name": "Mapworks Software pitch",
+              "show": "show-1",
+              "status": "Pitched",
+              "amount": 6000,
+              "flight_starts": "@today+20d",
+              "flight_ends": "@today+80d",
+              "reads_owed": 10,
+              "reads_done": 0,
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "deals-5",
+            "values": {
+              "deal_name": "Brightline Insurance",
+              "show": "show-4",
+              "status": "Delivering",
+              "amount": 3600,
+              "flight_starts": "@today-30d",
+              "flight_ends": "@today",
+              "reads_owed": 8,
+              "reads_done": 7,
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deals-6",
+            "values": {
+              "deal_name": "Wren and Bell Books",
+              "show": "show-6",
+              "status": "Pitched",
+              "amount": 1500,
+              "flight_starts": "@today-8d",
+              "flight_ends": "@today-2d",
+              "reads_owed": 4,
+              "reads_done": 0,
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "deals-7",
+            "values": {
+              "deal_name": "Lantern Power",
+              "show": "show-1",
+              "status": "Delivered",
+              "amount": 2800,
+              "flight_starts": "@today-90d",
+              "flight_ends": "@today-45d",
+              "reads_owed": 8,
+              "reads_done": 8,
+              "owner": "tm-4",
+              "proof_sent_on": "@today-44d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deals-8",
+            "values": {
+              "deal_name": "Dovetail Furniture",
+              "show": "show-2",
+              "status": "Lost",
+              "amount": 2000,
+              "flight_starts": "@today-60d",
+              "flight_ends": "@today-10d",
+              "reads_owed": 5,
+              "reads_done": 0,
+              "owner": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each show belongs to one producer.",
+        "fromTable": "show",
+        "fromField": "producer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "show_by_producer"
+      },
+      {
+        "describes": "Each episode belongs to one show.",
+        "fromTable": "episodes",
+        "fromField": "show",
+        "toTable": "show",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "episodes"
+      },
+      {
+        "describes": "Each episode belongs to one guest.",
+        "fromTable": "episodes",
+        "fromField": "guest",
+        "toTable": "guests",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "episodes"
+      },
+      {
+        "describes": "Each episode belongs to one editor.",
+        "fromTable": "episodes",
+        "fromField": "editor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "episode_by_editor"
+      },
+      {
+        "describes": "Each guest belongs to one booked by.",
+        "fromTable": "guests",
+        "fromField": "booker",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "guest_by_booker"
+      },
+      {
+        "describes": "Each sponsor deal belongs to one show.",
+        "fromTable": "deals",
+        "fromField": "show",
+        "toTable": "show",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deals"
+      },
+      {
+        "describes": "Each sponsor deal belongs to one sold by.",
+        "fromTable": "deals",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deal_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Benedikt Alvarado-Whitfield",
+              "role": "Network operations lead",
+              "work_email": "benedikt@longwaveaudio.net",
+              "mobile": "(323) 555-0141",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Ottoline Fraser-Mbeki",
+              "role": "Executive producer",
+              "work_email": "ottoline@longwaveaudio.net",
+              "mobile": "(323) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Jamal Cheung",
+              "role": "Audio editor",
+              "work_email": "jamal@longwaveaudio.net",
+              "mobile": "(323) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Solange Petrova",
+              "role": "Sponsorship manager",
+              "work_email": "solange@longwaveaudio.net",
+              "mobile": "(323) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Ezekiel Abara",
+              "role": "Producer",
+              "work_email": "ezekiel@longwaveaudio.net",
+              "mobile": "(323) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Guest suggestion",
+        "describes": "Hosts and listeners suggest guests here.",
+        "audience": "staff",
+        "table": "guests",
+        "fields": [
+          {
+            "fieldKey": "guest_name",
+            "ask": "Who should we invite?",
+            "required": true
+          },
+          {
+            "fieldKey": "expertise",
+            "ask": "What are they known for?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Do you have an email for them?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The producers will look at it."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "episodes_recorded",
+        "table": "episodes",
+        "name": "Mark recorded",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Recorded"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "episodes_editing",
+        "table": "episodes",
+        "name": "Send to editing",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Editing"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "episodes_scheduled",
+        "table": "episodes",
+        "name": "Mark scheduled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Scheduled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "guests_confirmed",
+        "table": "guests",
+        "name": "Mark confirmed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deals_booked",
+        "table": "deals",
+        "name": "Mark booked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Booked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deals_delivered",
+        "table": "deals",
+        "name": "Mark delivered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_show",
+        "name": "All shows",
+        "table": "show",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "show_board",
+        "name": "By status",
+        "table": "show",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "show_mine",
+        "name": "My shows",
+        "table": "show",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_episodes",
+        "name": "All episodes",
+        "table": "episodes",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "episodes_board",
+        "name": "By status",
+        "table": "episodes",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "episodes_cal",
+        "name": "Calendar",
+        "table": "episodes",
+        "kind": "calendar",
+        "dateField": "publish_on",
+        "allDay": true
+      },
+      {
+        "token": "episodes_over",
+        "name": "Overdue",
+        "table": "episodes",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Booked",
+            "Recorded",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "episodes_week",
+        "name": "This week",
+        "table": "episodes",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Booked",
+            "Recorded",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "episodes_next7",
+        "name": "Next 7 days",
+        "table": "episodes",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Booked",
+            "Recorded",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "episodes_mine",
+        "name": "My episodes",
+        "table": "episodes",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_guests",
+        "name": "All guests",
+        "table": "guests",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "guests_board",
+        "name": "By status",
+        "table": "guests",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "guests_cal",
+        "name": "Calendar",
+        "table": "guests",
+        "kind": "calendar",
+        "dateField": "record_day",
+        "allDay": true
+      },
+      {
+        "token": "guests_over",
+        "name": "Overdue",
+        "table": "guests",
+        "kind": "grid",
+        "within": {
+          "record_day": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Invited",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "guests_week",
+        "name": "This week",
+        "table": "guests",
+        "kind": "grid",
+        "within": {
+          "record_day": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Invited",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "guests_next7",
+        "name": "Next 7 days",
+        "table": "guests",
+        "kind": "grid",
+        "within": {
+          "record_day": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Invited",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "guests_mine",
+        "name": "My guests",
+        "table": "guests",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_deals",
+        "name": "All sponsor deals",
+        "table": "deals",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "deals_board",
+        "name": "By status",
+        "table": "deals",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "deals_cal",
+        "name": "Calendar",
+        "table": "deals",
+        "kind": "calendar",
+        "dateField": "flight_ends",
+        "allDay": true
+      },
+      {
+        "token": "deals_over",
+        "name": "Overdue",
+        "table": "deals",
+        "kind": "grid",
+        "within": {
+          "flight_ends": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pitched",
+            "Booked",
+            "Delivering"
+          ]
+        }
+      },
+      {
+        "token": "deals_week",
+        "name": "This week",
+        "table": "deals",
+        "kind": "grid",
+        "within": {
+          "flight_ends": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pitched",
+            "Booked",
+            "Delivering"
+          ]
+        }
+      },
+      {
+        "token": "deals_next7",
+        "name": "Next 7 days",
+        "table": "deals",
+        "kind": "grid",
+        "within": {
+          "flight_ends": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pitched",
+            "Booked",
+            "Delivering"
+          ]
+        }
+      },
+      {
+        "token": "deals_mine",
+        "name": "My sponsor deals",
+        "table": "deals",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Podcast Network Operations Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "episodes",
+          "describes": "Every episode from idea to published, with recording and publish dates."
+        },
+        {
+          "name": "related_tables",
+          "table": "show",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many episodes are in editing?",
+        "whyItMatters": "The audio editor plans the week from this list.",
+        "expect": {
+          "table": "episodes",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Editing"
+          },
+          "answer": 2,
+          "unit": "episodes"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open shows.",
+        "action": {
+          "kind": "open",
+          "surface": "show_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "show_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open episodes.",
+        "action": {
+          "kind": "open",
+          "surface": "episodes_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "episodes_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open guests.",
+        "action": {
+          "kind": "open",
+          "surface": "guests_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "guests_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "longwaveaudio.net"
+      ],
+      "fictionalStreets": [
+        "Vinyl Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "podcast-network-operations",
+      "parent": null,
+      "title": "Podcast Network Operations Desk",
+      "icon": {
+        "emoji": "🎙️"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Seven shows, one workspace: episodes from idea to published, guests, and the sponsor reads that pay for it all. Start with the Dashboard each Monday. Update an episode's status as soon as it changes, log every sponsor read when it airs and look at average downloads before the next pitch."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:episode-production-workflow"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sponsor-delivery-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:guest-booking-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each show in the network, its schedule, producer and performance."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "show",
+              "view": "show_board"
+            },
+            "inline": true,
+            "title": "Shows",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sho-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sho-t",
+                "name": "All shows",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sho-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sho-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Episodes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every episode from idea to published, with recording and publish dates."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "episodes",
+              "view": "episodes_board"
+            },
+            "inline": true,
+            "title": "Episodes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "epi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "epi-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "publish_on"
+              },
+              {
+                "id": "epi-t",
+                "name": "All episodes",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "epi-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "publish_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Booked",
+                    "Recorded",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "epi-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "publish_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Booked",
+                    "Recorded",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "epi-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "publish_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Booked",
+                    "Recorded",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "epi-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "epi-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "People invited to appear, with their status and recording day."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "guests",
+              "view": "guests_board"
+            },
+            "inline": true,
+            "title": "Guests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "gue-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "gue-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "record_day"
+              },
+              {
+                "id": "gue-t",
+                "name": "All guests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "gue-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "record_day": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gue-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "record_day": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gue-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "record_day": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gue-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "gue-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsor deals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Sponsorships sold on each show with amount, flight dates and what is owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deals",
+              "view": "deals_board"
+            },
+            "inline": true,
+            "title": "Sponsor deals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dea-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "dea-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "flight_ends"
+              },
+              {
+                "id": "dea-t",
+                "name": "All sponsor deals",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "dea-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "flight_ends": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitched",
+                    "Booked",
+                    "Delivering"
+                  ]
+                }
+              },
+              {
+                "id": "dea-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "flight_ends": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitched",
+                    "Booked",
+                    "Delivering"
+                  ]
+                }
+              },
+              {
+                "id": "dea-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "flight_ends": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitched",
+                    "Booked",
+                    "Delivering"
+                  ]
+                }
+              },
+              {
+                "id": "dea-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "dea-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "podcast-network-operations",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The network at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "episodes",
+                      "view": "all_episodes"
+                    },
+                    "inline": true,
+                    "title": "Episodes by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Episodes by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "episodes",
+                      "view": "all_episodes"
+                    },
+                    "inline": true,
+                    "title": "Downloads by show",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Downloads by show",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "show",
+                          "op": "sum",
+                          "field": "downloads"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deals",
+                      "view": "all_deals"
+                    },
+                    "inline": true,
+                    "title": "Sponsor value by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Sponsor value by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "guests",
+                      "view": "all_guests"
+                    },
+                    "inline": true,
+                    "title": "Guests by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Guests by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Publishing in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "episodes",
+              "view": "all_episodes"
+            },
+            "inline": true,
+            "title": "Publishing in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Publishing in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "publish_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Booked",
+                    "Recorded",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsor flights ending soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deals",
+              "view": "all_deals"
+            },
+            "inline": true,
+            "title": "Sponsor flights ending soon",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Sponsor flights ending soon",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "flight_ends": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitched",
+                    "Booked",
+                    "Delivering"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guests to confirm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "guests",
+              "view": "all_guests"
+            },
+            "inline": true,
+            "title": "Guests to confirm",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Guests to confirm",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Invited"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Average downloads per episode"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Average of first-30-day downloads for published episodes of the show"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use it to price sponsor reads; check it before every pitch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reads left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reads owed minus reads delivered, never below zero"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Anything left in the last week of a flight needs a make-good plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Episodes in the pipeline"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Episodes from Idea to Scheduled"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under two in the pipeline means the show may miss a week"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "episode-production-workflow",
+      "parent": "podcast-network-operations",
+      "title": "Episode workflow",
+      "icon": {
+        "emoji": "🎚️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The same path for every episode keeps seven shows on schedule."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Idea"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Angle and guest chosen"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Producer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Booked"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Guest and recording time confirmed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Producer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Recorded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Raw audio stored and logged"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Producer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Editing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cut, mix and loudness check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Audio editor"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Scheduled"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Show notes, art and sponsor reads placed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Producer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Published"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Live in the feed, links shared"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Producer"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Always record a backup track."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the sponsor read in the run sheet before recording."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never schedule an episode without a listen-through."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sponsor-delivery-guide",
+      "parent": "podcast-network-operations",
+      "title": "Sponsor delivery guide",
+      "icon": {
+        "emoji": "📢"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Sponsors renew when they see what they paid for. Deliver exactly what was booked, and show proof."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "From booking to invoice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark booked and enter the flight dates and reads owed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the brief to the host and note any must-say lines."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log each read on the deal when the episode goes live."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send proof of airing at the end of the flight."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark delivered and send the invoice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If a read is missed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tell the sponsor before they notice. Offer a make-good in the next episode and write it on the deal row."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "guest-booking-guide",
+      "parent": "podcast-network-operations",
+      "title": "Booking guests",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Good guests say yes to clear, specific, respectful requests."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The email"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say who you are and who listens."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say exactly what you want to talk about."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer two recording options, remote or in person."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "State the time it will take and when it will air."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before recording"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send questions or topics one week ahead"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send a technical check link"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm release and permissions"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank them the day after"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

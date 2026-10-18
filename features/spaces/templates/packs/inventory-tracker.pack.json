@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0307",
-  "version": 3,
+  "version": 4,
   "title": "Inventory Tracker",
   "description": "Small shops and makers: track stock, suppliers and orders so you reorder in time.",
   "forWho": "Small retailers, online shops and makers",
@@ -1221,6 +1221,22 @@
             "format": "date"
           },
           {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "product",
             "label": "Product",
             "parityType": "relation",
@@ -1268,7 +1284,8 @@
               "status": "Delivered",
               "qty": 8,
               "unit_price": 28,
-              "ordered_on": "@today-12d"
+              "ordered_on": "@today-12d",
+              "delivered_on": "@today-12d"
             }
           },
           {
@@ -1279,7 +1296,8 @@
               "status": "Delivered",
               "qty": 6,
               "unit_price": 28,
-              "ordered_on": "@today-10d"
+              "ordered_on": "@today-10d",
+              "delivered_on": "@today-10d"
             }
           },
           {
@@ -1290,7 +1308,8 @@
               "status": "Delivered",
               "qty": 24,
               "unit_price": 16,
-              "ordered_on": "@today-9d"
+              "ordered_on": "@today-9d",
+              "delivered_on": "@today-9d"
             }
           },
           {
@@ -1301,7 +1320,8 @@
               "status": "Delivered",
               "qty": 14,
               "unit_price": 16,
-              "ordered_on": "@today-8d"
+              "ordered_on": "@today-8d",
+              "delivered_on": "@today-8d"
             }
           },
           {
@@ -1312,7 +1332,8 @@
               "status": "Shipped",
               "qty": 10,
               "unit_price": 64,
-              "ordered_on": "@today-3d"
+              "ordered_on": "@today-3d",
+              "shipped_on": "@today-3d"
             }
           },
           {
@@ -1510,6 +1531,11 @@
             "field": "status",
             "set": "value",
             "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1524,6 +1550,11 @@
             "field": "status",
             "set": "value",
             "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1538,6 +1569,11 @@
             "field": "status",
             "set": "value",
             "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1797,7 +1833,7 @@
         "Brindle Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

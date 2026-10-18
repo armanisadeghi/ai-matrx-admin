@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 2,
+  "version": 3,
   "title": "Boutique Hotel Desk",
   "description": "Rooms, reservations, housekeeping and repairs for a boutique hotel or bed and breakfast.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -916,6 +916,14 @@
             "format": "date"
           },
           {
+            "key": "inspected_on",
+            "label": "Inspected on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "room",
             "label": "Room",
             "parityType": "relation",
@@ -1042,7 +1050,8 @@
               "kind": "Turnover",
               "due_on": "@today-1d",
               "room": "room-1",
-              "cleaner": "tm-3"
+              "cleaner": "tm-3",
+              "inspected_on": "@today-1d"
             }
           },
           {
@@ -1077,7 +1086,8 @@
               "due_on": "@today-1d",
               "room": "room-1",
               "cleaner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "inspected_on": "@today-1d"
             }
           },
           {
@@ -1167,6 +1177,14 @@
           {
             "key": "fix_by",
             "label": "Fix by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "fixed_on",
+            "label": "Fixed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1328,7 +1346,8 @@
               "reported_on": "@today-9d",
               "fix_by": "@today-6d",
               "room": "room-2",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "fixed_on": "@today-6d"
             }
           },
           {
@@ -1569,6 +1588,11 @@
             "field": "status",
             "set": "value",
             "value": "Inspected"
+          },
+          {
+            "field": "inspected_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1583,6 +1607,11 @@
             "field": "status",
             "set": "value",
             "value": "Fixed"
+          },
+          {
+            "field": "fixed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1930,7 +1959,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

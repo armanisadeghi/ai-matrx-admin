@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0455",
-  "version": 2,
+  "version": 3,
   "title": "Photography Studio Desk",
   "description": "Clients, packages, shoots and the editing-to-delivery checklist for a photo studio.",
   "forWho": "Portrait, wedding and brand photographers",
@@ -711,6 +711,14 @@
             "format": "date"
           },
           {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "location",
             "label": "Location",
             "parityType": "text",
@@ -1073,7 +1081,8 @@
               "images_delivered": 52,
               "client": "client-6",
               "package": "package-3",
-              "photographer": "tm-2"
+              "photographer": "tm-2",
+              "delivered_on": "@today-455d"
             }
           },
           {
@@ -1092,7 +1101,8 @@
               "client": "client-7",
               "package": "package-5",
               "photographer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "delivered_on": "@today-50d"
             }
           },
           {
@@ -1110,7 +1120,8 @@
               "images_delivered": 214,
               "client": "client-8",
               "package": "package-2",
-              "photographer": "tm-1"
+              "photographer": "tm-1",
+              "delivered_on": "@today-80d"
             }
           },
           {
@@ -1259,6 +1270,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "shoot",
             "label": "Shoot",
             "parityType": "relation",
@@ -1385,7 +1404,8 @@
               "phase": "Editing",
               "due_on": "@today-4d",
               "shoot": "shoot-3",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1443,7 +1463,8 @@
               "due_on": "@today-2d",
               "shoot": "shoot-5",
               "owner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-2d"
             }
           },
           {
@@ -1640,6 +1661,11 @@
             "field": "status",
             "set": "value",
             "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1654,6 +1680,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1955,7 +1986,7 @@
         "Weaver Close"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

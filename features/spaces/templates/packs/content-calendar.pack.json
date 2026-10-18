@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0151",
-  "version": 4,
+  "version": 5,
   "title": "Content Calendar",
   "description": "Content teams: plan blog posts, emails and videos across channels on one calendar.",
   "forWho": "Marketers, creators and small content teams",
@@ -994,6 +994,11 @@
             "field": "status",
             "set": "value",
             "value": "Published"
+          },
+          {
+            "field": "publish_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1232,7 +1237,7 @@
         "Larkin Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

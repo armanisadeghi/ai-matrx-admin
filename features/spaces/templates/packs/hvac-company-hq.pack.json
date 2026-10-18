@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 1,
+  "version": 2,
   "title": "HVAC Company HQ",
   "description": "Dispatch service calls, price jobs, track parts and invoices, and keep plans on schedule.",
   "forWho": "HVAC companies and heating and cooling contractors",
@@ -583,6 +583,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "quote",
             "label": "Quote (USD)",
             "parityType": "currency",
@@ -874,7 +882,8 @@
               "quote": 315,
               "parts_cost": 80,
               "labor_cost": 155,
-              "hours": 2.5
+              "hours": 2.5,
+              "completed_on": "@today-21d"
             }
           },
           {
@@ -890,7 +899,8 @@
               "quote": 170,
               "parts_cost": 25,
               "labor_cost": 95,
-              "hours": 1.5
+              "hours": 1.5,
+              "completed_on": "@today-16d"
             }
           },
           {
@@ -906,7 +916,8 @@
               "quote": 10840,
               "parts_cost": 5635,
               "labor_cost": 1115,
-              "hours": 18
+              "hours": 18,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -922,7 +933,8 @@
               "quote": 245,
               "parts_cost": 100,
               "labor_cost": 75,
-              "hours": 1.2
+              "hours": 1.2,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -938,7 +950,8 @@
               "quote": 610,
               "parts_cost": 60,
               "labor_cost": 250,
-              "hours": 4
+              "hours": 4,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -954,7 +967,8 @@
               "quote": 880,
               "parts_cost": 265,
               "labor_cost": 185,
-              "hours": 3
+              "hours": 3,
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1897,6 +1911,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1911,6 +1930,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2190,7 +2214,7 @@
         "Tanner Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

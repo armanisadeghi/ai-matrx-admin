@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0493",
-  "version": 1,
+  "version": 2,
   "title": "Design system — Bold high-contrast",
   "description": "Black, white and a hot orange; square corners and hard offset shadows.",
   "forWho": "Brands that want to be loud, direct and unmistakable",
@@ -15,9 +15,69 @@
     "starter",
     "bold",
     "high contrast",
-    "brutalist",
-    "events"
+    "events",
+    "sport"
   ],
+  "designProfile": {
+    "industries": [
+      "events",
+      "sport",
+      "music",
+      "streetwear",
+      "campaigns",
+      "retail"
+    ],
+    "avoidFor": [
+      "healthcare",
+      "legal",
+      "finance"
+    ],
+    "mood": [
+      "loud",
+      "playful"
+    ],
+    "formality": 1,
+    "energy": 5,
+    "density": "medium",
+    "shape": "sharp",
+    "contrast": "high",
+    "defaultTheme": "light",
+    "typeClass": "grotesque-display",
+    "a11y": {
+      "level": "AAA-leaning",
+      "minTarget": 40,
+      "minBody": 16
+    },
+    "adaptFirst": [
+      "primary",
+      "accent",
+      "link"
+    ],
+    "lockedTokens": [
+      "foreground",
+      "background",
+      "border",
+      "shadow-sm"
+    ],
+    "fallback": false,
+    "chromatic": true,
+    "fonts": [
+      {
+        "family": "Archivo",
+        "role": "display",
+        "source": "google"
+      },
+      {
+        "family": "Space Mono",
+        "role": "code",
+        "source": "google"
+      }
+    ],
+    "primary": {
+      "light": "#ff4f00",
+      "dark": "#ff5c14"
+    }
+  },
   "spec": {
     "specVersion": 1,
     "id": "spaces-design-starter-bold-contrast",
@@ -140,7 +200,7 @@
               "name": "foreground",
               "group": "Surfaces",
               "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
-              "usage_note": "Body text and icons on the page.",
+              "usage_note": "Body text and icons on the page, on cards and on muted fills.",
               "reads_on": "background"
             }
           },
@@ -150,7 +210,7 @@
               "name": "card",
               "group": "Surfaces",
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#0d0d0d\"}",
-              "usage_note": "Raised panels, dialogs and menus."
+              "usage_note": "Raised panels and cards."
             }
           },
           {
@@ -207,7 +267,7 @@
               "name": "primary",
               "group": "Primary",
               "value": "{\"light\":\"#ff4f00\",\"dark\":\"#ff5c14\"}",
-              "usage_note": "The one main action on a screen."
+              "usage_note": "Hot orange: a FILL with black labels. As text it fails on white (3.3:1); use link."
             }
           },
           {
@@ -225,8 +285,8 @@
             "values": {
               "name": "secondary",
               "group": "Secondary",
-              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
-              "usage_note": "Second actions and quiet selected states."
+              "value": "{\"light\":\"#e8e8e8\",\"dark\":\"#262626\"}",
+              "usage_note": "Light grey fill for second actions; foreground reads on it."
             }
           },
           {
@@ -234,7 +294,7 @@
             "values": {
               "name": "secondary-foreground",
               "group": "Secondary",
-              "value": "{\"light\":\"#ffffff\",\"dark\":\"#000000\"}",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
               "usage_note": "Label on a secondary button.",
               "reads_on": "secondary"
             }
@@ -245,7 +305,7 @@
               "name": "accent",
               "group": "Accent",
               "value": "{\"light\":\"#ffe500\",\"dark\":\"#ffe500\"}",
-              "usage_note": "Highlights: a selected row, a tip, a new feature."
+              "usage_note": "Yellow sticker fill. Text on it is always accent-foreground (black)."
             }
           },
           {
@@ -254,39 +314,61 @@
               "name": "accent-foreground",
               "group": "Accent",
               "value": "{\"light\":\"#000000\",\"dark\":\"#000000\"}",
-              "usage_note": "Text on an accent fill.",
+              "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
             }
           },
           {
             "key": "col-15",
             "values": {
-              "name": "border",
-              "group": "Lines",
-              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
-              "usage_note": "Dividers and card edges. Never text."
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#c23a00\",\"dark\":\"#ff8a4d\"}",
+              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
             }
           },
           {
             "key": "col-16",
             "values": {
-              "name": "input",
+              "name": "border",
               "group": "Lines",
-              "value": "{\"light\":\"#262626\",\"dark\":\"#e0e0e0\"}",
-              "usage_note": "The outline of a field and an off switch, so they are found without a label."
+              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
+              "usage_note": "Edges of controls and outline buttons; 3:1 so they are found.",
+              "reads_on": "background"
             }
           },
           {
             "key": "col-17",
             "values": {
-              "name": "ring",
+              "name": "input",
               "group": "Lines",
-              "value": "{\"light\":\"#0047ff\",\"dark\":\"#5c8aff\"}",
-              "usage_note": "Keyboard focus. Always visible, never removed."
+              "value": "{\"light\":\"#262626\",\"dark\":\"#e0e0e0\"}",
+              "usage_note": "The outline of a field and an off switch.",
+              "reads_on": "card"
             }
           },
           {
             "key": "col-18",
+            "values": {
+              "name": "divider",
+              "group": "Lines",
+              "value": "{\"light\":\"#1a1a1a\",\"dark\":\"#e6e6e6\"}",
+              "usage_note": "Hairlines between rows and around cards. Decorative only."
+            }
+          },
+          {
+            "key": "col-19",
+            "values": {
+              "name": "ring",
+              "group": "Lines",
+              "value": "{\"light\":\"#0047ff\",\"dark\":\"#5c8aff\"}",
+              "usage_note": "Keyboard focus. Always visible, never removed.",
+              "reads_on": "background"
+            }
+          },
+          {
+            "key": "col-20",
             "values": {
               "name": "destructive",
               "group": "Feedback",
@@ -296,7 +378,7 @@
             }
           },
           {
-            "key": "col-19",
+            "key": "col-21",
             "values": {
               "name": "destructive-foreground",
               "group": "Feedback",
@@ -306,22 +388,22 @@
             }
           },
           {
-            "key": "col-20",
+            "key": "col-22",
             "values": {
               "name": "success",
               "group": "Feedback",
               "value": "{\"light\":\"#006b2e\",\"dark\":\"#38e07b\"}",
-              "usage_note": "Done, live, saved. Never the only sign: pair it with a word.",
+              "usage_note": "Done, live, saved. Always paired with a word.",
               "reads_on": "muted"
             }
           },
           {
-            "key": "col-21",
+            "key": "col-23",
             "values": {
               "name": "warning",
               "group": "Feedback",
               "value": "{\"light\":\"#7a4a00\",\"dark\":\"#ffc233\"}",
-              "usage_note": "Waiting or at risk. Never the only sign: pair it with a word.",
+              "usage_note": "Waiting or at risk. Always paired with a word.",
               "reads_on": "muted"
             }
           }
@@ -428,17 +510,26 @@
             "values": {
               "name": "label",
               "group": "Text",
-              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":800,\"size\":13,\"lineHeight\":16,\"letterSpacing\":0.04}",
+              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":800,\"size\":14,\"lineHeight\":16,\"letterSpacing\":0.04}",
               "usage_note": "Buttons and tags, in capitals."
             }
           },
           {
             "key": "typ-06",
             "values": {
+              "name": "caption",
+              "group": "Text",
+              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":600,\"size\":13,\"lineHeight\":16,\"letterSpacing\":0.02}",
+              "usage_note": "Dates, venues and small print."
+            }
+          },
+          {
+            "key": "typ-07",
+            "values": {
               "name": "code",
               "group": "Code",
               "style": "{\"font\":\"'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace\",\"weight\":400,\"size\":14,\"lineHeight\":20,\"letterSpacing\":0}",
-              "usage_note": "Codes, ticket numbers and values people copy."
+              "usage_note": "Ticket numbers and codes people copy."
             }
           }
         ]
@@ -454,7 +545,7 @@
         "ordered": true,
         "icon": "ruler",
         "titleField": "name",
-        "describes": "The spacing scale every layout is built from.",
+        "describes": "The spacing scale every layout is built from, and the height of controls.",
         "subject": "thing",
         "fields": [
           {
@@ -511,35 +602,51 @@
             "values": {
               "name": "space-2",
               "value": 8,
-              "usage_note": "Between related controls."
+              "usage_note": "Between related controls in a row."
             }
           },
           {
             "key": "spc-03",
             "values": {
-              "name": "space-4",
-              "value": 16,
-              "usage_note": "Padding of a card."
+              "name": "space-3",
+              "value": 12,
+              "usage_note": "Inside a compact card; between a label and its field."
             }
           },
           {
             "key": "spc-04",
             "values": {
-              "name": "space-6",
-              "value": 24,
-              "usage_note": "Between groups."
+              "name": "space-4",
+              "value": 16,
+              "usage_note": "Padding of a card or a dialog."
             }
           },
           {
             "key": "spc-05",
             "values": {
-              "name": "space-12",
-              "value": 48,
-              "usage_note": "Between sections."
+              "name": "space-6",
+              "value": 24,
+              "usage_note": "Between groups inside a section."
             }
           },
           {
             "key": "spc-06",
+            "values": {
+              "name": "space-8",
+              "value": 48,
+              "usage_note": "Between sections of a page."
+            }
+          },
+          {
+            "key": "spc-07",
+            "values": {
+              "name": "control-height",
+              "value": 44,
+              "usage_note": "The height of buttons, fields and rows people press."
+            }
+          },
+          {
+            "key": "spc-08",
             "values": {
               "name": "space-20",
               "value": 80,
@@ -606,25 +713,33 @@
           {
             "key": "rad-01",
             "values": {
-              "name": "radius-none",
+              "name": "radius-sm",
               "value": 0,
-              "usage_note": "Everything: buttons, fields, cards."
+              "usage_note": "Tags, checkboxes and small chips."
             }
           },
           {
             "key": "rad-02",
             "values": {
-              "name": "radius-sm",
-              "value": 2,
-              "usage_note": "Checkboxes and keyboard keys only."
+              "name": "radius-md",
+              "value": 0,
+              "usage_note": "Buttons, fields and menus (also --radius)."
             }
           },
           {
             "key": "rad-03",
             "values": {
+              "name": "radius-lg",
+              "value": 0,
+              "usage_note": "Cards, dialogs and panels."
+            }
+          },
+          {
+            "key": "rad-04",
+            "values": {
               "name": "radius-full",
               "value": 9999,
-              "usage_note": "Avatars only."
+              "usage_note": "Avatars, pills and switches."
             }
           }
         ]
@@ -673,169 +788,25 @@
           {
             "key": "shd-01",
             "values": {
-              "name": "shadow-hard-sm",
+              "name": "shadow-sm",
               "value": "{\"light\":{\"x\":3,\"y\":3,\"blur\":0,\"spread\":0,\"color\":\"#000000ff\"},\"dark\":{\"x\":3,\"y\":3,\"blur\":0,\"spread\":0,\"color\":\"#ffffffff\"}}",
-              "usage_note": "Buttons and tags: a hard offset, no blur."
+              "usage_note": "Cards resting on the page."
             }
           },
           {
             "key": "shd-02",
             "values": {
-              "name": "shadow-hard-md",
+              "name": "shadow-md",
               "value": "{\"light\":{\"x\":6,\"y\":6,\"blur\":0,\"spread\":0,\"color\":\"#000000ff\"},\"dark\":{\"x\":6,\"y\":6,\"blur\":0,\"spread\":0,\"color\":\"#ffffffff\"}}",
-              "usage_note": "Cards and menus."
+              "usage_note": "Menus and popovers over content."
             }
           },
           {
             "key": "shd-03",
             "values": {
-              "name": "shadow-hard-lg",
+              "name": "shadow-lg",
               "value": "{\"light\":{\"x\":10,\"y\":10,\"blur\":0,\"spread\":0,\"color\":\"#000000ff\"},\"dark\":{\"x\":10,\"y\":10,\"blur\":0,\"spread\":0,\"color\":\"#ffffffff\"}}",
-              "usage_note": "Dialogs and the hero card."
-            }
-          }
-        ]
-      },
-      {
-        "token": "opacity",
-        "name": "Opacity",
-        "labelSingular": "Opacity",
-        "labelPlural": "Opacities",
-        "type": "entity",
-        "display": "grid",
-        "weight": "light",
-        "ordered": true,
-        "icon": "droplet",
-        "titleField": "name",
-        "describes": "How see-through things get: disabled controls, tints and overlays.",
-        "subject": "thing",
-        "fields": [
-          {
-            "key": "name",
-            "label": "Name",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "value",
-            "label": "Value",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 1
-              }
-            ],
-            "look": {
-              "id": "opacity"
-            }
-          },
-          {
-            "key": "usage_note",
-            "label": "Usage note",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
-        "rows": [
-          {
-            "key": "opa-01",
-            "values": {
-              "name": "opacity-disabled",
-              "value": 0.4,
-              "usage_note": "A control that cannot be used yet."
-            }
-          },
-          {
-            "key": "opa-02",
-            "values": {
-              "name": "opacity-pressed",
-              "value": 0.9,
-              "usage_note": "A button while it is held down."
-            }
-          },
-          {
-            "key": "opa-03",
-            "values": {
-              "name": "opacity-overlay",
-              "value": 0.85,
-              "usage_note": "The near-black behind a dialog."
-            }
-          }
-        ]
-      },
-      {
-        "token": "motion",
-        "name": "Motion",
-        "labelSingular": "Motion",
-        "labelPlural": "Motions",
-        "type": "entity",
-        "display": "grid",
-        "weight": "light",
-        "ordered": true,
-        "icon": "zap",
-        "titleField": "name",
-        "describes": "How fast things move and how they ease in and out.",
-        "subject": "thing",
-        "fields": [
-          {
-            "key": "name",
-            "label": "Name",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "value",
-            "label": "Value",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "look": {
-              "id": "motion"
-            }
-          },
-          {
-            "key": "usage_note",
-            "label": "Usage note",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
-        "rows": [
-          {
-            "key": "mot-01",
-            "values": {
-              "name": "motion-snap",
-              "value": "{\"duration\":80,\"easing\":\"linear\"}",
-              "usage_note": "Press: the button drops onto its shadow."
-            }
-          },
-          {
-            "key": "mot-02",
-            "values": {
-              "name": "motion-base",
-              "value": "{\"duration\":160,\"easing\":\"ease-out\"}",
-              "usage_note": "Menus and dialogs."
-            }
-          },
-          {
-            "key": "mot-03",
-            "values": {
-              "name": "motion-slide",
-              "value": "{\"duration\":240,\"easing\":\"cubic-bezier(0.7, 0, 0.3, 1)\"}",
-              "usage_note": "Banners and panels sliding in, hard and fast."
+              "usage_note": "Dialogs, the highest layer on screen."
             }
           }
         ]
@@ -909,8 +880,8 @@
             "values": {
               "name": "Button",
               "group": "Actions",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;}.b{font:inherit;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:13px;font-weight:800;line-height:1;height:40px;padding:0 18px;border-radius:0px;border:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:filter var(--motion-fast, 120ms ease-out),transform var(--motion-fast, 120ms ease-out);box-shadow:var(--shadow-hard-sm, none);}.r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.p{background:var(--primary);color:var(--primary-foreground)}.p.h{filter:brightness(1.08)}.p.f{box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.p:disabled{opacity:var(--opacity-disabled, .5);cursor:not-allowed}</style><div class=\"w r\"><button class=\"b p\">Save</button><button class=\"b p h\">Hover</button><button class=\"b p f\">Focus</button><button class=\"b p\" disabled>Disabled</button></div>",
-              "usage_note": "The one main action of a screen. Never two primary buttons side by side."
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}.b{font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);line-height:var(--leading-label);letter-spacing:var(--tracking-label);text-transform:uppercase;min-height:var(--control-height);padding:0 var(--space-4);border-radius:var(--radius-md);border:2px solid transparent;cursor:pointer;transition:background-color var(--motion-fast),box-shadow var(--motion-fast),transform var(--motion-fast)}.b:focus-visible,.b.f{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.b:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}.p{background:var(--primary);color:var(--primary-foreground)}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--link)}.d{background:var(--destructive);color:var(--destructive-foreground)}.b:active{transform:translate(2px,2px);box-shadow:none}.p,.s,.d{box-shadow:var(--shadow-sm)}.p:hover,.p.h{background:var(--accent);color:var(--accent-foreground)}</style><div class=\"w r\"><button class=\"b p\">Get tickets</button><button class=\"b p h\">Hover</button><button class=\"b p f\">Focus</button><button class=\"b p\" disabled>Disabled</button></div>",
+              "usage_note": "The one main action of a screen. Never two side by side."
             }
           },
           {
@@ -918,8 +889,8 @@
             "values": {
               "name": "Button variants",
               "group": "Actions",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;}.b{font:inherit;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:13px;font-weight:800;line-height:1;height:40px;padding:0 18px;border-radius:0px;border:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:filter var(--motion-fast, 120ms ease-out),transform var(--motion-fast, 120ms ease-out);box-shadow:var(--shadow-hard-sm, none);}.r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--muted-foreground);box-shadow:none}.d{background:var(--destructive);color:var(--destructive-foreground)}</style><div class=\"w r\"><button class=\"b s\">Secondary</button><button class=\"b o\">Outline</button><button class=\"b q\">Quiet</button><button class=\"b d\">Delete</button></div>",
-              "usage_note": "Outline and quiet for everything else; delete only for what cannot be undone."
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}.b{font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);line-height:var(--leading-label);letter-spacing:var(--tracking-label);text-transform:uppercase;min-height:var(--control-height);padding:0 var(--space-4);border-radius:var(--radius-md);border:2px solid transparent;cursor:pointer;transition:background-color var(--motion-fast),box-shadow var(--motion-fast),transform var(--motion-fast)}.b:focus-visible,.b.f{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.b:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}.p{background:var(--primary);color:var(--primary-foreground)}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--link)}.d{background:var(--destructive);color:var(--destructive-foreground)}.b:active{transform:translate(2px,2px);box-shadow:none}.p,.s,.d{box-shadow:var(--shadow-sm)}.p:hover,.p.h{background:var(--accent);color:var(--accent-foreground)}</style><div class=\"w r\"><button class=\"b s\">Line-up</button><button class=\"b o\">Share</button><button class=\"b q\">Venue info</button><button class=\"b d\">Cancel order</button></div>",
+              "usage_note": "Secondary, outline and quiet for everything else; danger only for what cannot be undone."
             }
           },
           {
@@ -927,17 +898,17 @@
             "values": {
               "name": "Text field",
               "group": "Inputs",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.f{display:grid;gap:6px;max-width:320px}.l{font-size:12px;font-weight:600;color:var(--foreground)}.i{font:inherit;font-size:14px;height:40px;padding:0 12px;border-radius:0px;border:2px solid var(--input);background:var(--background);color:var(--foreground);transition:box-shadow var(--motion-fast, 120ms ease-out)}.i:focus,.i.f{outline:none;border-color:var(--ring);box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.h{font-size:12px;color:var(--muted-foreground)}.e .i{border-color:var(--destructive)}.e .h{color:var(--destructive)}</style><div class=\"w g\"><label class=\"f\"><span class=\"l\">Email</span><input class=\"i\" placeholder=\"name@company.com\"><span class=\"h\">We send the receipt here.</span></label><label class=\"f\"><span class=\"l\">Name</span><input class=\"i f\" value=\"Dana Ruiz\"><span class=\"h\">Focused.</span></label><label class=\"f e\"><span class=\"l\">Phone</span><input class=\"i\" value=\"555-01\"><span class=\"h\">Enter all ten digits.</span></label></div>",
-              "usage_note": "Every field has a visible label above it and a hint or error below."
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4)}.f{display:grid;gap:var(--space-1);max-width:340px}.l{font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);color:var(--foreground)}.i{font-family:var(--font-body);font-size:var(--text-body);min-height:var(--control-height);padding:0 var(--space-3);border-radius:var(--radius-md);border:2px solid var(--input);background:var(--card);color:var(--foreground);transition:box-shadow var(--motion-fast)}.i:focus-visible,.i.f{border-color:var(--ring);outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.h{font-size:var(--text-caption);line-height:var(--leading-caption);color:var(--muted-foreground)}.i[aria-invalid=true]{border-color:var(--destructive)}.e{color:var(--destructive)}</style><div class=\"w g\"><label class=\"f\"><span class=\"l\">Promo code</span><input class=\"i f\" value=\"LOUD24\" aria-describedby=\"h1\"><span class=\"h\" id=\"h1\">Codes are case sensitive.</span></label><label class=\"f\"><span class=\"l\">Mobile</span><input class=\"i\" value=\"555-01\" aria-invalid=\"true\" aria-describedby=\"h2\"><span class=\"h e\" id=\"h2\">Enter all ten digits.</span></label></div>",
+              "usage_note": "A visible label above, a hint or the error below; the error names the fix."
             }
           },
           {
             "key": "cmp-04",
             "values": {
-              "name": "Card",
+              "name": "Ticket",
               "group": "Containers",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;}.b{font:inherit;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:13px;font-weight:800;line-height:1;height:40px;padding:0 18px;border-radius:0px;border:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:filter var(--motion-fast, 120ms ease-out),transform var(--motion-fast, 120ms ease-out);box-shadow:var(--shadow-hard-sm, none);}.c{max-width:380px;padding:20px;border-radius:0px;border:2px solid var(--border);background:var(--card);color:var(--card-foreground);box-shadow:var(--shadow-hard-md, none)}.k{margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}.t{margin:0 0 4px;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:16px;font-weight:600}.m{margin:0 0 14px;font-size:13px;color:var(--muted-foreground)}.a{display:flex;gap:8px}.p{background:var(--primary);color:var(--primary-foreground)}.o{background:transparent;color:var(--card-foreground);border-color:var(--border);box-shadow:none}</style><div class=\"w c\"><p class=\"k\">Report</p><h3 class=\"t\">Quarterly summary</h3><p class=\"m\">Updated 2 hours ago by Dana Ruiz</p><div class=\"a\"><button class=\"b p\">Open</button><button class=\"b o\">Share</button></div></div>",
-              "usage_note": "One idea per card: a kicker, a title, one line of detail and at most two actions."
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}.b{font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);line-height:var(--leading-label);letter-spacing:var(--tracking-label);text-transform:uppercase;min-height:var(--control-height);padding:0 var(--space-4);border-radius:var(--radius-md);border:2px solid transparent;cursor:pointer;transition:background-color var(--motion-fast),box-shadow var(--motion-fast),transform var(--motion-fast)}.b:focus-visible,.b.f{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.b:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}.p{background:var(--primary);color:var(--primary-foreground)}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--link)}.d{background:var(--destructive);color:var(--destructive-foreground)}.b:active{transform:translate(2px,2px);box-shadow:none}.p,.s,.d{box-shadow:var(--shadow-sm)}.p:hover,.p.h{background:var(--accent);color:var(--accent-foreground)}.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.c{max-width:400px;padding:var(--space-4);border-radius:var(--radius-lg);border:1px solid var(--divider);background:var(--card);color:var(--card-foreground);box-shadow:var(--shadow-sm)}.k{margin:0 0 var(--space-1);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--muted-foreground)}.t{margin:0 0 var(--space-1);font-family:var(--font-heading);font-size:var(--text-heading);line-height:var(--leading-heading);font-weight:var(--weight-heading)}.m{margin:0 0 var(--space-3);font-size:var(--text-caption);line-height:var(--leading-caption);color:var(--muted-foreground)}.c{border:2px solid var(--border);border-radius:0;box-shadow:var(--shadow-md);display:grid;grid-template-columns:1fr auto;gap:var(--space-4);align-items:end}.t{text-transform:uppercase;font-family:var(--font-display);font-size:var(--text-heading)}.k{color:var(--foreground)}.x{background:var(--accent);color:var(--accent-foreground);font-family:var(--font-label);font-weight:var(--weight-label);padding:var(--space-1) var(--space-2);text-transform:uppercase}</style><div class=\"w c\"><div><p class=\"k\">Fri 21 Nov · Doors 8 PM</p><h3 class=\"t\">Night Shift Live</h3><p class=\"m\">The Gantry, Detroit</p><span class=\"x\">Few left</span></div><button class=\"b p\">Get tickets</button></div>",
+              "usage_note": "One event, one big name, one action. Stickers say what is urgent."
             }
           },
           {
@@ -945,7 +916,7 @@
             "values": {
               "name": "Badge",
               "group": "Status",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.r{display:flex;flex-wrap:wrap;gap:8px}.x{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:0px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--foreground);background:var(--muted)}.x i{width:7px;height:7px;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--primary);color:var(--primary-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">Draft</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>Live</span><span class=\"x wa\"><i></i>Waiting</span><span class=\"x er\"><i></i>Failed</span></div>",
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2)}.x{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;border:1px solid var(--divider);color:var(--foreground);background:var(--muted)}.x i{width:.5em;height:.5em;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--accent);color:var(--accent-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">Presale</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>On sale</span><span class=\"x wa\"><i></i>Few left</span><span class=\"x er\"><i></i>Sold out</span></div>",
               "usage_note": "A status always pairs its colour with a word."
             }
           },
@@ -954,7 +925,7 @@
             "values": {
               "name": "Toggle list",
               "group": "Selection",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.l{display:grid;max-width:440px;border:2px solid var(--border);border-radius:0px;background:var(--card)}.o{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;font-size:14px;color:var(--card-foreground)}.o+.o{border-top:1px solid var(--border)}.o small{display:block;font-size:12px;color:var(--muted-foreground)}.t{appearance:none;flex:none;width:40px;height:26px;border-radius:var(--radius-full, 999px);background:var(--input);position:relative;cursor:pointer;margin:0;transition:background var(--motion-fast, 120ms ease-out)}.t::after{content:\"\";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--background);transition:transform var(--motion-fast, 120ms ease-out)}.t:checked{background:var(--primary)}.t:checked::after{transform:translateX(14px)}.t:disabled{opacity:var(--opacity-disabled, .5);cursor:not-allowed}</style><div class=\"w l\"><label class=\"o\"><span>Email alerts<small>When a task is assigned to you</small></span><input type=\"checkbox\" class=\"t\" checked></label><label class=\"o\"><span>Weekly digest<small>Every Monday morning</small></span><input type=\"checkbox\" class=\"t\"></label><label class=\"o\"><span>Text messages<small>Needs a verified phone</small></span><input type=\"checkbox\" class=\"t\" disabled></label></div>",
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.l{display:grid;max-width:460px;border:1px solid var(--divider);border-radius:var(--radius-lg);background:var(--card)}.o{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:var(--control-height);padding:var(--space-2) var(--space-4);color:var(--card-foreground);cursor:pointer}.o+.o{border-top:1px solid var(--divider)}.o small{display:block;font-size:var(--text-caption);line-height:var(--leading-caption);color:var(--muted-foreground)}.t{appearance:none;flex:none;width:calc(var(--space-6) + var(--space-4));height:var(--space-6);border-radius:var(--radius-full);background:var(--input);position:relative;cursor:pointer;margin:0;transition:background-color var(--motion-fast)}.t::after{content:\"\";position:absolute;top:3px;left:3px;width:calc(var(--space-6) - 6px);height:calc(var(--space-6) - 6px);border-radius:50%;background:var(--card);transition:transform var(--motion-base)}.t:checked{background:var(--primary)}.t:checked::after{transform:translateX(var(--space-4))}.t:focus-visible{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.t:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}.o:has(.t:disabled){color:var(--muted-foreground);cursor:not-allowed}</style><div class=\"w l\"><label class=\"o\"><span>Drop alerts<small>The moment tickets go live</small></span><input type=\"checkbox\" role=\"switch\" class=\"t\" checked></label><label class=\"o\"><span>Set-time texts<small>An hour before doors</small></span><input type=\"checkbox\" role=\"switch\" class=\"t\"></label><label class=\"o\"><span>Resale<small>Opens a week before (unavailable)</small></span><input type=\"checkbox\" role=\"switch\" class=\"t\" disabled></label></div>",
               "usage_note": "A switch acts at once. When a choice needs a Save, use a checkbox."
             }
           },
@@ -963,7 +934,7 @@
             "values": {
               "name": "Collapsible list",
               "group": "Disclosure",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.d{max-width:500px;border:2px solid var(--border);border-radius:0px;background:var(--card);color:var(--card-foreground)}details+details{border-top:1px solid var(--border)}summary{list-style:none;cursor:pointer;padding:12px 16px;font-size:14px;font-weight:600;display:flex;justify-content:space-between;gap:12px}summary::-webkit-details-marker{display:none}summary::after{content:\"+\";color:var(--muted-foreground)}details[open] summary::after{content:\"\\2212\"}p{margin:0;padding:0 16px 14px;font-size:13px;color:var(--muted-foreground)}</style><div class=\"w d\"><details open><summary>What is included</summary><p>Every table, view and page in the template.</p></details><details><summary>Who can see it</summary><p>Everyone in your organization.</p></details><details><summary>Can I undo it</summary><p>Yes, from the history of each item.</p></details></div>",
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.d{max-width:520px;border:1px solid var(--divider);border-radius:var(--radius-lg);background:var(--card);color:var(--card-foreground)}details+details{border-top:1px solid var(--divider)}summary{list-style:none;cursor:pointer;min-height:var(--control-height);padding:var(--space-2) var(--space-4);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}summary:focus-visible{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}summary::-webkit-details-marker{display:none}summary::after{content:\"+\";color:var(--muted-foreground)}details[open] summary::after{content:\"\\2212\"}p{margin:0;padding:0 var(--space-4) var(--space-3);font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}</style><div class=\"w d\"><details open><summary>When do doors open?</summary><p>8 PM; doors close at 11 PM.</p></details><details><summary>Can I resell?</summary><p>Yes, through your tickets page.</p></details><details><summary>Age limit?</summary><p>18 and over. Bring ID.</p></details></div>",
               "usage_note": "For answers people look up once. Never hide a step people must take."
             }
           },
@@ -972,8 +943,152 @@
             "values": {
               "name": "Tabs",
               "group": "Disclosure",
-              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.t{display:flex;gap:4px;border-bottom:1px solid var(--border)}.t span{padding:10px 14px;font-size:14px;color:var(--muted-foreground);border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:0.04em}.t .on{color:var(--foreground);font-weight:600;border-color:var(--primary)}</style><div class=\"w t\"><span class=\"on\">Overview</span><span>Activity</span><span>Settings</span></div>",
-              "usage_note": "Tabs switch views of one thing. Three to five, short names."
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.t{display:flex;gap:var(--space-1);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase}.t [role=tab]{font:inherit;letter-spacing:inherit;text-transform:inherit;background:transparent;border:0;cursor:pointer;color:var(--muted-foreground);min-height:var(--control-height);padding:0 var(--space-3);transition:color var(--motion-fast),background-color var(--motion-fast)}.t [role=tab]:focus-visible{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.t [aria-selected=true]{color:var(--foreground)}.t [role=tab]{border:2px solid var(--border);margin-right:-2px;color:var(--foreground)}.t [aria-selected=true]{background:var(--foreground);color:var(--background)}</style><div class=\"w\"><div class=\"t\" role=\"tablist\" aria-label=\"Sections\"><button role=\"tab\" aria-selected=\"true\">Headliners</button><button role=\"tab\" aria-selected=\"false\">Club nights</button><button role=\"tab\" aria-selected=\"false\">Sold out</button></div></div>",
+              "usage_note": "Tabs switch views of one thing. Three to five short names."
+            }
+          }
+        ]
+      },
+      {
+        "token": "opacity",
+        "name": "Opacity",
+        "labelSingular": "Opacity",
+        "labelPlural": "Opacities",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "droplet",
+        "titleField": "name",
+        "describes": "How see-through things get: disabled controls, tints and overlays.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1
+              }
+            ],
+            "look": {
+              "id": "opacity"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "opa-01",
+            "values": {
+              "name": "opacity-disabled",
+              "value": 0.4,
+              "usage_note": "A control that cannot be used yet."
+            }
+          },
+          {
+            "key": "opa-02",
+            "values": {
+              "name": "opacity-hover",
+              "value": 0.12,
+              "usage_note": "The tint laid over a row or a button on hover."
+            }
+          },
+          {
+            "key": "opa-03",
+            "values": {
+              "name": "opacity-overlay",
+              "value": 0.85,
+              "usage_note": "The dim behind a dialog."
+            }
+          }
+        ]
+      },
+      {
+        "token": "motion",
+        "name": "Motion",
+        "labelSingular": "Motion",
+        "labelPlural": "Motions",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "zap",
+        "titleField": "name",
+        "describes": "How fast things move and how they ease in and out.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "motion"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "mot-01",
+            "values": {
+              "name": "motion-fast",
+              "value": "{\"duration\":80,\"easing\":\"linear\"}",
+              "usage_note": "Hover, press and focus."
+            }
+          },
+          {
+            "key": "mot-02",
+            "values": {
+              "name": "motion-base",
+              "value": "{\"duration\":160,\"easing\":\"ease-out\"}",
+              "usage_note": "Menus, popovers and things arriving."
+            }
+          },
+          {
+            "key": "mot-03",
+            "values": {
+              "name": "motion-slow",
+              "value": "{\"duration\":240,\"easing\":\"cubic-bezier(0.7, 0, 0.3, 1)\"}",
+              "usage_note": "Dialogs, side panels and page changes."
             }
           }
         ]
@@ -1046,6 +1161,13 @@
         "isDefault": true
       },
       {
+        "token": "all_component",
+        "name": "All components",
+        "table": "component",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
         "token": "all_opacity",
         "name": "All opacities",
         "table": "opacity",
@@ -1056,13 +1178,6 @@
         "token": "all_motion",
         "name": "All motions",
         "table": "motion",
-        "kind": "grid",
-        "isDefault": true
-      },
-      {
-        "token": "all_component",
-        "name": "All components",
-        "table": "component",
         "kind": "grid",
         "isDefault": true
       }
@@ -1143,7 +1258,7 @@
     "provenance": {
       "kind": "synthesized",
       "authoredBy": "Board template author (Claude)",
-      "authoredOn": "2026-10-17",
+      "authoredOn": "2026-10-18",
       "noRealPeople": true,
       "sources": [],
       "fictionalDomains": [
@@ -1153,7 +1268,7 @@
         "Gantry Way"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [],
   "board": {
@@ -1165,12 +1280,13 @@
         "title": "Overview",
         "tiles": [
           {
-            "kind": "note",
+            "kind": "cover",
             "title": "Design system — Bold high-contrast",
-            "text": "Design system — Bold high-contrast\n\n## Principles\n- Say it once, say it big: one headline, one action per screen.\n- Lines, not shades: thick black edges instead of soft greys.\n- Contrast is the brand: text never drops below 7:1 where it can be helped.\n\n## Starter profile\n- **Mood:** Loud, confident and graphic; nothing is subtle.\n- **Fits:** Events, sport, streetwear, music, campaigns, launches, retail sales.\n- **Density:** Medium; big type, thick lines.\n- **Contrast:** High; text reaches 7:1 or more on its ground in most pairs.\n- **Type:** Archivo at heavy weights, falling back to Helvetica and Arial.\n- **Adapt first:** Primary to the brand's loudest colour (keep black text on it if it is light).\n\n## Using tokens\nUse a token by its name, never its value. Change a value here and every screen and component sample follows. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Making it yours\nThis is a starter. Change the primary colour and the fonts to your brand first, then the corners and spacing. Keep every text colour at 4.5:1 or more on what it sits on, in light and dark.\n\n## Accessibility\nText reaches 4.5:1 against what it sits on; large text and icons 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--space-8);align-items:center;padding:var(--space-2) 0;font-family:var(--font-body);color:var(--foreground)}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 var(--space-3);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--link)}.x{margin:0;font-family:var(--font-display);font-size:var(--text-display);line-height:var(--leading-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);color:var(--foreground)}.t{margin:var(--space-4) 0 0;max-width:32ch;font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}.c{display:flex;gap:var(--space-2);margin-top:var(--space-6);flex-wrap:wrap}.c span{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block}.a{inset:0 18% 18% 0;background:var(--primary);border:2px solid var(--border);box-shadow:var(--shadow-lg)}.b{inset:30% 0 0 30%;background:var(--accent);border:2px solid var(--border);box-shadow:var(--shadow-md)}.d{inset:56% 30% 10% 50%;background:var(--background);border:2px solid var(--border)}.e{width:0;height:0}</style><div class=\"h\"><div><p class=\"k\">Loud by design</p><h1 class=\"x\">SAY IT<br>ONCE.</h1><p class=\"t\">Black, white, hot orange. Square corners and hard shadows.</p><div class=\"c\"><span>Tickets</span><span>Drops</span><span>Posters</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
+            "text": "## Principles\n\n- Say it once, say it big: one headline, one action per screen.\n- Lines, not shades: thick black edges instead of soft greys.\n- Orange is a fill, never text: coloured words use link.\n\n## Starter profile\n\n- **Fits:** events, sport, music, streetwear, campaigns, retail. Not for healthcare, legal, finance.\n- **Mood:** loud, playful; density medium; shape sharp; contrast high; light first.\n- **Type:** Archivo, Space Mono.\n- **Adapt first:** primary, accent, link. **Keep:** foreground, background, border, shadow-sm.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colours, type, spacing, corners, shadows, opacity and motion. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by colour alone.\n",
             "size": {
               "w": 1020,
-              "h": 820
+              "h": 1000
             }
           }
         ]
@@ -1185,7 +1301,7 @@
             "layout": "section",
             "size": {
               "w": 1020,
-              "h": 1800
+              "h": 1960
             }
           }
         ]
@@ -1200,7 +1316,7 @@
             "layout": "section",
             "size": {
               "w": 1020,
-              "h": 760
+              "h": 860
             }
           }
         ]
@@ -1215,7 +1331,7 @@
             "layout": "section",
             "size": {
               "w": 1020,
-              "h": 544
+              "h": 672
             }
           }
         ]
@@ -1230,7 +1346,7 @@
             "layout": "section",
             "size": {
               "w": 1020,
-              "h": 392
+              "h": 456
             }
           }
         ]

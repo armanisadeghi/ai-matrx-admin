@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0456",
-  "version": 2,
+  "version": 3,
   "title": "Architecture Firm Studio",
   "description": "Clients, design phases, drawing sets, RFIs and submittals for an architecture firm.",
   "forWho": "Small and mid-sized architecture practices",
@@ -488,6 +488,14 @@
             "format": "date"
           },
           {
+            "key": "handed_over_on",
+            "label": "Handed over on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_to_permit",
             "label": "Days to permit submission",
             "parityType": "formula",
@@ -794,7 +802,8 @@
               "complete_on": "@today-700d",
               "client": "client-5",
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "handed_over_on": "@today-700d"
             }
           },
           {
@@ -1180,6 +1189,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_open",
             "label": "Days since raised",
             "parityType": "formula",
@@ -1339,7 +1356,8 @@
               "raised_on": "@today-45d",
               "answer_due": "@today-40d",
               "project": "project-3",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "closed_on": "@today-40d"
             }
           },
           {
@@ -1457,6 +1475,14 @@
           {
             "key": "review_due",
             "label": "Review due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "approved_on",
+            "label": "Approved on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1587,7 +1613,8 @@
               "review_due": "@today-18d",
               "project": "project-3",
               "reviewer": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approved_on": "@today-18d"
             }
           },
           {
@@ -1637,7 +1664,8 @@
               "review_due": "@today-33d",
               "project": "project-1",
               "reviewer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approved_on": "@today-33d"
             }
           }
         ]
@@ -2070,6 +2098,11 @@
             "field": "status",
             "set": "value",
             "value": "Handed over"
+          },
+          {
+            "field": "handed_over_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2084,6 +2117,11 @@
             "field": "status",
             "set": "value",
             "value": "Issued"
+          },
+          {
+            "field": "issued_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2098,6 +2136,11 @@
             "field": "status",
             "set": "value",
             "value": "Closed"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2112,6 +2155,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2579,7 +2627,7 @@
         "Quarry Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

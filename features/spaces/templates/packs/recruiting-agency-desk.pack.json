@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0452",
-  "version": 2,
+  "version": 3,
   "title": "Recruiting Agency Desk",
   "description": "Employer clients, job orders, candidates and submissions for a staffing and search firm.",
   "forWho": "Recruiting, staffing and executive search firms",
@@ -1399,6 +1399,14 @@
             "format": "date"
           },
           {
+            "key": "placed_on",
+            "label": "Placed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "offer_salary",
             "label": "Agreed annual pay (USD)",
             "parityType": "currency",
@@ -1590,7 +1598,8 @@
               "submitted_on": "@today-40d",
               "interview_on": "@today-30d",
               "start_on": "@today-20d",
-              "offer_salary": 45000
+              "offer_salary": 45000,
+              "placed_on": "@today-20d"
             }
           },
           {
@@ -1613,7 +1622,8 @@
               "submitted_on": "@today-70d",
               "interview_on": "@today-60d",
               "start_on": "@today-30d",
-              "offer_salary": 59000
+              "offer_salary": 59000,
+              "placed_on": "@today-30d"
             }
           },
           {
@@ -1807,6 +1817,11 @@
             "field": "status",
             "set": "value",
             "value": "Filled"
+          },
+          {
+            "field": "filled_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1821,6 +1836,11 @@
             "field": "stage",
             "set": "value",
             "value": "Placed"
+          },
+          {
+            "field": "placed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2089,7 +2109,7 @@
         "Morrow Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

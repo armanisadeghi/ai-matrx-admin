@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0405",
-  "version": 1,
+  "version": 2,
   "title": "Mental Health Practice",
   "description": "Inquiries, clients, sessions with note status, and statements for a counseling practice.",
   "forWho": "Therapy and counseling practices",
@@ -445,6 +445,14 @@
             "format": "datetime"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "kind",
             "label": "Type",
             "parityType": "select",
@@ -654,7 +662,8 @@
               "kind": "Individual",
               "fee": 140,
               "status": "Completed",
-              "note": "Drafted"
+              "note": "Drafted",
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -667,7 +676,8 @@
               "kind": "Couples",
               "fee": 170,
               "status": "Completed",
-              "note": "Signed"
+              "note": "Signed",
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -680,7 +690,8 @@
               "kind": "Individual",
               "fee": 90,
               "status": "Completed",
-              "note": "Not started"
+              "note": "Not started",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -693,7 +704,8 @@
               "kind": "Individual",
               "fee": 160,
               "status": "Completed",
-              "note": "Drafted"
+              "note": "Drafted",
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -719,7 +731,8 @@
               "kind": "Individual",
               "fee": 140,
               "status": "Completed",
-              "note": "Signed"
+              "note": "Signed",
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -732,7 +745,8 @@
               "kind": "Assessment",
               "fee": 300,
               "status": "Completed",
-              "note": "Signed"
+              "note": "Signed",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -1288,6 +1302,22 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1346,7 +1376,8 @@
               "amount": 560,
               "issued_on": "@today-45d",
               "due_on": "@today-15d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-15d"
             }
           },
           {
@@ -1357,7 +1388,8 @@
               "amount": 340,
               "issued_on": "@today-40d",
               "due_on": "@today-10d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-10d"
             }
           },
           {
@@ -1379,7 +1411,8 @@
               "amount": 480,
               "issued_on": "@today-18d",
               "due_on": "@mon+1d",
-              "status": "Sent"
+              "status": "Sent",
+              "sent_on": "@today-18d"
             }
           },
           {
@@ -1390,7 +1423,8 @@
               "amount": 600,
               "issued_on": "@today-12d",
               "due_on": "@mon+3d",
-              "status": "Sent"
+              "status": "Sent",
+              "sent_on": "@today-12d"
             }
           },
           {
@@ -1423,7 +1457,8 @@
               "amount": 140,
               "issued_on": "@today-35d",
               "due_on": "@today-20d",
-              "status": "Paid"
+              "status": "Paid",
+              "paid_on": "@today-20d"
             }
           }
         ],
@@ -1673,6 +1708,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1701,6 +1741,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1715,6 +1760,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2035,7 +2085,7 @@
         "Fremont Avenue"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

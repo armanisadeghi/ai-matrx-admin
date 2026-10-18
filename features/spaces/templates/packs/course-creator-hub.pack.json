@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0312",
-  "version": 4,
+  "version": 5,
   "title": "Course Creator Hub",
   "description": "Course creators: build, film, sell and launch an online course with students.",
   "forWho": "Educators selling courses and cohorts",
@@ -659,6 +659,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "module",
             "label": "Module",
             "parityType": "relation",
@@ -695,7 +703,8 @@
               "format": "Video",
               "status": "Published",
               "length": "3:40",
-              "due_on": "@today-90d"
+              "due_on": "@today-90d",
+              "published_on": "@today-90d"
             }
           },
           {
@@ -706,7 +715,8 @@
               "format": "Video",
               "status": "Published",
               "length": "4:15",
-              "due_on": "@today-88d"
+              "due_on": "@today-88d",
+              "published_on": "@today-88d"
             }
           },
           {
@@ -717,7 +727,8 @@
               "format": "Worksheet",
               "status": "Published",
               "length": "—",
-              "due_on": "@today-86d"
+              "due_on": "@today-86d",
+              "published_on": "@today-86d"
             }
           },
           {
@@ -728,7 +739,8 @@
               "format": "Video",
               "status": "Published",
               "length": "6:20",
-              "due_on": "@today-70d"
+              "due_on": "@today-70d",
+              "published_on": "@today-70d"
             }
           },
           {
@@ -739,7 +751,8 @@
               "format": "Quiz",
               "status": "Published",
               "length": "—",
-              "due_on": "@today-68d"
+              "due_on": "@today-68d",
+              "published_on": "@today-68d"
             }
           },
           {
@@ -750,7 +763,8 @@
               "format": "Video",
               "status": "Published",
               "length": "7:05",
-              "due_on": "@today-50d"
+              "due_on": "@today-50d",
+              "published_on": "@today-50d"
             }
           },
           {
@@ -1511,6 +1525,11 @@
             "field": "status",
             "set": "value",
             "value": "Published"
+          },
+          {
+            "field": "published_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1758,7 +1777,7 @@
         "Beckett Alley"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

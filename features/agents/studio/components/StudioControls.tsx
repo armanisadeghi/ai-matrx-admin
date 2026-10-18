@@ -434,15 +434,21 @@ function DebriefTab({
       </TabHead>
       {working ? <Waiting text="Reading the run" /> : null}
       {debrief?.status === "done" && !parsed ? (
-        <ResultCard>
-          <span className="text-foreground">No proposals could be read from this debrief</span>
-          <span className="text-muted-foreground">Debrief again, or pick a stronger model</span>
+        <ResultCard tone="warning">
+          <span className="text-foreground">
+            {debrief.text.trim() ? "The debrief had no proposals to read" : "The model sent no answer"}
+          </span>
+          <Button variant="outline" onClick={() => setDebrief(key, { status: "choosing" })} data-testid="studio-debrief-retry">
+            Retry
+          </Button>
         </ResultCard>
       ) : null}
       {debrief?.status === "error" ? (
         <ResultCard tone="warning">
-          <span className="text-foreground">The debrief did not finish</span>
-          <span className="text-muted-foreground">Debrief again to retry</span>
+          <span className="text-foreground">{debrief.error || "The debrief did not finish"}</span>
+          <Button variant="outline" onClick={() => setDebrief(key, { status: "choosing" })} data-testid="studio-debrief-retry">
+            Retry
+          </Button>
         </ResultCard>
       ) : null}
       {parsed ? (

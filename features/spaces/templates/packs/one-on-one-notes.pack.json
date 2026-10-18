@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0257",
-  "version": 4,
+  "version": 5,
   "title": "1:1 Meeting Notes",
   "description": "Managers: recurring one-to-ones with mood, agenda and action items per person.",
   "forWho": "Managers and their direct reports",
@@ -630,6 +630,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "due_flag",
             "label": "Due flag",
             "parityType": "formula",
@@ -664,7 +672,8 @@
               "owner": "Them",
               "meeting": "m01",
               "due_on": "@today-14d",
-              "done": true
+              "done": true,
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -674,7 +683,8 @@
               "owner": "Me",
               "meeting": "m01",
               "due_on": "@today-18d",
-              "done": true
+              "done": true,
+              "completed_on": "@today-18d"
             }
           },
           {
@@ -684,7 +694,8 @@
               "owner": "Them",
               "meeting": "m02",
               "due_on": "@today-7d",
-              "done": true
+              "done": true,
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -694,7 +705,8 @@
               "owner": "Me",
               "meeting": "m02",
               "due_on": "@today-14d",
-              "done": true
+              "done": true,
+              "completed_on": "@today-14d"
             }
           },
           {
@@ -764,7 +776,8 @@
               "owner": "Them",
               "meeting": "m08",
               "due_on": "@today-5d",
-              "done": true
+              "done": true,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -902,6 +915,11 @@
             "field": "done",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1147,7 +1165,7 @@
         "Marrowby Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

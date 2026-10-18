@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 2,
+  "version": 3,
   "title": "Translation Agency Desk",
   "description": "Clients, linguists, translation jobs, glossaries and quality checks for a language agency.",
   "forWho": "Translation and localization agencies",
@@ -802,6 +802,14 @@
             "format": "date"
           },
           {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_to_due",
             "label": "Days to due",
             "parityType": "formula",
@@ -1057,7 +1065,8 @@
               "client": "client-3",
               "linguist": "linguist-3",
               "pm": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "delivered_on": "@today-14d"
             }
           },
           {
@@ -1072,7 +1081,8 @@
               "due_on": "@today-22d",
               "client": "client-2",
               "linguist": "linguist-6",
-              "pm": "tm-2"
+              "pm": "tm-2",
+              "delivered_on": "@today-22d"
             }
           },
           {
@@ -1088,7 +1098,8 @@
               "client": "client-1",
               "linguist": "linguist-1",
               "pm": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "delivered_on": "@today-36d"
             }
           },
           {
@@ -1796,6 +1807,11 @@
             "field": "status",
             "set": "value",
             "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1810,6 +1826,11 @@
             "field": "status",
             "set": "value",
             "value": "Checked"
+          },
+          {
+            "field": "checked_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2052,7 +2073,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

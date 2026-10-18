@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
-  "version": 5,
+  "version": 6,
   "title": "Freelance Client Portal",
   "description": "Solo freelancers: a private page per client for deliverables, approvals and invoices.",
   "forWho": "Solo freelancers delivering work to clients",
@@ -459,6 +459,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "visible",
             "label": "Visible to client",
             "parityType": "checkbox",
@@ -542,7 +550,8 @@
               "status": "Done",
               "due_on": "@today-8d",
               "visible": true,
-              "assignee": "Mira"
+              "assignee": "Mira",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -597,7 +606,8 @@
               "status": "Done",
               "due_on": "@today-3d",
               "visible": true,
-              "assignee": "Mira"
+              "assignee": "Mira",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -608,7 +618,8 @@
               "status": "Done",
               "due_on": "@today-42d",
               "visible": true,
-              "assignee": "Mira"
+              "assignee": "Mira",
+              "completed_on": "@today-42d"
             }
           },
           {
@@ -619,7 +630,8 @@
               "status": "Done",
               "due_on": "@today-40d",
               "visible": true,
-              "assignee": "Teo"
+              "assignee": "Teo",
+              "completed_on": "@today-40d"
             }
           },
           {
@@ -749,6 +761,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_waiting",
             "label": "Days since shared",
             "parityType": "formula",
@@ -804,7 +824,8 @@
               "type": "Deliverable",
               "approved": true,
               "shared_on": "@today-6d",
-              "link": "https://files.ashgrovedigital.net/f1"
+              "link": "https://files.ashgrovedigital.net/f1",
+              "approved_on": "@today-6d"
             }
           },
           {
@@ -815,7 +836,8 @@
               "type": "Contract",
               "approved": true,
               "shared_on": "@today-35d",
-              "link": "https://files.ashgrovedigital.net/f2"
+              "link": "https://files.ashgrovedigital.net/f2",
+              "approved_on": "@today-35d"
             }
           },
           {
@@ -826,7 +848,8 @@
               "type": "Asset",
               "approved": true,
               "shared_on": "@today-30d",
-              "link": "https://files.ashgrovedigital.net/f3"
+              "link": "https://files.ashgrovedigital.net/f3",
+              "approved_on": "@today-30d"
             }
           },
           {
@@ -859,7 +882,8 @@
               "type": "Contract",
               "approved": true,
               "shared_on": "@today-4d",
-              "link": "https://files.ashgrovedigital.net/f6"
+              "link": "https://files.ashgrovedigital.net/f6",
+              "approved_on": "@today-4d"
             }
           },
           {
@@ -870,7 +894,8 @@
               "type": "Deliverable",
               "approved": true,
               "shared_on": "@today-40d",
-              "link": "https://files.ashgrovedigital.net/f7"
+              "link": "https://files.ashgrovedigital.net/f7",
+              "approved_on": "@today-40d"
             }
           },
           {
@@ -881,7 +906,8 @@
               "type": "Deliverable",
               "approved": true,
               "shared_on": "@today-48d",
-              "link": "https://files.ashgrovedigital.net/f8"
+              "link": "https://files.ashgrovedigital.net/f8",
+              "approved_on": "@today-48d"
             }
           }
         ],
@@ -1202,6 +1228,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1216,6 +1247,11 @@
             "field": "approved",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1459,7 +1495,7 @@
         "Tallow Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

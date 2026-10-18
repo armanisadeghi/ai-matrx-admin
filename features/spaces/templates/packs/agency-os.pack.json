@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 4,
+  "version": 5,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -742,6 +742,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_left",
             "label": "Days to due date",
             "parityType": "formula",
@@ -971,7 +979,8 @@
               "due_on": "@today-20d",
               "budget": 4800,
               "cost": 2976,
-              "kind": "Web"
+              "kind": "Web",
+              "completed_on": "@today-20d"
             }
           }
         ],
@@ -1175,6 +1184,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "assignee",
             "label": "Assignee",
             "parityType": "relation",
@@ -1263,7 +1280,8 @@
               "status": "Done",
               "assignee": "tm-felix",
               "due_on": "@today-15d",
-              "estimate": 14
+              "estimate": 14,
+              "completed_on": "@today-15d"
             }
           },
           {
@@ -1655,6 +1673,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_out",
             "label": "Days since sent",
             "parityType": "formula",
@@ -1728,7 +1754,8 @@
               "proposal_name": "Autumn campaign",
               "stage": "Won",
               "value": 11800,
-              "sent_on": "@today-26d"
+              "sent_on": "@today-26d",
+              "closed_on": "@today-26d"
             }
           },
           {
@@ -1738,7 +1765,8 @@
               "proposal_name": "Spring catalogue",
               "stage": "Lost",
               "value": 6200,
-              "sent_on": "@today-40d"
+              "sent_on": "@today-40d",
+              "closed_on": "@today-40d"
             }
           },
           {
@@ -2279,6 +2307,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2293,6 +2326,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2307,6 +2345,11 @@
             "field": "stage",
             "set": "value",
             "value": "Won"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2321,6 +2364,11 @@
             "field": "stage",
             "set": "value",
             "value": "Lost"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2629,7 +2677,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

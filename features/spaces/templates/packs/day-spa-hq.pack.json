@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 1,
+  "version": 2,
   "title": "Day Spa HQ",
   "description": "Book treatments by room and therapist, sell gift cards, and track retail stock.",
   "forWho": "Day spas and wellness retreats",
@@ -903,6 +903,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "visit_type",
             "label": "Kind",
             "parityType": "select",
@@ -1092,7 +1100,8 @@
               "when_on": "@today-12d",
               "visit_type": "Massage",
               "minutes": 75,
-              "price": 140
+              "price": 140,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -1106,7 +1115,8 @@
               "when_on": "@today-9d",
               "visit_type": "Facial",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1120,7 +1130,8 @@
               "when_on": "@today-7d",
               "visit_type": "Body treatment",
               "minutes": 90,
-              "price": 170
+              "price": 170,
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -1134,7 +1145,8 @@
               "when_on": "@today-5d",
               "visit_type": "Couples",
               "minutes": 75,
-              "price": 140
+              "price": 140,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1148,7 +1160,8 @@
               "when_on": "@today-3d",
               "visit_type": "Massage",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1496,6 +1509,14 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "method",
             "label": "Method",
             "parityType": "select",
@@ -1543,7 +1564,8 @@
               "client": "client-3",
               "amount": 105,
               "due_on": "@today-30d",
-              "method": "Card"
+              "method": "Card",
+              "paid_on": "@today-30d"
             }
           },
           {
@@ -1554,7 +1576,8 @@
               "client": "client-8",
               "amount": 170,
               "due_on": "@today-28d",
-              "method": "Gift card"
+              "method": "Gift card",
+              "paid_on": "@today-28d"
             }
           },
           {
@@ -1565,7 +1588,8 @@
               "client": "client-13",
               "amount": 120,
               "due_on": "@today-14d",
-              "method": "Cash"
+              "method": "Cash",
+              "paid_on": "@today-14d"
             }
           },
           {
@@ -1576,7 +1600,8 @@
               "client": "client-4",
               "amount": 140,
               "due_on": "@today-10d",
-              "method": "Membership credit"
+              "method": "Membership credit",
+              "paid_on": "@today-10d"
             }
           },
           {
@@ -1642,7 +1667,8 @@
               "client": "client-6",
               "amount": 99,
               "due_on": "@today-6d",
-              "method": "Gift card"
+              "method": "Gift card",
+              "paid_on": "@today-6d"
             }
           },
           {
@@ -1832,6 +1858,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1846,6 +1877,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2107,7 +2143,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0352",
-  "version": 4,
+  "version": 5,
   "title": "User Research Repository",
   "description": "Researchers: studies, sessions, participants and insights linked to their evidence.",
   "forWho": "Product and research teams",
@@ -136,6 +136,14 @@
           {
             "key": "ends_on",
             "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -401,6 +409,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -490,7 +506,8 @@
               "status": "Done",
               "moderator": "tm-ines",
               "actions_done": true,
-              "recording": "https://recordings.copperfinch.net/x1"
+              "recording": "https://recordings.copperfinch.net/x1",
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -503,7 +520,8 @@
               "status": "Done",
               "moderator": "tm-ines",
               "actions_done": true,
-              "recording": "https://recordings.copperfinch.net/x2"
+              "recording": "https://recordings.copperfinch.net/x2",
+              "completed_on": "@today-27d"
             }
           },
           {
@@ -516,7 +534,8 @@
               "status": "Done",
               "moderator": "tm-dev",
               "actions_done": true,
-              "recording": "https://recordings.copperfinch.net/x3"
+              "recording": "https://recordings.copperfinch.net/x3",
+              "completed_on": "@today-24d"
             }
           },
           {
@@ -541,7 +560,8 @@
               "status": "Done",
               "moderator": "tm-dev",
               "actions_done": true,
-              "recording": "https://recordings.copperfinch.net/x5"
+              "recording": "https://recordings.copperfinch.net/x5",
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -554,7 +574,8 @@
               "status": "Done",
               "moderator": "tm-dev",
               "actions_done": true,
-              "recording": "https://recordings.copperfinch.net/x6"
+              "recording": "https://recordings.copperfinch.net/x6",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1392,6 +1413,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1406,6 +1432,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1614,7 +1645,7 @@
         "Wren Hollow Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

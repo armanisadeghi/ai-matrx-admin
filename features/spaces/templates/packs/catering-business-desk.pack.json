@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 2,
+  "version": 3,
   "title": "Catering Business Desk",
   "description": "Clients, catered events, menu items, prep lists and event staffing for a caterer.",
   "forWho": "Caterers and event food companies",
@@ -431,6 +431,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "venue",
             "label": "Venue",
             "parityType": "text",
@@ -802,7 +810,8 @@
               "per_head": 24,
               "deposit": 0,
               "client": "client-2",
-              "captain": "tm-3"
+              "captain": "tm-3",
+              "closed_on": "@today-40d"
             }
           },
           {
@@ -818,7 +827,8 @@
               "deposit": 5000,
               "client": "client-4",
               "captain": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "closed_on": "@today-330d"
             }
           },
           {
@@ -1807,6 +1817,11 @@
             "field": "status",
             "set": "value",
             "value": "Served"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2152,7 +2167,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

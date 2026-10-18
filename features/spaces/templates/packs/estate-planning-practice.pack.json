@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0411",
-  "version": 1,
+  "version": 2,
   "title": "Estate Planning Practice",
   "description": "Estate plans by stage, instruments, signings and trust funding.",
   "forWho": "Estate planning attorneys and small firms",
@@ -179,6 +179,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "docs_ready",
             "label": "Instruments signed",
             "parityType": "rollup",
@@ -333,7 +341,8 @@
               "attorney": "tm-barnaby",
               "fee": 1100,
               "started_on": "@today-210d",
-              "target_sign": "@today-195d"
+              "target_sign": "@today-195d",
+              "completed_on": "@today-195d"
             }
           },
           {
@@ -580,6 +589,14 @@
             "format": "datetime"
           },
           {
+            "key": "signed_on",
+            "label": "Signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "where",
             "label": "Where",
             "parityType": "select",
@@ -690,7 +707,8 @@
               "matter": "m04",
               "when_at": "@today-48d 10:30",
               "where": "Office",
-              "status": "Signed"
+              "status": "Signed",
+              "signed_on": "@today-48d"
             }
           },
           {
@@ -700,7 +718,8 @@
               "matter": "m06",
               "when_at": "@today-198d 15:00",
               "where": "Office",
-              "status": "Signed"
+              "status": "Signed",
+              "signed_on": "@today-198d"
             }
           },
           {
@@ -939,6 +958,14 @@
             "format": "date"
           },
           {
+            "key": "signed_on",
+            "label": "Signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "ready_btn",
             "label": "Ready to sign",
             "parityType": "button",
@@ -1019,7 +1046,8 @@
               "matter": "m04",
               "kind": "Revocable trust",
               "status": "Signed",
-              "due_on": "@today-45d"
+              "due_on": "@today-45d",
+              "signed_on": "@today-45d"
             }
           },
           {
@@ -1029,7 +1057,8 @@
               "matter": "m04",
               "kind": "Deed",
               "status": "Signed",
-              "due_on": "@today-40d"
+              "due_on": "@today-40d",
+              "signed_on": "@today-40d"
             }
           },
           {
@@ -1286,6 +1315,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -1312,7 +1349,8 @@
               "matter": "m04",
               "kind": "Home",
               "status": "Done",
-              "due_on": "@today-30d"
+              "due_on": "@today-30d",
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -1890,6 +1928,11 @@
             "field": "status",
             "set": "value",
             "value": "Complete"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1904,6 +1947,11 @@
             "field": "status",
             "set": "value",
             "value": "Signed"
+          },
+          {
+            "field": "signed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1932,6 +1980,11 @@
             "field": "status",
             "set": "value",
             "value": "Signed"
+          },
+          {
+            "field": "signed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1946,6 +1999,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2419,7 +2477,7 @@
         "Aspen Mews"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

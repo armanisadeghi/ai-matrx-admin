@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0154",
-  "version": 4,
+  "version": 5,
   "title": "Sales Pipeline Forecast",
   "description": "Sales managers: forecast revenue from deal stages and weighted value.",
   "forWho": "Sales managers and revenue teams",
@@ -578,6 +578,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "source",
             "label": "Source",
             "parityType": "select",
@@ -769,7 +777,8 @@
               "last_activity": "@today-20d",
               "expected_close": "@today-18d",
               "source": "Partner",
-              "next_step": "Kickoff scheduled"
+              "next_step": "Kickoff scheduled",
+              "closed_on": "@today-18d"
             }
           },
           {
@@ -784,7 +793,8 @@
               "last_activity": "@today-35d",
               "expected_close": "@today-33d",
               "source": "Inbound",
-              "next_step": "Onboarding complete"
+              "next_step": "Onboarding complete",
+              "closed_on": "@today-33d"
             }
           },
           {
@@ -799,7 +809,8 @@
               "last_activity": "@today-50d",
               "expected_close": "@today-47d",
               "source": "Outbound",
-              "next_step": "Revisit after budget season"
+              "next_step": "Revisit after budget season",
+              "closed_on": "@today-47d"
             }
           },
           {
@@ -958,6 +969,11 @@
             "field": "stage",
             "set": "value",
             "value": "Closed won"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -972,6 +988,11 @@
             "field": "stage",
             "set": "value",
             "value": "Closed lost"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -1208,7 +1229,7 @@
         "Aspenglow Drive"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

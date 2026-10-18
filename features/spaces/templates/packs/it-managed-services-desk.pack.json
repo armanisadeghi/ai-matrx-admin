@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 2,
+  "version": 3,
   "title": "IT Managed Services Desk",
   "description": "Clients, devices, support tickets, contract renewals and scheduled maintenance for an MSP.",
   "forWho": "Managed IT service providers and IT consultancies",
@@ -575,6 +575,14 @@
             "format": "date"
           },
           {
+            "key": "retired_on",
+            "label": "Retired on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "client",
             "label": "Client",
             "parityType": "relation",
@@ -806,7 +814,8 @@
               "user": "Front desk",
               "purchased_on": "@today-2000d",
               "warranty_ends": "@today-900d",
-              "client": "client-6"
+              "client": "client-6",
+              "retired_on": "@today-900d"
             }
           }
         ]
@@ -1291,6 +1300,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "client",
             "label": "Client",
             "parityType": "relation",
@@ -1471,7 +1488,8 @@
               "due_on": "@today-10d",
               "client": "client-2",
               "tech": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-10d"
             }
           },
           {
@@ -1482,7 +1500,8 @@
               "kind": "Migration",
               "due_on": "@today-18d",
               "client": "client-6",
-              "tech": "tm-4"
+              "tech": "tm-4",
+              "completed_on": "@today-18d"
             }
           },
           {
@@ -1673,6 +1692,11 @@
             "field": "status",
             "set": "value",
             "value": "Retired"
+          },
+          {
+            "field": "retired_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1687,6 +1711,11 @@
             "field": "status",
             "set": "value",
             "value": "Resolved"
+          },
+          {
+            "field": "resolved_on",
+            "set": "value",
+            "value": "@now"
           }
         ]
       },
@@ -1701,6 +1730,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2125,7 +2159,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

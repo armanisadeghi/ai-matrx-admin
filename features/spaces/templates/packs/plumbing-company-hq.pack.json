@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0501",
-  "version": 1,
+  "version": 2,
   "title": "Plumbing Company HQ",
   "description": "Dispatch plumbing calls, quote and cost jobs, track van stock and chase unpaid invoices.",
   "forWho": "Plumbing companies and drain and pipe contractors",
@@ -582,6 +582,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "quote",
             "label": "Quote (USD)",
             "parityType": "currency",
@@ -873,7 +881,8 @@
               "quote": 250,
               "parts_cost": 55,
               "labor_cost": 130,
-              "hours": 2
+              "hours": 2,
+              "completed_on": "@today-21d"
             }
           },
           {
@@ -889,7 +898,8 @@
               "quote": 260,
               "parts_cost": 15,
               "labor_cost": 95,
-              "hours": 1.5
+              "hours": 1.5,
+              "completed_on": "@today-16d"
             }
           },
           {
@@ -905,7 +915,8 @@
               "quote": 2430,
               "parts_cost": 1460,
               "labor_cost": 320,
-              "hours": 5
+              "hours": 5,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -921,7 +932,8 @@
               "quote": 160,
               "parts_cost": 50,
               "labor_cost": 75,
-              "hours": 1.2
+              "hours": 1.2,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -937,7 +949,8 @@
               "quote": 790,
               "parts_cost": 235,
               "labor_cost": 225,
-              "hours": 3.5
+              "hours": 3.5,
+              "completed_on": "@today-6d"
             }
           },
           {
@@ -953,7 +966,8 @@
               "quote": 440,
               "parts_cost": 200,
               "labor_cost": 95,
-              "hours": 1.5
+              "hours": 1.5,
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1888,6 +1902,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1902,6 +1921,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2181,7 +2205,7 @@
         "Kettle Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

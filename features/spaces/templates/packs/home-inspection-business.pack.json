@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 1,
+  "version": 2,
   "title": "Home Inspection Business",
   "description": "Inspections, referral partners, invoices and licence renewals for an inspector.",
   "forWho": "Home inspectors and inspection companies",
@@ -121,6 +121,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "datetime"
+          },
+          {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "status",
@@ -365,7 +373,8 @@
               "when_at": "@today-9d 08:00",
               "status": "Delivered",
               "fee": 560,
-              "inspector": "tm-ellis"
+              "inspector": "tm-ellis",
+              "delivered_on": "@today-9d"
             }
           },
           {
@@ -379,7 +388,8 @@
               "when_at": "@today-9d 08:00",
               "status": "Delivered",
               "fee": 150,
-              "inspector": "tm-ellis"
+              "inspector": "tm-ellis",
+              "delivered_on": "@today-9d"
             }
           },
           {
@@ -393,7 +403,8 @@
               "when_at": "@today-15d 10:00",
               "status": "Delivered",
               "fee": 480,
-              "inspector": "tm-rani"
+              "inspector": "tm-rani",
+              "delivered_on": "@today-15d"
             }
           },
           {
@@ -421,7 +432,8 @@
               "when_at": "@today-30d 08:30",
               "status": "Delivered",
               "fee": 620,
-              "inspector": "tm-ellis"
+              "inspector": "tm-ellis",
+              "delivered_on": "@today-30d"
             }
           }
         ],
@@ -1539,6 +1551,11 @@
             "field": "status",
             "set": "value",
             "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1553,6 +1570,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1960,7 +1982,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

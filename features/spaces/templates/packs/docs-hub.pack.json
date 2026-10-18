@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0106",
-  "version": 3,
+  "version": 4,
   "title": "Docs Hub",
   "description": "Teams that write a lot: every document in one place with status, owner and review.",
   "forWho": "Teams that write and share lots of documents",
@@ -360,6 +360,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "verified",
             "label": "Verified",
             "parityType": "checkbox",
@@ -430,7 +438,8 @@
               "edited_on": "@today",
               "verified": true,
               "visibility": "Everyone",
-              "project": "pj-1"
+              "project": "pj-1",
+              "published_on": "@today-7d"
             }
           },
           {
@@ -486,7 +495,8 @@
               "edited_on": "@today-3d",
               "verified": true,
               "visibility": "Everyone",
-              "project": "pj-2"
+              "project": "pj-2",
+              "published_on": "@today-3d"
             }
           },
           {
@@ -524,7 +534,8 @@
               "edited_on": "@today-40d",
               "verified": true,
               "visibility": "Staff only",
-              "project": "pj-2"
+              "project": "pj-2",
+              "published_on": "@today-40d"
             }
           },
           {
@@ -542,7 +553,8 @@
               "edited_on": "@today-12d",
               "verified": true,
               "visibility": "Everyone",
-              "project": "pj-3"
+              "project": "pj-3",
+              "published_on": "@today-12d"
             }
           },
           {
@@ -561,7 +573,8 @@
               "edited_on": "@today-90d",
               "verified": true,
               "visibility": "Staff only",
-              "project": "pj-3"
+              "project": "pj-3",
+              "published_on": "@today-90d"
             }
           },
           {
@@ -616,7 +629,8 @@
               "edited_on": "@today-20d",
               "verified": true,
               "visibility": "Everyone",
-              "project": "pj-4"
+              "project": "pj-4",
+              "published_on": "@today-20d"
             }
           },
           {
@@ -652,7 +666,8 @@
               "created_on": "@today-70d",
               "edited_on": "@today-25d",
               "verified": true,
-              "visibility": "Board only"
+              "visibility": "Board only",
+              "published_on": "@today-25d"
             }
           },
           {
@@ -687,7 +702,8 @@
               "created_on": "@today-50d",
               "edited_on": "@today-15d",
               "verified": true,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "published_on": "@today-15d"
             }
           }
         ],
@@ -973,6 +989,11 @@
             "field": "status",
             "set": "value",
             "value": "Published"
+          },
+          {
+            "field": "published_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1155,7 +1176,7 @@
         "Ostrander Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

@@ -1,0 +1,3672 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0565",
+  "version": 1,
+  "title": "Local Newsroom Editorial Desk",
+  "description": "Story budget, sources, events to cover and corrections for a local newsroom.",
+  "forWho": "Local newsrooms and community news outlets",
+  "icon": {
+    "emoji": "📰"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "media",
+  "tags": [
+    "newsroom",
+    "stories",
+    "editorial",
+    "sources",
+    "corrections"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-local-newsroom-editorial-desk",
+    "catalogueId": "SP0565",
+    "useCase": "Henrietta Oyelaran-Cole is managing editor at a small local news outlet and uses this to see which stories are due, which meetings need a reporter and which corrections are open.",
+    "industry": "media_creators",
+    "vertical": "Local newsroom",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Prairie Ledger Local News",
+      "describes": "A nonprofit local newsroom with six reporters and two editors covering one county, publishing online daily and a weekly print edition.",
+      "address": {
+        "line1": "14 Granary Road",
+        "city": "Peoria",
+        "region": "IL",
+        "postalCode": "61602",
+        "country": "US"
+      },
+      "phone": "(309) 555-0114",
+      "website": "prairieledgernews.net",
+      "email": "newsdesk@prairieledgernews.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-local-newsroom-editorial-desk",
+    "tables": [
+      {
+        "token": "story",
+        "name": "Stories",
+        "labelSingular": "Story",
+        "labelPlural": "Stories",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "newspaper",
+        "titleField": "story_name",
+        "describes": "The story budget: every pitch and assignment from first idea to publication.",
+        "subject": "thing",
+        "independentOf": {
+          "reporter": "Either record can be created or change status before the other.",
+          "editor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "story_name",
+            "label": "Story",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Pitch",
+              "Assigned",
+              "Reporting",
+              "Editing",
+              "Ready",
+              "Published",
+              "Killed"
+            ],
+            "choiceColors": {
+              "Pitch": "slate",
+              "Assigned": "blue",
+              "Reporting": "amber",
+              "Editing": "violet",
+              "Ready": "teal",
+              "Published": "green",
+              "Killed": "red"
+            },
+            "required": true,
+            "default": "Pitch",
+            "statusGroups": {
+              "Pitch": "todo",
+              "Assigned": "in_progress",
+              "Reporting": "in_progress",
+              "Editing": "in_progress",
+              "Ready": "in_progress",
+              "Published": "in_progress",
+              "Killed": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "desk",
+            "label": "Desk",
+            "parityType": "select",
+            "choices": [
+              "City hall",
+              "Schools",
+              "Health",
+              "Environment",
+              "Business",
+              "Sports",
+              "Features"
+            ],
+            "choiceColors": {
+              "City hall": "slate",
+              "Schools": "blue",
+              "Health": "amber",
+              "Environment": "violet",
+              "Business": "teal",
+              "Sports": "green",
+              "Features": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "choices": [
+              "Brief",
+              "Article",
+              "Investigation",
+              "Photo gallery",
+              "Video",
+              "Podcast segment"
+            ],
+            "choiceColors": {
+              "Brief": "slate",
+              "Article": "blue",
+              "Investigation": "amber",
+              "Photo gallery": "violet",
+              "Video": "teal",
+              "Podcast segment": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "words",
+            "label": "Target words",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reporter",
+            "label": "Reporter",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "editor",
+            "label": "Editor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "interviews_done",
+            "label": "Interviews logged",
+            "parityType": "rollup",
+            "via": "interviews",
+            "pick": "interview_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Spoken"
+              ]
+            }
+          },
+          {
+            "key": "requests_out",
+            "label": "Requests pending",
+            "parityType": "rollup",
+            "via": "interviews",
+            "pick": "interview_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Requested"
+              ]
+            }
+          },
+          {
+            "key": "corrections_open",
+            "label": "Corrections open",
+            "parityType": "rollup",
+            "via": "corrections",
+            "pick": "correction_note",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Open"
+            }
+          },
+          {
+            "key": "sourcing",
+            "label": "Sourcing check",
+            "parityType": "formula",
+            "formula": "IF({Interviews logged} >= 2, \"Two or more sources\", IF({Interviews logged} = 1, \"One source\", \"No sources yet\"))",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_assign",
+            "label": "Assign",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "story_assign"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_edit",
+            "label": "Send to editing",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "story_edit"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_ready",
+            "label": "Mark ready",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "story_ready"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_interview",
+            "label": "Log an interview",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "interviews",
+              "template": "New interview",
+              "prefill": {
+                "story": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New story",
+            "values": {
+              "story_name": "New story",
+              "status": "Pitch"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The point"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What readers will know after this that they did not before."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reporting plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who to talk to, which documents to request and what to photograph."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Edit checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Facts and names verified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Quotes checked with sources"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Headline and summary written"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos captioned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Legal read if needed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "story-1",
+            "values": {
+              "story_name": "School board votes on budget cuts",
+              "status": "Reporting",
+              "desk": "Schools",
+              "format": "Article",
+              "due_on": "@today",
+              "words": 900,
+              "reporter": "tm-4",
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "story-2",
+            "values": {
+              "story_name": "Water main repairs on Elm Avenue",
+              "status": "Editing",
+              "desk": "City hall",
+              "format": "Brief",
+              "due_on": "@today+1d",
+              "words": 350,
+              "reporter": "tm-3",
+              "editor": "tm-2"
+            }
+          },
+          {
+            "key": "story-3",
+            "values": {
+              "story_name": "Clinic reopens on the east side",
+              "status": "Assigned",
+              "desk": "Health",
+              "format": "Article",
+              "due_on": "@today+3d",
+              "words": 700,
+              "reporter": "tm-5",
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "story-4",
+            "values": {
+              "story_name": "Council hears bike lane proposal",
+              "status": "Reporting",
+              "desk": "City hall",
+              "format": "Article",
+              "due_on": "@today+2d",
+              "words": 800,
+              "reporter": "tm-3",
+              "editor": "tm-1"
+            }
+          },
+          {
+            "key": "story-5",
+            "values": {
+              "story_name": "Sunday market turns ten",
+              "status": "Pitch",
+              "desk": "Features",
+              "format": "Photo gallery",
+              "due_on": "@today+6d",
+              "words": 0,
+              "reporter": "tm-6",
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "story-6",
+            "values": {
+              "story_name": "County fair attendance up",
+              "status": "Ready",
+              "desk": "Business",
+              "format": "Brief",
+              "due_on": "@today-1d",
+              "words": 400,
+              "reporter": "tm-3",
+              "editor": "tm-2"
+            }
+          },
+          {
+            "key": "story-7",
+            "values": {
+              "story_name": "River cleanup volunteers",
+              "status": "Assigned",
+              "desk": "Environment",
+              "format": "Article",
+              "due_on": "@today+5d",
+              "words": 600,
+              "reporter": "tm-5",
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "story-8",
+            "values": {
+              "story_name": "Rail crossing safety investigation",
+              "status": "Reporting",
+              "desk": "City hall",
+              "format": "Investigation",
+              "due_on": "@today+20d",
+              "words": 3500,
+              "reporter": "tm-3",
+              "editor": "tm-1"
+            }
+          },
+          {
+            "key": "story-9",
+            "values": {
+              "story_name": "High school football preview",
+              "status": "Editing",
+              "desk": "Sports",
+              "format": "Article",
+              "due_on": "@today+4d",
+              "words": 650,
+              "reporter": "tm-4",
+              "editor": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "story-10",
+            "values": {
+              "story_name": "Mayor addresses housing plan",
+              "status": "Published",
+              "desk": "City hall",
+              "format": "Article",
+              "due_on": "@today-5d",
+              "words": 750,
+              "reporter": "tm-3",
+              "editor": "tm-1"
+            }
+          },
+          {
+            "key": "story-11",
+            "values": {
+              "story_name": "Rejected pitch on parking meters",
+              "status": "Killed",
+              "desk": "City hall",
+              "format": "Brief",
+              "due_on": "@today-8d",
+              "words": 300,
+              "reporter": "tm-3",
+              "editor": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "interviews",
+        "name": "Interviews",
+        "labelSingular": "Interview",
+        "labelPlural": "Interviews",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "mic",
+        "titleField": "interview_name",
+        "describes": "Every source contacted for a story and whether they spoke, so reporting is traceable.",
+        "subject": "thing",
+        "independentOf": {
+          "story": "Either record can be created or change status before the other.",
+          "reporter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "interview_name",
+            "label": "Interview",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "story",
+            "label": "Story",
+            "parityType": "relation",
+            "relationTarget": "story",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "role",
+            "label": "Source's role",
+            "parityType": "select",
+            "choices": [
+              "Official",
+              "Expert",
+              "Resident",
+              "Business owner",
+              "Student or parent",
+              "Advocate"
+            ],
+            "choiceColors": {
+              "Official": "slate",
+              "Expert": "blue",
+              "Resident": "amber",
+              "Business owner": "violet",
+              "Student or parent": "teal",
+              "Advocate": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Requested",
+              "Scheduled",
+              "Spoken",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Scheduled": "blue",
+              "Spoken": "amber",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "in_progress",
+              "Scheduled": "in_progress",
+              "Spoken": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "speak_on",
+            "label": "Speak on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "attribution",
+            "label": "Attribution",
+            "parityType": "select",
+            "choices": [
+              "On the record",
+              "Background",
+              "Off the record"
+            ],
+            "choiceColors": {
+              "On the record": "slate",
+              "Background": "blue",
+              "Off the record": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reporter",
+            "label": "Reporter",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_spoken",
+            "label": "Mark spoken",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "interviews_spoken"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New interview",
+            "values": {
+              "interview_name": "New interview",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Questions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The five things to ask, in order."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was said. Mark anything off the record clearly."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "interviews-1",
+            "values": {
+              "interview_name": "Board chair, budget vote",
+              "story": "story-1",
+              "role": "Official",
+              "status": "Spoken",
+              "speak_on": "@today-1d",
+              "attribution": "On the record",
+              "reporter": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "interviews-2",
+            "values": {
+              "interview_name": "Parent group leader",
+              "story": "story-1",
+              "role": "Advocate",
+              "status": "Scheduled",
+              "speak_on": "@today",
+              "attribution": "On the record",
+              "reporter": "tm-4"
+            }
+          },
+          {
+            "key": "interviews-3",
+            "values": {
+              "interview_name": "District finance chief",
+              "story": "story-1",
+              "role": "Official",
+              "status": "Requested",
+              "speak_on": "@today-1d",
+              "attribution": "On the record",
+              "reporter": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "interviews-4",
+            "values": {
+              "interview_name": "Public works director",
+              "story": "story-2",
+              "role": "Official",
+              "status": "Spoken",
+              "speak_on": "@today-2d",
+              "attribution": "On the record",
+              "reporter": "tm-3"
+            }
+          },
+          {
+            "key": "interviews-5",
+            "values": {
+              "interview_name": "Elm Avenue resident",
+              "story": "story-2",
+              "role": "Resident",
+              "status": "Spoken",
+              "speak_on": "@today-2d",
+              "attribution": "On the record",
+              "reporter": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "interviews-6",
+            "values": {
+              "interview_name": "Clinic director",
+              "story": "story-3",
+              "role": "Official",
+              "status": "Scheduled",
+              "speak_on": "@today+2d",
+              "attribution": "On the record",
+              "reporter": "tm-5"
+            }
+          },
+          {
+            "key": "interviews-7",
+            "values": {
+              "interview_name": "Nurse practitioner",
+              "story": "story-3",
+              "role": "Expert",
+              "status": "Requested",
+              "speak_on": "@today+2d",
+              "attribution": "Background",
+              "reporter": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "interviews-8",
+            "values": {
+              "interview_name": "Cycling advocate",
+              "story": "story-4",
+              "role": "Advocate",
+              "status": "Spoken",
+              "speak_on": "@today-3d",
+              "attribution": "On the record",
+              "reporter": "tm-3"
+            }
+          },
+          {
+            "key": "interviews-9",
+            "values": {
+              "interview_name": "Business owner on Main Street",
+              "story": "story-4",
+              "role": "Business owner",
+              "status": "Requested",
+              "speak_on": "@today+4d",
+              "attribution": "On the record",
+              "reporter": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "interviews-10",
+            "values": {
+              "interview_name": "Fair board treasurer",
+              "story": "story-6",
+              "role": "Official",
+              "status": "Spoken",
+              "speak_on": "@today-6d",
+              "attribution": "On the record",
+              "reporter": "tm-3"
+            }
+          },
+          {
+            "key": "interviews-11",
+            "values": {
+              "interview_name": "Rail safety engineer",
+              "story": "story-8",
+              "role": "Expert",
+              "status": "Declined",
+              "speak_on": "@today-4d",
+              "attribution": "Background",
+              "reporter": "tm-3",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "corrections",
+        "name": "Corrections",
+        "labelSingular": "Correction",
+        "labelPlural": "Corrections",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "eraser",
+        "titleField": "correction_note",
+        "describes": "Errors reported by readers or staff, with the fix and its publication.",
+        "subject": "thing",
+        "independentOf": {
+          "story": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Fixed"
+            ],
+            "filled": [
+              "fixed_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "fix_by",
+            "fixed_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "correction_note",
+            "label": "Correction",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "story",
+            "label": "Story",
+            "parityType": "relation",
+            "relationTarget": "story",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Wrong name",
+              "Wrong number",
+              "Wrong date",
+              "Missing context",
+              "Photo caption",
+              "Other"
+            ],
+            "choiceColors": {
+              "Wrong name": "slate",
+              "Wrong number": "blue",
+              "Wrong date": "amber",
+              "Missing context": "violet",
+              "Photo caption": "teal",
+              "Other": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Open",
+              "Fixed",
+              "Not an error"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Fixed": "blue",
+              "Not an error": "amber"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "todo",
+              "Fixed": "done",
+              "Not an error": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fix_by",
+            "label": "Fix by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fixed_on",
+            "label": "Fixed on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Handled by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_fixed",
+            "label": "Mark fixed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "corrections_fixed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New correction",
+            "values": {
+              "correction_note": "New correction",
+              "status": "Open"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was wrong"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Quote the error and say what is right."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we published"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The correction note as readers see it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "corrections-1",
+            "values": {
+              "correction_note": "Board chair's first name misspelled",
+              "story": "story-1",
+              "kind": "Wrong name",
+              "status": "Open",
+              "fix_by": "@today",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "corrections-2",
+            "values": {
+              "correction_note": "Budget figure given in thousands, not millions",
+              "story": "story-1",
+              "kind": "Wrong number",
+              "status": "Open",
+              "fix_by": "@today+1d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "corrections-3",
+            "values": {
+              "correction_note": "Meeting date given as Tuesday",
+              "story": "story-4",
+              "kind": "Wrong date",
+              "status": "Open",
+              "fix_by": "@today-1d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "corrections-4",
+            "values": {
+              "correction_note": "Photo caption names wrong street",
+              "story": "story-2",
+              "kind": "Photo caption",
+              "status": "Fixed",
+              "fix_by": "@today-3d",
+              "owner": "tm-2",
+              "fixed_on": "@today-3d"
+            }
+          },
+          {
+            "key": "corrections-5",
+            "values": {
+              "correction_note": "Fair attendance rounded wrongly",
+              "story": "story-6",
+              "kind": "Wrong number",
+              "status": "Not an error",
+              "fix_by": "@today-5d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "coverage",
+        "name": "Events to cover",
+        "labelSingular": "Event to cover",
+        "labelPlural": "Events to cover",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar",
+        "titleField": "event_name",
+        "describes": "Meetings, hearings and community events the newsroom plans to attend.",
+        "subject": "thing",
+        "independentOf": {
+          "reporter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "Event to cover",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Assigned",
+              "Covered",
+              "Skipped"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Assigned": "blue",
+              "Covered": "amber",
+              "Skipped": "violet"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "in_progress",
+              "Assigned": "in_progress",
+              "Covered": "done",
+              "Skipped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Public meeting",
+              "Court hearing",
+              "Press conference",
+              "Community event",
+              "Election night",
+              "Sports"
+            ],
+            "choiceColors": {
+              "Public meeting": "slate",
+              "Court hearing": "blue",
+              "Press conference": "amber",
+              "Community event": "violet",
+              "Election night": "teal",
+              "Sports": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "starts_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "place",
+            "label": "Where",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reporter",
+            "label": "Reporter",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "photographer",
+            "label": "Photographer needed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_assigned",
+            "label": "Mark assigned",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "coverage_assigned"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_covered",
+            "label": "Mark covered",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "coverage_covered"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New event to cover",
+            "values": {
+              "event_name": "New event to cover",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why cover it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What is on the agenda and why readers care."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before you go"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Agenda or documents downloaded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Names to confirm"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photo plan"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Livestream or live post decided"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "coverage-1",
+            "values": {
+              "event_name": "City council regular meeting",
+              "status": "Assigned",
+              "kind": "Public meeting",
+              "starts_at": "@today+2d 18:30",
+              "place": "City hall",
+              "reporter": "tm-3",
+              "photographer": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "coverage-2",
+            "values": {
+              "event_name": "School board budget workshop",
+              "status": "Assigned",
+              "kind": "Public meeting",
+              "starts_at": "@today 19:00",
+              "place": "District office",
+              "reporter": "tm-4",
+              "photographer": false
+            }
+          },
+          {
+            "key": "coverage-3",
+            "values": {
+              "event_name": "County zoning hearing",
+              "status": "Planned",
+              "kind": "Public meeting",
+              "starts_at": "@today-1d 09:30",
+              "place": "County building",
+              "photographer": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "coverage-4",
+            "values": {
+              "event_name": "Ribbon cutting at the new clinic",
+              "status": "Planned",
+              "kind": "Community event",
+              "starts_at": "@today+3d 11:00",
+              "place": "East side",
+              "reporter": "tm-5",
+              "photographer": true
+            }
+          },
+          {
+            "key": "coverage-5",
+            "values": {
+              "event_name": "Football opener",
+              "status": "Planned",
+              "kind": "Sports",
+              "starts_at": "@today+6d 19:00",
+              "place": "Wolfe Field",
+              "photographer": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "coverage-6",
+            "values": {
+              "event_name": "Mayor's housing press conference",
+              "status": "Covered",
+              "kind": "Press conference",
+              "starts_at": "@today-5d 10:00",
+              "place": "City hall",
+              "reporter": "tm-3",
+              "photographer": true
+            }
+          },
+          {
+            "key": "coverage-7",
+            "values": {
+              "event_name": "Candidates forum",
+              "status": "Skipped",
+              "kind": "Public meeting",
+              "starts_at": "@today-3d 18:00",
+              "place": "Library",
+              "photographer": false,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each story belongs to one reporter.",
+        "fromTable": "story",
+        "fromField": "reporter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "story_by_reporter"
+      },
+      {
+        "describes": "Each story belongs to one editor.",
+        "fromTable": "story",
+        "fromField": "editor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "story_by_editor"
+      },
+      {
+        "describes": "Each interview belongs to one story.",
+        "fromTable": "interviews",
+        "fromField": "story",
+        "toTable": "story",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "interviews"
+      },
+      {
+        "describes": "Each interview belongs to one reporter.",
+        "fromTable": "interviews",
+        "fromField": "reporter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "interview_by_reporter"
+      },
+      {
+        "describes": "Each correction belongs to one story.",
+        "fromTable": "corrections",
+        "fromField": "story",
+        "toTable": "story",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "corrections"
+      },
+      {
+        "describes": "Each correction belongs to one handled by.",
+        "fromTable": "corrections",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "correction_by_owner"
+      },
+      {
+        "describes": "Each event to cover belongs to one reporter.",
+        "fromTable": "coverage",
+        "fromField": "reporter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "coverage_by_reporter"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Henrietta Oyelaran-Cole",
+              "role": "Managing editor",
+              "work_email": "henrietta@prairieledgernews.net",
+              "mobile": "(309) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Callum Brightwater",
+              "role": "Editor",
+              "work_email": "callum@prairieledgernews.net",
+              "mobile": "(309) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Marisol Adeyemi-Strand",
+              "role": "Reporter, city hall",
+              "work_email": "marisol@prairieledgernews.net",
+              "mobile": "(309) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Teodor Wiśniewski",
+              "role": "Reporter, schools",
+              "work_email": "teodor@prairieledgernews.net",
+              "mobile": "(309) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Anjali Ferreira-Kroll",
+              "role": "Reporter, health and environment",
+              "work_email": "anjali@prairieledgernews.net",
+              "mobile": "(309) 555-0145",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Dennis Okpara",
+              "role": "Photo and video",
+              "work_email": "dennis@prairieledgernews.net",
+              "mobile": "(309) 555-0146",
+              "start_date": "@today-5y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Story tip",
+        "describes": "Readers and staff send tips here.",
+        "audience": "staff",
+        "table": "story",
+        "fields": [
+          {
+            "fieldKey": "story_name",
+            "ask": "What should we look into?",
+            "required": true
+          },
+          {
+            "fieldKey": "desk",
+            "ask": "Which area does it touch?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When does it matter by?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. An editor will read your tip."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "story_assign",
+        "table": "story",
+        "name": "Assign",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Assigned"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "story_edit",
+        "table": "story",
+        "name": "Send to editing",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Editing"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "story_ready",
+        "table": "story",
+        "name": "Mark ready",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "interviews_spoken",
+        "table": "interviews",
+        "name": "Mark spoken",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Spoken"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "corrections_fixed",
+        "table": "corrections",
+        "name": "Mark fixed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Fixed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "coverage_assigned",
+        "table": "coverage",
+        "name": "Mark assigned",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Assigned"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "coverage_covered",
+        "table": "coverage",
+        "name": "Mark covered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Covered"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_story",
+        "name": "All stories",
+        "table": "story",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "story_board",
+        "name": "By status",
+        "table": "story",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "story_cal",
+        "name": "Calendar",
+        "table": "story",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "story_over",
+        "name": "Overdue",
+        "table": "story",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pitch",
+            "Assigned",
+            "Reporting",
+            "Editing",
+            "Ready"
+          ]
+        }
+      },
+      {
+        "token": "story_week",
+        "name": "This week",
+        "table": "story",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pitch",
+            "Assigned",
+            "Reporting",
+            "Editing",
+            "Ready"
+          ]
+        }
+      },
+      {
+        "token": "story_next7",
+        "name": "Next 7 days",
+        "table": "story",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pitch",
+            "Assigned",
+            "Reporting",
+            "Editing",
+            "Ready"
+          ]
+        }
+      },
+      {
+        "token": "story_mine",
+        "name": "My stories",
+        "table": "story",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_interviews",
+        "name": "All interviews",
+        "table": "interviews",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "interviews_board",
+        "name": "By status",
+        "table": "interviews",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "interviews_cal",
+        "name": "Calendar",
+        "table": "interviews",
+        "kind": "calendar",
+        "dateField": "speak_on",
+        "allDay": true
+      },
+      {
+        "token": "interviews_over",
+        "name": "Overdue",
+        "table": "interviews",
+        "kind": "grid",
+        "within": {
+          "speak_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "interviews_week",
+        "name": "This week",
+        "table": "interviews",
+        "kind": "grid",
+        "within": {
+          "speak_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "interviews_next7",
+        "name": "Next 7 days",
+        "table": "interviews",
+        "kind": "grid",
+        "within": {
+          "speak_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "interviews_mine",
+        "name": "My interviews",
+        "table": "interviews",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_corrections",
+        "name": "All corrections",
+        "table": "corrections",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "corrections_board",
+        "name": "By status",
+        "table": "corrections",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "corrections_cal",
+        "name": "Calendar",
+        "table": "corrections",
+        "kind": "calendar",
+        "dateField": "fix_by",
+        "allDay": true
+      },
+      {
+        "token": "corrections_over",
+        "name": "Overdue",
+        "table": "corrections",
+        "kind": "grid",
+        "within": {
+          "fix_by": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "corrections_week",
+        "name": "This week",
+        "table": "corrections",
+        "kind": "grid",
+        "within": {
+          "fix_by": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "corrections_next7",
+        "name": "Next 7 days",
+        "table": "corrections",
+        "kind": "grid",
+        "within": {
+          "fix_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "corrections_mine",
+        "name": "My corrections",
+        "table": "corrections",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_coverage",
+        "name": "All events to cover",
+        "table": "coverage",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "coverage_board",
+        "name": "By status",
+        "table": "coverage",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "coverage_cal",
+        "name": "Calendar",
+        "table": "coverage",
+        "kind": "calendar",
+        "dateField": "starts_at",
+        "allDay": false
+      },
+      {
+        "token": "coverage_today",
+        "name": "Today",
+        "table": "coverage",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Assigned"
+          ]
+        }
+      },
+      {
+        "token": "coverage_over",
+        "name": "Overdue",
+        "table": "coverage",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Assigned"
+          ]
+        }
+      },
+      {
+        "token": "coverage_week",
+        "name": "This week",
+        "table": "coverage",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Assigned"
+          ]
+        }
+      },
+      {
+        "token": "coverage_next7",
+        "name": "Next 7 days",
+        "table": "coverage",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Assigned"
+          ]
+        }
+      },
+      {
+        "token": "coverage_mine",
+        "name": "My events to cover",
+        "table": "coverage",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Local Newsroom Editorial Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "story",
+          "describes": "The story budget: every pitch and assignment from first idea to publication."
+        },
+        {
+          "name": "related_tables",
+          "table": "interviews",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many stories are in reporting?",
+        "whyItMatters": "The managing editor runs the budget meeting from this list.",
+        "expect": {
+          "table": "story",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Reporting"
+          },
+          "answer": 3,
+          "unit": "stories"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open stories.",
+        "action": {
+          "kind": "open",
+          "surface": "story_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "story_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open interviews.",
+        "action": {
+          "kind": "open",
+          "surface": "interviews_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "interviews_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open corrections.",
+        "action": {
+          "kind": "open",
+          "surface": "corrections_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "corrections_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "prairieledgernews.net"
+      ],
+      "fictionalStreets": [
+        "Granary Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "local-newsroom-editorial-desk",
+      "parent": null,
+      "title": "Local Newsroom Editorial Desk",
+      "icon": {
+        "emoji": "📰"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The newsroom's daily budget in one place. Start with the Dashboard before the morning meeting: stories due, meetings to cover and corrections open. Log every interview so reporting is traceable, and fix corrections before they are old. Never put passwords or protected-source identities in these rows."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:story-lifecycle"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:corrections-policy"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:covering-a-meeting"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stories"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The story budget: every pitch and assignment from first idea to publication."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "story",
+              "view": "story_board"
+            },
+            "inline": true,
+            "title": "Stories",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sto-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sto-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "sto-t",
+                "name": "All stories",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sto-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitch",
+                    "Assigned",
+                    "Reporting",
+                    "Editing",
+                    "Ready"
+                  ]
+                }
+              },
+              {
+                "id": "sto-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitch",
+                    "Assigned",
+                    "Reporting",
+                    "Editing",
+                    "Ready"
+                  ]
+                }
+              },
+              {
+                "id": "sto-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitch",
+                    "Assigned",
+                    "Reporting",
+                    "Editing",
+                    "Ready"
+                  ]
+                }
+              },
+              {
+                "id": "sto-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sto-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Interviews"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every source contacted for a story and whether they spoke, so reporting is traceable."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "interviews",
+              "view": "interviews_board"
+            },
+            "inline": true,
+            "title": "Interviews",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "int-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "int-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "speak_on"
+              },
+              {
+                "id": "int-t",
+                "name": "All interviews",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "int-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "speak_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "int-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "speak_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "int-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "speak_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "int-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "int-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Corrections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Errors reported by readers or staff, with the fix and its publication."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "corrections",
+              "view": "corrections_board"
+            },
+            "inline": true,
+            "title": "Corrections",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cor-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cor-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "fix_by"
+              },
+              {
+                "id": "cor-t",
+                "name": "All corrections",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cor-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "fix_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "cor-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "fix_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "cor-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "fix_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "cor-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cor-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events to cover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Meetings, hearings and community events the newsroom plans to attend."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "coverage",
+              "view": "coverage_board"
+            },
+            "inline": true,
+            "title": "Events to cover",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cov-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cov-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_at"
+              },
+              {
+                "id": "cov-t",
+                "name": "All events to cover",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cov-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "starts_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Assigned"
+                  ]
+                }
+              },
+              {
+                "id": "cov-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "starts_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Assigned"
+                  ]
+                }
+              },
+              {
+                "id": "cov-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Assigned"
+                  ]
+                }
+              },
+              {
+                "id": "cov-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Assigned"
+                  ]
+                }
+              },
+              {
+                "id": "cov-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cov-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "local-newsroom-editorial-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The desk at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "story",
+                      "view": "all_story"
+                    },
+                    "inline": true,
+                    "title": "Stories by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Stories by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "story",
+                      "view": "all_story"
+                    },
+                    "inline": true,
+                    "title": "Stories by desk",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Stories by desk",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "desk",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "interviews",
+                      "view": "all_interviews"
+                    },
+                    "inline": true,
+                    "title": "Interviews by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Interviews by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "corrections",
+                      "view": "all_corrections"
+                    },
+                    "inline": true,
+                    "title": "Corrections by kind",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Corrections by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stories due in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "story",
+              "view": "all_story"
+            },
+            "inline": true,
+            "title": "Stories due in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Stories due in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitch",
+                    "Assigned",
+                    "Reporting",
+                    "Editing",
+                    "Ready"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events with no reporter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "coverage",
+              "view": "all_coverage"
+            },
+            "inline": true,
+            "title": "Events with no reporter",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Events with no reporter",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "filters": {
+                  "status": "Planned"
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Corrections open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "corrections",
+              "view": "all_corrections"
+            },
+            "inline": true,
+            "title": "Corrections open",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Corrections open",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Open"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sourcing check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Counts interviews marked Spoken for the story"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No story goes to Ready with fewer than two sources unless the editor writes why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Requests pending"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Interviews requested but not yet spoken"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chase at 24 hours; note a decline so the story says so"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Corrections open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Corrections for the story not yet fixed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix and publish the note the same day"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "story-lifecycle",
+      "parent": "local-newsroom-editorial-desk",
+      "title": "Story lifecycle",
+      "icon": {
+        "emoji": "🔄"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every story passes the same gates. The gates are how a small newsroom stays accurate under time pressure."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Gates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who owns it"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ready to move on when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pitch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reporter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An editor agrees it is worth doing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Assigned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reporter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A plan and first sources are listed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reporting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reporter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Facts are gathered and sourced"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Editing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Editor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Facts, fairness and language are checked"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ready"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Editor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Headline, photos and links are done"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Published"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Editor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "It is live and the budget is updated"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules of thumb"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Two sources for any serious claim."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call the person criticized before publishing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If in doubt, hold the story one day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "corrections-policy",
+      "parent": "local-newsroom-editorial-desk",
+      "title": "Corrections policy",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A visible, quick correction is a sign of a trustworthy newsroom. Hiding a mistake is what hurts."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When someone reports an error"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log it on the Corrections table the moment it arrives."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The editor checks the claim against notes and documents."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If it is wrong, fix the story and add a correction note at the top or bottom."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark fixed and thank the reader who reported it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Quietly change text with no note on a material error."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Argue with the reader before checking."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Leave an error up while you decide."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "covering-a-meeting",
+      "parent": "local-newsroom-editorial-desk",
+      "title": "Covering a public meeting",
+      "icon": {
+        "emoji": "🏛️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most local news starts in a meeting room. A good plan turns a long night into one clear story."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Download the agenda and packet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "List the items likely to matter and who will speak"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the livestream or recording options"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Note the time of each vote and how each member voted."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Get names and spellings from the sign-in sheet."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask one clarifying question in the break."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call anyone whose statement needs checking"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "File within the budget deadline"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Press Mark covered on the event"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

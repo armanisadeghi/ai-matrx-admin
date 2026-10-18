@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0303",
-  "version": 4,
+  "version": 5,
   "title": "Small Business OS",
   "description": "Owners of 1 to 15 person businesses: sales, projects, money, team and goals in one.",
   "forWho": "Owners of 1 to 15 person businesses",
@@ -800,6 +800,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "budget",
             "label": "Budget",
             "parityType": "currency",
@@ -921,7 +929,8 @@
               "status": "Done",
               "start_on": "@today-20d",
               "due_on": "@today-8d",
-              "budget": 2650
+              "budget": 2650,
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -1104,6 +1113,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "assignee",
             "label": "Assigned to",
             "parityType": "relation",
@@ -1188,7 +1205,8 @@
               "task_name": "Final walkthrough photos",
               "status": "Done",
               "assignee": "tm-bastian",
-              "due_on": "@today-8d"
+              "due_on": "@today-8d",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -1228,7 +1246,8 @@
               "task_name": "Order vinyl rolls",
               "status": "Done",
               "assignee": "tm-ngozi",
-              "due_on": "@today-8d"
+              "due_on": "@today-8d",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -1440,6 +1459,14 @@
             "format": "date"
           },
           {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_late",
             "label": "Days late",
             "parityType": "formula",
@@ -1526,7 +1553,8 @@
               "amount": 2600,
               "issued_on": "@today-4d",
               "due_on": "@today+10d",
-              "memo": "School banner run, balance"
+              "memo": "School banner run, balance",
+              "sent_on": "@today-4d"
             }
           },
           {
@@ -1558,7 +1586,8 @@
               "amount": 3200,
               "issued_on": "@today-12d",
               "due_on": "@today-2d",
-              "memo": "Expo graphics, design retainer"
+              "memo": "Expo graphics, design retainer",
+              "sent_on": "@today-2d"
             }
           }
         ],
@@ -2421,6 +2450,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2435,6 +2469,11 @@
             "field": "status",
             "set": "value",
             "value": "Sent"
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2449,6 +2488,11 @@
             "field": "stage",
             "set": "value",
             "value": "Won"
+          },
+          {
+            "field": "close_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2463,6 +2507,11 @@
             "field": "stage",
             "set": "value",
             "value": "Lost"
+          },
+          {
+            "field": "close_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2477,6 +2526,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2491,6 +2545,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2938,7 +2997,7 @@
         "Weatherby Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

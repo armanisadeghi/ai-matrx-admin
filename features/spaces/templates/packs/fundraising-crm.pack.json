@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0357",
-  "version": 4,
+  "version": 5,
   "title": "Fundraising CRM",
   "description": "Startup founders: run an investor pipeline with rounds, updates and a cap table.",
   "forWho": "Startup founders",
@@ -1400,6 +1400,14 @@
               "do": "run_action",
               "action": "update_sent"
             }
+          },
+          {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           }
         ],
         "rows": [
@@ -1410,7 +1418,8 @@
               "mrr": 41800,
               "burn": 62000,
               "cash": 410000,
-              "sent": true
+              "sent": true,
+              "sent_on": "@today-2d"
             }
           },
           {
@@ -1420,7 +1429,8 @@
               "mrr": 46200,
               "burn": 64500,
               "cash": 380000,
-              "sent": true
+              "sent": true,
+              "sent_on": "@today-5d"
             }
           },
           {
@@ -1780,6 +1790,11 @@
             "field": "sent",
             "set": "value",
             "value": true
+          },
+          {
+            "field": "sent_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2031,7 +2046,7 @@
         "Hollin Wharf"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

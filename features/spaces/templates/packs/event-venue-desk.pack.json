@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0466",
-  "version": 2,
+  "version": 3,
   "title": "Event Venue Desk",
   "description": "Spaces, inquiries and tours, bookings with deposits, and setup checklists for a venue.",
   "forWho": "Event venues, halls and barn and loft rental spaces",
@@ -427,6 +427,14 @@
             "format": "date"
           },
           {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "email",
             "label": "Email",
             "parityType": "email",
@@ -684,7 +692,8 @@
               "email": "learn@brightstonedesign.net",
               "space": "space-4",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "closed_on": "@today-9d"
             }
           },
           {
@@ -781,6 +790,22 @@
           {
             "key": "hold_expires",
             "label": "Hold expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "deposit_paid_on",
+            "label": "Deposit paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1059,7 +1084,8 @@
               "space": "space-2",
               "inquiry": "inquiry-4",
               "manager": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deposit_paid_on": "@today-2d"
             }
           },
           {
@@ -1118,7 +1144,8 @@
               "deposit": 1100,
               "space": "space-2",
               "manager": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deposit_paid_on": "@today-3d"
             }
           },
           {
@@ -1131,7 +1158,8 @@
               "fee": 1550,
               "deposit": 775,
               "space": "space-3",
-              "manager": "tm-3"
+              "manager": "tm-3",
+              "deposit_paid_on": "@today-6d"
             }
           },
           {
@@ -1145,7 +1173,8 @@
               "deposit": 2200,
               "space": "space-2",
               "manager": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-18d"
             }
           },
           {
@@ -1158,7 +1187,8 @@
               "fee": 4800,
               "deposit": 4800,
               "space": "space-1",
-              "manager": "tm-3"
+              "manager": "tm-3",
+              "completed_on": "@today-45d"
             }
           },
           {
@@ -1172,7 +1202,8 @@
               "deposit": 8600,
               "space": "space-5",
               "manager": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-90d"
             }
           }
         ]
@@ -1245,6 +1276,14 @@
           {
             "key": "due_on",
             "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1423,7 +1462,8 @@
               "kind": "Teardown",
               "due_on": "@today-17d",
               "booking": "booking-7",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "completed_on": "@today-17d"
             }
           },
           {
@@ -1435,7 +1475,8 @@
               "due_on": "@today-40d",
               "booking": "booking-8",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "completed_on": "@today-40d"
             }
           }
         ]
@@ -1618,6 +1659,11 @@
             "field": "status",
             "set": "value",
             "value": "Lost"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1632,6 +1678,11 @@
             "field": "status",
             "set": "value",
             "value": "Deposit paid"
+          },
+          {
+            "field": "deposit_paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1646,6 +1697,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1660,6 +1716,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2032,7 +2093,7 @@
         "Weir Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

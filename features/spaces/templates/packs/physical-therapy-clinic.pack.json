@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0401",
-  "version": 1,
+  "version": 2,
   "title": "Physical Therapy Clinic",
   "description": "Referrals, plans of care, visits and visit counts for a small therapy clinic.",
   "forWho": "Physical therapy and rehab clinics",
@@ -521,6 +521,14 @@
             "format": "date"
           },
           {
+            "key": "discharged_on",
+            "label": "Discharged on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "goal",
             "label": "Main goal",
             "parityType": "text",
@@ -617,7 +625,8 @@
               "authorized": 14,
               "start_on": "@today-120d",
               "recert_on": "@today-30d",
-              "goal": "Walk a mile without a cane"
+              "goal": "Walk a mile without a cane",
+              "discharged_on": "@today-30d"
             }
           },
           {
@@ -836,6 +845,14 @@
             "format": "datetime"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "kind",
             "label": "Visit type",
             "parityType": "select",
@@ -992,7 +1009,8 @@
               "therapist": "tm-hana",
               "when_at": "@today-4d 09:00",
               "kind": "Treatment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-4d"
             }
           },
           {
@@ -1003,7 +1021,8 @@
               "therapist": "tm-dewitt",
               "when_at": "@today-3d 10:15",
               "kind": "Treatment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1014,7 +1033,8 @@
               "therapist": "tm-hana",
               "when_at": "@today-8d 14:00",
               "kind": "Treatment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-8d"
             }
           },
           {
@@ -1036,7 +1056,8 @@
               "therapist": "tm-hana",
               "when_at": "@today-30d 09:30",
               "kind": "Discharge visit",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-30d"
             }
           },
           {
@@ -1047,7 +1068,8 @@
               "therapist": "tm-dewitt",
               "when_at": "@today-5d 08:00",
               "kind": "Treatment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1058,7 +1080,8 @@
               "therapist": "tm-dewitt",
               "when_at": "@today-7d 13:00",
               "kind": "Treatment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -1069,7 +1092,8 @@
               "therapist": "tm-hana",
               "when_at": "@today-20d 16:00",
               "kind": "Treatment",
-              "status": "Completed"
+              "status": "Completed",
+              "completed_on": "@today-20d"
             }
           }
         ],
@@ -1695,6 +1719,11 @@
             "field": "status",
             "set": "value",
             "value": "Discharged"
+          },
+          {
+            "field": "discharged_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1723,6 +1752,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2049,7 +2083,7 @@
         "Millbrook Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

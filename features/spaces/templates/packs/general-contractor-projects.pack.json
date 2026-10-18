@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 1,
+  "version": 2,
   "title": "General Contractor Projects",
   "description": "Jobs, subcontractors, phases, change orders and punch lists for a builder.",
   "forWho": "General contractors and remodelers",
@@ -168,6 +168,14 @@
           {
             "key": "finish_on",
             "label": "Target finish",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -350,7 +358,8 @@
               "contract": 36500,
               "start_on": "@today-160d",
               "finish_on": "@today-100d",
-              "super": "tm-adaora"
+              "super": "tm-adaora",
+              "completed_on": "@today-100d"
             }
           },
           {
@@ -589,6 +598,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -666,7 +683,8 @@
               "sub": "s03",
               "start_on": "@today-30d",
               "end_on": "@today-3d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -723,7 +741,8 @@
               "sub": "s03",
               "start_on": "@today-18d",
               "end_on": "@today-12d",
-              "status": "Done"
+              "status": "Done",
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -951,6 +970,14 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1025,7 +1052,8 @@
               "amount": 2300,
               "requested_on": "@today-25d",
               "decide_by": "@today-20d",
-              "status": "Approved"
+              "status": "Approved",
+              "approved_on": "@today-20d"
             }
           },
           {
@@ -1036,7 +1064,8 @@
               "amount": 3100,
               "requested_on": "@today-40d",
               "decide_by": "@today-35d",
-              "status": "Approved"
+              "status": "Approved",
+              "approved_on": "@today-35d"
             }
           },
           {
@@ -1070,7 +1099,8 @@
               "amount": 900,
               "requested_on": "@today-130d",
               "decide_by": "@today-125d",
-              "status": "Approved"
+              "status": "Approved",
+              "approved_on": "@today-125d"
             }
           },
           {
@@ -1271,6 +1301,22 @@
             "format": "date"
           },
           {
+            "key": "fixed_on",
+            "label": "Fixed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "verified_on",
+            "label": "Verified on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1359,7 +1405,8 @@
               "location": "Rec room",
               "sub": "s01",
               "due_on": "@today-3d",
-              "status": "Fixed"
+              "status": "Fixed",
+              "fixed_on": "@today-3d"
             }
           },
           {
@@ -1370,7 +1417,8 @@
               "location": "Rec room",
               "sub": "s05",
               "due_on": "@today-6d",
-              "status": "Verified"
+              "status": "Verified",
+              "verified_on": "@today-6d"
             }
           },
           {
@@ -1381,7 +1429,8 @@
               "location": "Back deck",
               "sub": "s07",
               "due_on": "@today-110d",
-              "status": "Verified"
+              "status": "Verified",
+              "verified_on": "@today-110d"
             }
           },
           {
@@ -1392,7 +1441,8 @@
               "location": "Back deck",
               "sub": "s03",
               "due_on": "@today-112d",
-              "status": "Verified"
+              "status": "Verified",
+              "verified_on": "@today-112d"
             }
           }
         ],
@@ -1960,6 +2010,11 @@
             "field": "status",
             "set": "value",
             "value": "Complete"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1988,6 +2043,11 @@
             "field": "status",
             "set": "value",
             "value": "Done"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2002,6 +2062,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2030,6 +2095,11 @@
             "field": "status",
             "set": "value",
             "value": "Fixed"
+          },
+          {
+            "field": "fixed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2044,6 +2114,11 @@
             "field": "status",
             "set": "value",
             "value": "Verified"
+          },
+          {
+            "field": "verified_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2480,7 +2555,7 @@
         "Quarry Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

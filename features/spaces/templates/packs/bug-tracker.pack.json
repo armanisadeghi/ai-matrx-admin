@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 4,
+  "version": 5,
   "title": "Bug Tracker",
   "description": "Engineering and support teams: report, triage and fix bugs by severity on a board.",
   "forWho": "Engineering and support teams",
@@ -355,6 +355,14 @@
             "format": "date"
           },
           {
+            "key": "fixed_on",
+            "label": "Fixed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "environment",
             "label": "Environment",
             "parityType": "select",
@@ -485,7 +493,8 @@
                 "API"
               ],
               "link": "https://code.quillpoint-apps.net/issues/1200",
-              "release": "rl-0"
+              "release": "rl-0",
+              "fixed_on": "@today-2d"
             }
           },
           {
@@ -504,7 +513,8 @@
                 "Auth"
               ],
               "link": "https://code.quillpoint-apps.net/issues/1201",
-              "release": "rl-0"
+              "release": "rl-0",
+              "fixed_on": "@today-48d"
             }
           },
           {
@@ -522,7 +532,8 @@
                 "Mobile"
               ],
               "link": "https://code.quillpoint-apps.net/issues/1202",
-              "release": "rl-1"
+              "release": "rl-1",
+              "fixed_on": "@today-30d"
             }
           },
           {
@@ -541,7 +552,8 @@
                 "Search"
               ],
               "link": "https://code.quillpoint-apps.net/issues/1203",
-              "release": "rl-1"
+              "release": "rl-1",
+              "fixed_on": "@today-26d"
             }
           },
           {
@@ -559,7 +571,8 @@
                 "Web"
               ],
               "link": "https://code.quillpoint-apps.net/issues/1204",
-              "release": "rl-1"
+              "release": "rl-1",
+              "fixed_on": "@today-20d"
             }
           },
           {
@@ -1040,6 +1053,11 @@
             "field": "status",
             "set": "value",
             "value": "Fixed"
+          },
+          {
+            "field": "fixed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1261,7 +1279,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

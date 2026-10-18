@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0253",
-  "version": 3,
+  "version": 4,
   "title": "Time-Off Tracker",
   "description": "Small teams and HR: request and approve leave, with a team calendar and balances.",
   "forWho": "Small teams and HR managers",
@@ -468,6 +468,22 @@
             "format": "date"
           },
           {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "updated",
             "label": "Last updated",
             "parityType": "modified_time",
@@ -511,7 +527,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Family trip, covered by Tomás",
-              "submitted_on": "@today-3d"
+              "submitted_on": "@today-3d",
+              "approved_on": "@today-3d"
             }
           },
           {
@@ -543,7 +560,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Flu",
-              "submitted_on": "@today-11d"
+              "submitted_on": "@today-11d",
+              "approved_on": "@today-5d"
             }
           },
           {
@@ -559,7 +577,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Moving day",
-              "submitted_on": "@today-15d"
+              "submitted_on": "@today-15d",
+              "approved_on": "@today-15d"
             }
           },
           {
@@ -591,7 +610,8 @@
               "status": "Approved",
               "approver": "tm-jasper",
               "reason": "Planned leave",
-              "submitted_on": "@today-23d"
+              "submitted_on": "@today-23d",
+              "approved_on": "@today-23d"
             }
           },
           {
@@ -607,7 +627,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Beach week",
-              "submitted_on": "@today-27d"
+              "submitted_on": "@today-27d",
+              "approved_on": "@today-24d"
             }
           },
           {
@@ -623,7 +644,8 @@
               "status": "Declined",
               "approver": "tm-camille",
               "reason": "Short notice, clinic fully booked",
-              "submitted_on": "@today-31d"
+              "submitted_on": "@today-31d",
+              "decided_on": "@today-31d"
             }
           },
           {
@@ -639,7 +661,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Migraine",
-              "submitted_on": "@today-35d"
+              "submitted_on": "@today-35d",
+              "approved_on": "@today-35d"
             }
           },
           {
@@ -671,7 +694,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Spring break",
-              "submitted_on": "@today-43d"
+              "submitted_on": "@today-43d",
+              "approved_on": "@today-43d"
             }
           },
           {
@@ -703,7 +727,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Stomach bug",
-              "submitted_on": "@today-51d"
+              "submitted_on": "@today-51d",
+              "approved_on": "@today-11d"
             }
           },
           {
@@ -719,7 +744,8 @@
               "status": "Approved",
               "approver": "tm-camille",
               "reason": "Summer holiday",
-              "submitted_on": "@today-55d"
+              "submitted_on": "@today-55d",
+              "approved_on": "@today-55d"
             }
           },
           {
@@ -1020,6 +1046,11 @@
             "field": "status",
             "set": "value",
             "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "color": "green"
@@ -1035,6 +1066,11 @@
             "field": "status",
             "set": "value",
             "value": "Declined"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "confirm": true,
@@ -1229,7 +1265,7 @@
         "Hollowmere Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

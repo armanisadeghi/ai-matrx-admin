@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0513",
-  "version": 1,
+  "version": 2,
   "title": "Barbershop HQ",
   "description": "Manage barbers, walk-ins and bookings, chair rent or commission, and payments.",
   "forWho": "Barbershops and grooming studios",
@@ -899,6 +899,14 @@
             "format": "date"
           },
           {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "visit_type",
             "label": "Kind",
             "parityType": "select",
@@ -1088,7 +1096,8 @@
               "when_on": "@today-12d",
               "visit_type": "Appointment",
               "minutes": 30,
-              "price": 40
+              "price": 40,
+              "completed_on": "@today-12d"
             }
           },
           {
@@ -1102,7 +1111,8 @@
               "when_on": "@today-9d",
               "visit_type": "Walk-in",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-9d"
             }
           },
           {
@@ -1116,7 +1126,8 @@
               "when_on": "@today-7d",
               "visit_type": "Line-up",
               "minutes": 30,
-              "price": 35
+              "price": 35,
+              "completed_on": "@today-7d"
             }
           },
           {
@@ -1130,7 +1141,8 @@
               "when_on": "@today-5d",
               "visit_type": "Shave",
               "minutes": 30,
-              "price": 40
+              "price": 40,
+              "completed_on": "@today-5d"
             }
           },
           {
@@ -1144,7 +1156,8 @@
               "when_on": "@today-3d",
               "visit_type": "Appointment",
               "minutes": 60,
-              "price": 0
+              "price": 0,
+              "completed_on": "@today-3d"
             }
           },
           {
@@ -1492,6 +1505,14 @@
             "format": "date"
           },
           {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "method",
             "label": "Method",
             "parityType": "select",
@@ -1539,7 +1560,8 @@
               "client": "client-3",
               "amount": 40,
               "due_on": "@today-30d",
-              "method": "Cash"
+              "method": "Cash",
+              "paid_on": "@today-30d"
             }
           },
           {
@@ -1550,7 +1572,8 @@
               "client": "client-8",
               "amount": 50,
               "due_on": "@today-28d",
-              "method": "Card"
+              "method": "Card",
+              "paid_on": "@today-28d"
             }
           },
           {
@@ -1561,7 +1584,8 @@
               "client": "client-13",
               "amount": 35,
               "due_on": "@today-14d",
-              "method": "Tap to pay"
+              "method": "Tap to pay",
+              "paid_on": "@today-14d"
             }
           },
           {
@@ -1572,7 +1596,8 @@
               "client": "client-4",
               "amount": 25,
               "due_on": "@today-10d",
-              "method": "Membership"
+              "method": "Membership",
+              "paid_on": "@today-10d"
             }
           },
           {
@@ -1638,7 +1663,8 @@
               "client": "client-6",
               "amount": 18,
               "due_on": "@today-6d",
-              "method": "Card"
+              "method": "Card",
+              "paid_on": "@today-6d"
             }
           },
           {
@@ -1818,6 +1844,11 @@
             "field": "status",
             "set": "value",
             "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -1832,6 +1863,11 @@
             "field": "status",
             "set": "value",
             "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       }
@@ -2093,7 +2129,7 @@
         "Tannery Square"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
