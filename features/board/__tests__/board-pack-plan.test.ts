@@ -1,5 +1,5 @@
 // A board pack's install plan: every table tile is pointed at the table THIS install made (by token), in section
-// layout; notes carry their seed; the board is already in page shape (planPageLayout moves nothing); every
+// layout; the overview is a cover; the board is already in page shape (planPageLayout moves nothing); every
 // chapter of the pack is a frame in order; and the child page is its own board. Fails without the plan.
 
 import { readFileSync } from "node:fs";
@@ -12,7 +12,7 @@ import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "../items/table-tile";
 
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../spaces/templates/packs/design-system-board.pack.json"), "utf8")) as SpaceTemplatePack;
-const MADE = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow", "component"].map((t, i) => [t, { tableId: `00000000-0000-4000-8000-00000000000${i + 1}`, viewIds: {} }]));
+const MADE = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow", "opacity", "motion", "component"].map((t, i) => [t, { tableId: `00000000-0000-4000-8000-0000000000${String(i + 1).padStart(2, "0")}`, viewIds: {} }]));
 
 describe("planPackBoards", () => {
   let n = 0;
@@ -26,6 +26,8 @@ describe("planPackBoards", () => {
       ["Spacing", MADE.spacing.tableId],
       ["Corner radius", MADE.radius.tableId],
       ["Shadows", MADE.shadow.tableId],
+      ["Opacity", MADE.opacity.tableId],
+      ["Motion", MADE.motion.tableId],
       ["Components", MADE.component.tableId],
     ]);
     for (const t of tables) expect(t.source.kind === "entity" && t.source.meta?.layout).toBe(TABLE_LAYOUT_SECTION);
@@ -38,18 +40,18 @@ describe("planPackBoards", () => {
 
   it("makes each chapter a frame, in order, already in page shape", () => {
     expect(top.layout).toBe("page");
-    expect(chapterOrder(top.doc.groups).map((g) => g.title)).toEqual(["Overview", "Colors", "Typography", "Spacing", "Corner radius", "Shadows", "Components", "Assets"]);
+    expect(chapterOrder(top.doc.groups).map((g) => g.title)).toEqual(["Overview", "Colors", "Typography", "Spacing", "Corner radius", "Shadows", "Opacity", "Motion", "Components", "Assets"]);
     const plan = planPageLayout({ tiles: top.doc.nodes, frames: top.doc.groups });
     expect(plan.moves).toEqual([]);
     expect(plan.chapters).toEqual(top.doc.groups.map((g) => g.id));
   });
 
-  it("seeds the notes so each use files its own", () => {
+  it("opens on a cover: a hero and the principles prose, kept on the tile", () => {
     const overview = top.doc.nodes.find((x) => x.title === "Design system")!;
-    expect(overview.source).toMatchObject({ kind: "entity", entity: "note", id: null });
-    const seed = overview.source.kind === "entity" ? overview.source.meta?.seed ?? "" : "";
-    expect(seed.split("\n")[0]).toBe("Design system");
-    for (const h of ["## Principles", "## Using tokens", "## Using components", "## Accessibility"]) expect(seed).toContain(h);
+    expect(overview.source).toMatchObject({ kind: "entity", entity: "cover", id: null });
+    const meta = overview.source.kind === "entity" ? overview.source.meta ?? {} : {};
+    expect(meta.hero ?? "").toContain("One look,");
+    for (const h of ["## Principles", "## Using tokens", "## Using components", "## Accessibility"]) expect(meta.markdown ?? "").toContain(h);
   });
 
   it("makes the Files page as its own board", () => {
