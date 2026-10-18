@@ -6,9 +6,9 @@
 // it), so page edges never drop a same-instant row; `appendActivityPage` drops any repeat by key.
 //
 // Doors: the SQL returns {type,id,user_id?,href?}; `activityRecordHref` maps each type to its ONE
-// canonical address (no route strings in SQL). Types with no record page (live auth sessions,
-// background agent jobs, text threads, raw app_log rows) return null — their row shows the detail
-// inline instead.
+// canonical address (no route strings in SQL). Rows show titles and statuses only, never content
+// bodies (owner ruling 2026-10-18; migration 20261018140000). Types with no record page yet
+// (background agent jobs, text threads, raw app_log rows without a conversation) return null.
 
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";
@@ -17,7 +17,7 @@ import { conversationHref } from "@/features/hindsight/subject-doors";
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
-import { userRecordHref } from "./userSurfaces";
+import { isVisibleUserTab, userRecordHref } from "./userSurfaces";
 
 export const ACTIVITY_KINDS = [
   "admin",
@@ -217,6 +217,9 @@ export function activityRecordHref(record: ActivityRecord | null, personId: stri
       return id ? feedbackHref(id) : null;
     case "notification":
       return record.href && record.href.startsWith("/") ? record.href : null;
+    case "auth_session":
+      // A live sign-in session is listed on the person's Security tab (once that tab is built).
+      return isVisibleUserTab("security") ? userRecordHref(personId, "security") : null;
     case "billing":
     case "coupon":
       return userRecordHref(record.user_id ?? personId, "billing");

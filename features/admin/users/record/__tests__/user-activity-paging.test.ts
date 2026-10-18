@@ -11,6 +11,7 @@ import {
   type ActivityItem,
   type ActivityPage,
 } from "../userActivity";
+import { isVisibleUserTab } from "../userSurfaces";
 
 const item = (key: string, at: string, kind = "conversation"): ActivityItem => ({
   key,
@@ -105,8 +106,13 @@ describe("activityRecordHref", () => {
     expect(activityRecordHref({ type: "billing", id: "g", user_id: me, href: null }, me)).toBe(`/administration/users/${me}/billing`);
     expect(activityRecordHref({ type: "notification", id: "n", user_id: null, href: "/chat/abc" }, me)).toBe("/chat/abc");
   });
+  it("opens a sign-in on the Security tab only while that tab is built", () => {
+    expect(activityRecordHref({ type: "auth_session", id: "s", user_id: null, href: null }, me)).toBe(
+      isVisibleUserTab("security") ? `/administration/users/${me}/security` : null,
+    );
+  });
   it("returns null for records with no page and for off-site notification links", () => {
-    expect(activityRecordHref({ type: "auth_session", id: "s", user_id: null, href: null }, me)).toBeNull();
+    expect(activityRecordHref({ type: "agent_run", id: "r", user_id: null, href: null }, me)).toBeNull();
     expect(activityRecordHref({ type: "notification", id: "n", user_id: null, href: "https://evil.example" }, me)).toBeNull();
     expect(activityRecordHref(null, me)).toBeNull();
   });

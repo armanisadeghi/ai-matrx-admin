@@ -67,7 +67,7 @@ export interface UserTab {
 
 export const USER_TABS: readonly UserTab[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, built: true },
-  { id: "activity", label: "Activity", icon: Activity, built: false },
+  { id: "activity", label: "Activity", icon: Activity, built: true },
   { id: "billing", label: "Billing & usage", icon: WalletCards, built: true },
   { id: "organizations", label: "Organizations", icon: Building2, built: true },
   { id: "content", label: "Content", icon: FolderOpen, built: true },
