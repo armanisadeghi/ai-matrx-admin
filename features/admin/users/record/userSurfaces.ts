@@ -17,6 +17,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Building2,
   Gauge,
+  ShieldCheck,
   Gem,
   Gift,
   GraduationCap,
@@ -31,7 +32,6 @@ import {
   MailCheck,
   MailPlus,
   MessageSquare,
-  ShieldCheck,
   SlidersHorizontal,
   StickyNote,
   UserCheck,
@@ -67,13 +67,13 @@ export interface UserTab {
 
 export const USER_TABS: readonly UserTab[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, built: true },
-  { id: "activity", label: "Activity", icon: Activity, built: true },
+  { id: "activity", label: "Activity", icon: Activity, built: false },
   { id: "billing", label: "Billing & usage", icon: WalletCards, built: true },
   { id: "organizations", label: "Organizations", icon: Building2, built: true },
-  { id: "content", label: "Content", icon: FolderOpen, built: true },
+  { id: "content", label: "Content", icon: FolderOpen, built: false },
   { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
-  { id: "notes", label: "Notes", icon: StickyNote, built: true },
-  { id: "security", label: "Security", icon: ShieldCheck, built: true },
+  { id: "notes", label: "Notes", icon: StickyNote, built: false },
+  { id: "security", label: "Security", icon: ShieldCheck, built: false },
   { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: true },
   { id: "acquisition", label: "Acquisition", icon: UserPlus, built: true },
   { id: "history", label: "Admin history", icon: History, built: true },

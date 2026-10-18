@@ -7,8 +7,8 @@
 // are built. Data: admin.user_overview, one call.
 
 import { useRecordLoad } from "./useRecordLoad";
-import { useEffect, useState, type ComponentType } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
@@ -20,6 +20,7 @@ import {
 } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useRecordTitle } from "@/lib/record-title/record-title";
 import { pushAppHref } from "@/lib/deployment/navigate";
+import { toast } from "@/lib/toast";
 import { ChangePlanDialog, type ChangePlanSubject } from "@/features/admin/limits/components/ChangePlanDialog";
 import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "../components/GiveFreeMonthsDialog";
 import { StartSupportSessionDialog, type SupportSessionTarget } from "../support-sessions/StartSupportSessionDialog";
@@ -40,6 +41,8 @@ import { UserNotesTab } from "./UserNotesTab";
 import { UserSecurityTab } from "./UserSecurityTab";
 import {
   USERS_HUB_PATH,
+  USER_ACTION_PARAM,
+  isUserActionId,
   isVisibleUserTab,
   userActionDisabled,
   userActionLabel,
@@ -171,6 +174,19 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
       myId: actions.myId,
       closeBlocked: actions.closeBlockedReason(subject) !== null,
     });
+
+  // `?do=<action>` (userActionHref — the peek's action doors): run it once the person has loaded,
+  // exactly as the header would, then drop the parameter so a reload does not run it again.
+  const searchParams = useSearchParams();
+  const requestedAction = searchParams.get(USER_ACTION_PARAM);
+  const handledAction = useRef<string | null>(null);
+  useEffect(() => {
+    if (!requestedAction || !subject || handledAction.current === requestedAction) return;
+    handledAction.current = requestedAction;
+    if (isUserActionId(requestedAction) && !disabledFor(requestedAction)) run(requestedAction);
+    else toast.warning(`${label}: that action isn't available`);
+    router.replace(userRecordHref(userId, activeTab));
+  });
 
   const headerActions: RecordPageAction[] = subject
     ? userActions("header").map((def) => ({
