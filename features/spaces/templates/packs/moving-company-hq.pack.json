@@ -1,0 +1,3154 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0508",
+  "version": 1,
+  "title": "Moving Company HQ",
+  "description": "Quote moves, schedule crews and trucks, track supplies and collect final payments.",
+  "forWho": "Local moving companies",
+  "icon": {
+    "emoji": "🚚"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "trades",
+  "tags": [
+    "moving",
+    "crews",
+    "quotes",
+    "trucks"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-moving-company-hq",
+    "catalogueId": "SP0508",
+    "useCase": "The owner of Steady Hands Moving uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "manufacturing_logistics",
+    "vertical": "Moving company",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Steady Hands Moving",
+      "describes": "A fifteen-person local moving company with three trucks, two-to-four-person crews and a storage add-on, doing homes, apartments and small offices.",
+      "address": {
+        "line1": "81 Depot Lane",
+        "city": "Columbus",
+        "region": "OH",
+        "postalCode": "43215",
+        "country": "US"
+      },
+      "phone": "(614) 555-0137",
+      "website": "steadyhandsmoving.net",
+      "email": "info@steadyhandsmoving.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-moving-company-hq",
+    "tables": [
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "People and offices you have moved, with what they paid and owe.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer_type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Homeowner",
+              "Renter",
+              "Small office",
+              "Senior downsizing"
+            ],
+            "choiceColors": {
+              "Homeowner": "slate",
+              "Renter": "blue",
+              "Small office": "amber",
+              "Senior downsizing": "violet"
+            }
+          },
+          {
+            "key": "customer_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Lead",
+              "Inactive"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Lead": "blue",
+              "Inactive": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "job_count",
+            "label": "Moves done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "value_tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Billed to date} >= 2000, \"Top account\", IF({Billed to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_job_btn",
+            "label": "New move",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "job",
+              "template": "Job sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer intake",
+            "values": {
+              "customer_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The move"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "From and to addresses, move date, and size in rooms."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Access"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Stairs or elevator at each end"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Parking and truck access"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Long carry noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Special items"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Piano, safe, large TV, fragile items and anything over 200 pounds."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Hamza Carrow",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(614) 555-0133",
+              "email": "hamza.carrow@inbox-mail.net",
+              "area": "Willow Creek",
+              "since": "@today-40d"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Rosalind Jessup",
+              "customer_type": "Renter",
+              "customer_status": "Active",
+              "phone": "(614) 555-0170",
+              "email": "rosalind.jessup@inbox-mail.net",
+              "area": "North Ridge",
+              "since": "@today-95d"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Jonah Rutherford",
+              "customer_type": "Small office",
+              "customer_status": "Active",
+              "phone": "(614) 555-0107",
+              "email": "jonah.rutherford@inbox-mail.net",
+              "area": "Sunset Flats",
+              "since": "@today-150d"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Amara Brannigan",
+              "customer_type": "Senior downsizing",
+              "customer_status": "Lead",
+              "phone": "(614) 555-0144",
+              "email": "amara.brannigan@inbox-mail.net",
+              "area": "Maple Hollow",
+              "since": "@today-205d"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Cormac Iyer",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(614) 555-0181",
+              "email": "cormac.iyer@inbox-mail.net",
+              "area": "Eastgate",
+              "since": "@today-260d"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Delphine Pemberton",
+              "customer_type": "Renter",
+              "customer_status": "Active",
+              "phone": "(614) 555-0118",
+              "email": "delphine.pemberton@inbox-mail.net",
+              "area": "Riverbend",
+              "since": "@today-315d"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Mateus Yamamoto",
+              "customer_type": "Small office",
+              "customer_status": "Active",
+              "phone": "(614) 555-0155",
+              "email": "mateus.yamamoto@inbox-mail.net",
+              "area": "Old Mill",
+              "since": "@today-370d"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Farah Fontaine",
+              "customer_type": "Senior downsizing",
+              "customer_status": "Active",
+              "phone": "(614) 555-0192",
+              "email": "farah.fontaine@inbox-mail.net",
+              "area": "Cedar Park",
+              "since": "@today-425d"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Dennis Montague",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(614) 555-0129",
+              "email": "dennis.montague@inbox-mail.net",
+              "area": "Lakeview",
+              "since": "@today-13d"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Yara Westbrook",
+              "customer_type": "Renter",
+              "customer_status": "Inactive",
+              "phone": "(614) 555-0166",
+              "email": "yara.westbrook@inbox-mail.net",
+              "area": "Foxglove Court",
+              "since": "@today-14d"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Teodor Eastwick",
+              "customer_type": "Small office",
+              "customer_status": "Active",
+              "phone": "(614) 555-0103",
+              "email": "teodor.eastwick@inbox-mail.net",
+              "area": "Stonebridge",
+              "since": "@today-15d"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Odette Lindqvist",
+              "customer_type": "Senior downsizing",
+              "customer_status": "Active",
+              "phone": "(614) 555-0140",
+              "email": "odette.lindqvist@inbox-mail.net",
+              "area": "Harbor Heights",
+              "since": "@today-16d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "job",
+        "name": "Moves",
+        "labelSingular": "Move",
+        "labelPlural": "Moves",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "job_name",
+        "describes": "Every move, which crew and truck has it, what it earns and the margin.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Move",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New request",
+              "Scheduled",
+              "In progress",
+              "On hold",
+              "Completed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New request": "slate",
+              "Scheduled": "blue",
+              "In progress": "amber",
+              "On hold": "violet",
+              "Completed": "teal",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "New request",
+            "statusGroups": {
+              "New request": "todo",
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "On hold": "in_progress",
+              "Completed": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "job_type",
+            "label": "Work type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Studio or one-bedroom move",
+              "Two-bedroom move",
+              "Three-bedroom house move",
+              "Packing service",
+              "Office relocation",
+              "Single item delivery",
+              "Loading help only",
+              "Storage pickup"
+            ],
+            "choiceColors": {
+              "Studio or one-bedroom move": "slate",
+              "Two-bedroom move": "blue",
+              "Three-bedroom house move": "amber",
+              "Packing service": "violet",
+              "Office relocation": "teal",
+              "Single item delivery": "orange",
+              "Loading help only": "green",
+              "Storage pickup": "yellow"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Routine",
+              "Urgent",
+              "Emergency"
+            ],
+            "choiceColors": {
+              "Routine": "slate",
+              "Urgent": "blue",
+              "Emergency": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "tech",
+            "label": "Lead tech",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "scheduled_on",
+            "label": "Scheduled for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "quote",
+            "label": "Quote (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "parts_cost",
+            "label": "Parts cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Labor hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "margin_flag",
+            "label": "Margin check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+          },
+          {
+            "key": "collected",
+            "label": "Collected",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Job sheet",
+            "values": {
+              "status": "New request",
+              "job_name": "New move"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Move summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Addresses, arrival window, crew size and truck."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pre-move call"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Confirmed time and access with the customer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Inventory reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment method agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Move day log"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Start time, items damaged, delays and tips."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Close-out"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Walk-through with the customer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Any damage claim started"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invoice sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "job-1",
+            "values": {
+              "job_name": "Studio or one-bedroom move - Rutherford",
+              "status": "Completed",
+              "customer": "custom-3",
+              "job_type": "Studio or one-bedroom move",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-21d",
+              "quote": 435,
+              "parts_cost": 15,
+              "labor_cost": 215,
+              "hours": 6
+            }
+          },
+          {
+            "key": "job-2",
+            "values": {
+              "job_name": "Two-bedroom move - Fontaine",
+              "status": "Completed",
+              "customer": "custom-8",
+              "job_type": "Two-bedroom move",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-16d",
+              "quote": 1135,
+              "parts_cost": 45,
+              "labor_cost": 325,
+              "hours": 9
+            }
+          },
+          {
+            "key": "job-3",
+            "values": {
+              "job_name": "Three-bedroom house move - Carrow",
+              "status": "Completed",
+              "customer": "custom-1",
+              "job_type": "Three-bedroom house move",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-12d",
+              "quote": 2605,
+              "parts_cost": 130,
+              "labor_cost": 575,
+              "hours": 16
+            }
+          },
+          {
+            "key": "job-4",
+            "values": {
+              "job_name": "Packing service - Pemberton",
+              "status": "Completed",
+              "customer": "custom-6",
+              "job_type": "Packing service",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@today-9d",
+              "quote": 365,
+              "parts_cost": 65,
+              "labor_cost": 180,
+              "hours": 5
+            }
+          },
+          {
+            "key": "job-5",
+            "values": {
+              "job_name": "Office relocation - Eastwick",
+              "status": "Completed",
+              "customer": "custom-11",
+              "job_type": "Office relocation",
+              "priority": "Urgent",
+              "tech": "tm-3",
+              "scheduled_on": "@today-6d",
+              "quote": 2360,
+              "parts_cost": 120,
+              "labor_cost": 650,
+              "hours": 18
+            }
+          },
+          {
+            "key": "job-6",
+            "values": {
+              "job_name": "Single item delivery - Brannigan",
+              "status": "Completed",
+              "customer": "custom-4",
+              "job_type": "Single item delivery",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-4d",
+              "quote": 295,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2
+            }
+          },
+          {
+            "key": "job-7",
+            "values": {
+              "job_name": "Loading help only - Montague",
+              "status": "Cancelled",
+              "customer": "custom-9",
+              "job_type": "Loading help only",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-8d",
+              "quote": 260,
+              "parts_cost": 5,
+              "labor_cost": 110,
+              "hours": 3
+            }
+          },
+          {
+            "key": "job-8",
+            "values": {
+              "job_name": "Storage pickup - Jessup",
+              "status": "On hold",
+              "customer": "custom-2",
+              "job_type": "Storage pickup",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@today-5d",
+              "quote": 295,
+              "parts_cost": 10,
+              "labor_cost": 90,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-9",
+            "values": {
+              "job_name": "Studio or one-bedroom move - Yamamoto",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Studio or one-bedroom move",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-2d",
+              "quote": 415,
+              "parts_cost": 10,
+              "labor_cost": 215,
+              "hours": 6
+            }
+          },
+          {
+            "key": "job-10",
+            "values": {
+              "job_name": "Two-bedroom move - Lindqvist",
+              "status": "In progress",
+              "customer": "custom-12",
+              "job_type": "Two-bedroom move",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@mon",
+              "quote": 1105,
+              "parts_cost": 45,
+              "labor_cost": 325,
+              "hours": 9,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-11",
+            "values": {
+              "job_name": "Three-bedroom house move - Iyer",
+              "status": "In progress",
+              "customer": "custom-5",
+              "job_type": "Three-bedroom house move",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@tue",
+              "quote": 2550,
+              "parts_cost": 130,
+              "labor_cost": 575,
+              "hours": 16
+            }
+          },
+          {
+            "key": "job-12",
+            "values": {
+              "job_name": "Packing service - Westbrook",
+              "status": "Scheduled",
+              "customer": "custom-10",
+              "job_type": "Packing service",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@wed",
+              "quote": 345,
+              "parts_cost": 60,
+              "labor_cost": 180,
+              "hours": 5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-13",
+            "values": {
+              "job_name": "Office relocation - Rutherford",
+              "status": "Scheduled",
+              "customer": "custom-3",
+              "job_type": "Office relocation",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@thu",
+              "quote": 2275,
+              "parts_cost": 115,
+              "labor_cost": 650,
+              "hours": 18
+            }
+          },
+          {
+            "key": "job-14",
+            "values": {
+              "job_name": "Single item delivery - Fontaine",
+              "status": "Scheduled",
+              "customer": "custom-8",
+              "job_type": "Single item delivery",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@fri",
+              "quote": 285,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-15",
+            "values": {
+              "job_name": "Loading help only - Carrow",
+              "status": "New request",
+              "customer": "custom-1",
+              "job_type": "Loading help only",
+              "priority": "Urgent",
+              "tech": "tm-5",
+              "scheduled_on": "@sat",
+              "quote": 250,
+              "parts_cost": 5,
+              "labor_cost": 110,
+              "hours": 3,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-16",
+            "values": {
+              "job_name": "Storage pickup - Pemberton",
+              "status": "New request",
+              "customer": "custom-6",
+              "job_type": "Storage pickup",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@sun",
+              "quote": 285,
+              "parts_cost": 10,
+              "labor_cost": 90,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-17",
+            "values": {
+              "job_name": "Studio or one-bedroom move - Eastwick",
+              "status": "Scheduled",
+              "customer": "custom-11",
+              "job_type": "Studio or one-bedroom move",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@tue+1w",
+              "quote": 400,
+              "parts_cost": 10,
+              "labor_cost": 215,
+              "hours": 6
+            }
+          },
+          {
+            "key": "job-18",
+            "values": {
+              "job_name": "Two-bedroom move - Brannigan",
+              "status": "New request",
+              "customer": "custom-4",
+              "job_type": "Two-bedroom move",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@thu+1w",
+              "quote": 1075,
+              "parts_cost": 45,
+              "labor_cost": 325,
+              "hours": 9
+            }
+          },
+          {
+            "key": "job-19",
+            "values": {
+              "job_name": "Three-bedroom house move - Montague",
+              "status": "Scheduled",
+              "customer": "custom-9",
+              "job_type": "Three-bedroom house move",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today",
+              "quote": 2490,
+              "parts_cost": 125,
+              "labor_cost": 575,
+              "hours": 16,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-20",
+            "values": {
+              "job_name": "Packing service - Jessup",
+              "status": "Scheduled",
+              "customer": "custom-2",
+              "job_type": "Packing service",
+              "priority": "Urgent",
+              "tech": "tm-6",
+              "scheduled_on": "@today+2d",
+              "quote": 330,
+              "parts_cost": 60,
+              "labor_cost": 180,
+              "hours": 5
+            }
+          },
+          {
+            "key": "job-21",
+            "values": {
+              "job_name": "Office relocation - Yamamoto",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Office relocation",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today+4d",
+              "quote": 2190,
+              "parts_cost": 110,
+              "labor_cost": 650,
+              "hours": 18
+            }
+          }
+        ]
+      },
+      {
+        "token": "part",
+        "name": "Supplies and equipment",
+        "labelSingular": "Supply",
+        "labelPlural": "Supplies and equipment",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "part_name",
+        "describes": "Boxes, pads, straps and equipment on the trucks and in the warehouse.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "part_name",
+            "label": "Supply",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Boxes",
+              "Packing",
+              "Equipment"
+            ],
+            "choiceColors": {
+              "Boxes": "slate",
+              "Packing": "blue",
+              "Equipment": "amber"
+            }
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Unit cost (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "part-1",
+            "values": {
+              "part_name": "Medium box",
+              "category": "Boxes",
+              "unit": "each",
+              "unit_cost": 1.6,
+              "on_hand": 180,
+              "reorder_at": 100,
+              "supplier": "Heartland Packaging",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "part-2",
+            "values": {
+              "part_name": "Large box",
+              "category": "Boxes",
+              "unit": "each",
+              "unit_cost": 2.2,
+              "on_hand": 140,
+              "reorder_at": 80,
+              "supplier": "Heartland Packaging",
+              "counted_on": "@today-5d"
+            }
+          },
+          {
+            "key": "part-3",
+            "values": {
+              "part_name": "Wardrobe box",
+              "category": "Boxes",
+              "unit": "each",
+              "unit_cost": 9,
+              "on_hand": 24,
+              "reorder_at": 15,
+              "supplier": "Heartland Packaging",
+              "counted_on": "@today-7d"
+            }
+          },
+          {
+            "key": "part-4",
+            "values": {
+              "part_name": "Packing paper, bundle",
+              "category": "Packing",
+              "unit": "bundle",
+              "unit_cost": 24,
+              "on_hand": 18,
+              "reorder_at": 10,
+              "supplier": "Heartland Packaging",
+              "counted_on": "@today-9d"
+            }
+          },
+          {
+            "key": "part-5",
+            "values": {
+              "part_name": "Stretch wrap, roll",
+              "category": "Packing",
+              "unit": "roll",
+              "unit_cost": 14,
+              "on_hand": 22,
+              "reorder_at": 12,
+              "supplier": "Heartland Packaging",
+              "counted_on": "@today-11d"
+            }
+          },
+          {
+            "key": "part-6",
+            "values": {
+              "part_name": "Furniture pads",
+              "category": "Equipment",
+              "unit": "each",
+              "unit_cost": 16,
+              "on_hand": 40,
+              "reorder_at": 25,
+              "supplier": "Buckeye Moving Equipment",
+              "counted_on": "@today-13d"
+            }
+          },
+          {
+            "key": "part-7",
+            "values": {
+              "part_name": "Tape, 6 pack",
+              "category": "Packing",
+              "unit": "pack",
+              "unit_cost": 12,
+              "on_hand": 16,
+              "reorder_at": 8,
+              "supplier": "Heartland Packaging",
+              "counted_on": "@today-15d"
+            }
+          },
+          {
+            "key": "part-8",
+            "values": {
+              "part_name": "Ratchet straps",
+              "category": "Equipment",
+              "unit": "each",
+              "unit_cost": 8,
+              "on_hand": 30,
+              "reorder_at": 15,
+              "supplier": "Buckeye Moving Equipment",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "part-9",
+            "values": {
+              "part_name": "Dolly",
+              "category": "Equipment",
+              "unit": "each",
+              "unit_cost": 85,
+              "on_hand": 5,
+              "reorder_at": 4,
+              "supplier": "Buckeye Moving Equipment",
+              "counted_on": "@today-19d"
+            }
+          },
+          {
+            "key": "part-10",
+            "values": {
+              "part_name": "Mattress bags",
+              "category": "Packing",
+              "unit": "each",
+              "unit_cost": 3.5,
+              "on_hand": 30,
+              "reorder_at": 15,
+              "supplier": "Heartland Packaging",
+              "counted_on": "@today-21d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "invoice_name",
+        "describes": "What has been billed, what is paid and what is overdue.",
+        "subject": "thing",
+        "independentOf": {
+          "job": "Either record can be created or change status before the other.",
+          "customer": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "invoice_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Overdue",
+              "Paid",
+              "Void"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Overdue": "red",
+              "Paid": "amber",
+              "Void": "pink"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done",
+              "Void": "done"
+            }
+          },
+          {
+            "key": "job",
+            "label": "Move",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card",
+              "Check",
+              "Bank transfer",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Card": "slate",
+              "Check": "blue",
+              "Bank transfer": "amber",
+              "Cash": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "invoic-1",
+            "values": {
+              "invoice_name": "INV-1040",
+              "status": "Overdue",
+              "job": "job-1",
+              "customer": "custom-3",
+              "amount": 487.2,
+              "issued_on": "@today-21d",
+              "due_on": "@today-7d"
+            }
+          },
+          {
+            "key": "invoic-2",
+            "values": {
+              "invoice_name": "INV-1041",
+              "status": "Paid",
+              "job": "job-2",
+              "customer": "custom-8",
+              "amount": 1364.3,
+              "issued_on": "@today-16d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-12d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "invoic-3",
+            "values": {
+              "invoice_name": "INV-1042",
+              "status": "Paid",
+              "job": "job-3",
+              "customer": "custom-1",
+              "amount": 3230.2,
+              "issued_on": "@today-12d",
+              "due_on": "@today+2d",
+              "paid_on": "@today-8d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "invoic-4",
+            "values": {
+              "invoice_name": "INV-1043",
+              "status": "Sent",
+              "job": "job-4",
+              "customer": "custom-6",
+              "amount": 433.8,
+              "issued_on": "@today-9d",
+              "due_on": "@fri"
+            }
+          },
+          {
+            "key": "invoic-5",
+            "values": {
+              "invoice_name": "INV-1044",
+              "status": "Sent",
+              "job": "job-5",
+              "customer": "custom-11",
+              "amount": 2784.8,
+              "issued_on": "@today-6d",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "invoic-6",
+            "values": {
+              "invoice_name": "INV-1045",
+              "status": "Draft",
+              "job": "job-6",
+              "customer": "custom-4",
+              "amount": 390.8,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each move belongs to one customer.",
+        "fromTable": "job",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each move belongs to one lead tech.",
+        "fromTable": "job",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "jobs_led"
+      },
+      {
+        "describes": "Each invoice belongs to one move.",
+        "fromTable": "invoice",
+        "fromField": "job",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each invoice belongs to one customer.",
+        "fromTable": "invoice",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Ezekiel Ravensdale",
+              "role": "Owner",
+              "work_email": "ezekiel@steadyhandsmoving.net",
+              "mobile": "(614) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Marguerite Obi",
+              "role": "Move coordinator",
+              "work_email": "marguerite@steadyhandsmoving.net",
+              "mobile": "(614) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Santiago Pellegrino",
+              "role": "Crew lead",
+              "work_email": "santiago@steadyhandsmoving.net",
+              "mobile": "(614) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Thandiwe Nkosi",
+              "role": "Crew lead",
+              "work_email": "thandiwe@steadyhandsmoving.net",
+              "mobile": "(614) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Roddy Pembroke",
+              "role": "Mover",
+              "work_email": "roddy@steadyhandsmoving.net",
+              "mobile": "(614) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Ishaan Chaudhry",
+              "role": "Mover",
+              "work_email": "ishaan@steadyhandsmoving.net",
+              "mobile": "(614) 555-0145",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-7",
+            "values": {
+              "full_name": "Beatrix Lunde",
+              "role": "Office manager",
+              "work_email": "beatrix@steadyhandsmoving.net",
+              "mobile": "(614) 555-0146",
+              "start_date": "@today-6y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "job_request",
+        "name": "Request a move",
+        "describes": "How a customer or the office asks for work.",
+        "audience": "staff",
+        "table": "job",
+        "fields": [
+          {
+            "fieldKey": "job_name",
+            "ask": "What do you need done?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          },
+          {
+            "fieldKey": "scheduled_on",
+            "ask": "When would you like us there?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is on the board as New request."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "job_done",
+        "table": "job",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Customers board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "customer_status"
+      },
+      {
+        "token": "all_job",
+        "name": "All moves",
+        "table": "job",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "job_board",
+        "name": "Moves board",
+        "table": "job",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "job_cal",
+        "name": "Moves calendar",
+        "table": "job",
+        "kind": "calendar",
+        "dateField": "scheduled_on",
+        "allDay": true
+      },
+      {
+        "token": "job_over",
+        "name": "Overdue",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_week",
+        "name": "Due this week",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_next7",
+        "name": "Next 7 days",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_mine",
+        "name": "My moves",
+        "table": "job",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_part",
+        "name": "All supplies and equipment",
+        "table": "part",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "part_board",
+        "name": "Supplies and equipment board",
+        "table": "part",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoices board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Moving Company HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "job",
+          "describes": "Every move, which crew and truck has it, what it earns and the margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "customer",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many moves are on hold right now?",
+        "whyItMatters": "The office clears holds first thing each morning.",
+        "expect": {
+          "table": "job",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "On hold"
+          },
+          "answer": 1,
+          "unit": "moves"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open moves.",
+        "action": {
+          "kind": "open",
+          "surface": "job_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "job_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open supplies and equipment.",
+        "action": {
+          "kind": "open",
+          "surface": "part_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "part_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "steadyhandsmoving.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Depot Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "moving-company-hq",
+      "parent": null,
+      "title": "Moving Company HQ",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan the week of moves from one page. Quotes and bookings are on the Moves board, crew leads see their own list under Mine, and Mark done closes a move after the final walk-through. Supplies shows what to reorder; Invoices tracks final payments."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pre-move-survey"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:move-day"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:damage-claims"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "People and offices you have moved, with what they paid and owe."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "customer_status"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Moves"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every move, which crew and truck has it, what it earns and the margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "job_board"
+            },
+            "inline": true,
+            "title": "Moves",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "job-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "job-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "scheduled_on"
+              },
+              {
+                "id": "job-t",
+                "name": "All moves",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "job-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "job-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplies and equipment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Boxes, pads, straps and equipment on the trucks and in the warehouse."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "part",
+              "view": "part_board"
+            },
+            "inline": true,
+            "title": "Supplies and equipment",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "par-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "par-t",
+                "name": "All supplies and equipment",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "par-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What has been billed, what is paid and what is overdue."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inv-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inv-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inv-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "inv-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "moving-company-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Moves by status, revenue by type of move and unpaid invoices."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Moves",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Moves by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Moves",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Revenue by work type",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "job_type",
+                          "op": "sum",
+                          "field": "quote"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue moves"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Moves",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Overdue moves",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My moves"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Moves",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My moves",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Overdue invoices",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "pre-move-survey",
+      "parent": "moving-company-hq",
+      "title": "Pre-move survey and quote",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good quote is based on a real inventory, not a guess."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for a room-by-room inventory or do a video walkthrough."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note stairs, elevators, parking and long carries."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Price crew hours, truck time and materials."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a quote range, not a single number, and explain what changes it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Call the customer two days later. Most jobs are won by the second call."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "move-day",
+      "parent": "moving-company-hq",
+      "title": "Move day routine",
+      "icon": {
+        "emoji": "🚛"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Move day goes smoothly when everyone knows the plan before the truck leaves."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the shop"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Crew lead reviews the move sheet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load pads, straps, dollies and boxes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the truck fuel and tires."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the home"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk through with the customer and point out fragile items."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Protect floors and doorways."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load heaviest first and label rooms at the destination."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the end"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Walk the empty home with the customer, check every closet, then collect the signature on the final sheet."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "damage-claims",
+      "parent": "moving-company-hq",
+      "title": "Handling a damage claim",
+      "icon": {
+        "emoji": "🧰"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Damage happens. Handling it well keeps the customer."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Photograph the item and the packing around it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the customer to describe it in writing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review with the owner within two business days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Repair, replace or settle, and note it on the move."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prevention"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Wrap every item, never stack boxes over a fragile top, and use two people for anything awkward."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

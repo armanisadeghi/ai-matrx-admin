@@ -1,0 +1,3010 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0511",
+  "version": 1,
+  "title": "Personal Trainer Business HQ",
+  "description": "Track clients, session packages, training sessions and payments for a small trainer.",
+  "forWho": "Personal trainers and small coaching businesses",
+  "icon": {
+    "emoji": "💪"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "wellness",
+  "tags": [
+    "personal training",
+    "packages",
+    "sessions",
+    "coaching"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-personal-trainer-business-hq",
+    "catalogueId": "SP0511",
+    "useCase": "The owner of Tempo Personal Training uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "fitness_beauty_wellness",
+    "vertical": "Personal training business",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Tempo Personal Training",
+      "describes": "A two-trainer personal training business working from a private studio and in clients' homes, selling session packages and monthly coaching.",
+      "address": {
+        "line1": "9 Granary Row",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97209",
+        "country": "US"
+      },
+      "phone": "(503) 555-0183",
+      "website": "tempotraining.net",
+      "email": "info@tempotraining.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-personal-trainer-business-hq",
+    "tables": [
+      {
+        "token": "plan",
+        "name": "Packages and prices",
+        "labelSingular": "Package",
+        "labelPlural": "Packages and prices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "ticket",
+        "titleField": "plan_name",
+        "describes": "What you sell, the price and how many clients are on each.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "plan_name",
+            "label": "Package",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Session",
+              "Package",
+              "Coaching",
+              "Assessment"
+            ],
+            "choiceColors": {
+              "Session": "slate",
+              "Package": "blue",
+              "Coaching": "amber",
+              "Assessment": "violet"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Per visit",
+              "One-time",
+              "Monthly"
+            ],
+            "choiceColors": {
+              "Per visit": "slate",
+              "One-time": "blue",
+              "Monthly": "amber"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "valid_days",
+            "label": "Valid for (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 730
+              }
+            ]
+          },
+          {
+            "key": "includes",
+            "label": "Includes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "active_n",
+            "label": "Active clients",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Active"
+            }
+          },
+          {
+            "key": "cancelled_n",
+            "label": "Cancelled",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Cancelled"
+            }
+          },
+          {
+            "key": "churn",
+            "label": "Churn (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Active clients} + {Cancelled} > 0, ROUND({Cancelled} / ({Active clients} + {Cancelled}) * 100, 0), 0)"
+          },
+          {
+            "key": "recurring",
+            "label": "Recurring value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Active clients} * {Price (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Package",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is included"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Session count, expiry and cancellation rules."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Expiry stated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cancellation notice stated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "plan-1",
+            "values": {
+              "plan_name": "Single session",
+              "category": "Session",
+              "price": 75,
+              "billing": "Per visit",
+              "minutes": 60,
+              "valid_days": 1,
+              "includes": "session, per visit"
+            }
+          },
+          {
+            "key": "plan-2",
+            "values": {
+              "plan_name": "10-session package",
+              "category": "Package",
+              "price": 690,
+              "billing": "One-time",
+              "minutes": 60,
+              "valid_days": 230,
+              "includes": "package, one-time"
+            }
+          },
+          {
+            "key": "plan-3",
+            "values": {
+              "plan_name": "Monthly coaching",
+              "category": "Coaching",
+              "price": 320,
+              "billing": "Monthly",
+              "minutes": 0,
+              "valid_days": 30,
+              "includes": "coaching, monthly"
+            }
+          },
+          {
+            "key": "plan-4",
+            "values": {
+              "plan_name": "Partner session",
+              "category": "Session",
+              "price": 110,
+              "billing": "Per visit",
+              "minutes": 60,
+              "valid_days": 1,
+              "includes": "two people training together"
+            }
+          },
+          {
+            "key": "plan-5",
+            "values": {
+              "plan_name": "Assessment and plan",
+              "category": "Assessment",
+              "price": 90,
+              "billing": "One-time",
+              "minutes": 75,
+              "valid_days": 80,
+              "includes": "assessment, one-time"
+            }
+          },
+          {
+            "key": "plan-6",
+            "values": {
+              "plan_name": "Online program",
+              "category": "Coaching",
+              "price": 180,
+              "billing": "Monthly",
+              "minutes": 0,
+              "valid_days": 30,
+              "includes": "video check-ins and a written plan, no in-person time"
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Everyone you train, with their package, attendance and payments.",
+        "subject": "thing",
+        "independentOf": {
+          "plan": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In-person",
+              "Online coaching",
+              "Couple",
+              "Athlete"
+            ],
+            "choiceColors": {
+              "In-person": "slate",
+              "Online coaching": "blue",
+              "Couple": "amber",
+              "Athlete": "violet"
+            }
+          },
+          {
+            "key": "client_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Frozen",
+              "Cancelled",
+              "Lead"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Frozen": "blue",
+              "Cancelled": "red",
+              "Lead": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "plan",
+            "label": "Package",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "joined_on",
+            "label": "Joined",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visits",
+            "label": "Visits",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "no_shows",
+            "label": "No-shows",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "paid_total",
+            "label": "Paid to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "failed_n",
+            "label": "Failed payments",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "count",
+            "filter": {
+              "status": "Failed"
+            }
+          },
+          {
+            "key": "risk",
+            "label": "Retention check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
+          },
+          {
+            "key": "add_booking_btn",
+            "label": "Book a visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "Visit note",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Client intake",
+            "values": {
+              "client_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the client wants and by when, in their words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Basics"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Waiver signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Emergency contact on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Suggested they check with a health professional before starting if they have any concern"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Starting package and schedule agreed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Noor Lowry",
+              "kind": "In-person",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(503) 555-0144",
+              "email": "noor.lowry@inbox-mail.net",
+              "joined_on": "@today-30d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Silas Tennant",
+              "kind": "Online coaching",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(503) 555-0181",
+              "email": "silas.tennant@inbox-mail.net",
+              "joined_on": "@today-77d",
+              "area": "Eastgate"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Kasia Castellanos",
+              "kind": "Couple",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(503) 555-0118",
+              "email": "kasia.castellanos@inbox-mail.net",
+              "joined_on": "@today-124d",
+              "area": "Riverbend"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Tobias Kowalczyk",
+              "kind": "Athlete",
+              "client_status": "Active",
+              "plan": "plan-4",
+              "phone": "(503) 555-0155",
+              "email": "tobias.kowalczyk@inbox-mail.net",
+              "joined_on": "@today-171d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Greta Rosenthal",
+              "kind": "In-person",
+              "client_status": "Active",
+              "plan": "plan-5",
+              "phone": "(503) 555-0192",
+              "email": "greta.rosenthal@inbox-mail.net",
+              "joined_on": "@today-218d",
+              "area": "Cedar Park"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Percival Zielinski",
+              "kind": "Online coaching",
+              "client_status": "Active",
+              "plan": "plan-6",
+              "phone": "(503) 555-0129",
+              "email": "percival.zielinski@inbox-mail.net",
+              "joined_on": "@today-265d",
+              "area": "Lakeview"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Bronwyn Halvorsen",
+              "kind": "Couple",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(503) 555-0166",
+              "email": "bronwyn.halvorsen@inbox-mail.net",
+              "joined_on": "@today-312d",
+              "area": "Foxglove Court"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Idris Oyelaran",
+              "kind": "Athlete",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(503) 555-0103",
+              "email": "idris.oyelaran@inbox-mail.net",
+              "joined_on": "@today-359d",
+              "area": "Stonebridge"
+            }
+          },
+          {
+            "key": "client-9",
+            "values": {
+              "client_name": "Priyanka Yoshida",
+              "kind": "In-person",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(503) 555-0140",
+              "email": "priyanka.yoshida@inbox-mail.net",
+              "joined_on": "@today-406d",
+              "area": "Harbor Heights"
+            }
+          },
+          {
+            "key": "client-10",
+            "values": {
+              "client_name": "Hamza Galloway",
+              "kind": "Online coaching",
+              "client_status": "Frozen",
+              "plan": "plan-4",
+              "phone": "(503) 555-0177",
+              "email": "hamza.galloway@inbox-mail.net",
+              "joined_on": "@today-453d",
+              "area": "Willow Creek"
+            }
+          },
+          {
+            "key": "client-11",
+            "values": {
+              "client_name": "Rosalind Nakamura",
+              "kind": "Couple",
+              "client_status": "Cancelled",
+              "plan": "plan-5",
+              "phone": "(503) 555-0114",
+              "email": "rosalind.nakamura@inbox-mail.net",
+              "joined_on": "@today-500d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "client-12",
+            "values": {
+              "client_name": "Jonah Underhill",
+              "kind": "Athlete",
+              "client_status": "Cancelled",
+              "plan": "plan-6",
+              "phone": "(503) 555-0151",
+              "email": "jonah.underhill@inbox-mail.net",
+              "joined_on": "@today-547d",
+              "area": "Sunset Flats"
+            }
+          },
+          {
+            "key": "client-13",
+            "values": {
+              "client_name": "Amara Delacroix",
+              "kind": "In-person",
+              "client_status": "Lead",
+              "plan": "plan-1",
+              "phone": "(503) 555-0188",
+              "email": "amara.delacroix@inbox-mail.net",
+              "joined_on": "@today-594d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "client-14",
+            "values": {
+              "client_name": "Cormac Kellerman",
+              "kind": "Online coaching",
+              "client_status": "Lead",
+              "plan": "plan-2",
+              "phone": "(503) 555-0125",
+              "email": "cormac.kellerman@inbox-mail.net",
+              "joined_on": "@today-641d",
+              "area": "Eastgate"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Sessions",
+        "labelSingular": "Session",
+        "labelPlural": "Sessions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "booking_name",
+        "describes": "Training sessions on the calendar, with attendance and notes.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "plan": "Either record can be created or change status before the other.",
+          "staff": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Checked in": "blue",
+              "Completed": "amber",
+              "No-show": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "plan",
+            "label": "Package",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "staff",
+            "label": "Trainer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_on",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "visit_type",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Session",
+              "Assessment",
+              "Check-in call",
+              "Program review"
+            ],
+            "choiceColors": {
+              "Session": "slate",
+              "Assessment": "blue",
+              "Check-in call": "amber",
+              "Program review": "violet"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "mine",
+            "label": "My session",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Visit note",
+            "values": {
+              "status": "Booked",
+              "booking_name": "New session"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan for the session"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Focus, exercises and equipment."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check-in"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client arrived and warmed up"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Notes from last session reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes after"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Weights, reps and how it felt. What to change next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "bookin-1",
+            "values": {
+              "booking_name": "Single session - Tennant",
+              "status": "Completed",
+              "client": "client-2",
+              "plan": "plan-1",
+              "staff": "tm-1",
+              "when_on": "@today-12d",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 75
+            }
+          },
+          {
+            "key": "bookin-2",
+            "values": {
+              "booking_name": "Assessment - Rosenthal",
+              "status": "Completed",
+              "client": "client-5",
+              "plan": "plan-3",
+              "staff": "tm-2",
+              "when_on": "@today-9d",
+              "visit_type": "Assessment",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-3",
+            "values": {
+              "booking_name": "Check-in call - Oyelaran",
+              "status": "Completed",
+              "client": "client-8",
+              "plan": "plan-5",
+              "staff": "tm-1",
+              "when_on": "@today-7d",
+              "visit_type": "Check-in call",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-4",
+            "values": {
+              "booking_name": "Single session - Nakamura",
+              "status": "Completed",
+              "client": "client-11",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@today-5d",
+              "visit_type": "Program review",
+              "minutes": 60,
+              "price": 75
+            }
+          },
+          {
+            "key": "bookin-5",
+            "values": {
+              "booking_name": "Session - Kellerman",
+              "status": "Completed",
+              "client": "client-14",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "when_on": "@today-3d",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-6",
+            "values": {
+              "booking_name": "Assessment - Castellanos",
+              "status": "No-show",
+              "client": "client-3",
+              "plan": "plan-5",
+              "staff": "tm-2",
+              "when_on": "@today-4d",
+              "visit_type": "Assessment",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-7",
+            "values": {
+              "booking_name": "Single session - Zielinski",
+              "status": "Cancelled",
+              "client": "client-6",
+              "plan": "plan-1",
+              "staff": "tm-1",
+              "when_on": "@today-2d",
+              "visit_type": "Check-in call",
+              "minutes": 60,
+              "price": 75
+            }
+          },
+          {
+            "key": "bookin-8",
+            "values": {
+              "booking_name": "Program review - Yoshida",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-3",
+              "staff": "tm-2",
+              "when_on": "@today-1d",
+              "visit_type": "Program review",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-9",
+            "values": {
+              "booking_name": "Session - Underhill",
+              "status": "Booked",
+              "client": "client-12",
+              "plan": "plan-5",
+              "staff": "tm-1",
+              "when_on": "@today-2d",
+              "visit_type": "Session",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-10",
+            "values": {
+              "booking_name": "Single session - Lowry",
+              "status": "Checked in",
+              "client": "client-1",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@mon",
+              "visit_type": "Assessment",
+              "minutes": 60,
+              "price": 75,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-11",
+            "values": {
+              "booking_name": "Check-in call - Kowalczyk",
+              "status": "Booked",
+              "client": "client-4",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "when_on": "@tue",
+              "visit_type": "Check-in call",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-12",
+            "values": {
+              "booking_name": "Program review - Halvorsen",
+              "status": "Booked",
+              "client": "client-7",
+              "plan": "plan-5",
+              "staff": "tm-2",
+              "when_on": "@wed",
+              "visit_type": "Program review",
+              "minutes": 75,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-13",
+            "values": {
+              "booking_name": "Single session - Galloway",
+              "status": "Booked",
+              "client": "client-10",
+              "plan": "plan-1",
+              "staff": "tm-1",
+              "when_on": "@thu",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 75
+            }
+          },
+          {
+            "key": "bookin-14",
+            "values": {
+              "booking_name": "Assessment - Delacroix",
+              "status": "Booked",
+              "client": "client-13",
+              "plan": "plan-3",
+              "staff": "tm-2",
+              "when_on": "@fri",
+              "visit_type": "Assessment",
+              "minutes": 60,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-15",
+            "values": {
+              "booking_name": "Check-in call - Tennant",
+              "status": "Booked",
+              "client": "client-2",
+              "plan": "plan-5",
+              "staff": "tm-1",
+              "when_on": "@sat",
+              "visit_type": "Check-in call",
+              "minutes": 75,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-16",
+            "values": {
+              "booking_name": "Single session - Rosenthal",
+              "status": "Booked",
+              "client": "client-5",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@sun",
+              "visit_type": "Program review",
+              "minutes": 60,
+              "price": 75
+            }
+          },
+          {
+            "key": "bookin-17",
+            "values": {
+              "booking_name": "Session - Oyelaran",
+              "status": "Booked",
+              "client": "client-8",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "when_on": "@mon+1w",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-18",
+            "values": {
+              "booking_name": "Assessment - Nakamura",
+              "status": "Booked",
+              "client": "client-11",
+              "plan": "plan-5",
+              "staff": "tm-2",
+              "when_on": "@wed+1w",
+              "visit_type": "Assessment",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-19",
+            "values": {
+              "booking_name": "Single session - Kellerman",
+              "status": "Booked",
+              "client": "client-14",
+              "plan": "plan-1",
+              "staff": "tm-1",
+              "when_on": "@today",
+              "visit_type": "Check-in call",
+              "minutes": 60,
+              "price": 75,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-20",
+            "values": {
+              "booking_name": "Program review - Castellanos",
+              "status": "Booked",
+              "client": "client-3",
+              "plan": "plan-3",
+              "staff": "tm-2",
+              "when_on": "@today+2d",
+              "visit_type": "Program review",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-21",
+            "values": {
+              "booking_name": "Session - Zielinski",
+              "status": "Booked",
+              "client": "client-6",
+              "plan": "plan-5",
+              "staff": "tm-1",
+              "when_on": "@today+4d",
+              "visit_type": "Session",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-22",
+            "values": {
+              "booking_name": "Single session - Yoshida",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@today+1d",
+              "visit_type": "Assessment",
+              "minutes": 60,
+              "price": 75
+            }
+          }
+        ]
+      },
+      {
+        "token": "payment",
+        "name": "Payments",
+        "labelSingular": "Payment",
+        "labelPlural": "Payments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "credit-card",
+        "titleField": "payment_name",
+        "describes": "Charges, failed cards and refunds, tied to each client.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "method"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "payment_name",
+            "label": "Payment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Failed",
+              "Paid",
+              "Refunded"
+            ],
+            "choiceColors": {
+              "Pending": "slate",
+              "Failed": "red",
+              "Paid": "blue",
+              "Refunded": "pink"
+            },
+            "required": true,
+            "default": "Pending",
+            "statusGroups": {
+              "Pending": "todo",
+              "Failed": "in_progress",
+              "Paid": "done",
+              "Refunded": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card on file",
+              "Bank transfer",
+              "Cash",
+              "Check"
+            ],
+            "choiceColors": {
+              "Card on file": "slate",
+              "Bank transfer": "blue",
+              "Cash": "amber",
+              "Check": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "payment_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "paymen-1",
+            "values": {
+              "payment_name": "PAY-2210",
+              "status": "Paid",
+              "client": "client-3",
+              "amount": 320,
+              "due_on": "@today-30d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-2",
+            "values": {
+              "payment_name": "PAY-2211",
+              "status": "Paid",
+              "client": "client-8",
+              "amount": 690,
+              "due_on": "@today-28d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "paymen-3",
+            "values": {
+              "payment_name": "PAY-2212",
+              "status": "Paid",
+              "client": "client-13",
+              "amount": 75,
+              "due_on": "@today-14d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-4",
+            "values": {
+              "payment_name": "PAY-2213",
+              "status": "Paid",
+              "client": "client-4",
+              "amount": 110,
+              "due_on": "@today-10d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "paymen-5",
+            "values": {
+              "payment_name": "PAY-2214",
+              "status": "Failed",
+              "client": "client-9",
+              "amount": 320,
+              "due_on": "@today-3d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-6",
+            "values": {
+              "payment_name": "PAY-2215",
+              "status": "Failed",
+              "client": "client-14",
+              "amount": 690,
+              "due_on": "@today-1d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "paymen-7",
+            "values": {
+              "payment_name": "PAY-2216",
+              "status": "Pending",
+              "client": "client-5",
+              "amount": 90,
+              "due_on": "@fri",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-8",
+            "values": {
+              "payment_name": "PAY-2217",
+              "status": "Pending",
+              "client": "client-10",
+              "amount": 110,
+              "due_on": "@today+3d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "paymen-9",
+            "values": {
+              "payment_name": "PAY-2218",
+              "status": "Pending",
+              "client": "client-1",
+              "amount": 75,
+              "due_on": "@today+5d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-10",
+            "values": {
+              "payment_name": "PAY-2219",
+              "status": "Paid",
+              "client": "client-6",
+              "amount": 180,
+              "due_on": "@today-6d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "paymen-11",
+            "values": {
+              "payment_name": "PAY-2220",
+              "status": "Refunded",
+              "client": "client-11",
+              "amount": 90,
+              "due_on": "@today-9d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-12",
+            "values": {
+              "payment_name": "PAY-2221",
+              "status": "Pending",
+              "client": "client-2",
+              "amount": 690,
+              "due_on": "@today+6d",
+              "method": "Check"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one package.",
+        "fromTable": "client",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "members"
+      },
+      {
+        "describes": "Each session belongs to one client.",
+        "fromTable": "booking",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each session belongs to one package.",
+        "fromTable": "booking",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each session belongs to one trainer.",
+        "fromTable": "booking",
+        "fromField": "staff",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings_taken"
+      },
+      {
+        "describes": "Each payment belongs to one client.",
+        "fromTable": "payment",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "payments"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Matteo Brennecke",
+              "role": "Owner and trainer",
+              "work_email": "matteo@tempotraining.net",
+              "mobile": "(503) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Sunita Rajagopal",
+              "role": "Trainer",
+              "work_email": "sunita@tempotraining.net",
+              "mobile": "(503) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Lachlan Moriarty",
+              "role": "Assistant",
+              "work_email": "lachlan@tempotraining.net",
+              "mobile": "(503) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Olive Ferreira",
+              "role": "Bookkeeper",
+              "work_email": "olive@tempotraining.net",
+              "mobile": "(503) 555-0143",
+              "start_date": "@today-7y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Client enquiry",
+        "describes": "How someone asks to join or book.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Email address?"
+          },
+          {
+            "fieldKey": "plan",
+            "ask": "What are you interested in?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The enquiry is saved as a new lead."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "booking_done",
+        "table": "booking",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "payment_paid",
+        "table": "payment",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_plan",
+        "name": "All packages and prices",
+        "table": "plan",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "plan_board",
+        "name": "Packages and prices board",
+        "table": "plan",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "client_status"
+      },
+      {
+        "token": "all_booking",
+        "name": "All sessions",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Sessions board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Sessions calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "when_on",
+        "allDay": true
+      },
+      {
+        "token": "booking_over",
+        "name": "Overdue",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "Due this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_mine",
+        "name": "My sessions",
+        "table": "booking",
+        "kind": "grid",
+        "me": [
+          "mine"
+        ]
+      },
+      {
+        "token": "all_payment",
+        "name": "All payments",
+        "table": "payment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "payment_board",
+        "name": "Payments board",
+        "table": "payment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "payment_over",
+        "name": "Overdue",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_week",
+        "name": "Due this week",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_next7",
+        "name": "Next 7 days",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Personal Trainer Business HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "client",
+          "describes": "Everyone you train, with their package, attendance and payments."
+        },
+        {
+          "name": "related_tables",
+          "table": "plan",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many clients are active right now?",
+        "whyItMatters": "The owner reviews the active count at the start of every month.",
+        "expect": {
+          "table": "client",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "client_status": "Active"
+          },
+          "answer": 9,
+          "unit": "clients"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open packages and prices.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open sessions.",
+        "action": {
+          "kind": "open",
+          "surface": "booking_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "booking_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "tempotraining.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Granary Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "personal-trainer-business-hq",
+      "parent": null,
+      "title": "Personal Trainer Business HQ",
+      "icon": {
+        "emoji": "💪"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run a training business from one page. Clients, their packages and payments are linked, every training session is a Session row, and your own sessions show under Mine. The Packages table shows what is selling and how many clients stay."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:package-renewals"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:assessment-first-session"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:no-shows"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packages and prices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What you sell, the price and how many clients are on each."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "plan_board"
+            },
+            "inline": true,
+            "title": "Packages and prices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pla-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pla-t",
+                "name": "All packages and prices",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pla-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone you train, with their package, attendance and payments."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "client_status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Training sessions on the calendar, with attendance and notes."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_on"
+              },
+              {
+                "id": "boo-t",
+                "name": "All sessions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Charges, failed cards and refunds, tied to each client."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "payment_board"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pay-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pay-t",
+                "name": "All payments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pay-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "pay-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "personal-trainer-business-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Sessions this week, payments and package health."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Sessions",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Sessions by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Sessions",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Sessions by kind",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "visit_type",
+                          "op": "count"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "payment",
+                      "view": "all_payment"
+                    },
+                    "inline": true,
+                    "title": "Payments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Payments by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Not yet marked"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Not yet marked",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My sessions",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Failed payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "all_payment"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Failed payments",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Failed"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "package-renewals",
+      "parent": "personal-trainer-business-hq",
+      "title": "Package renewals",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Packages run out quietly. Renew before the last session, not after."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When a client has two sessions left, send a short message about next steps."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer the next package at the end of the second to last session."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the old payment Paid and add the new one as Pending."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If they hesitate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Offer a smaller package or a monthly plan. Never discount twice."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "assessment-first-session",
+      "parent": "personal-trainer-business-hq",
+      "title": "First session and assessment",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first hour sets the plan and the relationship."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review the intake form before they arrive."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk through goals and schedule."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Do a simple movement assessment and record it on the session note."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "End with a clear plan for the next four weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Say what you do not do"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Be clear you do not diagnose or treat injuries. Suggest they see a health professional for any pain or condition."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "no-shows",
+      "parent": "personal-trainer-business-hq",
+      "title": "No-shows and late cancellations",
+      "icon": {
+        "emoji": "⏰"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Protect your time without losing the client."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Policy we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cancel with 24 hours notice at no charge"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Late cancel uses the session"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The first late cancel is forgiven"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the booking No-show."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Message the client the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer the next available slot."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

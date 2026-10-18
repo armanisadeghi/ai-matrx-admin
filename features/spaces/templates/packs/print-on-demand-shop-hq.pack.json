@@ -1,0 +1,2772 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0520",
+  "version": 1,
+  "title": "Print on Demand Shop HQ",
+  "description": "Track designs, print partners, orders, quality issues and returns.",
+  "forWho": "Print-on-demand store owners and merch creators",
+  "icon": {
+    "emoji": "👕"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "retail",
+  "tags": [
+    "print on demand",
+    "designs",
+    "merch",
+    "orders"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-print-on-demand-shop-hq",
+    "catalogueId": "SP0520",
+    "useCase": "The owner of Wildgrain Print Co uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "retail_ecommerce",
+    "vertical": "Print on demand shop",
+    "job": "inventory",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Wildgrain Print Co",
+      "describes": "A solo-run print-on-demand shop selling original illustrated shirts, mugs and posters through its own website and two marketplaces, with three print partners.",
+      "address": {
+        "line1": "5 Inkwell Alley",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78701",
+        "country": "US"
+      },
+      "phone": "(512) 555-0198",
+      "website": "wildgrainprint.net",
+      "email": "info@wildgrainprint.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-print-on-demand-shop-hq",
+    "tables": [
+      {
+        "token": "supplier",
+        "name": "Print partners",
+        "labelSingular": "Print partner",
+        "labelPlural": "Print partners",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "supplier_name",
+        "describes": "The print services that make and ship your products, with their production times.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "supplier_name",
+            "label": "Print partner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead_days",
+            "label": "Lead time (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "key": "terms",
+            "label": "Terms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Net 30",
+              "Prepaid",
+              "Net 15"
+            ],
+            "choiceColors": {
+              "Net 30": "slate",
+              "Prepaid": "blue",
+              "Net 15": "amber"
+            }
+          },
+          {
+            "key": "product_n",
+            "label": "Designs and products active",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "products",
+            "pick": "product_name",
+            "agg": "count",
+            "filter": {
+              "status": "Active"
+            }
+          },
+          {
+            "key": "draft_n",
+            "label": "Designs and products in draft",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "products",
+            "pick": "product_name",
+            "agg": "count",
+            "filter": {
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "suppli-1",
+            "values": {
+              "supplier_name": "Harborview Print Works",
+              "email": "teodor.vasquez@wildgrainprint.net",
+              "phone": "(512) 555-0197",
+              "lead_days": 5,
+              "terms": "Net 30"
+            }
+          },
+          {
+            "key": "suppli-2",
+            "values": {
+              "supplier_name": "Lantern Press Mugs",
+              "email": "kwame.boateng@wildgrainprint.net",
+              "phone": "(512) 555-0134",
+              "lead_days": 6,
+              "terms": "Prepaid"
+            }
+          },
+          {
+            "key": "suppli-3",
+            "values": {
+              "supplier_name": "Northlight Poster Lab",
+              "email": "ingrid.grayson@wildgrainprint.net",
+              "phone": "(512) 555-0171",
+              "lead_days": 4,
+              "terms": "Net 15"
+            }
+          }
+        ]
+      },
+      {
+        "token": "product",
+        "name": "Designs and products",
+        "labelSingular": "Design",
+        "labelPlural": "Designs and products",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "product_name",
+        "describes": "Every design and product, with price, print cost, margin and any stock you hold yourself.",
+        "subject": "thing",
+        "independentOf": {
+          "supplier_rel": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Design",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "SKU",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Apparel",
+              "Posters",
+              "Mugs",
+              "Stickers"
+            ],
+            "choiceColors": {
+              "Apparel": "slate",
+              "Posters": "blue",
+              "Mugs": "amber",
+              "Stickers": "violet"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "cost",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "supplier_rel",
+            "label": "Print partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Draft",
+              "Discontinued"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Draft": "blue",
+              "Discontinued": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Cost (USD)}) / {Price (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Cost (USD)}"
+          },
+          {
+            "key": "sold",
+            "label": "Units delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "quantity",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Design",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Artwork"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "File name, size, color profile and mockups."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quality"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sample ordered and checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Print cost entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Size chart added"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "produc-1",
+            "values": {
+              "product_name": "Fox in Fern tee",
+              "sku": "WG-101",
+              "category": "Apparel",
+              "price": 29,
+              "cost": 13.5,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-2",
+            "values": {
+              "product_name": "Heron Marsh poster 18x24",
+              "sku": "WG-108",
+              "category": "Posters",
+              "price": 32,
+              "cost": 11,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-3",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-3",
+            "values": {
+              "product_name": "Mountain Dawn mug",
+              "sku": "WG-115",
+              "category": "Mugs",
+              "price": 19,
+              "cost": 7.5,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-2",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-4",
+            "values": {
+              "product_name": "Lantern Moth tee",
+              "sku": "WG-122",
+              "category": "Apparel",
+              "price": 29,
+              "cost": 13.5,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-5",
+            "values": {
+              "product_name": "Tide Pool tote",
+              "sku": "WG-129",
+              "category": "Apparel",
+              "price": 24,
+              "cost": 10,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-6",
+            "values": {
+              "product_name": "Field Notes sticker pack",
+              "sku": "WG-136",
+              "category": "Stickers",
+              "price": 8,
+              "cost": 2.5,
+              "on_hand": 25,
+              "reorder_at": 10,
+              "supplier_rel": "suppli-3",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-7",
+            "values": {
+              "product_name": "Heron Marsh mug",
+              "sku": "WG-143",
+              "category": "Mugs",
+              "price": 19,
+              "cost": 7.5,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-2",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-8",
+            "values": {
+              "product_name": "Aurora Wolf hoodie",
+              "sku": "WG-150",
+              "category": "Apparel",
+              "price": 54,
+              "cost": 27,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-9",
+            "values": {
+              "product_name": "Botanical set poster trio",
+              "sku": "WG-157",
+              "category": "Posters",
+              "price": 68,
+              "cost": 26,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-3",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "produc-10",
+            "values": {
+              "product_name": "Retired spring tee",
+              "sku": "WG-164",
+              "category": "Apparel",
+              "price": 27,
+              "cost": 13,
+              "on_hand": 0,
+              "reorder_at": 0,
+              "supplier_rel": "suppli-1",
+              "status": "Discontinued"
+            }
+          }
+        ]
+      },
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "Buyers with spend, returns and a tier.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "segment",
+            "label": "Segment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Retail",
+              "Repeat buyer",
+              "Gift buyer",
+              "Wholesale"
+            ],
+            "choiceColors": {
+              "Retail": "slate",
+              "Repeat buyer": "blue",
+              "Gift buyer": "amber",
+              "Wholesale": "violet"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_order",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "order_n",
+            "label": "Orders delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "spent",
+            "label": "Spent to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "returns_n",
+            "label": "Returns",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": "Returned"
+            }
+          },
+          {
+            "key": "tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Spent to date} >= 150, \"Best\", IF({Spent to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_order_btn",
+            "label": "New order",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "order",
+              "template": "Order sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer record",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About this customer"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How they found you and what they bought."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Gift messages, issues and favourite designs."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Amara Zielinski",
+              "segment": "Retail",
+              "email": "amara.zielinski@inbox-mail.net",
+              "phone": "(512) 555-0147",
+              "first_order": "@today-20d",
+              "area": "Willow Creek"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Cormac Grayson",
+              "segment": "Repeat buyer",
+              "email": "cormac.grayson@inbox-mail.net",
+              "phone": "(512) 555-0184",
+              "first_order": "@today-63d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Delphine Navarro",
+              "segment": "Gift buyer",
+              "email": "delphine.navarro@inbox-mail.net",
+              "phone": "(512) 555-0121",
+              "first_order": "@today-106d",
+              "area": "Sunset Flats"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Mateus Yoshida",
+              "segment": "Wholesale",
+              "email": "mateus.yoshida@inbox-mail.net",
+              "phone": "(512) 555-0158",
+              "first_order": "@today-149d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Farah Fairbairn",
+              "segment": "Retail",
+              "email": "farah.fairbairn@inbox-mail.net",
+              "phone": "(512) 555-0195",
+              "first_order": "@today-192d",
+              "area": "Eastgate"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Dennis Mbeki",
+              "segment": "Repeat buyer",
+              "email": "dennis.mbeki@inbox-mail.net",
+              "phone": "(512) 555-0132",
+              "first_order": "@today-235d",
+              "area": "Riverbend"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Yara Underhill",
+              "segment": "Gift buyer",
+              "email": "yara.underhill@inbox-mail.net",
+              "phone": "(512) 555-0169",
+              "first_order": "@today-278d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Teodor Carrow",
+              "segment": "Wholesale",
+              "email": "teodor.carrow@inbox-mail.net",
+              "phone": "(512) 555-0106",
+              "first_order": "@today-321d",
+              "area": "Cedar Park"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Odette Jessup",
+              "segment": "Retail",
+              "email": "odette.jessup@inbox-mail.net",
+              "phone": "(512) 555-0143",
+              "first_order": "@today-364d",
+              "area": "Lakeview"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Rafael Salazar",
+              "segment": "Repeat buyer",
+              "email": "rafael.salazar@inbox-mail.net",
+              "phone": "(512) 555-0180",
+              "first_order": "@today-407d",
+              "area": "Foxglove Court"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Saoirse Brannigan",
+              "segment": "Gift buyer",
+              "email": "saoirse.brannigan@inbox-mail.net",
+              "phone": "(512) 555-0117",
+              "first_order": "@today-450d",
+              "area": "Stonebridge"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Ravi Iyer",
+              "segment": "Wholesale",
+              "email": "ravi.iyer@inbox-mail.net",
+              "phone": "(512) 555-0154",
+              "first_order": "@today-493d",
+              "area": "Harbor Heights"
+            }
+          }
+        ]
+      },
+      {
+        "token": "order",
+        "name": "Orders",
+        "labelSingular": "Order",
+        "labelPlural": "Orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-bag",
+        "titleField": "order_name",
+        "describes": "Every order from payment to delivery, with who is handling it.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "product": "Either record can be created or change status before the other.",
+          "handler": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Paid",
+              "Packing",
+              "Shipped",
+              "Delivered",
+              "Returned",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Paid": "blue",
+              "Packing": "amber",
+              "Shipped": "violet",
+              "Delivered": "teal",
+              "Returned": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Paid": "todo",
+              "Packing": "in_progress",
+              "Shipped": "in_progress",
+              "Delivered": "done",
+              "Returned": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "product",
+            "label": "Design",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "handler",
+            "label": "Order handler (staff)",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "quantity",
+            "label": "Quantity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Website",
+              "Marketplace",
+              "Pop-up market",
+              "Social"
+            ],
+            "choiceColors": {
+              "Website": "slate",
+              "Marketplace": "blue",
+              "Pop-up market": "amber",
+              "Social": "violet"
+            }
+          },
+          {
+            "key": "ship_by",
+            "label": "Ship by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "packer",
+            "label": "Order handler",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ship_btn",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_shipped"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Order sheet",
+            "values": {
+              "status": "New",
+              "order_name": "New order"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Order check"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Product, size and shipping address."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before it goes to the partner"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Artwork matches the listing"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Address checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Order sent to the print partner"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tracking added when it ships"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "order-1",
+            "values": {
+              "order_name": "WG-4100",
+              "status": "Delivered",
+              "customer": "custom-2",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 1,
+              "total": 30,
+              "channel": "Website",
+              "ship_by": "@today-17d"
+            }
+          },
+          {
+            "key": "order-2",
+            "values": {
+              "order_name": "WG-4103",
+              "status": "Delivered",
+              "customer": "custom-7",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 2,
+              "total": 50,
+              "channel": "Marketplace",
+              "ship_by": "@today-13d"
+            }
+          },
+          {
+            "key": "order-3",
+            "values": {
+              "order_name": "WG-4106",
+              "status": "Delivered",
+              "customer": "custom-12",
+              "product": "produc-8",
+              "handler": "tm-1",
+              "quantity": 3,
+              "total": 160,
+              "channel": "Pop-up market",
+              "ship_by": "@today-10d"
+            }
+          },
+          {
+            "key": "order-4",
+            "values": {
+              "order_name": "WG-4109",
+              "status": "Delivered",
+              "customer": "custom-5",
+              "product": "produc-1",
+              "handler": "tm-2",
+              "quantity": 1,
+              "total": 30,
+              "channel": "Social",
+              "ship_by": "@today-7d"
+            }
+          },
+          {
+            "key": "order-5",
+            "values": {
+              "order_name": "WG-4112",
+              "status": "Delivered",
+              "customer": "custom-10",
+              "product": "produc-4",
+              "handler": "tm-3",
+              "quantity": 2,
+              "total": 60,
+              "channel": "Website",
+              "ship_by": "@today-5d"
+            }
+          },
+          {
+            "key": "order-6",
+            "values": {
+              "order_name": "WG-4115",
+              "status": "Returned",
+              "customer": "custom-3",
+              "product": "produc-7",
+              "handler": "tm-4",
+              "quantity": 3,
+              "total": 57,
+              "channel": "Marketplace",
+              "ship_by": "@today-6d"
+            }
+          },
+          {
+            "key": "order-7",
+            "values": {
+              "order_name": "WG-4118",
+              "status": "Cancelled",
+              "customer": "custom-8",
+              "product": "produc-10",
+              "handler": "tm-1",
+              "quantity": 1,
+              "total": 25,
+              "channel": "Pop-up market"
+            }
+          },
+          {
+            "key": "order-8",
+            "values": {
+              "order_name": "WG-4121",
+              "status": "Packing",
+              "customer": "custom-1",
+              "product": "produc-3",
+              "handler": "tm-2",
+              "quantity": 2,
+              "total": 38,
+              "channel": "Social",
+              "ship_by": "@today-1d"
+            }
+          },
+          {
+            "key": "order-9",
+            "values": {
+              "order_name": "WG-4124",
+              "status": "Paid",
+              "customer": "custom-6",
+              "product": "produc-6",
+              "handler": "tm-3",
+              "quantity": 3,
+              "total": 24,
+              "channel": "Website",
+              "ship_by": "@today",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-10",
+            "values": {
+              "order_name": "WG-4127",
+              "status": "Shipped",
+              "customer": "custom-11",
+              "product": "produc-9",
+              "handler": "tm-4",
+              "quantity": 1,
+              "total": 70,
+              "channel": "Marketplace",
+              "ship_by": "@today"
+            }
+          },
+          {
+            "key": "order-11",
+            "values": {
+              "order_name": "WG-4130",
+              "status": "Packing",
+              "customer": "custom-4",
+              "product": "produc-2",
+              "handler": "tm-1",
+              "quantity": 2,
+              "total": 65,
+              "channel": "Pop-up market",
+              "ship_by": "@mon",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-12",
+            "values": {
+              "order_name": "WG-4133",
+              "status": "Paid",
+              "customer": "custom-9",
+              "product": "produc-5",
+              "handler": "tm-2",
+              "quantity": 3,
+              "total": 70,
+              "channel": "Social",
+              "ship_by": "@tue"
+            }
+          },
+          {
+            "key": "order-13",
+            "values": {
+              "order_name": "WG-4136",
+              "status": "New",
+              "customer": "custom-2",
+              "product": "produc-8",
+              "handler": "tm-3",
+              "quantity": 1,
+              "total": 55,
+              "channel": "Website",
+              "ship_by": "@wed",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-14",
+            "values": {
+              "order_name": "WG-4139",
+              "status": "Paid",
+              "customer": "custom-7",
+              "product": "produc-1",
+              "handler": "tm-4",
+              "quantity": 2,
+              "total": 60,
+              "channel": "Marketplace",
+              "ship_by": "@thu"
+            }
+          },
+          {
+            "key": "order-15",
+            "values": {
+              "order_name": "WG-4142",
+              "status": "New",
+              "customer": "custom-12",
+              "product": "produc-4",
+              "handler": "tm-1",
+              "quantity": 3,
+              "total": 85,
+              "channel": "Pop-up market",
+              "ship_by": "@fri",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-16",
+            "values": {
+              "order_name": "WG-4145",
+              "status": "Paid",
+              "customer": "custom-5",
+              "product": "produc-7",
+              "handler": "tm-2",
+              "quantity": 1,
+              "total": 19,
+              "channel": "Social",
+              "ship_by": "@sat"
+            }
+          },
+          {
+            "key": "order-17",
+            "values": {
+              "order_name": "WG-4148",
+              "status": "New",
+              "customer": "custom-10",
+              "product": "produc-10",
+              "handler": "tm-3",
+              "quantity": 2,
+              "total": 55,
+              "channel": "Website",
+              "ship_by": "@sun"
+            }
+          },
+          {
+            "key": "order-18",
+            "values": {
+              "order_name": "WG-4151",
+              "status": "Paid",
+              "customer": "custom-3",
+              "product": "produc-3",
+              "handler": "tm-4",
+              "quantity": 3,
+              "total": 57,
+              "channel": "Marketplace",
+              "ship_by": "@tue+1w"
+            }
+          },
+          {
+            "key": "order-19",
+            "values": {
+              "order_name": "WG-4154",
+              "status": "New",
+              "customer": "custom-8",
+              "product": "produc-6",
+              "handler": "tm-1",
+              "quantity": 1,
+              "total": 8,
+              "channel": "Pop-up market",
+              "ship_by": "@thu+1w"
+            }
+          },
+          {
+            "key": "order-20",
+            "values": {
+              "order_name": "WG-4157",
+              "status": "Paid",
+              "customer": "custom-1",
+              "product": "produc-9",
+              "handler": "tm-2",
+              "quantity": 2,
+              "total": 135,
+              "channel": "Social",
+              "ship_by": "@today+1d",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-21",
+            "values": {
+              "order_name": "WG-4160",
+              "status": "New",
+              "customer": "custom-6",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 3,
+              "total": 95,
+              "channel": "Website",
+              "ship_by": "@today+3d"
+            }
+          },
+          {
+            "key": "order-22",
+            "values": {
+              "order_name": "WG-4163",
+              "status": "New",
+              "customer": "custom-11",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 1,
+              "total": 25,
+              "channel": "Marketplace",
+              "ship_by": "@today+4d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each design belongs to one print partner.",
+        "fromTable": "product",
+        "fromField": "supplier_rel",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "products"
+      },
+      {
+        "describes": "Each order belongs to one customer.",
+        "fromTable": "order",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each order belongs to one design.",
+        "fromTable": "order",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each order belongs to one order handler (staff).",
+        "fromTable": "order",
+        "fromField": "handler",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "orders_handled"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Saoirse Lindqvist",
+              "role": "Owner and designer",
+              "work_email": "saoirse@wildgrainprint.net",
+              "mobile": "(512) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Mehdi Karimi",
+              "role": "Freelance illustrator",
+              "work_email": "mehdi@wildgrainprint.net",
+              "mobile": "(512) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Constance Abara",
+              "role": "Customer support",
+              "work_email": "constance@wildgrainprint.net",
+              "mobile": "(512) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Felix Hartmann",
+              "role": "Part-time assistant",
+              "work_email": "felix@wildgrainprint.net",
+              "mobile": "(512) 555-0143",
+              "start_date": "@today-7y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "order_request",
+        "name": "Place an order",
+        "describes": "How a customer or the team enters a new order.",
+        "audience": "staff",
+        "table": "order",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "Order reference?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "product",
+            "ask": "Which item?"
+          },
+          {
+            "fieldKey": "quantity",
+            "ask": "How many?"
+          }
+        ],
+        "submitLabel": "Send the order",
+        "confirmation": "Thanks. The order is on the board as New."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "order_shipped",
+        "table": "order",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_supplier",
+        "name": "All print partners",
+        "table": "supplier",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "supplier_board",
+        "name": "Print partners board",
+        "table": "supplier",
+        "kind": "kanban",
+        "groupBy": "terms"
+      },
+      {
+        "token": "all_product",
+        "name": "All designs and products",
+        "table": "product",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "product_board",
+        "name": "Designs and products board",
+        "table": "product",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Customers board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "segment"
+      },
+      {
+        "token": "all_order",
+        "name": "All orders",
+        "table": "order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "order_board",
+        "name": "Orders board",
+        "table": "order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "order_cal",
+        "name": "Orders calendar",
+        "table": "order",
+        "kind": "calendar",
+        "dateField": "ship_by",
+        "allDay": true
+      },
+      {
+        "token": "order_over",
+        "name": "Overdue",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_week",
+        "name": "Due this week",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_next7",
+        "name": "Next 7 days",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_mine",
+        "name": "My orders",
+        "table": "order",
+        "kind": "grid",
+        "me": [
+          "packer"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Print on Demand Shop HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "product",
+          "describes": "Every design and product, with price, print cost, margin and any stock you hold yourself."
+        },
+        {
+          "name": "related_tables",
+          "table": "supplier",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many orders are still waiting to be packed?",
+        "whyItMatters": "The packer starts each day with these.",
+        "expect": {
+          "table": "order",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Packing"
+          },
+          "answer": 2,
+          "unit": "orders"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open print partners.",
+        "action": {
+          "kind": "open",
+          "surface": "supplier_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "supplier_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open designs and products.",
+        "action": {
+          "kind": "open",
+          "surface": "product_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "product_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "wildgrainprint.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Inkwell Alley"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "print-on-demand-shop-hq",
+      "parent": null,
+      "title": "Print on Demand Shop HQ",
+      "icon": {
+        "emoji": "👕"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the shop from one page. Designs, print partners, customers and orders are linked. Orders move from New to Delivered, and the order handler sees their own list under Mine. Designs show margin so you can retire the ones that do not earn."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:order-flow"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:samples-and-quality"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:returns"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Print partners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The print services that make and ship your products, with their production times."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supplier",
+              "view": "supplier_board"
+            },
+            "inline": true,
+            "title": "Print partners",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "terms"
+              },
+              {
+                "id": "sup-t",
+                "name": "All print partners",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "sup-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Designs and products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every design and product, with price, print cost, margin and any stock you hold yourself."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Designs and products",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pro-t",
+                "name": "All designs and products",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Buyers with spend, returns and a tier."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "segment"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every order from payment to delivery, with who is handling it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "order_board"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ord-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ord-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ship_by"
+              },
+              {
+                "id": "ord-t",
+                "name": "All orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ord-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ship_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ship_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "packer"
+                ]
+              }
+            ],
+            "activeViewId": "ord-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "print-on-demand-shop-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Orders by status, sales by channel and designs by category."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Orders by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Sales by channel",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "channel",
+                          "op": "sum",
+                          "field": "total"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "product",
+                      "view": "all_product"
+                    },
+                    "inline": true,
+                    "title": "Designs and products",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Designs and products by category",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late to ship"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Late to ship",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My orders",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "packer"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Returns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Returns",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Returned"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "order-flow",
+      "parent": "print-on-demand-shop-hq",
+      "title": "From order to delivery",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most orders pass through on their own. Check them anyway for the first minute."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review each new order for address and product errors."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm the artwork file matches the product."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the order to the print partner."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the tracking number and Mark shipped."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delays"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a partner is late, message the customer once, with a new date, before they ask."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "samples-and-quality",
+      "parent": "print-on-demand-shop-hq",
+      "title": "Samples and quality control",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Order a sample before listing any new product. Colors on screen are not colors on cotton."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Order one sample at the partner."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the print position, color and fabric."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Photograph it for the listing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the design Draft until the sample passes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Complaints"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep a list of quality issues by partner. Move a product to another partner after two bad batches."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "returns",
+      "parent": "print-on-demand-shop-hq",
+      "title": "Returns and replacements",
+      "icon": {
+        "emoji": "↩️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Partners usually only accept returns for defects. Decide your policy first."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Policy we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Replace or refund when the print is defective or wrong"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Change-of-mind returns are not accepted on custom prints"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for a photo of the defect"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the photo."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a replacement order to the partner."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the original order Returned and note the reason."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

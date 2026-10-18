@@ -1,0 +1,3273 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0501",
+  "version": 1,
+  "title": "Plumbing Company HQ",
+  "description": "Dispatch plumbing calls, quote and cost jobs, track van stock and chase unpaid invoices.",
+  "forWho": "Plumbing companies and drain and pipe contractors",
+  "icon": {
+    "emoji": "🚰"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "trades",
+  "tags": [
+    "plumbing",
+    "dispatch",
+    "jobs",
+    "trades"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-plumbing-company-hq",
+    "catalogueId": "SP0501",
+    "useCase": "The owner of Copperpipe Plumbing and Drain uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "field_home_services",
+    "vertical": "Plumbing company",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Copperpipe Plumbing and Drain",
+      "describes": "A ten-person plumbing company handling emergency leaks, water heater swaps, drain clearing and bathroom remodels for homes and small shops.",
+      "address": {
+        "line1": "77 Kettle Lane",
+        "city": "Spokane",
+        "region": "WA",
+        "postalCode": "99201",
+        "country": "US"
+      },
+      "phone": "(509) 555-0131",
+      "website": "copperpipeplumbing.net",
+      "email": "info@copperpipeplumbing.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-plumbing-company-hq",
+    "tables": [
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "Homes and businesses you serve, with what you have billed them and what is still owed.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer_type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Homeowner",
+              "Landlord",
+              "Restaurant",
+              "Property manager"
+            ],
+            "choiceColors": {
+              "Homeowner": "slate",
+              "Landlord": "blue",
+              "Restaurant": "amber",
+              "Property manager": "violet"
+            }
+          },
+          {
+            "key": "customer_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Lead",
+              "Inactive"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Lead": "blue",
+              "Inactive": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "job_count",
+            "label": "Jobs done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "value_tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Billed to date} >= 2000, \"Top account\", IF({Billed to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_job_btn",
+            "label": "New job",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "job",
+              "template": "Job sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer intake",
+            "values": {
+              "customer_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who is calling"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Name, address, phone, and whether they own or rent the place."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is happening"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Where is the water, and can it be shut off?"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "How long has it been going on?"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos or video sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approval"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who can approve the work, and the service fee told up front."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Tamsin Galloway",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(509) 555-0174",
+              "email": "tamsin.galloway@inbox-mail.net",
+              "area": "Riverbend",
+              "since": "@today-40d"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Desmond Nakamura",
+              "customer_type": "Landlord",
+              "customer_status": "Active",
+              "phone": "(509) 555-0111",
+              "email": "desmond.nakamura@inbox-mail.net",
+              "area": "Old Mill",
+              "since": "@today-95d"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Noor Underhill",
+              "customer_type": "Restaurant",
+              "customer_status": "Active",
+              "phone": "(509) 555-0148",
+              "email": "noor.underhill@inbox-mail.net",
+              "area": "Cedar Park",
+              "since": "@today-150d"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Silas Delacroix",
+              "customer_type": "Property manager",
+              "customer_status": "Lead",
+              "phone": "(509) 555-0185",
+              "email": "silas.delacroix@inbox-mail.net",
+              "area": "Lakeview",
+              "since": "@today-205d"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Kasia Kellerman",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(509) 555-0122",
+              "email": "kasia.kellerman@inbox-mail.net",
+              "area": "Foxglove Court",
+              "since": "@today-260d"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Tobias Salazar",
+              "customer_type": "Landlord",
+              "customer_status": "Active",
+              "phone": "(509) 555-0159",
+              "email": "tobias.salazar@inbox-mail.net",
+              "area": "Stonebridge",
+              "since": "@today-315d"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Greta Castellanos",
+              "customer_type": "Restaurant",
+              "customer_status": "Active",
+              "phone": "(509) 555-0196",
+              "email": "greta.castellanos@inbox-mail.net",
+              "area": "Harbor Heights",
+              "since": "@today-370d"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Percival Jankowski",
+              "customer_type": "Property manager",
+              "customer_status": "Active",
+              "phone": "(509) 555-0133",
+              "email": "percival.jankowski@inbox-mail.net",
+              "area": "Willow Creek",
+              "since": "@today-425d"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Bronwyn Quillan",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(509) 555-0170",
+              "email": "bronwyn.quillan@inbox-mail.net",
+              "area": "North Ridge",
+              "since": "@today-13d"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Idris Zielinski",
+              "customer_type": "Landlord",
+              "customer_status": "Inactive",
+              "phone": "(509) 555-0107",
+              "email": "idris.zielinski@inbox-mail.net",
+              "area": "Sunset Flats",
+              "since": "@today-14d"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Priyanka Grayson",
+              "customer_type": "Restaurant",
+              "customer_status": "Active",
+              "phone": "(509) 555-0144",
+              "email": "priyanka.grayson@inbox-mail.net",
+              "area": "Maple Hollow",
+              "since": "@today-15d"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Hamza Navarro",
+              "customer_type": "Property manager",
+              "customer_status": "Active",
+              "phone": "(509) 555-0181",
+              "email": "hamza.navarro@inbox-mail.net",
+              "area": "Eastgate",
+              "since": "@today-16d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "job",
+        "name": "Jobs",
+        "labelSingular": "Job",
+        "labelPlural": "Jobs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "job_name",
+        "describes": "Every call and project, who is on it, what it costs and the margin.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Job",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New request",
+              "Scheduled",
+              "In progress",
+              "On hold",
+              "Completed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New request": "slate",
+              "Scheduled": "blue",
+              "In progress": "amber",
+              "On hold": "violet",
+              "Completed": "teal",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "New request",
+            "statusGroups": {
+              "New request": "todo",
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "On hold": "in_progress",
+              "Completed": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "job_type",
+            "label": "Work type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Leak repair",
+              "Drain clearing",
+              "Water heater replacement",
+              "Toilet repair",
+              "Burst pipe emergency",
+              "Faucet and fixture install",
+              "Sewer camera inspection",
+              "Bathroom rough-in"
+            ],
+            "choiceColors": {
+              "Leak repair": "slate",
+              "Drain clearing": "blue",
+              "Water heater replacement": "amber",
+              "Toilet repair": "violet",
+              "Burst pipe emergency": "teal",
+              "Faucet and fixture install": "orange",
+              "Sewer camera inspection": "green",
+              "Bathroom rough-in": "yellow"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Routine",
+              "Urgent",
+              "Emergency"
+            ],
+            "choiceColors": {
+              "Routine": "slate",
+              "Urgent": "blue",
+              "Emergency": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "tech",
+            "label": "Lead tech",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "scheduled_on",
+            "label": "Scheduled for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "quote",
+            "label": "Quote (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "parts_cost",
+            "label": "Parts cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Labor hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "margin_flag",
+            "label": "Margin check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+          },
+          {
+            "key": "collected",
+            "label": "Collected",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Job sheet",
+            "values": {
+              "status": "New request",
+              "job_name": "New job"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the customer reported and what you saw on arrival."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before you cut a pipe"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Main shutoff located and tested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Floors and furniture covered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Customer shown the likely cost and agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Work done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was replaced, what was tested and any follow-up needed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Close-out"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Area cleaned and old parts offered back"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Parts and hours entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invoice sent before leaving"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "job-1",
+            "values": {
+              "job_name": "Leak repair - Underhill",
+              "status": "Completed",
+              "customer": "custom-3",
+              "job_type": "Leak repair",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-21d",
+              "quote": 250,
+              "parts_cost": 55,
+              "labor_cost": 130,
+              "hours": 2
+            }
+          },
+          {
+            "key": "job-2",
+            "values": {
+              "job_name": "Drain clearing - Jankowski",
+              "status": "Completed",
+              "customer": "custom-8",
+              "job_type": "Drain clearing",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-16d",
+              "quote": 260,
+              "parts_cost": 15,
+              "labor_cost": 95,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-3",
+            "values": {
+              "job_name": "Water heater replacement - Galloway",
+              "status": "Completed",
+              "customer": "custom-1",
+              "job_type": "Water heater replacement",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-12d",
+              "quote": 2430,
+              "parts_cost": 1460,
+              "labor_cost": 320,
+              "hours": 5
+            }
+          },
+          {
+            "key": "job-4",
+            "values": {
+              "job_name": "Toilet repair - Salazar",
+              "status": "Completed",
+              "customer": "custom-6",
+              "job_type": "Toilet repair",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-9d",
+              "quote": 160,
+              "parts_cost": 50,
+              "labor_cost": 75,
+              "hours": 1.2
+            }
+          },
+          {
+            "key": "job-5",
+            "values": {
+              "job_name": "Burst pipe emergency - Grayson",
+              "status": "Completed",
+              "customer": "custom-11",
+              "job_type": "Burst pipe emergency",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@today-6d",
+              "quote": 790,
+              "parts_cost": 235,
+              "labor_cost": 225,
+              "hours": 3.5
+            }
+          },
+          {
+            "key": "job-6",
+            "values": {
+              "job_name": "Faucet and fixture install - Delacroix",
+              "status": "Completed",
+              "customer": "custom-4",
+              "job_type": "Faucet and fixture install",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-4d",
+              "quote": 440,
+              "parts_cost": 200,
+              "labor_cost": 95,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-7",
+            "values": {
+              "job_name": "Sewer camera inspection - Quillan",
+              "status": "Cancelled",
+              "customer": "custom-9",
+              "job_type": "Sewer camera inspection",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-8d",
+              "quote": 310,
+              "parts_cost": 15,
+              "labor_cost": 95,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-8",
+            "values": {
+              "job_name": "Bathroom rough-in - Nakamura",
+              "status": "On hold",
+              "customer": "custom-2",
+              "job_type": "Bathroom rough-in",
+              "priority": "Emergency",
+              "tech": "tm-4",
+              "scheduled_on": "@today-5d",
+              "quote": 4505,
+              "parts_cost": 1800,
+              "labor_cost": 1025,
+              "hours": 16
+            }
+          },
+          {
+            "key": "job-9",
+            "values": {
+              "job_name": "Leak repair - Castellanos",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Leak repair",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-2d",
+              "quote": 250,
+              "parts_cost": 55,
+              "labor_cost": 130,
+              "hours": 2
+            }
+          },
+          {
+            "key": "job-10",
+            "values": {
+              "job_name": "Drain clearing - Navarro",
+              "status": "In progress",
+              "customer": "custom-12",
+              "job_type": "Drain clearing",
+              "priority": "Urgent",
+              "tech": "tm-3",
+              "scheduled_on": "@mon",
+              "quote": 250,
+              "parts_cost": 10,
+              "labor_cost": 95,
+              "hours": 1.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-11",
+            "values": {
+              "job_name": "Water heater replacement - Kellerman",
+              "status": "In progress",
+              "customer": "custom-5",
+              "job_type": "Water heater replacement",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@tue",
+              "quote": 2385,
+              "parts_cost": 1430,
+              "labor_cost": 320,
+              "hours": 5
+            }
+          },
+          {
+            "key": "job-12",
+            "values": {
+              "job_name": "Toilet repair - Zielinski",
+              "status": "Scheduled",
+              "customer": "custom-10",
+              "job_type": "Toilet repair",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@wed",
+              "quote": 150,
+              "parts_cost": 45,
+              "labor_cost": 75,
+              "hours": 1.2,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-13",
+            "values": {
+              "job_name": "Burst pipe emergency - Underhill",
+              "status": "Scheduled",
+              "customer": "custom-3",
+              "job_type": "Burst pipe emergency",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@thu",
+              "quote": 755,
+              "parts_cost": 225,
+              "labor_cost": 225,
+              "hours": 3.5
+            }
+          },
+          {
+            "key": "job-14",
+            "values": {
+              "job_name": "Faucet and fixture install - Jankowski",
+              "status": "Scheduled",
+              "customer": "custom-8",
+              "job_type": "Faucet and fixture install",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@fri",
+              "quote": 430,
+              "parts_cost": 195,
+              "labor_cost": 95,
+              "hours": 1.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-15",
+            "values": {
+              "job_name": "Sewer camera inspection - Galloway",
+              "status": "New request",
+              "customer": "custom-1",
+              "job_type": "Sewer camera inspection",
+              "priority": "Emergency",
+              "tech": "tm-5",
+              "scheduled_on": "@sat",
+              "quote": 300,
+              "parts_cost": 15,
+              "labor_cost": 95,
+              "hours": 1.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-16",
+            "values": {
+              "job_name": "Bathroom rough-in - Salazar",
+              "status": "New request",
+              "customer": "custom-6",
+              "job_type": "Bathroom rough-in",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@sun",
+              "quote": 4410,
+              "parts_cost": 1765,
+              "labor_cost": 1025,
+              "hours": 16
+            }
+          },
+          {
+            "key": "job-17",
+            "values": {
+              "job_name": "Leak repair - Grayson",
+              "status": "Scheduled",
+              "customer": "custom-11",
+              "job_type": "Leak repair",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@tue+1w",
+              "quote": 245,
+              "parts_cost": 50,
+              "labor_cost": 130,
+              "hours": 2
+            }
+          },
+          {
+            "key": "job-18",
+            "values": {
+              "job_name": "Drain clearing - Delacroix",
+              "status": "New request",
+              "customer": "custom-4",
+              "job_type": "Drain clearing",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@thu+1w",
+              "quote": 240,
+              "parts_cost": 10,
+              "labor_cost": 95,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-19",
+            "values": {
+              "job_name": "Water heater replacement - Quillan",
+              "status": "Scheduled",
+              "customer": "custom-9",
+              "job_type": "Water heater replacement",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today",
+              "quote": 2335,
+              "parts_cost": 1400,
+              "labor_cost": 320,
+              "hours": 5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-20",
+            "values": {
+              "job_name": "Toilet repair - Nakamura",
+              "status": "Scheduled",
+              "customer": "custom-2",
+              "job_type": "Toilet repair",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@today+2d",
+              "quote": 145,
+              "parts_cost": 45,
+              "labor_cost": 75,
+              "hours": 1.2
+            }
+          },
+          {
+            "key": "job-21",
+            "values": {
+              "job_name": "Burst pipe emergency - Castellanos",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Burst pipe emergency",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today+4d",
+              "quote": 725,
+              "parts_cost": 220,
+              "labor_cost": 225,
+              "hours": 3.5
+            }
+          }
+        ]
+      },
+      {
+        "token": "part",
+        "name": "Parts and van stock",
+        "labelSingular": "Part",
+        "labelPlural": "Parts and van stock",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "part_name",
+        "describes": "What is on each van and the shelves, what it costs and what needs ordering.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "part_name",
+            "label": "Part",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Toilet",
+              "Fittings",
+              "Water heaters",
+              "Drain",
+              "Fixtures",
+              "Consumables"
+            ],
+            "choiceColors": {
+              "Toilet": "slate",
+              "Fittings": "blue",
+              "Water heaters": "amber",
+              "Drain": "violet",
+              "Fixtures": "teal",
+              "Consumables": "orange"
+            }
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Unit cost (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "part-1",
+            "values": {
+              "part_name": "Wax ring with bolts",
+              "category": "Toilet",
+              "unit": "each",
+              "unit_cost": 4,
+              "on_hand": 22,
+              "reorder_at": 8,
+              "supplier": "Cascade Plumbing Supply",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "part-2",
+            "values": {
+              "part_name": "Fill valve",
+              "category": "Toilet",
+              "unit": "each",
+              "unit_cost": 9,
+              "on_hand": 14,
+              "reorder_at": 6,
+              "supplier": "Cascade Plumbing Supply",
+              "counted_on": "@today-5d"
+            }
+          },
+          {
+            "key": "part-3",
+            "values": {
+              "part_name": "Flexible supply line 20 in",
+              "category": "Fittings",
+              "unit": "each",
+              "unit_cost": 6,
+              "on_hand": 40,
+              "reorder_at": 15,
+              "supplier": "Cascade Plumbing Supply",
+              "counted_on": "@today-7d"
+            }
+          },
+          {
+            "key": "part-4",
+            "values": {
+              "part_name": "Copper elbow 3/4 in",
+              "category": "Fittings",
+              "unit": "each",
+              "unit_cost": 3,
+              "on_hand": 35,
+              "reorder_at": 20,
+              "supplier": "Inland Pipe and Fitting",
+              "counted_on": "@today-9d"
+            }
+          },
+          {
+            "key": "part-5",
+            "values": {
+              "part_name": "PEX crimp ring pack",
+              "category": "Fittings",
+              "unit": "pack of 50",
+              "unit_cost": 12,
+              "on_hand": 5,
+              "reorder_at": 4,
+              "supplier": "Inland Pipe and Fitting",
+              "counted_on": "@today-11d"
+            }
+          },
+          {
+            "key": "part-6",
+            "values": {
+              "part_name": "Water heater 40 gal gas",
+              "category": "Water heaters",
+              "unit": "each",
+              "unit_cost": 560,
+              "on_hand": 2,
+              "reorder_at": 2,
+              "supplier": "Evergreen Appliance Wholesale",
+              "counted_on": "@today-13d"
+            }
+          },
+          {
+            "key": "part-7",
+            "values": {
+              "part_name": "Expansion tank",
+              "category": "Water heaters",
+              "unit": "each",
+              "unit_cost": 48,
+              "on_hand": 3,
+              "reorder_at": 3,
+              "supplier": "Evergreen Appliance Wholesale",
+              "counted_on": "@today-15d"
+            }
+          },
+          {
+            "key": "part-8",
+            "values": {
+              "part_name": "Drain snake cable 50 ft",
+              "category": "Drain",
+              "unit": "each",
+              "unit_cost": 65,
+              "on_hand": 2,
+              "reorder_at": 1,
+              "supplier": "Cascade Plumbing Supply",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "part-9",
+            "values": {
+              "part_name": "Kitchen faucet, pull-down",
+              "category": "Fixtures",
+              "unit": "each",
+              "unit_cost": 130,
+              "on_hand": 4,
+              "reorder_at": 3,
+              "supplier": "Evergreen Appliance Wholesale",
+              "counted_on": "@today-19d"
+            }
+          },
+          {
+            "key": "part-10",
+            "values": {
+              "part_name": "Teflon tape",
+              "category": "Consumables",
+              "unit": "roll",
+              "unit_cost": 1,
+              "on_hand": 60,
+              "reorder_at": 25,
+              "supplier": "Inland Pipe and Fitting",
+              "counted_on": "@today-21d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "invoice_name",
+        "describes": "What has been billed, what is paid and what is overdue.",
+        "subject": "thing",
+        "independentOf": {
+          "job": "Either record can be created or change status before the other.",
+          "customer": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "invoice_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Overdue",
+              "Paid",
+              "Void"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Overdue": "red",
+              "Paid": "amber",
+              "Void": "pink"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done",
+              "Void": "done"
+            }
+          },
+          {
+            "key": "job",
+            "label": "Job",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card",
+              "Check",
+              "Bank transfer",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Card": "slate",
+              "Check": "blue",
+              "Bank transfer": "amber",
+              "Cash": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "invoic-1",
+            "values": {
+              "invoice_name": "INV-1040",
+              "status": "Overdue",
+              "job": "job-1",
+              "customer": "custom-3",
+              "amount": 280.0,
+              "issued_on": "@today-21d",
+              "due_on": "@today-7d"
+            }
+          },
+          {
+            "key": "invoic-2",
+            "values": {
+              "invoice_name": "INV-1041",
+              "status": "Paid",
+              "job": "job-2",
+              "customer": "custom-8",
+              "amount": 331.8,
+              "issued_on": "@today-16d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-12d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "invoic-3",
+            "values": {
+              "invoice_name": "INV-1042",
+              "status": "Paid",
+              "job": "job-3",
+              "customer": "custom-1",
+              "amount": 3013.2,
+              "issued_on": "@today-12d",
+              "due_on": "@today+2d",
+              "paid_on": "@today-8d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "invoic-4",
+            "values": {
+              "invoice_name": "INV-1043",
+              "status": "Sent",
+              "job": "job-4",
+              "customer": "custom-6",
+              "amount": 204.2,
+              "issued_on": "@today-9d",
+              "due_on": "@fri"
+            }
+          },
+          {
+            "key": "invoic-5",
+            "values": {
+              "invoice_name": "INV-1044",
+              "status": "Sent",
+              "job": "job-5",
+              "customer": "custom-11",
+              "amount": 932.2,
+              "issued_on": "@today-6d",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "invoic-6",
+            "values": {
+              "invoice_name": "INV-1045",
+              "status": "Draft",
+              "job": "job-6",
+              "customer": "custom-4",
+              "amount": 570.6,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each job belongs to one customer.",
+        "fromTable": "job",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each job belongs to one lead tech.",
+        "fromTable": "job",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "jobs_led"
+      },
+      {
+        "describes": "Each invoice belongs to one job.",
+        "fromTable": "invoice",
+        "fromField": "job",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each invoice belongs to one customer.",
+        "fromTable": "invoice",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Harriet Vandermeer",
+              "role": "Owner",
+              "work_email": "harriet@copperpipeplumbing.net",
+              "mobile": "(509) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Joaquin Estrada",
+              "role": "Dispatcher",
+              "work_email": "joaquin@copperpipeplumbing.net",
+              "mobile": "(509) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Bram Oosterhuis",
+              "role": "Master plumber",
+              "work_email": "bram@copperpipeplumbing.net",
+              "mobile": "(509) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Keisha Rowntree",
+              "role": "Technician",
+              "work_email": "keisha@copperpipeplumbing.net",
+              "mobile": "(509) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Ansel Pruitt",
+              "role": "Apprentice",
+              "work_email": "ansel@copperpipeplumbing.net",
+              "mobile": "(509) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Nuala Garrity",
+              "role": "Office manager",
+              "work_email": "nuala@copperpipeplumbing.net",
+              "mobile": "(509) 555-0145",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "job_request",
+        "name": "Request a job",
+        "describes": "How a customer or the office asks for work.",
+        "audience": "staff",
+        "table": "job",
+        "fields": [
+          {
+            "fieldKey": "job_name",
+            "ask": "What do you need done?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          },
+          {
+            "fieldKey": "scheduled_on",
+            "ask": "When would you like us there?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is on the board as New request."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "job_done",
+        "table": "job",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Customers board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "customer_status"
+      },
+      {
+        "token": "all_job",
+        "name": "All jobs",
+        "table": "job",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "job_board",
+        "name": "Jobs board",
+        "table": "job",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "job_cal",
+        "name": "Jobs calendar",
+        "table": "job",
+        "kind": "calendar",
+        "dateField": "scheduled_on",
+        "allDay": true
+      },
+      {
+        "token": "job_over",
+        "name": "Overdue",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_week",
+        "name": "Due this week",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_next7",
+        "name": "Next 7 days",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_mine",
+        "name": "My jobs",
+        "table": "job",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_part",
+        "name": "All parts and van stock",
+        "table": "part",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "part_board",
+        "name": "Parts and van stock board",
+        "table": "part",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoices board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Plumbing Company HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "job",
+          "describes": "Every call and project, who is on it, what it costs and the margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "customer",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many jobs are on hold right now?",
+        "whyItMatters": "The office clears holds first thing each morning.",
+        "expect": {
+          "table": "job",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "On hold"
+          },
+          "answer": 1,
+          "unit": "jobs"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open jobs.",
+        "action": {
+          "kind": "open",
+          "surface": "job_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "job_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open parts and van stock.",
+        "action": {
+          "kind": "open",
+          "surface": "part_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "part_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "copperpipeplumbing.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Kettle Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "plumbing-company-hq",
+      "parent": null,
+      "title": "Plumbing Company HQ",
+      "icon": {
+        "emoji": "🚰"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the shop from one page. Emergency calls land on the Jobs board, the dispatcher assigns a plumber, and Mark done closes the job. Parts shows what to restock on each van; Invoices shows who still owes you. Open the Dashboard first thing each morning."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:emergency-calls"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:water-heater-swaps"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:van-restock"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Homes and businesses you serve, with what you have billed them and what is still owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "customer_status"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every call and project, who is on it, what it costs and the margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "job_board"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "job-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "job-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "scheduled_on"
+              },
+              {
+                "id": "job-t",
+                "name": "All jobs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "job-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "job-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parts and van stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is on each van and the shelves, what it costs and what needs ordering."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "part",
+              "view": "part_board"
+            },
+            "inline": true,
+            "title": "Parts and van stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "par-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "par-t",
+                "name": "All parts and van stock",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "par-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What has been billed, what is paid and what is overdue."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inv-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inv-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inv-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "inv-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "plumbing-company-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Open jobs, money in and money owed. Overdue jobs and invoices need a call today."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Jobs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Jobs by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Jobs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Revenue by work type",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "job_type",
+                          "op": "sum",
+                          "field": "quote"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Overdue jobs",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My jobs",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Overdue invoices",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "emergency-calls",
+      "parent": "plumbing-company-hq",
+      "title": "Handling an emergency call",
+      "icon": {
+        "emoji": "🚨"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Water damage grows by the hour. The first five minutes on the phone decide how bad the day gets."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the phone"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask first if anyone is hurt or if water is near electrical outlets."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the caller to the main shutoff and have them close it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take the address, a callback number and two photos if they can send them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dispatch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the nearest plumber with a loaded van."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Text the customer the plumber name and a 30 minute window."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the job Emergency priority and Scheduled for today."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If the damage is large, tell the customer to call their insurer and give them a written list of what was found. Do not guess at coverage."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "water-heater-swaps",
+      "parent": "plumbing-company-hq",
+      "title": "Water heater replacement day",
+      "icon": {
+        "emoji": "🔥"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A standard swap takes four to five hours. Plan the truck and the permit before the day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm the heater size and fuel type."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the permit is filed with the city."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load the heater, expansion tank, new supply lines and venting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On site"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shut off water and gas or power and drain the old tank."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the new unit, connect, test for leaks and light it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the temperature with the customer and show the shutoffs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wrap up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Haul the old tank, photograph the installed unit and its label, and enter parts and hours before you leave."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "van-restock",
+      "parent": "plumbing-company-hq",
+      "title": "Weekly van restock",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plumbers lose more time to a missing fitting than to any hard repair. Restock every Friday."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count each van against its par list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update On hand on the Parts list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Put every Reorder row on the supplier call."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load fresh stock before the weekend on-call plumber leaves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Par levels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep per van"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reorder at"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Supply lines"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Copper elbows"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "12"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "6"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wax rings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Teflon tape"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

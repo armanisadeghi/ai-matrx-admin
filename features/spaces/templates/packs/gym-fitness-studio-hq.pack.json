@@ -1,0 +1,3051 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0509",
+  "version": 1,
+  "title": "Gym and Fitness Studio HQ",
+  "description": "Track memberships, freezes and churn, classes and trainers, and failed payments.",
+  "forWho": "Gyms and boutique fitness studios",
+  "icon": {
+    "emoji": "🏋️"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "wellness",
+  "tags": [
+    "gym",
+    "memberships",
+    "classes",
+    "churn"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-gym-fitness-studio-hq",
+    "catalogueId": "SP0509",
+    "useCase": "The owner of Ironbark Fitness uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "fitness_beauty_wellness",
+    "vertical": "Gym and fitness studio",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Ironbark Fitness",
+      "describes": "A 6,000 square foot neighborhood gym with a strength floor, group classes and a small personal training team, selling monthly and annual memberships.",
+      "address": {
+        "line1": "233 Mercer Street",
+        "city": "Minneapolis",
+        "region": "MN",
+        "postalCode": "55401",
+        "country": "US"
+      },
+      "phone": "(612) 555-0121",
+      "website": "ironbarkfitness.net",
+      "email": "info@ironbarkfitness.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-gym-fitness-studio-hq",
+    "tables": [
+      {
+        "token": "plan",
+        "name": "Plans and pricing",
+        "labelSingular": "Plan",
+        "labelPlural": "Plans and pricing",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "ticket",
+        "titleField": "plan_name",
+        "describes": "What you sell, what it costs and how many members are on each plan.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "plan_name",
+            "label": "Plan",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Membership",
+              "Class pack",
+              "Training",
+              "Drop-in"
+            ],
+            "choiceColors": {
+              "Membership": "slate",
+              "Class pack": "blue",
+              "Training": "amber",
+              "Drop-in": "violet"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Monthly",
+              "Annual",
+              "One-time",
+              "Per visit"
+            ],
+            "choiceColors": {
+              "Monthly": "slate",
+              "Annual": "blue",
+              "One-time": "amber",
+              "Per visit": "violet"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "valid_days",
+            "label": "Valid for (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 730
+              }
+            ]
+          },
+          {
+            "key": "includes",
+            "label": "Includes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "active_n",
+            "label": "Active members",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Active"
+            }
+          },
+          {
+            "key": "cancelled_n",
+            "label": "Cancelled",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Cancelled"
+            }
+          },
+          {
+            "key": "churn",
+            "label": "Churn (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Active members} + {Cancelled} > 0, ROUND({Cancelled} / ({Active members} + {Cancelled}) * 100, 0), 0)"
+          },
+          {
+            "key": "recurring",
+            "label": "Recurring value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Active members} * {Price (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Plan",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is included"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Access hours, classes, guest rules and perks."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Minimum term stated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Freeze rules explained"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cancellation notice period stated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "plan-1",
+            "values": {
+              "plan_name": "Monthly unlimited",
+              "category": "Membership",
+              "price": 59,
+              "billing": "Monthly",
+              "minutes": 0,
+              "valid_days": 30,
+              "includes": "membership, monthly"
+            }
+          },
+          {
+            "key": "plan-2",
+            "values": {
+              "plan_name": "Annual unlimited",
+              "category": "Membership",
+              "price": 590,
+              "billing": "Annual",
+              "minutes": 0,
+              "valid_days": 365,
+              "includes": "membership, annual"
+            }
+          },
+          {
+            "key": "plan-3",
+            "values": {
+              "plan_name": "Off-peak monthly",
+              "category": "Membership",
+              "price": 39,
+              "billing": "Monthly",
+              "minutes": 0,
+              "valid_days": 30,
+              "includes": "weekday daytime access only"
+            }
+          },
+          {
+            "key": "plan-4",
+            "values": {
+              "plan_name": "10-class pack",
+              "category": "Class pack",
+              "price": 120,
+              "billing": "One-time",
+              "minutes": 60,
+              "valid_days": 90,
+              "includes": "class pack, one-time"
+            }
+          },
+          {
+            "key": "plan-5",
+            "values": {
+              "plan_name": "Personal training session",
+              "category": "Training",
+              "price": 65,
+              "billing": "Per visit",
+              "minutes": 60,
+              "valid_days": 1,
+              "includes": "training, per visit"
+            }
+          },
+          {
+            "key": "plan-6",
+            "values": {
+              "plan_name": "Day pass",
+              "category": "Drop-in",
+              "price": 15,
+              "billing": "Per visit",
+              "minutes": 0,
+              "valid_days": 1,
+              "includes": "drop-in, per visit"
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Members",
+        "labelSingular": "Member",
+        "labelPlural": "Members",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Everyone who has joined or enquired, with their plan, attendance and billing.",
+        "subject": "thing",
+        "independentOf": {
+          "plan": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Member",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Individual",
+              "Couple",
+              "Student",
+              "Corporate"
+            ],
+            "choiceColors": {
+              "Individual": "slate",
+              "Couple": "blue",
+              "Student": "amber",
+              "Corporate": "violet"
+            }
+          },
+          {
+            "key": "client_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Frozen",
+              "Cancelled",
+              "Lead"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Frozen": "blue",
+              "Cancelled": "red",
+              "Lead": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "plan",
+            "label": "Plan",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "joined_on",
+            "label": "Joined",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visits",
+            "label": "Visits",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "no_shows",
+            "label": "No-shows",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "paid_total",
+            "label": "Paid to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "failed_n",
+            "label": "Failed payments",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "count",
+            "filter": {
+              "status": "Failed"
+            }
+          },
+          {
+            "key": "risk",
+            "label": "Retention check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
+          },
+          {
+            "key": "add_booking_btn",
+            "label": "Book a visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "Visit note",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Member intake",
+            "values": {
+              "client_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they want from the gym in their own words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Health and safety"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Waiver signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Emergency contact on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Told the member to speak with a professional about any health concern"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Orientation booked, plan chosen, first payment taken."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Lucinda Fontaine",
+              "kind": "Individual",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(612) 555-0170",
+              "email": "lucinda.fontaine@inbox-mail.net",
+              "joined_on": "@today-30d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Kwame Montague",
+              "kind": "Couple",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(612) 555-0107",
+              "email": "kwame.montague@inbox-mail.net",
+              "joined_on": "@today-77d",
+              "area": "Sunset Flats"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Fenella Valdez",
+              "kind": "Student",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(612) 555-0144",
+              "email": "fenella.valdez@inbox-mail.net",
+              "joined_on": "@today-124d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Leopold Eastwick",
+              "kind": "Corporate",
+              "client_status": "Active",
+              "plan": "plan-4",
+              "phone": "(612) 555-0181",
+              "email": "leopold.eastwick@inbox-mail.net",
+              "joined_on": "@today-171d",
+              "area": "Eastgate"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Imelda Lindqvist",
+              "kind": "Individual",
+              "client_status": "Active",
+              "plan": "plan-5",
+              "phone": "(612) 555-0118",
+              "email": "imelda.lindqvist@inbox-mail.net",
+              "joined_on": "@today-218d",
+              "area": "Riverbend"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Anders Sandoval",
+              "kind": "Couple",
+              "client_status": "Active",
+              "plan": "plan-6",
+              "phone": "(612) 555-0155",
+              "email": "anders.sandoval@inbox-mail.net",
+              "joined_on": "@today-265d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Ottoline Boateng",
+              "kind": "Student",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(612) 555-0192",
+              "email": "ottoline.boateng@inbox-mail.net",
+              "joined_on": "@today-312d",
+              "area": "Cedar Park"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Humphrey Ibarra",
+              "kind": "Corporate",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(612) 555-0129",
+              "email": "humphrey.ibarra@inbox-mail.net",
+              "joined_on": "@today-359d",
+              "area": "Lakeview"
+            }
+          },
+          {
+            "key": "client-9",
+            "values": {
+              "client_name": "Tamsin Prescott",
+              "kind": "Individual",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(612) 555-0166",
+              "email": "tamsin.prescott@inbox-mail.net",
+              "joined_on": "@today-406d",
+              "area": "Foxglove Court"
+            }
+          },
+          {
+            "key": "client-10",
+            "values": {
+              "client_name": "Desmond Aldercott",
+              "kind": "Couple",
+              "client_status": "Frozen",
+              "plan": "plan-4",
+              "phone": "(612) 555-0103",
+              "email": "desmond.aldercott@inbox-mail.net",
+              "joined_on": "@today-453d",
+              "area": "Stonebridge"
+            }
+          },
+          {
+            "key": "client-11",
+            "values": {
+              "client_name": "Noor Hartigan",
+              "kind": "Student",
+              "client_status": "Cancelled",
+              "plan": "plan-5",
+              "phone": "(612) 555-0140",
+              "email": "noor.hartigan@inbox-mail.net",
+              "joined_on": "@today-500d",
+              "area": "Harbor Heights"
+            }
+          },
+          {
+            "key": "client-12",
+            "values": {
+              "client_name": "Silas Okafor",
+              "kind": "Corporate",
+              "client_status": "Cancelled",
+              "plan": "plan-6",
+              "phone": "(612) 555-0177",
+              "email": "silas.okafor@inbox-mail.net",
+              "joined_on": "@today-547d",
+              "area": "Willow Creek"
+            }
+          },
+          {
+            "key": "client-13",
+            "values": {
+              "client_name": "Kasia Whitlock",
+              "kind": "Individual",
+              "client_status": "Lead",
+              "plan": "plan-1",
+              "phone": "(612) 555-0114",
+              "email": "kasia.whitlock@inbox-mail.net",
+              "joined_on": "@today-594d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "client-14",
+            "values": {
+              "client_name": "Tobias Eriksen",
+              "kind": "Couple",
+              "client_status": "Lead",
+              "plan": "plan-2",
+              "phone": "(612) 555-0151",
+              "email": "tobias.eriksen@inbox-mail.net",
+              "joined_on": "@today-641d",
+              "area": "Sunset Flats"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Bookings",
+        "labelSingular": "Booking",
+        "labelPlural": "Bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "booking_name",
+        "describes": "Classes, training sessions and tours on the calendar, with attendance.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "plan": "Either record can be created or change status before the other.",
+          "staff": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Checked in": "blue",
+              "Completed": "amber",
+              "No-show": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Member",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "plan",
+            "label": "Plan",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "staff",
+            "label": "Coach",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_on",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "visit_type",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Class",
+              "Personal training",
+              "Orientation",
+              "Tour"
+            ],
+            "choiceColors": {
+              "Class": "slate",
+              "Personal training": "blue",
+              "Orientation": "amber",
+              "Tour": "violet"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "mine",
+            "label": "Coach on duty",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Visit note",
+            "values": {
+              "status": "Booked",
+              "booking_name": "New booking"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan for the session"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Focus, equipment and any adjustments."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check-in"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Member checked in at the desk"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Waiver on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes after"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What went well and what to follow up next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "bookin-1",
+            "values": {
+              "booking_name": "Personal training session - Montague",
+              "status": "Completed",
+              "client": "client-2",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today-12d",
+              "visit_type": "Class",
+              "minutes": 60,
+              "price": 65
+            }
+          },
+          {
+            "key": "bookin-2",
+            "values": {
+              "booking_name": "Personal training - Lindqvist",
+              "status": "Completed",
+              "client": "client-5",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today-9d",
+              "visit_type": "Personal training",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-3",
+            "values": {
+              "booking_name": "Orientation - Ibarra",
+              "status": "Completed",
+              "client": "client-8",
+              "plan": "plan-3",
+              "staff": "tm-5",
+              "when_on": "@today-7d",
+              "visit_type": "Orientation",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-4",
+            "values": {
+              "booking_name": "Personal training session - Hartigan",
+              "status": "Completed",
+              "client": "client-11",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today-5d",
+              "visit_type": "Tour",
+              "minutes": 60,
+              "price": 65
+            }
+          },
+          {
+            "key": "bookin-5",
+            "values": {
+              "booking_name": "Class - Eriksen",
+              "status": "Completed",
+              "client": "client-14",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today-3d",
+              "visit_type": "Class",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-6",
+            "values": {
+              "booking_name": "Personal training - Valdez",
+              "status": "No-show",
+              "client": "client-3",
+              "plan": "plan-3",
+              "staff": "tm-5",
+              "when_on": "@today-4d",
+              "visit_type": "Personal training",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-7",
+            "values": {
+              "booking_name": "Personal training session - Sandoval",
+              "status": "Cancelled",
+              "client": "client-6",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today-2d",
+              "visit_type": "Orientation",
+              "minutes": 60,
+              "price": 65
+            }
+          },
+          {
+            "key": "bookin-8",
+            "values": {
+              "booking_name": "Tour - Prescott",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today-1d",
+              "visit_type": "Tour",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-9",
+            "values": {
+              "booking_name": "Class - Okafor",
+              "status": "Booked",
+              "client": "client-12",
+              "plan": "plan-3",
+              "staff": "tm-5",
+              "when_on": "@today-2d",
+              "visit_type": "Class",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-10",
+            "values": {
+              "booking_name": "Personal training session - Fontaine",
+              "status": "Checked in",
+              "client": "client-1",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@mon",
+              "visit_type": "Personal training",
+              "minutes": 60,
+              "price": 65,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-11",
+            "values": {
+              "booking_name": "Orientation - Eastwick",
+              "status": "Booked",
+              "client": "client-4",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@tue",
+              "visit_type": "Orientation",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-12",
+            "values": {
+              "booking_name": "Tour - Boateng",
+              "status": "Booked",
+              "client": "client-7",
+              "plan": "plan-3",
+              "staff": "tm-5",
+              "when_on": "@wed",
+              "visit_type": "Tour",
+              "minutes": 75,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-13",
+            "values": {
+              "booking_name": "Personal training session - Aldercott",
+              "status": "Booked",
+              "client": "client-10",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@thu",
+              "visit_type": "Class",
+              "minutes": 60,
+              "price": 65
+            }
+          },
+          {
+            "key": "bookin-14",
+            "values": {
+              "booking_name": "Personal training - Whitlock",
+              "status": "Booked",
+              "client": "client-13",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@fri",
+              "visit_type": "Personal training",
+              "minutes": 60,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-15",
+            "values": {
+              "booking_name": "Orientation - Montague",
+              "status": "Booked",
+              "client": "client-2",
+              "plan": "plan-3",
+              "staff": "tm-5",
+              "when_on": "@sat",
+              "visit_type": "Orientation",
+              "minutes": 75,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-16",
+            "values": {
+              "booking_name": "Personal training session - Lindqvist",
+              "status": "Booked",
+              "client": "client-5",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@sun",
+              "visit_type": "Tour",
+              "minutes": 60,
+              "price": 65
+            }
+          },
+          {
+            "key": "bookin-17",
+            "values": {
+              "booking_name": "Class - Ibarra",
+              "status": "Booked",
+              "client": "client-8",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@mon+1w",
+              "visit_type": "Class",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-18",
+            "values": {
+              "booking_name": "Personal training - Hartigan",
+              "status": "Booked",
+              "client": "client-11",
+              "plan": "plan-3",
+              "staff": "tm-5",
+              "when_on": "@wed+1w",
+              "visit_type": "Personal training",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-19",
+            "values": {
+              "booking_name": "Personal training session - Eriksen",
+              "status": "Booked",
+              "client": "client-14",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today",
+              "visit_type": "Orientation",
+              "minutes": 60,
+              "price": 65,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-20",
+            "values": {
+              "booking_name": "Tour - Valdez",
+              "status": "Booked",
+              "client": "client-3",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today+2d",
+              "visit_type": "Tour",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-21",
+            "values": {
+              "booking_name": "Class - Sandoval",
+              "status": "Booked",
+              "client": "client-6",
+              "plan": "plan-3",
+              "staff": "tm-5",
+              "when_on": "@today+4d",
+              "visit_type": "Class",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-22",
+            "values": {
+              "booking_name": "Personal training session - Prescott",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today+1d",
+              "visit_type": "Personal training",
+              "minutes": 60,
+              "price": 65
+            }
+          }
+        ]
+      },
+      {
+        "token": "payment",
+        "name": "Payments",
+        "labelSingular": "Payment",
+        "labelPlural": "Payments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "credit-card",
+        "titleField": "payment_name",
+        "describes": "Charges, failed cards and refunds, tied to each client.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "method"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "payment_name",
+            "label": "Payment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Failed",
+              "Paid",
+              "Refunded"
+            ],
+            "choiceColors": {
+              "Pending": "slate",
+              "Failed": "red",
+              "Paid": "blue",
+              "Refunded": "pink"
+            },
+            "required": true,
+            "default": "Pending",
+            "statusGroups": {
+              "Pending": "todo",
+              "Failed": "in_progress",
+              "Paid": "done",
+              "Refunded": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Member",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card on file",
+              "Bank transfer",
+              "Cash",
+              "Gift card"
+            ],
+            "choiceColors": {
+              "Card on file": "slate",
+              "Bank transfer": "blue",
+              "Cash": "amber",
+              "Gift card": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "payment_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "paymen-1",
+            "values": {
+              "payment_name": "PAY-2210",
+              "status": "Paid",
+              "client": "client-3",
+              "amount": 39,
+              "due_on": "@today-30d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-2",
+            "values": {
+              "payment_name": "PAY-2211",
+              "status": "Paid",
+              "client": "client-8",
+              "amount": 590,
+              "due_on": "@today-28d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "paymen-3",
+            "values": {
+              "payment_name": "PAY-2212",
+              "status": "Paid",
+              "client": "client-13",
+              "amount": 59,
+              "due_on": "@today-14d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-4",
+            "values": {
+              "payment_name": "PAY-2213",
+              "status": "Paid",
+              "client": "client-4",
+              "amount": 120,
+              "due_on": "@today-10d",
+              "method": "Gift card"
+            }
+          },
+          {
+            "key": "paymen-5",
+            "values": {
+              "payment_name": "PAY-2214",
+              "status": "Failed",
+              "client": "client-9",
+              "amount": 39,
+              "due_on": "@today-3d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-6",
+            "values": {
+              "payment_name": "PAY-2215",
+              "status": "Failed",
+              "client": "client-14",
+              "amount": 590,
+              "due_on": "@today-1d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "paymen-7",
+            "values": {
+              "payment_name": "PAY-2216",
+              "status": "Pending",
+              "client": "client-5",
+              "amount": 65,
+              "due_on": "@fri",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-8",
+            "values": {
+              "payment_name": "PAY-2217",
+              "status": "Pending",
+              "client": "client-10",
+              "amount": 120,
+              "due_on": "@today+3d",
+              "method": "Gift card"
+            }
+          },
+          {
+            "key": "paymen-9",
+            "values": {
+              "payment_name": "PAY-2218",
+              "status": "Pending",
+              "client": "client-1",
+              "amount": 59,
+              "due_on": "@today+5d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-10",
+            "values": {
+              "payment_name": "PAY-2219",
+              "status": "Paid",
+              "client": "client-6",
+              "amount": 15,
+              "due_on": "@today-6d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "paymen-11",
+            "values": {
+              "payment_name": "PAY-2220",
+              "status": "Refunded",
+              "client": "client-11",
+              "amount": 65,
+              "due_on": "@today-9d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-12",
+            "values": {
+              "payment_name": "PAY-2221",
+              "status": "Pending",
+              "client": "client-2",
+              "amount": 590,
+              "due_on": "@today+6d",
+              "method": "Gift card"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each member belongs to one plan.",
+        "fromTable": "client",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "members"
+      },
+      {
+        "describes": "Each booking belongs to one member.",
+        "fromTable": "booking",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each booking belongs to one plan.",
+        "fromTable": "booking",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each booking belongs to one coach.",
+        "fromTable": "booking",
+        "fromField": "staff",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings_taken"
+      },
+      {
+        "describes": "Each payment belongs to one member.",
+        "fromTable": "payment",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "payments"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Valentina Okoro",
+              "role": "Owner",
+              "work_email": "valentina@ironbarkfitness.net",
+              "mobile": "(612) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Declan Marsh",
+              "role": "General manager",
+              "work_email": "declan@ironbarkfitness.net",
+              "mobile": "(612) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Soraya Bellamy",
+              "role": "Head trainer",
+              "work_email": "soraya@ironbarkfitness.net",
+              "mobile": "(612) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Henrik Aalto",
+              "role": "Trainer",
+              "work_email": "henrik@ironbarkfitness.net",
+              "mobile": "(612) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Lupe Fontanilla",
+              "role": "Class instructor",
+              "work_email": "lupe@ironbarkfitness.net",
+              "mobile": "(612) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Quincy Abara",
+              "role": "Front desk lead",
+              "work_email": "quincy@ironbarkfitness.net",
+              "mobile": "(612) 555-0145",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Member enquiry",
+        "describes": "How someone asks to join or book.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Email address?"
+          },
+          {
+            "fieldKey": "plan",
+            "ask": "What are you interested in?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The enquiry is saved as a new lead."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "booking_done",
+        "table": "booking",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "payment_paid",
+        "table": "payment",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_plan",
+        "name": "All plans and pricing",
+        "table": "plan",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "plan_board",
+        "name": "Plans and pricing board",
+        "table": "plan",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_client",
+        "name": "All members",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Members board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "client_status"
+      },
+      {
+        "token": "all_booking",
+        "name": "All bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Bookings board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Bookings calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "when_on",
+        "allDay": true
+      },
+      {
+        "token": "booking_over",
+        "name": "Overdue",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "Due this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_mine",
+        "name": "My bookings",
+        "table": "booking",
+        "kind": "grid",
+        "me": [
+          "mine"
+        ]
+      },
+      {
+        "token": "all_payment",
+        "name": "All payments",
+        "table": "payment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "payment_board",
+        "name": "Payments board",
+        "table": "payment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "payment_over",
+        "name": "Overdue",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_week",
+        "name": "Due this week",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_next7",
+        "name": "Next 7 days",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Gym and Fitness Studio HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "client",
+          "describes": "Everyone who has joined or enquired, with their plan, attendance and billing."
+        },
+        {
+          "name": "related_tables",
+          "table": "plan",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many members are active right now?",
+        "whyItMatters": "The owner reviews the active count at the start of every month.",
+        "expect": {
+          "table": "client",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "client_status": "Active"
+          },
+          "answer": 9,
+          "unit": "members"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open plans and pricing.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open members.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open bookings.",
+        "action": {
+          "kind": "open",
+          "surface": "booking_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "booking_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "ironbarkfitness.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Mercer Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "gym-fitness-studio-hq",
+      "parent": null,
+      "title": "Gym and Fitness Studio HQ",
+      "icon": {
+        "emoji": "🏋️"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the gym from one page. Members, their plans and their payments are linked, and every class or training session is a Booking. The Plans table shows churn and recurring value; Members shows who needs a call about a failed payment. Start on the Dashboard each morning."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:freezes-and-cancellations"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:failed-payments"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:class-and-trainer-ops"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plans and pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What you sell, what it costs and how many members are on each plan."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "plan_board"
+            },
+            "inline": true,
+            "title": "Plans and pricing",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pla-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pla-t",
+                "name": "All plans and pricing",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pla-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Members"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone who has joined or enquired, with their plan, attendance and billing."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Members",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "client_status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All members",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Classes, training sessions and tours on the calendar, with attendance."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_on"
+              },
+              {
+                "id": "boo-t",
+                "name": "All bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Charges, failed cards and refunds, tied to each client."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "payment_board"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pay-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pay-t",
+                "name": "All payments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pay-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "pay-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "gym-fitness-studio-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Bookings, payments and plan health at a glance."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Bookings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Bookings by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Bookings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Bookings by kind",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "visit_type",
+                          "op": "count"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "payment",
+                      "view": "all_payment"
+                    },
+                    "inline": true,
+                    "title": "Payments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Payments by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Not yet marked"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Not yet marked",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My bookings",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Failed payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "all_payment"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Failed payments",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Failed"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "freezes-and-cancellations",
+      "parent": "gym-fitness-studio-hq",
+      "title": "Freezes and cancellations",
+      "icon": {
+        "emoji": "⏸️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Handle freezes cleanly and cancellations kindly. Most people who freeze come back."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Freezing a membership"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the member for the reason and the return date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set their status to Frozen and write the date in their notes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pause billing on the date they choose and note it on the next payment."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set a reminder to message them a week before they return."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cancelling"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer a freeze or a cheaper plan first, once, without pressure."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm the notice period and the last billing date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the status to Cancelled and ask one question: what would have kept you?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "failed-payments",
+      "parent": "gym-fitness-studio-hq",
+      "title": "Failed payment routine",
+      "icon": {
+        "emoji": "💳"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A failed card is usually a new card, not a lost member. Call within two days."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Members and look for Fix payment in the Retention check column."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call or text and ask them to update the card."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If it is fixed, mark the payment Paid."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the second failure, pause class booking until it is resolved."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tone"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Always assume it was an expired card. Never say the word overdue on the first call."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "class-and-trainer-ops",
+      "parent": "gym-fitness-studio-hq",
+      "title": "Classes, trainers and capacity",
+      "icon": {
+        "emoji": "📅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Full classes keep the room feeling alive. Empty ones teach you what to move."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review attendance for each class on the Bookings board."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move or retire a class that averages under five people for a month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send trainers their schedule on Friday."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Trial offers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Book an orientation for every new member in their first week. Members who attend within seven days stay far longer."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

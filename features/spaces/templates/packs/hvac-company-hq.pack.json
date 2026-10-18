@@ -1,0 +1,3336 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0500",
+  "version": 1,
+  "title": "HVAC Company HQ",
+  "description": "Dispatch service calls, price jobs, track parts and invoices, and keep plans on schedule.",
+  "forWho": "HVAC companies and heating and cooling contractors",
+  "icon": {
+    "emoji": "❄️"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "trades",
+  "tags": [
+    "hvac",
+    "service",
+    "dispatch",
+    "jobs",
+    "trades"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-hvac-company-hq",
+    "catalogueId": "SP0500",
+    "useCase": "The owner of Northfield Heating and Air uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "field_home_services",
+    "vertical": "HVAC company",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Northfield Heating and Air",
+      "describes": "A twelve-person residential and light commercial heating and cooling company that installs, repairs and maintains furnaces, heat pumps and air conditioners.",
+      "address": {
+        "line1": "214 Tanner Row",
+        "city": "Madison",
+        "region": "WI",
+        "postalCode": "53703",
+        "country": "US"
+      },
+      "phone": "(608) 555-0142",
+      "website": "northfieldair.net",
+      "email": "info@northfieldair.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-hvac-company-hq",
+    "tables": [
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "Homeowners and businesses you serve, with what you have billed them and what is still owed.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer_type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Homeowner",
+              "Landlord",
+              "Small business",
+              "Property manager"
+            ],
+            "choiceColors": {
+              "Homeowner": "slate",
+              "Landlord": "blue",
+              "Small business": "amber",
+              "Property manager": "violet"
+            }
+          },
+          {
+            "key": "customer_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Lead",
+              "Inactive"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Lead": "blue",
+              "Inactive": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "job_count",
+            "label": "Service calls done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "value_tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Billed to date} >= 2500, \"Top account\", IF({Billed to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_job_btn",
+            "label": "New service call",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "job",
+              "template": "Job sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer intake",
+            "values": {
+              "customer_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who is calling"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Name, address, best phone number and whether they own or rent."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The system"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Furnace, heat pump or air conditioner, age if known, make and model from the label."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Permission"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Confirmed who can approve work"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Told them the service fee up front"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Offered a maintenance plan"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Dennis Dunmore",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(608) 555-0137",
+              "email": "dennis.dunmore@inbox-mail.net",
+              "area": "Eastgate",
+              "since": "@today-40d"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Yara Kowalczyk",
+              "customer_type": "Landlord",
+              "customer_status": "Active",
+              "phone": "(608) 555-0174",
+              "email": "yara.kowalczyk@inbox-mail.net",
+              "area": "Riverbend",
+              "since": "@today-95d"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Teodor Rosenthal",
+              "customer_type": "Small business",
+              "customer_status": "Active",
+              "phone": "(608) 555-0111",
+              "email": "teodor.rosenthal@inbox-mail.net",
+              "area": "Old Mill",
+              "since": "@today-150d"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Odette Abernathy",
+              "customer_type": "Property manager",
+              "customer_status": "Lead",
+              "phone": "(608) 555-0148",
+              "email": "odette.abernathy@inbox-mail.net",
+              "area": "Cedar Park",
+              "since": "@today-205d"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Rafael Halvorsen",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(608) 555-0185",
+              "email": "rafael.halvorsen@inbox-mail.net",
+              "area": "Lakeview",
+              "since": "@today-260d"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Saoirse Oyelaran",
+              "customer_type": "Landlord",
+              "customer_status": "Active",
+              "phone": "(608) 555-0122",
+              "email": "saoirse.oyelaran@inbox-mail.net",
+              "area": "Foxglove Court",
+              "since": "@today-315d"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Ravi Zuberi",
+              "customer_type": "Small business",
+              "customer_status": "Active",
+              "phone": "(608) 555-0159",
+              "email": "ravi.zuberi@inbox-mail.net",
+              "area": "Stonebridge",
+              "since": "@today-370d"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Zainab Galloway",
+              "customer_type": "Property manager",
+              "customer_status": "Active",
+              "phone": "(608) 555-0196",
+              "email": "zainab.galloway@inbox-mail.net",
+              "area": "Harbor Heights",
+              "since": "@today-425d"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Jamal Nakamura",
+              "customer_type": "Homeowner",
+              "customer_status": "Active",
+              "phone": "(608) 555-0133",
+              "email": "jamal.nakamura@inbox-mail.net",
+              "area": "Willow Creek",
+              "since": "@today-13d"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Liesel Vasquez",
+              "customer_type": "Landlord",
+              "customer_status": "Inactive",
+              "phone": "(608) 555-0170",
+              "email": "liesel.vasquez@inbox-mail.net",
+              "area": "North Ridge",
+              "since": "@today-14d"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Okonkwo Delacroix",
+              "customer_type": "Small business",
+              "customer_status": "Active",
+              "phone": "(608) 555-0107",
+              "email": "okonkwo.delacroix@inbox-mail.net",
+              "area": "Sunset Flats",
+              "since": "@today-15d"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Ingrid Kellerman",
+              "customer_type": "Property manager",
+              "customer_status": "Active",
+              "phone": "(608) 555-0144",
+              "email": "ingrid.kellerman@inbox-mail.net",
+              "area": "Maple Hollow",
+              "since": "@today-16d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "job",
+        "name": "Service calls",
+        "labelSingular": "Service call",
+        "labelPlural": "Service calls",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "job_name",
+        "describes": "Every repair, tune-up and install, with who is on it, what it costs and the margin.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Service call",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New request",
+              "Scheduled",
+              "In progress",
+              "On hold",
+              "Completed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New request": "slate",
+              "Scheduled": "blue",
+              "In progress": "amber",
+              "On hold": "violet",
+              "Completed": "teal",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "New request",
+            "statusGroups": {
+              "New request": "todo",
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "On hold": "in_progress",
+              "Completed": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "job_type",
+            "label": "Work type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Furnace repair",
+              "AC tune-up",
+              "Heat pump install",
+              "Thermostat install",
+              "Duct cleaning",
+              "No-heat emergency",
+              "AC repair",
+              "Maintenance plan visit"
+            ],
+            "choiceColors": {
+              "Furnace repair": "slate",
+              "AC tune-up": "blue",
+              "Heat pump install": "amber",
+              "Thermostat install": "violet",
+              "Duct cleaning": "teal",
+              "No-heat emergency": "orange",
+              "AC repair": "green",
+              "Maintenance plan visit": "yellow"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Routine",
+              "Urgent",
+              "Emergency"
+            ],
+            "choiceColors": {
+              "Routine": "slate",
+              "Urgent": "blue",
+              "Emergency": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "tech",
+            "label": "Lead tech",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "scheduled_on",
+            "label": "Scheduled for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "quote",
+            "label": "Quote (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "parts_cost",
+            "label": "Parts cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Labor hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "margin_flag",
+            "label": "Margin check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+          },
+          {
+            "key": "collected",
+            "label": "Collected",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Job sheet",
+            "values": {
+              "status": "New request",
+              "job_name": "New service call"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Problem reported"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the customer says is wrong, and when it started."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Site check"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Confirmed who is home and gate or pet notes"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Checked the filter and thermostat first"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Took before photos of the unit and label"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Work done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was found, what was replaced and what was tested."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Wrap-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Customer shown the fix and signed off"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Parts used entered on the sheet"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invoice sent before leaving the site"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "job-1",
+            "values": {
+              "job_name": "Furnace repair - Rosenthal",
+              "status": "Completed",
+              "customer": "custom-3",
+              "job_type": "Furnace repair",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-21d",
+              "quote": 315,
+              "parts_cost": 80,
+              "labor_cost": 155,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-2",
+            "values": {
+              "job_name": "AC tune-up - Galloway",
+              "status": "Completed",
+              "customer": "custom-8",
+              "job_type": "AC tune-up",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-16d",
+              "quote": 170,
+              "parts_cost": 25,
+              "labor_cost": 95,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-3",
+            "values": {
+              "job_name": "Heat pump install - Dunmore",
+              "status": "Completed",
+              "customer": "custom-1",
+              "job_type": "Heat pump install",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@today-12d",
+              "quote": 10840,
+              "parts_cost": 5635,
+              "labor_cost": 1115,
+              "hours": 18
+            }
+          },
+          {
+            "key": "job-4",
+            "values": {
+              "job_name": "Thermostat install - Oyelaran",
+              "status": "Completed",
+              "customer": "custom-6",
+              "job_type": "Thermostat install",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-9d",
+              "quote": 245,
+              "parts_cost": 100,
+              "labor_cost": 75,
+              "hours": 1.2
+            }
+          },
+          {
+            "key": "job-5",
+            "values": {
+              "job_name": "Duct cleaning - Delacroix",
+              "status": "Completed",
+              "customer": "custom-11",
+              "job_type": "Duct cleaning",
+              "priority": "Urgent",
+              "tech": "tm-5",
+              "scheduled_on": "@today-6d",
+              "quote": 610,
+              "parts_cost": 60,
+              "labor_cost": 250,
+              "hours": 4
+            }
+          },
+          {
+            "key": "job-6",
+            "values": {
+              "job_name": "No-heat emergency - Abernathy",
+              "status": "Completed",
+              "customer": "custom-4",
+              "job_type": "No-heat emergency",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@today-4d",
+              "quote": 880,
+              "parts_cost": 265,
+              "labor_cost": 185,
+              "hours": 3
+            }
+          },
+          {
+            "key": "job-7",
+            "values": {
+              "job_name": "AC repair - Nakamura",
+              "status": "Cancelled",
+              "customer": "custom-9",
+              "job_type": "AC repair",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-8d",
+              "quote": 405,
+              "parts_cost": 155,
+              "labor_cost": 155,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-8",
+            "values": {
+              "job_name": "Maintenance plan visit - Kowalczyk",
+              "status": "On hold",
+              "customer": "custom-2",
+              "job_type": "Maintenance plan visit",
+              "priority": "Emergency",
+              "tech": "tm-5",
+              "scheduled_on": "@today-5d",
+              "quote": 160,
+              "parts_cost": 20,
+              "labor_cost": 75,
+              "hours": 1.2
+            }
+          },
+          {
+            "key": "job-9",
+            "values": {
+              "job_name": "Furnace repair - Zuberi",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Furnace repair",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@today-2d",
+              "quote": 310,
+              "parts_cost": 75,
+              "labor_cost": 155,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-10",
+            "values": {
+              "job_name": "AC tune-up - Kellerman",
+              "status": "In progress",
+              "customer": "custom-12",
+              "job_type": "AC tune-up",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@mon",
+              "quote": 165,
+              "parts_cost": 25,
+              "labor_cost": 95,
+              "hours": 1.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-11",
+            "values": {
+              "job_name": "Heat pump install - Halvorsen",
+              "status": "In progress",
+              "customer": "custom-5",
+              "job_type": "Heat pump install",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@tue",
+              "quote": 10655,
+              "parts_cost": 5540,
+              "labor_cost": 1115,
+              "hours": 18
+            }
+          },
+          {
+            "key": "job-12",
+            "values": {
+              "job_name": "Thermostat install - Vasquez",
+              "status": "Scheduled",
+              "customer": "custom-10",
+              "job_type": "Thermostat install",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@wed",
+              "quote": 235,
+              "parts_cost": 95,
+              "labor_cost": 75,
+              "hours": 1.2,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-13",
+            "values": {
+              "job_name": "Duct cleaning - Rosenthal",
+              "status": "Scheduled",
+              "customer": "custom-3",
+              "job_type": "Duct cleaning",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@thu",
+              "quote": 590,
+              "parts_cost": 60,
+              "labor_cost": 250,
+              "hours": 4
+            }
+          },
+          {
+            "key": "job-14",
+            "values": {
+              "job_name": "No-heat emergency - Galloway",
+              "status": "Scheduled",
+              "customer": "custom-8",
+              "job_type": "No-heat emergency",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@fri",
+              "quote": 855,
+              "parts_cost": 255,
+              "labor_cost": 185,
+              "hours": 3,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-15",
+            "values": {
+              "job_name": "AC repair - Dunmore",
+              "status": "New request",
+              "customer": "custom-1",
+              "job_type": "AC repair",
+              "priority": "Emergency",
+              "tech": "tm-6",
+              "scheduled_on": "@sat",
+              "quote": 380,
+              "parts_cost": 145,
+              "labor_cost": 155,
+              "hours": 2.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-16",
+            "values": {
+              "job_name": "Maintenance plan visit - Oyelaran",
+              "status": "New request",
+              "customer": "custom-6",
+              "job_type": "Maintenance plan visit",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@sun",
+              "quote": 155,
+              "parts_cost": 20,
+              "labor_cost": 75,
+              "hours": 1.2
+            }
+          },
+          {
+            "key": "job-17",
+            "values": {
+              "job_name": "Furnace repair - Delacroix",
+              "status": "Scheduled",
+              "customer": "custom-11",
+              "job_type": "Furnace repair",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@tue+1w",
+              "quote": 305,
+              "parts_cost": 70,
+              "labor_cost": 155,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-18",
+            "values": {
+              "job_name": "AC tune-up - Abernathy",
+              "status": "New request",
+              "customer": "custom-4",
+              "job_type": "AC tune-up",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@thu+1w",
+              "quote": 160,
+              "parts_cost": 25,
+              "labor_cost": 95,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-19",
+            "values": {
+              "job_name": "Heat pump install - Nakamura",
+              "status": "Scheduled",
+              "customer": "custom-9",
+              "job_type": "Heat pump install",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today",
+              "quote": 10465,
+              "parts_cost": 5440,
+              "labor_cost": 1115,
+              "hours": 18,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-20",
+            "values": {
+              "job_name": "Thermostat install - Kowalczyk",
+              "status": "Scheduled",
+              "customer": "custom-2",
+              "job_type": "Thermostat install",
+              "priority": "Urgent",
+              "tech": "tm-5",
+              "scheduled_on": "@today+2d",
+              "quote": 225,
+              "parts_cost": 90,
+              "labor_cost": 75,
+              "hours": 1.2
+            }
+          },
+          {
+            "key": "job-21",
+            "values": {
+              "job_name": "Duct cleaning - Zuberi",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Duct cleaning",
+              "priority": "Routine",
+              "tech": "tm-6",
+              "scheduled_on": "@today+4d",
+              "quote": 575,
+              "parts_cost": 60,
+              "labor_cost": 250,
+              "hours": 4
+            }
+          }
+        ]
+      },
+      {
+        "token": "part",
+        "name": "Parts and stock",
+        "labelSingular": "Part",
+        "labelPlural": "Parts and stock",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "part_name",
+        "describes": "What is on the trucks and shelves, what it costs and what needs ordering.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "part_name",
+            "label": "Part",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Electrical",
+              "Heating",
+              "Filters",
+              "Cooling",
+              "Controls"
+            ],
+            "choiceColors": {
+              "Electrical": "slate",
+              "Heating": "blue",
+              "Filters": "amber",
+              "Cooling": "violet",
+              "Controls": "teal"
+            }
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Unit cost (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "part-1",
+            "values": {
+              "part_name": "Capacitor 45/5 MFD",
+              "category": "Electrical",
+              "unit": "each",
+              "unit_cost": 14,
+              "on_hand": 26,
+              "reorder_at": 10,
+              "supplier": "Lakeshore HVAC Supply",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "part-2",
+            "values": {
+              "part_name": "Contactor 2-pole 30A",
+              "category": "Electrical",
+              "unit": "each",
+              "unit_cost": 19,
+              "on_hand": 12,
+              "reorder_at": 6,
+              "supplier": "Lakeshore HVAC Supply",
+              "counted_on": "@today-5d"
+            }
+          },
+          {
+            "key": "part-3",
+            "values": {
+              "part_name": "Furnace igniter",
+              "category": "Heating",
+              "unit": "each",
+              "unit_cost": 34,
+              "on_hand": 9,
+              "reorder_at": 5,
+              "supplier": "Badger Furnace Parts",
+              "counted_on": "@today-7d"
+            }
+          },
+          {
+            "key": "part-4",
+            "values": {
+              "part_name": "Flame sensor",
+              "category": "Heating",
+              "unit": "each",
+              "unit_cost": 16,
+              "on_hand": 4,
+              "reorder_at": 5,
+              "supplier": "Badger Furnace Parts",
+              "counted_on": "@today-9d"
+            }
+          },
+          {
+            "key": "part-5",
+            "values": {
+              "part_name": "Pleated filter 16x25x1",
+              "category": "Filters",
+              "unit": "case of 12",
+              "unit_cost": 58,
+              "on_hand": 8,
+              "reorder_at": 4,
+              "supplier": "Cardinal Filter Co",
+              "counted_on": "@today-11d"
+            }
+          },
+          {
+            "key": "part-6",
+            "values": {
+              "part_name": "Condensate pump",
+              "category": "Cooling",
+              "unit": "each",
+              "unit_cost": 46,
+              "on_hand": 3,
+              "reorder_at": 3,
+              "supplier": "Lakeshore HVAC Supply",
+              "counted_on": "@today-13d"
+            }
+          },
+          {
+            "key": "part-7",
+            "values": {
+              "part_name": "Refrigerant R-410A 25 lb",
+              "category": "Cooling",
+              "unit": "cylinder",
+              "unit_cost": 210,
+              "on_hand": 2,
+              "reorder_at": 2,
+              "supplier": "Northern Gas and Welding",
+              "counted_on": "@today-15d"
+            }
+          },
+          {
+            "key": "part-8",
+            "values": {
+              "part_name": "Programmable thermostat",
+              "category": "Controls",
+              "unit": "each",
+              "unit_cost": 48,
+              "on_hand": 11,
+              "reorder_at": 6,
+              "supplier": "Cardinal Filter Co",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "part-9",
+            "values": {
+              "part_name": "Blower motor 1/2 HP",
+              "category": "Heating",
+              "unit": "each",
+              "unit_cost": 175,
+              "on_hand": 3,
+              "reorder_at": 2,
+              "supplier": "Badger Furnace Parts",
+              "counted_on": "@today-19d"
+            }
+          },
+          {
+            "key": "part-10",
+            "values": {
+              "part_name": "Line set 3/8 x 3/4, 25 ft",
+              "category": "Cooling",
+              "unit": "each",
+              "unit_cost": 92,
+              "on_hand": 5,
+              "reorder_at": 3,
+              "supplier": "Lakeshore HVAC Supply",
+              "counted_on": "@today-21d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "invoice_name",
+        "describes": "What has been billed, what is paid and what is overdue.",
+        "subject": "thing",
+        "independentOf": {
+          "job": "Either record can be created or change status before the other.",
+          "customer": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "invoice_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Overdue",
+              "Paid",
+              "Void"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Overdue": "red",
+              "Paid": "amber",
+              "Void": "pink"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done",
+              "Void": "done"
+            }
+          },
+          {
+            "key": "job",
+            "label": "Service call",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card",
+              "Check",
+              "Bank transfer",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Card": "slate",
+              "Check": "blue",
+              "Bank transfer": "amber",
+              "Cash": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "invoic-1",
+            "values": {
+              "invoice_name": "INV-1040",
+              "status": "Overdue",
+              "job": "job-1",
+              "customer": "custom-3",
+              "amount": 352.8,
+              "issued_on": "@today-21d",
+              "due_on": "@today-7d"
+            }
+          },
+          {
+            "key": "invoic-2",
+            "values": {
+              "invoice_name": "INV-1041",
+              "status": "Paid",
+              "job": "job-2",
+              "customer": "custom-8",
+              "amount": 225.6,
+              "issued_on": "@today-16d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-12d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "invoic-3",
+            "values": {
+              "invoice_name": "INV-1042",
+              "status": "Paid",
+              "job": "job-3",
+              "customer": "custom-1",
+              "amount": 13441.6,
+              "issued_on": "@today-12d",
+              "due_on": "@today+2d",
+              "paid_on": "@today-8d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "invoic-4",
+            "values": {
+              "invoice_name": "INV-1043",
+              "status": "Sent",
+              "job": "job-4",
+              "customer": "custom-6",
+              "amount": 299.4,
+              "issued_on": "@today-9d",
+              "due_on": "@fri"
+            }
+          },
+          {
+            "key": "invoic-5",
+            "values": {
+              "invoice_name": "INV-1044",
+              "status": "Sent",
+              "job": "job-5",
+              "customer": "custom-11",
+              "amount": 719.8,
+              "issued_on": "@today-6d",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "invoic-6",
+            "values": {
+              "invoice_name": "INV-1045",
+              "status": "Draft",
+              "job": "job-6",
+              "customer": "custom-4",
+              "amount": 1116.2,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each service call belongs to one customer.",
+        "fromTable": "job",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each service call belongs to one lead tech.",
+        "fromTable": "job",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "jobs_led"
+      },
+      {
+        "describes": "Each invoice belongs to one service call.",
+        "fromTable": "invoice",
+        "fromField": "job",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each invoice belongs to one customer.",
+        "fromTable": "invoice",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Gwendolyn Aldous",
+              "role": "Owner",
+              "work_email": "gwendolyn@northfieldair.net",
+              "mobile": "(608) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Raul Benedetti",
+              "role": "Service manager",
+              "work_email": "raul@northfieldair.net",
+              "mobile": "(608) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Tilda Okeke",
+              "role": "Dispatcher",
+              "work_email": "tilda@northfieldair.net",
+              "mobile": "(608) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Marcus Ferreira",
+              "role": "Senior technician",
+              "work_email": "marcus@northfieldair.net",
+              "mobile": "(608) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Ilse Brandvold",
+              "role": "Technician",
+              "work_email": "ilse@northfieldair.net",
+              "mobile": "(608) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Dev Raghunathan",
+              "role": "Installer",
+              "work_email": "dev@northfieldair.net",
+              "mobile": "(608) 555-0145",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-7",
+            "values": {
+              "full_name": "Corinne Mabutas",
+              "role": "Office manager",
+              "work_email": "corinne@northfieldair.net",
+              "mobile": "(608) 555-0146",
+              "start_date": "@today-6y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "job_request",
+        "name": "Request a service call",
+        "describes": "How a customer or the office asks for work.",
+        "audience": "staff",
+        "table": "job",
+        "fields": [
+          {
+            "fieldKey": "job_name",
+            "ask": "What do you need done?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          },
+          {
+            "fieldKey": "scheduled_on",
+            "ask": "When would you like us there?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is on the board as New request."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "job_done",
+        "table": "job",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Customers board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "customer_status"
+      },
+      {
+        "token": "all_job",
+        "name": "All service calls",
+        "table": "job",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "job_board",
+        "name": "Service calls board",
+        "table": "job",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "job_cal",
+        "name": "Service calls calendar",
+        "table": "job",
+        "kind": "calendar",
+        "dateField": "scheduled_on",
+        "allDay": true
+      },
+      {
+        "token": "job_over",
+        "name": "Overdue",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_week",
+        "name": "Due this week",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_next7",
+        "name": "Next 7 days",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_mine",
+        "name": "My service calls",
+        "table": "job",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_part",
+        "name": "All parts and stock",
+        "table": "part",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "part_board",
+        "name": "Parts and stock board",
+        "table": "part",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoices board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "HVAC Company HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "job",
+          "describes": "Every repair, tune-up and install, with who is on it, what it costs and the margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "customer",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many service calls are on hold right now?",
+        "whyItMatters": "The office clears holds first thing each morning.",
+        "expect": {
+          "table": "job",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "On hold"
+          },
+          "answer": 1,
+          "unit": "service calls"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open service calls.",
+        "action": {
+          "kind": "open",
+          "surface": "job_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "job_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open parts and stock.",
+        "action": {
+          "kind": "open",
+          "surface": "part_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "part_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "northfieldair.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Tanner Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "hvac-company-hq",
+      "parent": null,
+      "title": "HVAC Company HQ",
+      "icon": {
+        "emoji": "❄️"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the whole shop from one page. New calls land on the Service calls board; the dispatcher schedules them, a technician takes them, and Mark done closes them out. Parts shows what to reorder and Invoices shows who still owes you. Start with the Dashboard each morning."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:service-call-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:maintenance-plans"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:parts-and-stock"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Homeowners and businesses you serve, with what you have billed them and what is still owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "customer_status"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service calls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every repair, tune-up and install, with who is on it, what it costs and the margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "job_board"
+            },
+            "inline": true,
+            "title": "Service calls",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "job-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "job-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "scheduled_on"
+              },
+              {
+                "id": "job-t",
+                "name": "All service calls",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "job-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "job-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parts and stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is on the trucks and shelves, what it costs and what needs ordering."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "part",
+              "view": "part_board"
+            },
+            "inline": true,
+            "title": "Parts and stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "par-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "par-t",
+                "name": "All parts and stock",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "par-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What has been billed, what is paid and what is overdue."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inv-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inv-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inv-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "inv-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "hvac-company-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Open calls, money in and money owed at a glance. Anything under Overdue needs a phone call today."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Service calls",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Service calls by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Service calls",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Revenue by work type",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "job_type",
+                          "op": "sum",
+                          "field": "quote"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue service calls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Service calls",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Overdue service calls",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My service calls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Service calls",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My service calls",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Overdue invoices",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "service-call-routine",
+      "parent": "hvac-company-hq",
+      "title": "Running a service call",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Follow the same ten minutes at every door. Customers remember the walk-in and the walk-out more than the repair."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you leave the shop"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the call notes and the last visit on this address."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load the parts the problem most likely needs: capacitor, igniter, filter, contactor."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Text the customer your arrival window and your name."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the door"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Introduce yourself, put on shoe covers and ask where the system is."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask what happened and when, before touching anything."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the thermostat, filter and breaker first. Half of all no-heat calls end there."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you start work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "State the repair price in plain terms and get a yes. If the price is above the quote, stop and call the office."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing the call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Show the customer what you replaced and keep the old part until they have seen it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the call done, fill in parts cost and hours."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Hand over the invoice and mention the maintenance plan once, politely."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "maintenance-plans",
+      "parent": "hvac-company-hq",
+      "title": "Selling and running maintenance plans",
+      "icon": {
+        "emoji": "📅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plans smooth the slow months. Each plan means two visits a year, one for heating in early fall and one for cooling in spring."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What a plan includes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Two tune-up visits a year"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Priority scheduling during hot and cold spells"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A discount on repairs"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A reminder text two weeks before each visit"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scheduling visits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the first of each month, add a Maintenance plan visit call for every plan holder due that month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Group visits by neighborhood so one technician can do five in a day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Text the customer a reminder. Reschedule within the week if they miss it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Plans renew by card each year. If a card fails, the customer shows under Awaiting payment on their record. Call, do not email."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "parts-and-stock",
+      "parent": "hvac-company-hq",
+      "title": "Counting parts and reordering",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Count the truck stock every other Friday and the shelves the last Friday of the month. The Reorder? column does the thinking."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to count"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick one truck or shelf at a time and count every part on it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Type the number into On hand and update Last counted."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anything that says Reorder goes on the supplier list that afternoon."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reorder rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep on hand"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Capacitors, contactors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "10 of each"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 6"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ignitors, flame sensors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5 of each"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 5"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Filters"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 cases"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 4"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Refrigerant"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 cylinders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 2"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a supplier is out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask for the closest equivalent, write the swap in the call notes and tell the customer."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

@@ -1,0 +1,3148 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0502",
+  "version": 1,
+  "title": "Landscaping and Lawn Care HQ",
+  "description": "Plan mowing routes, price seasonal projects, track materials and invoices.",
+  "forWho": "Landscaping and lawn care companies",
+  "icon": {
+    "emoji": "🌿"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "trades",
+  "tags": [
+    "landscaping",
+    "lawn",
+    "routes",
+    "crews"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-landscaping-lawn-care-hq",
+    "catalogueId": "SP0502",
+    "useCase": "The owner of Greenbrook Lawn and Landscape uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "field_home_services",
+    "vertical": "Landscaping and lawn care",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Greenbrook Lawn and Landscape",
+      "describes": "A fifteen-person lawn care and landscape company with weekly mowing routes, seasonal cleanups, mulch and planting projects, and a small irrigation team.",
+      "address": {
+        "line1": "402 Orchard Gate",
+        "city": "Raleigh",
+        "region": "NC",
+        "postalCode": "27604",
+        "country": "US"
+      },
+      "phone": "(919) 555-0166",
+      "website": "greenbrooklawns.net",
+      "email": "info@greenbrooklawns.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-landscaping-lawn-care-hq",
+    "tables": [
+      {
+        "token": "customer",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "Lawns and properties you serve, with what you have billed and what is still owed.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer_type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Residential",
+              "HOA",
+              "Commercial",
+              "Rental owner"
+            ],
+            "choiceColors": {
+              "Residential": "slate",
+              "HOA": "blue",
+              "Commercial": "amber",
+              "Rental owner": "violet"
+            }
+          },
+          {
+            "key": "customer_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Lead",
+              "Inactive"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Lead": "blue",
+              "Inactive": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "job_count",
+            "label": "Jobs done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "value_tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Billed to date} >= 1200, \"Top account\", IF({Billed to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_job_btn",
+            "label": "New job",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "job",
+              "template": "Job sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Client intake",
+            "values": {
+              "customer_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The property"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Address, lot size, gate or dog notes and where the crew can park."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they want"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Weekly mowing or one-off work"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Edging and blowing included"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Trash and clippings handling agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Billing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Monthly invoice or per visit, and who pays."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Okonkwo Jankowski",
+              "customer_type": "Residential",
+              "customer_status": "Active",
+              "phone": "(919) 555-0111",
+              "email": "okonkwo.jankowski@inbox-mail.net",
+              "area": "Old Mill",
+              "since": "@today-40d"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Ingrid Quillan",
+              "customer_type": "HOA",
+              "customer_status": "Active",
+              "phone": "(919) 555-0148",
+              "email": "ingrid.quillan@inbox-mail.net",
+              "area": "Cedar Park",
+              "since": "@today-95d"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Basil Yamamoto",
+              "customer_type": "Commercial",
+              "customer_status": "Active",
+              "phone": "(919) 555-0185",
+              "email": "basil.yamamoto@inbox-mail.net",
+              "area": "Lakeview",
+              "since": "@today-150d"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Mirela Grayson",
+              "customer_type": "Rental owner",
+              "customer_status": "Lead",
+              "phone": "(919) 555-0122",
+              "email": "mirela.grayson@inbox-mail.net",
+              "area": "Foxglove Court",
+              "since": "@today-205d"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Winston Navarro",
+              "customer_type": "Residential",
+              "customer_status": "Active",
+              "phone": "(919) 555-0159",
+              "email": "winston.navarro@inbox-mail.net",
+              "area": "Stonebridge",
+              "since": "@today-260d"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Nadia Westbrook",
+              "customer_type": "HOA",
+              "customer_status": "Active",
+              "phone": "(919) 555-0196",
+              "email": "nadia.westbrook@inbox-mail.net",
+              "area": "Harbor Heights",
+              "since": "@today-315d"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Emeka Fairbairn",
+              "customer_type": "Commercial",
+              "customer_status": "Active",
+              "phone": "(919) 555-0133",
+              "email": "emeka.fairbairn@inbox-mail.net",
+              "area": "Willow Creek",
+              "since": "@today-370d"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Solveig Mbeki",
+              "customer_type": "Rental owner",
+              "customer_status": "Active",
+              "phone": "(919) 555-0170",
+              "email": "solveig.mbeki@inbox-mail.net",
+              "area": "North Ridge",
+              "since": "@today-425d"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Stellan Thackeray",
+              "customer_type": "Residential",
+              "customer_status": "Active",
+              "phone": "(919) 555-0107",
+              "email": "stellan.thackeray@inbox-mail.net",
+              "area": "Sunset Flats",
+              "since": "@today-13d"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Marisol Carrow",
+              "customer_type": "HOA",
+              "customer_status": "Inactive",
+              "phone": "(919) 555-0144",
+              "email": "marisol.carrow@inbox-mail.net",
+              "area": "Maple Hollow",
+              "since": "@today-14d"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Callum Jessup",
+              "customer_type": "Commercial",
+              "customer_status": "Active",
+              "phone": "(919) 555-0181",
+              "email": "callum.jessup@inbox-mail.net",
+              "area": "Eastgate",
+              "since": "@today-15d"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Lucinda Rutherford",
+              "customer_type": "Rental owner",
+              "customer_status": "Active",
+              "phone": "(919) 555-0118",
+              "email": "lucinda.rutherford@inbox-mail.net",
+              "area": "Riverbend",
+              "since": "@today-16d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "job",
+        "name": "Jobs",
+        "labelSingular": "Job",
+        "labelPlural": "Jobs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "job_name",
+        "describes": "Every visit and project, which crew has it, what it costs and the margin.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Job",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New request",
+              "Scheduled",
+              "In progress",
+              "On hold",
+              "Completed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New request": "slate",
+              "Scheduled": "blue",
+              "In progress": "amber",
+              "On hold": "violet",
+              "Completed": "teal",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "New request",
+            "statusGroups": {
+              "New request": "todo",
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "On hold": "in_progress",
+              "Completed": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "job_type",
+            "label": "Work type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly mowing",
+              "Spring cleanup",
+              "Mulch installation",
+              "Aeration and overseed",
+              "Shrub trimming",
+              "Irrigation repair",
+              "Sod installation",
+              "Leaf removal"
+            ],
+            "choiceColors": {
+              "Weekly mowing": "slate",
+              "Spring cleanup": "blue",
+              "Mulch installation": "amber",
+              "Aeration and overseed": "violet",
+              "Shrub trimming": "teal",
+              "Irrigation repair": "orange",
+              "Sod installation": "green",
+              "Leaf removal": "yellow"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Routine",
+              "Urgent",
+              "Emergency"
+            ],
+            "choiceColors": {
+              "Routine": "slate",
+              "Urgent": "blue",
+              "Emergency": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "tech",
+            "label": "Lead tech",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "scheduled_on",
+            "label": "Scheduled for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "quote",
+            "label": "Quote (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "parts_cost",
+            "label": "Parts cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Labor hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "margin_flag",
+            "label": "Margin check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+          },
+          {
+            "key": "collected",
+            "label": "Collected",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Job sheet",
+            "values": {
+              "status": "New request",
+              "job_name": "New job"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Exactly what the crew will do and what is not included."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the crew leaves the yard"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Equipment loaded and fueled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Materials ordered and on the truck"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos of the property taken before work"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes from site"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the crew found: dead patches, drainage, damaged sprinkler heads."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Close-out"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Clippings blown off hard surfaces"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Gate latched"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "After photos taken and hours entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "job-1",
+            "values": {
+              "job_name": "Weekly mowing - Yamamoto",
+              "status": "Completed",
+              "customer": "custom-3",
+              "job_type": "Weekly mowing",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-21d",
+              "quote": 60,
+              "parts_cost": 0,
+              "labor_cost": 35,
+              "hours": 1
+            }
+          },
+          {
+            "key": "job-2",
+            "values": {
+              "job_name": "Spring cleanup - Mbeki",
+              "status": "Completed",
+              "customer": "custom-8",
+              "job_type": "Spring cleanup",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-16d",
+              "quote": 365,
+              "parts_cost": 35,
+              "labor_cost": 135,
+              "hours": 4
+            }
+          },
+          {
+            "key": "job-3",
+            "values": {
+              "job_name": "Mulch installation - Jankowski",
+              "status": "Completed",
+              "customer": "custom-1",
+              "job_type": "Mulch installation",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-12d",
+              "quote": 1000,
+              "parts_cost": 450,
+              "labor_cost": 170,
+              "hours": 5
+            }
+          },
+          {
+            "key": "job-4",
+            "values": {
+              "job_name": "Aeration and overseed - Westbrook",
+              "status": "Completed",
+              "customer": "custom-6",
+              "job_type": "Aeration and overseed",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-9d",
+              "quote": 235,
+              "parts_cost": 80,
+              "labor_cost": 85,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-5",
+            "values": {
+              "job_name": "Shrub trimming - Jessup",
+              "status": "Completed",
+              "customer": "custom-11",
+              "job_type": "Shrub trimming",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@today-6d",
+              "quote": 225,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2
+            }
+          },
+          {
+            "key": "job-6",
+            "values": {
+              "job_name": "Irrigation repair - Grayson",
+              "status": "Completed",
+              "customer": "custom-4",
+              "job_type": "Irrigation repair",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-4d",
+              "quote": 470,
+              "parts_cost": 120,
+              "labor_cost": 70,
+              "hours": 2
+            }
+          },
+          {
+            "key": "job-7",
+            "values": {
+              "job_name": "Sod installation - Thackeray",
+              "status": "Cancelled",
+              "customer": "custom-9",
+              "job_type": "Sod installation",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-8d",
+              "quote": 1480,
+              "parts_cost": 740,
+              "labor_cost": 270,
+              "hours": 8
+            }
+          },
+          {
+            "key": "job-8",
+            "values": {
+              "job_name": "Leaf removal - Quillan",
+              "status": "On hold",
+              "customer": "custom-2",
+              "job_type": "Leaf removal",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-5d",
+              "quote": 345,
+              "parts_cost": 5,
+              "labor_cost": 120,
+              "hours": 3.5
+            }
+          },
+          {
+            "key": "job-9",
+            "values": {
+              "job_name": "Weekly mowing - Fairbairn",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Weekly mowing",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-2d",
+              "quote": 60,
+              "parts_cost": 0,
+              "labor_cost": 35,
+              "hours": 1
+            }
+          },
+          {
+            "key": "job-10",
+            "values": {
+              "job_name": "Spring cleanup - Rutherford",
+              "status": "In progress",
+              "customer": "custom-12",
+              "job_type": "Spring cleanup",
+              "priority": "Urgent",
+              "tech": "tm-3",
+              "scheduled_on": "@mon",
+              "quote": 355,
+              "parts_cost": 35,
+              "labor_cost": 135,
+              "hours": 4,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-11",
+            "values": {
+              "job_name": "Mulch installation - Navarro",
+              "status": "In progress",
+              "customer": "custom-5",
+              "job_type": "Mulch installation",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@tue",
+              "quote": 970,
+              "parts_cost": 435,
+              "labor_cost": 170,
+              "hours": 5
+            }
+          },
+          {
+            "key": "job-12",
+            "values": {
+              "job_name": "Aeration and overseed - Carrow",
+              "status": "Scheduled",
+              "customer": "custom-10",
+              "job_type": "Aeration and overseed",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@wed",
+              "quote": 225,
+              "parts_cost": 80,
+              "labor_cost": 85,
+              "hours": 2.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-13",
+            "values": {
+              "job_name": "Shrub trimming - Yamamoto",
+              "status": "Scheduled",
+              "customer": "custom-3",
+              "job_type": "Shrub trimming",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@thu",
+              "quote": 215,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2
+            }
+          },
+          {
+            "key": "job-14",
+            "values": {
+              "job_name": "Irrigation repair - Mbeki",
+              "status": "Scheduled",
+              "customer": "custom-8",
+              "job_type": "Irrigation repair",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@fri",
+              "quote": 455,
+              "parts_cost": 115,
+              "labor_cost": 70,
+              "hours": 2,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-15",
+            "values": {
+              "job_name": "Sod installation - Jankowski",
+              "status": "New request",
+              "customer": "custom-1",
+              "job_type": "Sod installation",
+              "priority": "Urgent",
+              "tech": "tm-5",
+              "scheduled_on": "@sat",
+              "quote": 1410,
+              "parts_cost": 705,
+              "labor_cost": 270,
+              "hours": 8,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-16",
+            "values": {
+              "job_name": "Leaf removal - Westbrook",
+              "status": "New request",
+              "customer": "custom-6",
+              "job_type": "Leaf removal",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@sun",
+              "quote": 335,
+              "parts_cost": 5,
+              "labor_cost": 120,
+              "hours": 3.5
+            }
+          },
+          {
+            "key": "job-17",
+            "values": {
+              "job_name": "Weekly mowing - Jessup",
+              "status": "Scheduled",
+              "customer": "custom-11",
+              "job_type": "Weekly mowing",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@tue+1w",
+              "quote": 55,
+              "parts_cost": 0,
+              "labor_cost": 35,
+              "hours": 1
+            }
+          },
+          {
+            "key": "job-18",
+            "values": {
+              "job_name": "Spring cleanup - Grayson",
+              "status": "New request",
+              "customer": "custom-4",
+              "job_type": "Spring cleanup",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@thu+1w",
+              "quote": 345,
+              "parts_cost": 35,
+              "labor_cost": 135,
+              "hours": 4
+            }
+          },
+          {
+            "key": "job-19",
+            "values": {
+              "job_name": "Mulch installation - Thackeray",
+              "status": "Scheduled",
+              "customer": "custom-9",
+              "job_type": "Mulch installation",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today",
+              "quote": 940,
+              "parts_cost": 425,
+              "labor_cost": 170,
+              "hours": 5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-20",
+            "values": {
+              "job_name": "Aeration and overseed - Quillan",
+              "status": "Scheduled",
+              "customer": "custom-2",
+              "job_type": "Aeration and overseed",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@today+2d",
+              "quote": 215,
+              "parts_cost": 75,
+              "labor_cost": 85,
+              "hours": 2.5
+            }
+          },
+          {
+            "key": "job-21",
+            "values": {
+              "job_name": "Shrub trimming - Fairbairn",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Shrub trimming",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today+4d",
+              "quote": 210,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2
+            }
+          }
+        ]
+      },
+      {
+        "token": "part",
+        "name": "Materials and equipment",
+        "labelSingular": "Material",
+        "labelPlural": "Materials and equipment",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "part_name",
+        "describes": "Mulch, seed, irrigation parts and equipment supplies, with what is on hand and what needs ordering.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "part_name",
+            "label": "Material",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Materials",
+              "Irrigation",
+              "Equipment",
+              "Supplies"
+            ],
+            "choiceColors": {
+              "Materials": "slate",
+              "Irrigation": "blue",
+              "Equipment": "amber",
+              "Supplies": "violet"
+            }
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Unit cost (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "part-1",
+            "values": {
+              "part_name": "Hardwood mulch, yard",
+              "category": "Materials",
+              "unit": "cubic yard",
+              "unit_cost": 32,
+              "on_hand": 18,
+              "reorder_at": 10,
+              "supplier": "Piedmont Landscape Supply",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "part-2",
+            "values": {
+              "part_name": "Grass seed, shade blend 50 lb",
+              "category": "Materials",
+              "unit": "bag",
+              "unit_cost": 88,
+              "on_hand": 6,
+              "reorder_at": 4,
+              "supplier": "Triangle Seed and Feed",
+              "counted_on": "@today-5d"
+            }
+          },
+          {
+            "key": "part-3",
+            "values": {
+              "part_name": "Starter fertilizer 50 lb",
+              "category": "Materials",
+              "unit": "bag",
+              "unit_cost": 34,
+              "on_hand": 12,
+              "reorder_at": 6,
+              "supplier": "Triangle Seed and Feed",
+              "counted_on": "@today-7d"
+            }
+          },
+          {
+            "key": "part-4",
+            "values": {
+              "part_name": "Sprinkler head, rotor",
+              "category": "Irrigation",
+              "unit": "each",
+              "unit_cost": 11,
+              "on_hand": 24,
+              "reorder_at": 10,
+              "supplier": "Capital Irrigation Depot",
+              "counted_on": "@today-9d"
+            }
+          },
+          {
+            "key": "part-5",
+            "values": {
+              "part_name": "Drip tubing 100 ft",
+              "category": "Irrigation",
+              "unit": "roll",
+              "unit_cost": 27,
+              "on_hand": 5,
+              "reorder_at": 3,
+              "supplier": "Capital Irrigation Depot",
+              "counted_on": "@today-11d"
+            }
+          },
+          {
+            "key": "part-6",
+            "values": {
+              "part_name": "Trimmer line spool",
+              "category": "Equipment",
+              "unit": "each",
+              "unit_cost": 14,
+              "on_hand": 9,
+              "reorder_at": 6,
+              "supplier": "Hollis Power Equipment",
+              "counted_on": "@today-13d"
+            }
+          },
+          {
+            "key": "part-7",
+            "values": {
+              "part_name": "Mower blade 21 in",
+              "category": "Equipment",
+              "unit": "each",
+              "unit_cost": 18,
+              "on_hand": 6,
+              "reorder_at": 4,
+              "supplier": "Hollis Power Equipment",
+              "counted_on": "@today-15d"
+            }
+          },
+          {
+            "key": "part-8",
+            "values": {
+              "part_name": "Two-stroke oil case",
+              "category": "Equipment",
+              "unit": "case",
+              "unit_cost": 42,
+              "on_hand": 2,
+              "reorder_at": 2,
+              "supplier": "Hollis Power Equipment",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "part-9",
+            "values": {
+              "part_name": "Leaf bags 40 count",
+              "category": "Supplies",
+              "unit": "box",
+              "unit_cost": 16,
+              "on_hand": 10,
+              "reorder_at": 5,
+              "supplier": "Piedmont Landscape Supply",
+              "counted_on": "@today-19d"
+            }
+          },
+          {
+            "key": "part-10",
+            "values": {
+              "part_name": "Pine straw bale",
+              "category": "Materials",
+              "unit": "bale",
+              "unit_cost": 7,
+              "on_hand": 60,
+              "reorder_at": 30,
+              "supplier": "Piedmont Landscape Supply",
+              "counted_on": "@today-21d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "invoice_name",
+        "describes": "What has been billed, what is paid and what is overdue.",
+        "subject": "thing",
+        "independentOf": {
+          "job": "Either record can be created or change status before the other.",
+          "customer": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "invoice_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Overdue",
+              "Paid",
+              "Void"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Overdue": "red",
+              "Paid": "amber",
+              "Void": "pink"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done",
+              "Void": "done"
+            }
+          },
+          {
+            "key": "job",
+            "label": "Job",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "customer",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card",
+              "Check",
+              "Bank transfer",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Card": "slate",
+              "Check": "blue",
+              "Bank transfer": "amber",
+              "Cash": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "invoic-1",
+            "values": {
+              "invoice_name": "INV-1040",
+              "status": "Overdue",
+              "job": "job-1",
+              "customer": "custom-3",
+              "amount": 67.2,
+              "issued_on": "@today-21d",
+              "due_on": "@today-7d"
+            }
+          },
+          {
+            "key": "invoic-2",
+            "values": {
+              "invoice_name": "INV-1041",
+              "status": "Paid",
+              "job": "job-2",
+              "customer": "custom-8",
+              "amount": 455.7,
+              "issued_on": "@today-16d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-12d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "invoic-3",
+            "values": {
+              "invoice_name": "INV-1042",
+              "status": "Paid",
+              "job": "job-3",
+              "customer": "custom-1",
+              "amount": 1240.0,
+              "issued_on": "@today-12d",
+              "due_on": "@today+2d",
+              "paid_on": "@today-8d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "invoic-4",
+            "values": {
+              "invoice_name": "INV-1043",
+              "status": "Sent",
+              "job": "job-4",
+              "customer": "custom-6",
+              "amount": 288.2,
+              "issued_on": "@today-9d",
+              "due_on": "@fri"
+            }
+          },
+          {
+            "key": "invoic-5",
+            "values": {
+              "invoice_name": "INV-1044",
+              "status": "Sent",
+              "job": "job-5",
+              "customer": "custom-11",
+              "amount": 265.5,
+              "issued_on": "@today-6d",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "invoic-6",
+            "values": {
+              "invoice_name": "INV-1045",
+              "status": "Draft",
+              "job": "job-6",
+              "customer": "custom-4",
+              "amount": 607.8,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each job belongs to one client.",
+        "fromTable": "job",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each job belongs to one lead tech.",
+        "fromTable": "job",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "jobs_led"
+      },
+      {
+        "describes": "Each invoice belongs to one job.",
+        "fromTable": "invoice",
+        "fromField": "job",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each invoice belongs to one client.",
+        "fromTable": "invoice",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Wendell Marchetti",
+              "role": "Owner",
+              "work_email": "wendell@greenbrooklawns.net",
+              "mobile": "(919) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Pilar Duarte",
+              "role": "Operations manager",
+              "work_email": "pilar@greenbrooklawns.net",
+              "mobile": "(919) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Cass Tillerman",
+              "role": "Crew leader",
+              "work_email": "cass@greenbrooklawns.net",
+              "mobile": "(919) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Obadiah Sutter",
+              "role": "Crew leader",
+              "work_email": "obadiah@greenbrooklawns.net",
+              "mobile": "(919) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Mei-Lin Hargrove",
+              "role": "Irrigation tech",
+              "work_email": "mei-lin@greenbrooklawns.net",
+              "mobile": "(919) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Teodoro Quint",
+              "role": "Crew member",
+              "work_email": "teodoro@greenbrooklawns.net",
+              "mobile": "(919) 555-0145",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-7",
+            "values": {
+              "full_name": "Birdie Anslow",
+              "role": "Office admin",
+              "work_email": "birdie@greenbrooklawns.net",
+              "mobile": "(919) 555-0146",
+              "start_date": "@today-6y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "job_request",
+        "name": "Request a job",
+        "describes": "How a customer or the office asks for work.",
+        "audience": "staff",
+        "table": "job",
+        "fields": [
+          {
+            "fieldKey": "job_name",
+            "ask": "What do you need done?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          },
+          {
+            "fieldKey": "scheduled_on",
+            "ask": "When would you like us there?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is on the board as New request."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "job_done",
+        "table": "job",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_customer",
+        "name": "All clients",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Clients board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "customer_status"
+      },
+      {
+        "token": "all_job",
+        "name": "All jobs",
+        "table": "job",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "job_board",
+        "name": "Jobs board",
+        "table": "job",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "job_cal",
+        "name": "Jobs calendar",
+        "table": "job",
+        "kind": "calendar",
+        "dateField": "scheduled_on",
+        "allDay": true
+      },
+      {
+        "token": "job_over",
+        "name": "Overdue",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_week",
+        "name": "Due this week",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_next7",
+        "name": "Next 7 days",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_mine",
+        "name": "My jobs",
+        "table": "job",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_part",
+        "name": "All materials and equipment",
+        "table": "part",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "part_board",
+        "name": "Materials and equipment board",
+        "table": "part",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoices board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Landscaping and Lawn Care HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "job",
+          "describes": "Every visit and project, which crew has it, what it costs and the margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "customer",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many jobs are on hold right now?",
+        "whyItMatters": "The office clears holds first thing each morning.",
+        "expect": {
+          "table": "job",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "On hold"
+          },
+          "answer": 1,
+          "unit": "jobs"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open jobs.",
+        "action": {
+          "kind": "open",
+          "surface": "job_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "job_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open materials and equipment.",
+        "action": {
+          "kind": "open",
+          "surface": "part_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "part_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "greenbrooklawns.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Orchard Gate"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "landscaping-lawn-care-hq",
+      "parent": null,
+      "title": "Landscaping and Lawn Care HQ",
+      "icon": {
+        "emoji": "🌿"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One page for the season. Weekly mowing and one-off projects live on the Jobs board; crew leaders see their own list under Mine. Materials shows what to order before the weekend, and Invoices shows who still owes you. Start with the Dashboard every Monday."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-route"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:spring-cleanup"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:materials-ordering"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Lawns and properties you serve, with what you have billed and what is still owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "customer_status"
+              },
+              {
+                "id": "cus-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every visit and project, which crew has it, what it costs and the margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "job_board"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "job-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "job-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "scheduled_on"
+              },
+              {
+                "id": "job-t",
+                "name": "All jobs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "job-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "job-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Materials and equipment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mulch, seed, irrigation parts and equipment supplies, with what is on hand and what needs ordering."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "part",
+              "view": "part_board"
+            },
+            "inline": true,
+            "title": "Materials and equipment",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "par-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "par-t",
+                "name": "All materials and equipment",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "par-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What has been billed, what is paid and what is overdue."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inv-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inv-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inv-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "inv-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "landscaping-lawn-care-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Open jobs by crew, revenue by type of work and unpaid invoices."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Jobs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Jobs by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Jobs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Revenue by work type",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "job_type",
+                          "op": "sum",
+                          "field": "quote"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Overdue jobs",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My jobs",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Overdue invoices",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-route",
+      "parent": "landscaping-lawn-care-hq",
+      "title": "Building a weekly mowing route",
+      "icon": {
+        "emoji": "🗺️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good route saves a crew an hour a day. Group stops by neighborhood and keep each day to the same side of town."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting up the route"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List every weekly client with their lot size and gate notes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Group clients by neighborhood and pick one day for each group."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Aim for 12 to 16 stops per crew per day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Put the farthest stops first so the crew drives home toward the shop."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rain days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Move the day, not the crew. Text every client on the affected route the night before, and add one extra visit to the next dry day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing a stop"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add drive time and cleanup to the mowing time, multiply by the crew rate, and add materials. A stop that does not clear 30 percent margin should be repriced at renewal."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "spring-cleanup",
+      "parent": "landscaping-lawn-care-hq",
+      "title": "Spring cleanup checklist",
+      "icon": {
+        "emoji": "🌱"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Spring is the biggest sales window. Run the same checklist at every property so the quality is predictable."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the property with the client or photograph it first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Cut back dead growth and remove leaves from beds."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Edge the beds and refresh the mulch lines."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Aerate and overseed thin turf where the quote says so."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Test the irrigation and note broken heads."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The crew leader walks the property and takes after photos. Anything that is not done goes on the sheet as a follow-up visit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "materials-ordering",
+      "parent": "landscaping-lawn-care-hq",
+      "title": "Ordering mulch and seed",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Order on Tuesday for Thursday delivery. The Reorder? column tells you what is low."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check Materials every Tuesday morning."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Order bulk items by the yard in whole truckloads when possible."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the supplier to deliver to the shop yard, not to a job site, unless the job is over eight yards."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Storage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep seed and fertilizer dry and off the floor. Write the date received on every bag."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
