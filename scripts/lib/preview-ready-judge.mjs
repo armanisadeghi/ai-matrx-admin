@@ -23,6 +23,9 @@ export function verdictOf(r, target, say = () => {}) {
   const pathOnly = (r.finalPath || "").split("?")[0];
   const htmlError = /<html[^>]*id="__next_error__"/.test(r.body || "");
   const buildHit = BUILD_ERROR.find((re) => re.test(r.body || ""));
+  if (r.status === 429) {
+    return { ok: false, kind: "rate-limited", why: "the auth host is rate-limiting sign-ins from this machine (429): the page would render signed out" };
+  }
   if (r.status === 503 && r.headers?.["x-matrx-walk-cap"] === "refused") {
     return { ok: false, kind: "walk-cap", why: "every live-database walk slot stayed in use (walk cap) for the whole wait" };
   }

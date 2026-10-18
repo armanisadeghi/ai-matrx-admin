@@ -36,6 +36,12 @@ test("a 500, an error page or a build error in the body is NOT READY even with s
   assert.equal(verdictOf({ status: 0, error: "timeout", finalPath: "/dashboard" }, "/dashboard").kind, "timeout");
 });
 
+test("a 429 from dev-login (auth host rate limit) is NOT READY, named as such", () => {
+  const v = verdictOf({ status: 429, headers: { "retry-after": "10" }, body: '{"error":"The auth host is RATE-LIMITING this machine"}', finalPath: "/api/dev-login" }, "/notes");
+  assert.equal(v.ok, false);
+  assert.equal(v.kind, "rate-limited");
+});
+
 test("the walk cap's refusal and parking are named as such, not as a page error", () => {
   const h = (v) => ({ "x-matrx-walk-cap": v });
   assert.equal(verdictOf({ status: 503, headers: h("refused"), body: "", finalPath: "/dashboard" }, "/dashboard").kind, "walk-cap");
