@@ -86,3 +86,61 @@ export async function wakeCloudComputer(initiation: "user" | "auto"): Promise<Cl
   const { data } = await postJson<unknown>("/browser-manager/cloud-computer/wake", { initiation });
   return remember(parseCloudComputer(data));
 }
+
+/**
+ * The Cloud folder on the machine (aidream `GET /browser-manager/cloud-computer/files`):
+ * deletes the sync is holding — never sent to the cloud without the person's answer,
+ * restored on their own at `restoresAt` — and entries it skipped (symlinks, refused files).
+ */
+export interface HeldDeletes {
+  holdId: string;
+  held: number;
+  reason: string | null;
+  sample: string[];
+  since: string | null;
+  restoresAt: string | null;
+}
+
+export interface CloudFolderState {
+  machineOn: boolean;
+  hold: HeldDeletes | null;
+  skipped: { count: number; items: { path: string; reason: string }[] };
+}
+
+export function parseCloudFolderState(raw: unknown): CloudFolderState {
+  const v = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const h = (v.hold && typeof v.hold === "object" ? v.hold : null) as Record<string, unknown> | null;
+  const s = (v.skipped && typeof v.skipped === "object" ? v.skipped : {}) as Record<string, unknown>;
+  const items = Array.isArray(s.items) ? s.items : [];
+  return {
+    machineOn: v.machine_on === true,
+    hold:
+      h && text(h.hold_id)
+        ? {
+            holdId: text(h.hold_id) as string,
+            held: typeof h.held === "number" ? h.held : 0,
+            reason: text(h.reason),
+            sample: Array.isArray(h.sample) ? h.sample.filter((x): x is string => typeof x === "string") : [],
+            since: text(h.since),
+            restoresAt: text(h.restores_at),
+          }
+        : null,
+    skipped: {
+      count: typeof s.count === "number" ? s.count : 0,
+      items: items
+        .map((i) => (i && typeof i === "object" ? (i as Record<string, unknown>) : {}))
+        .map((i) => ({ path: text(i.path) ?? "", reason: text(i.reason) ?? "" }))
+        .filter((i) => i.path),
+    },
+  };
+}
+
+export async function getCloudFolderState(): Promise<CloudFolderState> {
+  const { data } = await getJson<unknown>("/browser-manager/cloud-computer/files");
+  return parseCloudFolderState(data);
+}
+
+/** The person's own answer: the server mints the one token that lets a delete through. */
+export async function resolveHeldDeletes(holdId: string, action: "delete" | "restore"): Promise<void> {
+  await postJson<unknown>("/browser-manager/cloud-computer/files/resolve", { hold_id: holdId, action });
+}

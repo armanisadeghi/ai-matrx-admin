@@ -39,8 +39,10 @@ import {
 } from "@/features/cloud-browser/service";
 import type { StreamTicketEnvelope } from "@/features/cloud-browser/types";
 import { useCloudComputer } from "./useCloudComputer";
+import type { CloudComputer } from "./service";
 import { ScaledFrame, type ScaledFrameHandle, type StreamState } from "./ScaledFrame";
 import { liveStream, type HeldStream } from "./liveStream";
+import { CloudFolderNotice } from "./CloudFolderNotice";
 
 const WAITING = "animate-ssr-shimmer-opacity";
 
@@ -59,6 +61,12 @@ function Centered({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   );
+}
+
+/** The screen (and its run start) mounts once the machine is up or its task is
+ *  launched; never for "creating", whose row may not exist yet. */
+export function startsScreen(machine: CloudComputer): boolean {
+  return machine.ready || machine.status === "starting";
 }
 
 /**
@@ -91,7 +99,12 @@ export function ComputerView({ conversationId }: { conversationId?: string }) {
     );
   }
 
-  if (machine.ready) return <ComputerScreen conversationId={conversationId} />;
+  // A cold open overlaps its run start with the boot: once the machine's task
+  // is launched ("starting"), the screen mounts and starts the run, whose
+  // activation joins the wake and launches Chrome the moment the machine
+  // answers (it used to wait for "ready", then start: ~3 s lost per cold open,
+  // FIX-COLD-OPEN 2026-10-18). The screen says "Waking up…" until its run is live.
+  if (startsScreen(machine)) return <ComputerScreen conversationId={conversationId} />;
 
   if (waking || machine.status === "creating" || machine.status === "starting") {
     return (
@@ -393,6 +406,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
 
   return (
     <div className="flex h-full flex-col gap-2 p-2">
+      <CloudFolderNotice />
       <div className={cn("min-h-0", large ? "flex-1" : "")}>
         <div
           className={cn(

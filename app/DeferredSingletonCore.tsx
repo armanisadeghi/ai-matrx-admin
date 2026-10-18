@@ -26,6 +26,7 @@ import AdminFeatureProvider from "@/features/admin/AdminFeatureProvider";
 import KgNewSuggestionNotifier from "@/features/kg-suggestions/components/KgNewSuggestionNotifier";
 import AssistsDock from "@/features/assists/components/AssistsDock";
 import CloudBrowserHandoffDeepLink from "@/features/cloud-browser/components/CloudBrowserHandoffDeepLink";
+import CloudComputerDeepLink from "@/features/cloud-computer/CloudComputerDeepLink";
 import { TutorialHost } from "@/features/guided-tutorials/TutorialHost";
 import LiveCaptureIndicator from "@/features/media-capture/components/LiveCaptureIndicator";
 import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProducer";
@@ -154,6 +155,9 @@ export default function DeferredSingletonCore() {
           land on any route and the person must never have to go find the
           browser themselves. */}
       <CloudBrowserHandoffDeepLink />
+      {/* Render-free. Reads `?cloudComputer=` (a Cloud Computer notice, e.g.
+          held Cloud folder deletes) and opens the Computer tab. */}
+      <CloudComputerDeepLink />
       {/* Reads `?tutorial=` — the door a "Show me how" DM card or tutorial
           email lands on — and runs that guided tutorial on its route. */}
       <Suspense fallback={null}>

@@ -63,6 +63,17 @@ function toLoadError(e: unknown): CloudBrowserLoadError {
   };
 }
 
+/**
+ * How long a provisioning run waits between reads. A Cloud Computer run
+ * (`"sandbox"`) is the person staring at "Waking up…": its Chrome is live a
+ * moment after the machine answers, and a 2 s gap (plus the ~1 s read) was the
+ * largest slice of the cold open after the boot itself (FIX-COLD-OPEN
+ * 2026-10-18). Fleet starts keep 2 s.
+ */
+export function provisioningPollMs(target?: service.StartTarget): number {
+  return target === "sandbox" ? 750 : 2000;
+}
+
 export function useCloudBrowser(
   initialProfileId?: string,
   /** The exact run to show, when the opener knows it (see `loadSnapshot`). */
@@ -154,7 +165,7 @@ export function useCloudBrowser(
           // A tab show/hide change can now immediately resume the exact poll.
           timer = null;
           void poll();
-        }, 2000);
+        }, provisioningPollMs(target));
       }
     };
     const poll = async () => {
@@ -203,7 +214,7 @@ export function useCloudBrowser(
       if (timer) clearTimeout(timer);
       if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [activeProfileId, dispatch, run?.id, run?.state]);
+  }, [activeProfileId, dispatch, run?.id, run?.state, target]);
 
   const selectProfile = useCallback(
     (profileId: string) => {
