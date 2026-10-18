@@ -138,11 +138,12 @@ describe("render paths report what the route actually did", () => {
     }
   });
 
-  it("a plain-value shape (root form, e.g. json) says WHY chat shows the generic view (SHAPES-BUGS 3.2)", () => {
-    // Live 2026-10-14 (`json`, schema {} = any value): the example passed its
-    // schema, reload drew value_result, and the chat verdict said only
-    // "broken-instance". The truth: a plain-value shape can never travel as a
-    // tagged object in chat, so the screen must say that, not imply a bad example.
+  it("an any-value shape (root json) is not refused in chat — a tagged object is inside its contract and reaches the component (SHAPES-BUGS 3.2)", () => {
+    // Shapes audit 3.2, 2026-10-14: `json` (schema {} = any value) passed its schema, reload drew the
+    // component, and the chat verdict said "broken-instance". Since content-ir 144696821b (2026-10-15)
+    // the route no longer calls a tagged object of an ANY-value root broken: every value, that object
+    // included, is inside the declared contract, so chat falls through to the component paths. (This test
+    // used to expect the refusal note here; the refusal now belongs to typed roots, the next test.)
     kindRegistry.upsertDefinition({
       kind: "path_root_json_kind",
       schema: { kind: "path_root_json_kind", fields: {}, root: { type: "json" } },
@@ -151,11 +152,30 @@ describe("render paths report what the route actually did", () => {
     });
     seedComponent("path_root_json_kind");
     const run = runRenderPath("chat_fence", "path_root_json_kind", VALUE)!;
-    console.log("PROBE", JSON.stringify({ blocks: run.blocks.map((b) => [b.type, (b.content ?? "").slice(0, 80)]), v: run.verdict }));
+    expect(run.verdict.reachedRealComponent).toBe(true);
+    expect(run.verdict.resolvedAs).toBe("db_kind_component");
+    expect(run.verdict.fallbackReason).toBeNull();
+    expect(run.verdict.notes.join(" ")).not.toMatch(/single plain value/);
+    const reload = runRenderPath("reload", "path_root_json_kind", VALUE)!;
+    expect(reload.verdict.reachedRealComponent).toBe(true);
+    expect(reload.verdict.notes.join(" ")).not.toMatch(/single plain value/);
+  });
+
+  it("a typed plain-value shape (root string) says WHY chat shows the generic view (SHAPES-BUGS 3.2)", () => {
+    // A root that is NOT any-value (a string, a number, a list) can never travel as a tagged object, so a
+    // chat answer that tags it is refused by design — the screen must say that, not imply a bad example.
+    kindRegistry.upsertDefinition({
+      kind: "path_root_string_kind",
+      schema: { kind: "path_root_string_kind", fields: {}, root: { type: "string" } },
+      schemaSource: "content_ir",
+      tier: "cold",
+    });
+    seedComponent("path_root_string_kind");
+    const run = runRenderPath("chat_fence", "path_root_string_kind", VALUE)!;
     expect(run.verdict.reachedRealComponent).toBe(false);
     expect(run.verdict.notes.join(" ")).toMatch(/single plain value/);
     // The reload path draws the component — and carries no such note.
-    const reload = runRenderPath("reload", "path_root_json_kind", VALUE)!;
+    const reload = runRenderPath("reload", "path_root_string_kind", VALUE)!;
     expect(reload.verdict.reachedRealComponent).toBe(true);
     expect(reload.verdict.notes.join(" ")).not.toMatch(/single plain value/);
   });
