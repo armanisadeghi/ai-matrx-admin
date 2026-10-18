@@ -1,5 +1,6 @@
 "use client";
 
+import { displayId } from "@ai-matrx/design-system";
 import { useEffect, useMemo } from "react";
 import { Code, Filter, History, Layers } from "lucide-react";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
@@ -78,7 +79,7 @@ export default function CodeWorkspaceTab() {
     () =>
       allAgents.map((a) => ({
         value: a.id,
-        label: a.name || a.id.slice(0, 8),
+        label: a.name || displayId(a.id),
       })),
     [allAgents],
   );

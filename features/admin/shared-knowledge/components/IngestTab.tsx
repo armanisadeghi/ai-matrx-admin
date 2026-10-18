@@ -8,6 +8,7 @@
 // `POST /rag/library/stores/{store_id}/ingest`, whose canonical NDJSON
 // stream is consumed by the shared RAG API client.
 
+import { displayId } from "@ai-matrx/design-system";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -64,7 +65,7 @@ export function IngestTab({
     });
     const fileId = ids?.[0];
     if (!fileId) return;
-    setPicked({ fileId, label: `Cloud file ${fileId.slice(0, 8)}…` });
+    setPicked({ fileId, label: `Cloud file ${displayId(fileId)}…` });
     setPhase("idle");
     setResultDetail(null);
   };

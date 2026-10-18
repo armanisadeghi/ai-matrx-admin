@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import AppLink from "@/components/navigation/AppLink";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -21,7 +22,6 @@ import {
   formatTokens,
   formatDuration,
   statusBadgeVariant,
-  truncateId,
   computeDuration,
 } from "@/features/cx-dashboard/utils/format";
 import { originClassLabel } from "@ai-matrx/chat/agents/redux/conversation-history/source-registry";
@@ -169,7 +169,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
             )}
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-            <span className="font-mono">{truncateId(conv.id, 12)}</span>
+            <RecordId value={conv.id} label="Conversation" />
             <Badge
               variant={statusBadgeVariant(conv.status)}
               className="text-[10px]"
@@ -219,9 +219,10 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
         >
           <GitBranch className="w-3.5 h-3.5" />
           <span>Sub-agent of conversation</span>
-          <span className="font-mono">
-            {truncateId(conv.parent_conversation_id, 12)}
-          </span>
+          <RecordId
+            value={conv.parent_conversation_id}
+            label="Parent conversation"
+          />
           <ExternalLink className="w-3 h-3 ml-auto" />
         </AppLink>
       )}
@@ -300,9 +301,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
                   href={`/administration/chat/cx-dashboard/conversations/${child.id}`}
                   className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
                 >
-                  <span className="font-mono text-muted-foreground">
-                    {truncateId(child.id)}
-                  </span>
+                  <RecordId value={child.id} label="Conversation" />
                   <span className="flex-1 truncate">
                     {child.title || "Untitled"}
                   </span>
@@ -427,7 +426,7 @@ function UserRequestList({
               href={`/administration/chat/cx-dashboard/requests/${ur.id}`}
               className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
             >
-              <span className="font-mono text-muted-foreground">{truncateId(ur.id)}</span>
+              <RecordId value={ur.id} label="Request" />
               <Badge variant={statusBadgeVariant(ur.status)} className="text-[10px]">
                 {ur.status}
               </Badge>
@@ -507,9 +506,7 @@ function MessageRow({ message }: { message: CxMessage }) {
         <span className="text-[10px] text-muted-foreground">
           pos: {message.position}
         </span>
-        <span className="text-[10px] text-muted-foreground font-mono">
-          {truncateId(message.id)}
-        </span>
+        <RecordId value={message.id} label="Message" />
         <span className="text-[10px] text-muted-foreground ml-auto">
           {formatDate(message.created_at)}
         </span>

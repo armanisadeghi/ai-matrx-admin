@@ -22,6 +22,7 @@
  * `scheduler.admin_disable_task` / `scheduler.admin_mark_run_failed` doors.
  */
 
+import { displayId } from "@ai-matrx/design-system";
 import { useState } from "react";
 import {
   ExternalLink,
@@ -230,7 +231,7 @@ export function useScheduledRunMenuSection<T extends ScheduledRunMenuRow>(opts: 
 }): ScheduledRunMenu {
   const [clicked, setClicked] = useState<T | null>(null);
 
-  const label = (row: T) => `Run ${row.id.slice(0, 8)}…`;
+  const label = (row: T) => `Run ${displayId(row.id)}…`;
 
   const resolveContextOnOpen = (target: HTMLElement | null) => {
     const row = rowFromDataId(target, opts.rows);

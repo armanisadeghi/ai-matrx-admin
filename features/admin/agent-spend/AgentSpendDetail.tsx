@@ -5,6 +5,7 @@
  * who paid, which organization, the conversation — or "Unsaved" when the run left none).
  * seat="admin": every organization; seat="org": that organization only.
  */
+import { displayId } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -400,7 +401,7 @@ export function AgentSpendDetail({
                   // suffix tells them apart, and the agent itself opens.
                   const name = r.agent_name ?? "No agent recorded";
                   const twin = r.agent_id != null && all.some((o) => o !== r && o.agent_name === r.agent_name);
-                  const label = twin && r.agent_id ? `${name} · ${r.agent_id.slice(0, 8)}` : name;
+                  const label = twin && r.agent_id ? `${name} · ${displayId(r.agent_id)}` : name;
                   const agentDoor = seat === "admin" ? spendAgentHref(r) : null;
                   return (
                   <div key={rowKey(r)} className="flex items-center gap-3 text-xs">

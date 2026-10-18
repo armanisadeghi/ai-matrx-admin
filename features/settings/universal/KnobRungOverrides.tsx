@@ -42,6 +42,7 @@
 //     the add control is ABSENT, never a dead button;
 //   • a picked row with no value yet → it says it is not saved and what to do.
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useEffect, useState } from "react";
 import { ChevronDown, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -291,9 +292,7 @@ function ScopeRowPicker({
                       // shortest thing that tells them apart is their own id;
                       // showing it here beats letting DOM order decide which
                       // one a person just excepted.
-                      <span className="ml-auto shrink-0 font-mono text-[10px] text-muted-foreground">
-                        {row.id.slice(0, 8)}
-                      </span>
+                      <RecordId value={row.id} label="Rung" className="ml-auto shrink-0" />
                     )}
                   </CommandItem>
                 ))}

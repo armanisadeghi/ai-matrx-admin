@@ -8,6 +8,7 @@
 // user-side /meetings/<id> runs without the admin lane and would refuse a
 // meeting the admin is not invited to.
 
+import { displayId } from "@ai-matrx/design-system";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarSearch, X } from "lucide-react";
@@ -215,7 +216,7 @@ export function MeetingsHistoryPanel({
         </label>
         {organizationId ? (
           <span className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-muted/50 pl-2 text-xs">
-            Organization: <span className="font-medium">{orgName ?? organizationId.slice(0, 8)}</span>
+            Organization: <span className="font-medium">{orgName ?? displayId(organizationId)}</span>
             <button type="button" className="rounded p-1 hover:bg-muted" aria-label="Show every organization" onClick={() => onOrganizationChange(null)}>
               <X className="h-3 w-3" />
             </button>

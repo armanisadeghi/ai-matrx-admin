@@ -1,10 +1,10 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import React, { useMemo } from "react";
 import { useExecutions } from "@/features/ai-runs/hooks/useExecutions";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { format } from "date-fns";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef, MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table/types";
@@ -71,7 +71,7 @@ export default function AiTasksPage() {
       header: "ID",
       filter: false,
       width: 110,
-      cell: (run) => <EntityRef token="global_execution" id={run.id} name={run.id} showIcon={false}>{run.id.slice(0, 8)}...</EntityRef>,
+      cell: (run) => <RecordId value={run.id} label="Run" token="global_execution" />,
     },
     { id: "type", accessorKey: "type", header: "Type", filter: "select", width: 140, cell: (run) => <span className="font-medium">{run.type || "-"}</span> },
     { id: "source", accessorKey: "link_kind", header: "Source", filter: "select", width: 160, mobileHidden: true, cell: (run) => <span className="text-sm text-muted-foreground">{run.link_kind || "-"}</span> },

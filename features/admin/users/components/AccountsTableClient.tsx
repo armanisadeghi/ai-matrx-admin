@@ -8,6 +8,7 @@
 // flag) plus cross-links to this user's preferences / usage / admin level via
 // ?user=<id>. An admin surface hides nothing.
 
+import { displayId } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -292,7 +293,7 @@ function AccountsRoster() {
               userId={row.id}
               name={
                 row.display_name ??
-                (row.is_anonymous ? `Guest ${row.id.slice(0, 6)}` : null)
+                (row.is_anonymous ? `Guest ${displayId(row.id)}` : null)
               }
               email={row.email}
               hideEmail

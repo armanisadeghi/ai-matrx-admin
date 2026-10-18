@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
@@ -350,8 +351,8 @@ export const AgentExecutionDebugPanel: React.FC<
             <Database className="w-5 h-5" />
             <div>
               <h3 className="font-bold">Agent Execution State</h3>
-              <p className="text-xs opacity-90 font-mono">
-                {instanceId.slice(0, 24)}…
+              <p className="text-xs opacity-90">
+                <RecordId value={instanceId} label="Instance" show="full" />
               </p>
             </div>
           </div>

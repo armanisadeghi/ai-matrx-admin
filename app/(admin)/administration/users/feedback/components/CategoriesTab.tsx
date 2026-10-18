@@ -1,5 +1,6 @@
 'use client';
 
+import { displayId } from "@ai-matrx/design-system";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getAllFeedback } from '@/actions/feedback.actions';
 import { CopyButtons } from '@/components/agent-copy/CopyButtons';
@@ -524,7 +525,7 @@ export default function CategoriesTab() {
                                                             </button>
                                                             <CopyButtons
                                                                 size="xs"
-                                                                label={`Feedback ${item.id.slice(0, 8)}`}
+                                                                label={`Feedback ${displayId(item.id)}`}
                                                                 className="absolute right-3 top-2 opacity-0 group-hover/fbitem:opacity-100 focus-within:opacity-100 max-md:opacity-100"
                                                                 human={() => feedbackRowSummary(item)}
                                                                 json={() => item}

@@ -107,14 +107,6 @@ export function statusBadgeVariant(
   }
 }
 
-export function truncateId(
-  id: string | null | undefined,
-  chars: number = 8,
-): string {
-  if (!id) return "";
-  return id.slice(0, chars);
-}
-
 /**
  * Cache writes of one model call, from the row. The 5m / 1h split lives in raw_usage
  * (cache_creation.ephemeral_5m_input_tokens / ephemeral_1h_input_tokens); when the split is absent the

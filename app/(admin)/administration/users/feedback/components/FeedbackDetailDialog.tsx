@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId, displayId } from "@ai-matrx/design-system";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, {
@@ -1054,7 +1055,7 @@ export default function FeedbackDetailDialog({
                 </Button>
                 <CopyButtons
                   size="icon"
-                  label={`Feedback ${item.id.slice(0, 8)}`}
+                  label={`Feedback ${displayId(item.id)}`}
                   // The saved-record markdown dump is what the "Copy All"
                   // button beside this already gives; this pair copies the
                   // live view so the two are not duplicates of each other.
@@ -1357,7 +1358,7 @@ export default function FeedbackDetailDialog({
                                   <>
                                     <CornerDownRight className="w-3 h-3 text-primary flex-shrink-0 rotate-180" />
                                     <span className="font-mono text-primary">
-                                      {parentId.slice(0, 8)}
+                                      {displayId(parentId)}
                                     </span>
                                     {parentLabel ? (
                                       <span className="text-muted-foreground truncate">
@@ -1671,9 +1672,11 @@ export default function FeedbackDetailDialog({
                       {/* The linked parent is an editor VALUE, so the label
                           can't be the anchor — its doors ride beside it. */}
                       <div className="flex min-w-0 flex-1 items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20 text-xs font-mono text-primary-ink">
-                        <span className="shrink-0">
-                          {parentId.slice(0, 8)}…
-                        </span>
+                        <RecordId
+                          value={parentId}
+                          label="Parent feedback"
+                          className="shrink-0"
+                        />
                         {(() => {
                           const parent = allFeedbackItems.find(
                             (f) => f.id === parentId,
@@ -1766,7 +1769,7 @@ export default function FeedbackDetailDialog({
                                     className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-muted transition-colors"
                                   >
                                     <span className="font-mono text-muted-foreground mr-2">
-                                      {f.id.slice(0, 8)}
+                                      {displayId(f.id)}
                                     </span>
                                     {f.description.slice(0, 70)}
                                     {f.description.length > 70 ? "…" : ""}
@@ -1914,7 +1917,7 @@ export default function FeedbackDetailDialog({
                               // they were since deactivated).
                               return (
                                 <span className="text-muted-foreground">
-                                  {assigneeId.slice(0, 8)}…
+                                  {displayId(assigneeId)}…
                                 </span>
                               );
                             }
@@ -1922,7 +1925,7 @@ export default function FeedbackDetailDialog({
                               <span className="text-sm font-medium truncate">
                                 {admin.display_name ||
                                   admin.email ||
-                                  admin.user_id.slice(0, 8)}
+                                  displayId(admin.user_id)}
                               </span>
                             );
                           })()}
@@ -1936,7 +1939,7 @@ export default function FeedbackDetailDialog({
                               <span className="text-sm font-medium">
                                 {a.display_name ||
                                   a.email ||
-                                  a.user_id.slice(0, 8)}
+                                  displayId(a.user_id)}
                               </span>
                               {a.email &&
                                 a.display_name &&
