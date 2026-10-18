@@ -287,6 +287,12 @@ begin
      and dedupe_key like format('booking:%s:remind:%%:sms', v_ref3)
      and metadata -> 'still_due' ->> 'guard' = 'communication.still_due_booking';
   if v_n <> 2 then raise exception '8: expected 2 guarded text reminders, found %', v_n; end if;
+  -- 8b. EVERY TEXT NAMES WHO PAYS (the page's publisher), so the dispatcher can gate on the organization's
+  -- points before sending and charge after, through the one SMS charging path.
+  select count(*) into v_n from communication.notification
+   where organization_id = v_org and channel = 'sms' and dedupe_key like format('booking:%s:remind:%%:sms', v_ref3)
+     and metadata -> 'charge' ->> 'user_id' = c_admin::text and metadata -> 'charge' ->> 'feature' = 'booking reminder';
+  if v_n <> 2 then raise exception '8b: % text reminders name who pays', v_n; end if;
   -- 9. THE ORG-SCOPED CONSENT IS WHAT THE GATE READS: with it the gate does not refuse for consent; without it, it does.
   select n.id into v_nid from communication.notification n
    where n.organization_id = v_org and n.channel = 'sms' and n.dedupe_key like format('booking:%s:remind:%%:sms', v_ref3) limit 1;
