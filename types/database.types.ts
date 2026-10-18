@@ -111616,7 +111616,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      in_my_organizations: {
+        Args: { r: Database["projects"]["Tables"]["projects"]["Row"] }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
