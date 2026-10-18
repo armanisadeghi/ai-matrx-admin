@@ -43,13 +43,14 @@ import {
   X,
   FileText,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useContext, useEffect, useState, type ReactNode } from "react";
 
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
 
 import { DataMount } from "./DataMount";
+import { RowOpenerContext } from "./row-opener";
 import { usePublishedEntities, usePublishedRows } from "./published-rows";
 import { EntityDatabase } from "./EntityDatabase";
 import { useDatabaseDesigner } from "../ai/DatabaseDesigner";
@@ -150,6 +151,23 @@ function DatabaseFrame({
   const [open, setOpen] = useState<string | null>(null);
   /** The row "+ New" just made: its peek opens with the cursor in its title. */
   const [fresh, setFresh] = useState<string | null>(null);
+  // A row a button made in ANOTHER table (an "Add task" on a project) opens in this block's peek too.
+  const [elsewhere, setElsewhere] = useState<{ tableId: string; recordId: string } | null>(null);
+  const opener = useContext(RowOpenerContext);
+  useEffect(() => {
+    if (!opener) return;
+    return opener.register((rowTable, recordId) => {
+      if (rowTable === tableId) {
+        setElsewhere(null);
+        setFresh(recordId);
+        setOpen(recordId);
+      } else {
+        setOpen(null);
+        setFresh(recordId);
+        setElsewhere({ tableId: rowTable, recordId });
+      }
+    });
+  }, [opener, tableId]);
   /** The whole-record form (a required column refused the bare write), with the New menu's pick. */
   const [creating, setCreating] = useState<{ template: RowTemplateChoice | null; initial: Record<string, unknown> } | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -424,6 +442,7 @@ function DatabaseFrame({
       {body}
 
       {open ? <RecordOpen tableId={tableId} recordId={open} as={props.openAs ?? "side"} fresh={open === fresh} editable={editable} onClose={() => setOpen(null)} /> : null}
+      {elsewhere ? <RecordOpen tableId={elsewhere.tableId} recordId={elsewhere.recordId} as={props.openAs ?? "side"} fresh={elsewhere.recordId === fresh} editable={editable} onClose={() => setElsewhere(null)} /> : null}
 
       <Dialog open={creating !== null} onOpenChange={(o) => (o ? null : setCreating(null))}>
         <DialogContent size="lg">

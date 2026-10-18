@@ -8,13 +8,16 @@
 
 import { RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { RecordsConfig } from "@ai-matrx/records";
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
 
 import { recordsUiHostFor, useAppRecordsConfig, useRecordsUiPorts } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { primeObjectOrganization, readObjectOrganizationAnswer, useObjectOrganization } from "@/features/unified-data/objectOrganization";
 
 import { useSeededWhere } from "../page/space-seed-context";
+
+import { createRowOpener, openRecordPort, RowOpenerContext } from "./row-opener";
 
 import { usePublishedRows } from "./published-rows";
 import { sampleWorld } from "./sources";
@@ -53,10 +56,18 @@ function SampleMount({ sample, children, held }: { sample: string; children: Rea
 function LiveBound({ organizationId, children }: { organizationId: string; children: ReactNode }) {
   const config = useAppRecordsConfig(organizationId);
   const ports = useRecordsUiPorts({ organizationId, dataSource: config.dataSource });
+  // A row an add-a-row button makes opens in the block's own peek (row-opener.ts), never on the Data route.
+  const [opener] = useState(createRowOpener);
+  const toPage = (tableId: string, recordId: string) => {
+    const href = recordPageHref(tableId, recordId);
+    if (ports.navigate) ports.navigate(href);
+    else window.location.assign(href);
+  };
+  const host = { ...recordsUiHostFor({ ports, merged: true }), openRecord: openRecordPort(opener, toPage) };
   return (
     // org-filter: write-target a data block reads and writes as the table's own organization
-    <RecordsMount letTheStoreDecideRights config={config} host={recordsUiHostFor({ ports, merged: true })}>
-      {children}
+    <RecordsMount letTheStoreDecideRights config={config} host={host}>
+      <RowOpenerContext.Provider value={opener}>{children}</RowOpenerContext.Provider>
     </RecordsMount>
   );
 }
