@@ -18,6 +18,7 @@ export type UsageBasis =
   | "image_output"
   | "megapixel_output"
   | "video_unit_output"
+  | "audio_unit_output"
   | "video_second_output"
   | "minute"
   | "character_input"
@@ -69,6 +70,13 @@ export const USAGE_BASIS_OPTIONS: readonly UsageBasisOption[] = [
     billedField: "output_price",
     priceLabel: "$ / clip",
     description: "One generated clip = 1 unit. output_price is $/clip.",
+  },
+  {
+    value: "audio_unit_output",
+    label: "Per track (music)",
+    billedField: "output_price",
+    priceLabel: "$ / generated track",
+    description: "Music generation: one generated track = 1 unit whatever its length. output_price is $/track.",
   },
   {
     value: "video_second_output",
