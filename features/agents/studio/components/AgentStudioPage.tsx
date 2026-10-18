@@ -28,7 +28,7 @@
  * `shellChatHostedElsewhere`), so the three panes are the whole width.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
@@ -604,7 +604,20 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       {body}
     </div>
   );
-  return state.agentId ? <BuilderSurface agentId={state.agentId}>{page}</BuilderSurface> : page;
+  return state.agentId ? <BuilderSurface agentId={state.agentId}>{page}</BuilderSurface> : <StudioSurface>{page}</StudioSurface>;
+}
+
+/**
+ * The Studio's own surface before an agent exists: the run's `client.surface` is `matrx-user/agent-studio`, so the server
+ * resolves that surface's default tools (`studio_workspace`) for the assistant instead of the route's guess.
+ */
+function StudioSurface({ children }: { children: React.ReactNode }) {
+  const getScope = useCallback(() => ({}), []);
+  return (
+    <SurfaceRuntimeProvider surfaceName={STUDIO_SURFACE_NAME} getScope={getScope}>
+      {children}
+    </SurfaceRuntimeProvider>
+  );
 }
 
 /**

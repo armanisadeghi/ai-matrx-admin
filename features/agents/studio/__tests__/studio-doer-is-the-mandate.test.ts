@@ -32,4 +32,11 @@ describe("the Studio doer", () => {
     expect(strip(run)).not.toMatch(/if \(!agentId \|\| !shown\)/);
     expect(strip(run)).toMatch(/\(!agentId && !mandateKey\) \|\| !shown/);
   });
+
+  it("runs on its own surface before an agent exists, so the server hands the assistant its workspace tool", () => {
+    // Found live 2026-10-17: the run went out as client.surface "matrx-user/canvas" (the route's guess) and the
+    // assistant never got studio_workspace. A mounted SurfaceRuntimeProvider is what the launch adopts.
+    expect(strip(page)).toMatch(/<SurfaceRuntimeProvider surfaceName=\{STUDIO_SURFACE_NAME\}/);
+    expect(strip(page)).toMatch(/<StudioSurface>\{page\}<\/StudioSurface>/);
+  });
 });
