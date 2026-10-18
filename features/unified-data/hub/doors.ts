@@ -323,23 +323,27 @@ export interface DataHomeTableRow {
  * door walks only that organization (`p_organization_id`), in every lane and kind; null walks them
  * all. It only narrows: it never admits an organization the walk would not.
  */
-export function dataHomeTables(
+export async function dataHomeTables(
   dataSource: RecordsDataSource,
   organizationId: string | null = null,
   options: PlatformTablesOption = {},
 ): Promise<DoorAnswer<DataHomeTableRow[]>> {
-  return call<DataHomeTableRow[]>(
-    dataSource,
-    "data_home_tables",
-    // "SHOW PLATFORM TABLES" (CHAIR-DOORS-2, N-C8): the door leaves out the tables the app keeps for
-    // agents' outputs; the (uuid, boolean) overload is picked by naming BOTH arguments.
-    options.includePlatformTables
-      ? { p_organization_id: organizationId, p_include_platform_tables: true }
-      : organizationId
-        ? { p_organization_id: organizationId }
-        : {},
-  );
+  // THE ROW CAP (2026-10-17): `custom.data_home_tables` returns a SET, and PostgREST cuts a set at its
+  // max-rows (1,000) in no order — a person with 2,006 tables (1,600 of them the app's own) got the
+  // first 1,000 and the Board's picker showed 398, never the one she wanted. `custom.data_home` returns
+  // the SAME rows as ONE jsonb value, which no cap touches, so every list goes through it. It is asked
+  // for everything (the switch on) and the two words the set door leaves out by default are dropped
+  // here, so the answer is exactly what the set door would have given, whole.
+  const answered = await dataHome(dataSource, organizationId, { includePlatformTables: true });
+  if (!answered.ok) return answered;
+  const rows = options.includePlatformTables
+    ? answered.data.tables
+    : answered.data.tables.filter((t) => !KEPT_OUT_OF_LISTS.has(t.kind ?? ""));
+  return { ok: true, data: rows };
 }
+
+/** `custom.table_kept_out_of_lists`: the placement words a default list leaves out. */
+const KEPT_OUT_OF_LISTS: ReadonlySet<string> = new Set(["agent_output", "copying"]);
 
 /** Every kind of row the data home lists beside its tables (`custom.data_home_items`, DATA-HOME-2). */
 export const DATA_HOME_ITEM_KINDS = [

@@ -6,7 +6,7 @@
  */
 
 import Link from "next/link";
-import { Clapperboard, Film, TrendingUp } from "lucide-react";
+import { Clapperboard, Film, Plus, TrendingUp } from "lucide-react";
 
 import { Badge, Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -35,25 +35,36 @@ export function VideosTab() {
       />
     );
   }
+  const newVideo = (
+    <Button asChild variant="primary" icon={<Plus />}>
+      <Link href={`${base}/formats`}>New video</Link>
+    </Button>
+  );
   if (projects.data.length === 0) {
     return (
       <EmptyState
         icon={<Clapperboard />}
         title="No videos yet"
-        line="Clone any outlier or swipe-file post"
+        line="Pick a format, or clone any outlier or swipe-file post"
         action={
-          <Button asChild variant="primary" icon={<TrendingUp />}>
-            <Link href={`${marketingRoutes.brandSocials(brandSeg)}/outliers`}>Open outliers</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {newVideo}
+            <Button asChild variant="outline" icon={<TrendingUp />}>
+              <Link href={`${marketingRoutes.brandSocials(brandSeg)}/outliers`}>Open outliers</Link>
+            </Button>
+          </div>
         }
       />
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-      {projects.data.map((item) => (
-        <ProjectCard key={item.project.id} item={item} href={`${base}/${item.project.id}`} />
-      ))}
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center">{newVideo}</div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        {projects.data.map((item) => (
+          <ProjectCard key={item.project.id} item={item} href={`${base}/${item.project.id}`} />
+        ))}
+      </div>
     </div>
   );
 }

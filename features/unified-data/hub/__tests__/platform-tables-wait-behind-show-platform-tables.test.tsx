@@ -27,16 +27,22 @@ function source(answer: unknown, calls: Rpc[]): RecordsDataSource {
 }
 
 describe("the doors ask for platform tables only when told to", () => {
-  it("data_home_tables: default sends what it always sent; the switch names both arguments", async () => {
+  it("data_home_tables: always reads the whole home; the switch only decides which kept words stay in", async () => {
     const calls: Rpc[] = [];
-    await dataHomeTables(source([], calls), null);
-    await dataHomeTables(source([], calls), "org-1");
-    await dataHomeTables(source([], calls), null, { includePlatformTables: true });
-    expect(calls.map((c) => c.args)).toEqual([
-      {},
-      { p_organization_id: "org-1" },
-      { p_organization_id: null, p_include_platform_tables: true },
-    ]);
+    const home = {
+      tables: [
+        { table_id: "t", table_name: "T", kind: "table" },
+        { table_id: "l", table_name: "L", kind: "list" },
+        { table_id: "a", table_name: "A", kind: "agent_output" },
+      ],
+      items: [],
+      changed_by: [],
+    };
+    const plain = await dataHomeTables(source(home, calls), null);
+    const wanted = await dataHomeTables(source(home, calls), "org-1", { includePlatformTables: true });
+    expect(calls.map((c) => c.args)).toEqual([{ p_include_platform_tables: true }, { p_organization_id: "org-1", p_include_platform_tables: true }]);
+    expect(plain.ok && plain.data.map((t) => t.table_id)).toEqual(["t", "l"]);
+    expect(wanted.ok && wanted.data.map((t) => t.table_id)).toEqual(["t", "l", "a"]);
   });
 
   it("data_home and its search carry the switch, and only when on", async () => {
