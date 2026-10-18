@@ -61,6 +61,12 @@ export const APPROVAL_STATUS_LABEL: Record<ApprovalStatus, string> = {
   rejected: "Rejected",
 };
 
+/** A waiting record the agent's owner decision already covers: it is not waiting anywhere (list, counts, dock). */
+export const isCovered = (r: Pick<SpendApprovalRow, "status" | "covered_by_id">): boolean => r.status === "waiting" && r.covered_by_id != null;
+/** Waiting and nobody has decided it, directly or through the agent. */
+export const isWaiting = (r: Pick<SpendApprovalRow, "status" | "covered_by_id">): boolean => r.status === "waiting" && r.covered_by_id == null;
+export const COVERED_LABEL = "Covered by the agent's approval";
+
 /** Whole days until a temporary approval's expiry (0 on its last day; negative once past). */
 export function daysUntil(iso: string | null, now: number = Date.now()): number | null {
   if (!iso) return null;
@@ -130,6 +136,10 @@ export interface SpendApprovalRow {
   /** "SEO", "News", "Shortcuts" — the mandate list's Feature (featureLabelOf); "" when none. */
   feature: string;
   status: ApprovalStatus;
+  /** Set when this record is waiting but the same agent's owner-decided approval covers it (billing.run_approval_list). */
+  covered_by_id: string | null;
+  covered_by_status: ApprovalStatus | null;
+  covered_by_subject_kind: string | null;
   threshold_usd: number;
   first_run_key: string | null;
   first_run_request_id: string | null;
@@ -266,6 +276,9 @@ export async function fetchSpendApprovals(orgId: string | null): Promise<SpendAp
     feature_mandate_key: featureKey,
     feature: approvalFeatureOf(featureKey),
     status: asStatus(r.status),
+    covered_by_id: r.covered_by_id ?? null,
+    covered_by_status: r.covered_by_status ? asStatus(r.covered_by_status) : null,
+    covered_by_subject_kind: r.covered_by_subject_kind ?? null,
     threshold_usd: num(r.threshold_usd),
     first_run_key: r.first_run_key,
     first_run_request_id: r.first_run_request_id,

@@ -1,0 +1,2784 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0516",
+  "version": 1,
+  "title": "Online Store Operations Hub",
+  "description": "Run orders, fulfillment, stock levels, suppliers and returns for an online store.",
+  "forWho": "Shopify-style online store owners",
+  "icon": {
+    "emoji": "🛍️"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "retail",
+  "tags": [
+    "online store",
+    "orders",
+    "inventory",
+    "fulfillment"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-online-store-operations-hub",
+    "catalogueId": "SP0516",
+    "useCase": "The owner of Hearth and Hollow Goods uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "retail_ecommerce",
+    "vertical": "Online store",
+    "job": "inventory",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Hearth and Hollow Goods",
+      "describes": "A two-person online home goods store selling candles, ceramics and linens through its own website and two marketplaces, shipping from a spare room.",
+      "address": {
+        "line1": "19 Cobbler Row",
+        "city": "Providence",
+        "region": "RI",
+        "postalCode": "02903",
+        "country": "US"
+      },
+      "phone": "(401) 555-0140",
+      "website": "hearthandhollow.net",
+      "email": "info@hearthandhollow.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-online-store-operations-hub",
+    "tables": [
+      {
+        "token": "supplier",
+        "name": "Suppliers",
+        "labelSingular": "Supplier",
+        "labelPlural": "Suppliers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "supplier_name",
+        "describes": "Makers and wholesalers you buy from, with lead times and terms.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "supplier_name",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead_days",
+            "label": "Lead time (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "key": "terms",
+            "label": "Terms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Net 30",
+              "Prepaid",
+              "Net 15"
+            ],
+            "choiceColors": {
+              "Net 30": "slate",
+              "Prepaid": "blue",
+              "Net 15": "amber"
+            }
+          },
+          {
+            "key": "product_n",
+            "label": "Products active",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "products",
+            "pick": "product_name",
+            "agg": "count",
+            "filter": {
+              "status": "Active"
+            }
+          },
+          {
+            "key": "draft_n",
+            "label": "Products in draft",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "products",
+            "pick": "product_name",
+            "agg": "count",
+            "filter": {
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "suppli-1",
+            "values": {
+              "supplier_name": "Tideline Ceramics",
+              "email": "marisol.rosenthal@hearthandhollow.net",
+              "phone": "(401) 555-0149",
+              "lead_days": 21,
+              "terms": "Net 30"
+            }
+          },
+          {
+            "key": "suppli-2",
+            "values": {
+              "supplier_name": "Wick and Wax Studio",
+              "email": "teodor.whitlock@hearthandhollow.net",
+              "phone": "(401) 555-0186",
+              "lead_days": 10,
+              "terms": "Prepaid"
+            }
+          },
+          {
+            "key": "suppli-3",
+            "values": {
+              "supplier_name": "Loomhouse Textiles",
+              "email": "kwame.carrow@hearthandhollow.net",
+              "phone": "(401) 555-0123",
+              "lead_days": 28,
+              "terms": "Net 30"
+            }
+          },
+          {
+            "key": "suppli-4",
+            "values": {
+              "supplier_name": "Boxcar Packaging",
+              "email": "ingrid.halvorsen@hearthandhollow.net",
+              "phone": "(401) 555-0160",
+              "lead_days": 7,
+              "terms": "Net 15"
+            }
+          }
+        ]
+      },
+      {
+        "token": "product",
+        "name": "Products",
+        "labelSingular": "Product",
+        "labelPlural": "Products",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "product_name",
+        "describes": "Everything you sell, with price, cost, margin and stock against the reorder level.",
+        "subject": "thing",
+        "independentOf": {
+          "supplier_rel": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Product",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "SKU",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ceramics",
+              "Candles",
+              "Linens",
+              "Packaging"
+            ],
+            "choiceColors": {
+              "Ceramics": "slate",
+              "Candles": "blue",
+              "Linens": "amber",
+              "Packaging": "violet"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "cost",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "supplier_rel",
+            "label": "Supplier",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Draft",
+              "Discontinued"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Draft": "blue",
+              "Discontinued": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Cost (USD)}) / {Price (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Cost (USD)}"
+          },
+          {
+            "key": "sold",
+            "label": "Units delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "quantity",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Product",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Listing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Title, description, photos and variants."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Costing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cost per unit entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Shipping weight added"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Margin checked above 50 percent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "produc-1",
+            "values": {
+              "product_name": "Ceramic mug, speckled",
+              "sku": "HH-101",
+              "category": "Ceramics",
+              "price": 28,
+              "cost": 9.5,
+              "on_hand": 42,
+              "reorder_at": 15,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-2",
+            "values": {
+              "product_name": "Stoneware serving bowl",
+              "sku": "HH-108",
+              "category": "Ceramics",
+              "price": 46,
+              "cost": 16,
+              "on_hand": 18,
+              "reorder_at": 8,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-3",
+            "values": {
+              "product_name": "Soy candle, cedar and smoke",
+              "sku": "HH-115",
+              "category": "Candles",
+              "price": 24,
+              "cost": 7,
+              "on_hand": 64,
+              "reorder_at": 25,
+              "supplier_rel": "suppli-2",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-4",
+            "values": {
+              "product_name": "Soy candle, fig and tea",
+              "sku": "HH-122",
+              "category": "Candles",
+              "price": 24,
+              "cost": 7,
+              "on_hand": 9,
+              "reorder_at": 25,
+              "supplier_rel": "suppli-2",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-5",
+            "values": {
+              "product_name": "Linen napkin set of 4",
+              "sku": "HH-129",
+              "category": "Linens",
+              "price": 36,
+              "cost": 12.5,
+              "on_hand": 30,
+              "reorder_at": 12,
+              "supplier_rel": "suppli-3",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-6",
+            "values": {
+              "product_name": "Waffle bath towel",
+              "sku": "HH-136",
+              "category": "Linens",
+              "price": 32,
+              "cost": 11,
+              "on_hand": 22,
+              "reorder_at": 10,
+              "supplier_rel": "suppli-3",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-7",
+            "values": {
+              "product_name": "Linen throw blanket",
+              "sku": "HH-143",
+              "category": "Linens",
+              "price": 88,
+              "cost": 31,
+              "on_hand": 6,
+              "reorder_at": 6,
+              "supplier_rel": "suppli-3",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-8",
+            "values": {
+              "product_name": "Gift box, medium",
+              "sku": "HH-150",
+              "category": "Packaging",
+              "price": 3.2,
+              "cost": 1.1,
+              "on_hand": 200,
+              "reorder_at": 80,
+              "supplier_rel": "suppli-4",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-9",
+            "values": {
+              "product_name": "Seasonal wreath ornament",
+              "sku": "HH-157",
+              "category": "Ceramics",
+              "price": 18,
+              "cost": 6,
+              "on_hand": 0,
+              "reorder_at": 10,
+              "supplier_rel": "suppli-1",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "produc-10",
+            "values": {
+              "product_name": "Tea towel, plaid",
+              "sku": "HH-164",
+              "category": "Linens",
+              "price": 16,
+              "cost": 5.5,
+              "on_hand": 35,
+              "reorder_at": 15,
+              "supplier_rel": "suppli-3",
+              "status": "Discontinued"
+            }
+          }
+        ]
+      },
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "Everyone who has bought, with spend, returns and a tier.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "segment",
+            "label": "Segment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Retail",
+              "Repeat buyer",
+              "Gift buyer",
+              "Wholesale enquiry"
+            ],
+            "choiceColors": {
+              "Retail": "slate",
+              "Repeat buyer": "blue",
+              "Gift buyer": "amber",
+              "Wholesale enquiry": "violet"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_order",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "order_n",
+            "label": "Orders delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "spent",
+            "label": "Spent to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "returns_n",
+            "label": "Returns",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": "Returned"
+            }
+          },
+          {
+            "key": "tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Spent to date} >= 300, \"Best\", IF({Spent to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_order_btn",
+            "label": "New order",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "order",
+              "template": "Order sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer record",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About this customer"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How they found you and what they like."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Preferences, past issues and gifts."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Fenella Mbeki",
+              "segment": "Retail",
+              "email": "fenella.mbeki@inbox-mail.net",
+              "phone": "(401) 555-0199",
+              "first_order": "@today-20d",
+              "area": "Lakeview"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Leopold Thackeray",
+              "segment": "Repeat buyer",
+              "email": "leopold.thackeray@inbox-mail.net",
+              "phone": "(401) 555-0136",
+              "first_order": "@today-63d",
+              "area": "Foxglove Court"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Imelda Boateng",
+              "segment": "Gift buyer",
+              "email": "imelda.boateng@inbox-mail.net",
+              "phone": "(401) 555-0173",
+              "first_order": "@today-106d",
+              "area": "Stonebridge"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Anders Jessup",
+              "segment": "Wholesale enquiry",
+              "email": "anders.jessup@inbox-mail.net",
+              "phone": "(401) 555-0110",
+              "first_order": "@today-149d",
+              "area": "Harbor Heights"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Ottoline Rutherford",
+              "segment": "Retail",
+              "email": "ottoline.rutherford@inbox-mail.net",
+              "phone": "(401) 555-0147",
+              "first_order": "@today-192d",
+              "area": "Willow Creek"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Humphrey Aldercott",
+              "segment": "Repeat buyer",
+              "email": "humphrey.aldercott@inbox-mail.net",
+              "phone": "(401) 555-0184",
+              "first_order": "@today-235d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Tamsin Iyer",
+              "segment": "Gift buyer",
+              "email": "tamsin.iyer@inbox-mail.net",
+              "phone": "(401) 555-0121",
+              "first_order": "@today-278d",
+              "area": "Sunset Flats"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Desmond Pemberton",
+              "segment": "Wholesale enquiry",
+              "email": "desmond.pemberton@inbox-mail.net",
+              "phone": "(401) 555-0158",
+              "first_order": "@today-321d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Noor Whitlock",
+              "segment": "Retail",
+              "email": "noor.whitlock@inbox-mail.net",
+              "phone": "(401) 555-0195",
+              "first_order": "@today-364d",
+              "area": "Eastgate"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Silas Fontaine",
+              "segment": "Repeat buyer",
+              "email": "silas.fontaine@inbox-mail.net",
+              "phone": "(401) 555-0132",
+              "first_order": "@today-407d",
+              "area": "Riverbend"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Kasia Montague",
+              "segment": "Gift buyer",
+              "email": "kasia.montague@inbox-mail.net",
+              "phone": "(401) 555-0169",
+              "first_order": "@today-450d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Tobias Valdez",
+              "segment": "Wholesale enquiry",
+              "email": "tobias.valdez@inbox-mail.net",
+              "phone": "(401) 555-0106",
+              "first_order": "@today-493d",
+              "area": "Cedar Park"
+            }
+          }
+        ]
+      },
+      {
+        "token": "order",
+        "name": "Orders",
+        "labelSingular": "Order",
+        "labelPlural": "Orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-bag",
+        "titleField": "order_name",
+        "describes": "Every order from paid to delivered, with who is packing it and when it ships.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "product": "Either record can be created or change status before the other.",
+          "handler": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Paid",
+              "Packing",
+              "Shipped",
+              "Delivered",
+              "Returned",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Paid": "blue",
+              "Packing": "amber",
+              "Shipped": "violet",
+              "Delivered": "teal",
+              "Returned": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Paid": "todo",
+              "Packing": "in_progress",
+              "Shipped": "in_progress",
+              "Delivered": "done",
+              "Returned": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "handler",
+            "label": "Packer (staff)",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "quantity",
+            "label": "Quantity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Website",
+              "Marketplace",
+              "Pop-up market",
+              "Wholesale"
+            ],
+            "choiceColors": {
+              "Website": "slate",
+              "Marketplace": "blue",
+              "Pop-up market": "amber",
+              "Wholesale": "violet"
+            }
+          },
+          {
+            "key": "ship_by",
+            "label": "Ship by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "packer",
+            "label": "Packer",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ship_btn",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_shipped"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Order sheet",
+            "values": {
+              "status": "New",
+              "order_name": "New order"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pack list"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Items, gift message and special packaging."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before it ships"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Picked and counted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Packed with the slip"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Label printed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tracking added"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "order-1",
+            "values": {
+              "order_name": "HH-4100",
+              "status": "Delivered",
+              "customer": "custom-2",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 1,
+              "total": 45,
+              "channel": "Website",
+              "ship_by": "@today-17d"
+            }
+          },
+          {
+            "key": "order-2",
+            "values": {
+              "order_name": "HH-4103",
+              "status": "Delivered",
+              "customer": "custom-7",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 2,
+              "total": 70,
+              "channel": "Marketplace",
+              "ship_by": "@today-13d"
+            }
+          },
+          {
+            "key": "order-3",
+            "values": {
+              "order_name": "HH-4106",
+              "status": "Delivered",
+              "customer": "custom-12",
+              "product": "produc-8",
+              "handler": "tm-5",
+              "quantity": 3,
+              "total": 9.6,
+              "channel": "Pop-up market",
+              "ship_by": "@today-10d"
+            }
+          },
+          {
+            "key": "order-4",
+            "values": {
+              "order_name": "HH-4109",
+              "status": "Delivered",
+              "customer": "custom-5",
+              "product": "produc-1",
+              "handler": "tm-1",
+              "quantity": 1,
+              "total": 30,
+              "channel": "Wholesale",
+              "ship_by": "@today-7d"
+            }
+          },
+          {
+            "key": "order-5",
+            "values": {
+              "order_name": "HH-4112",
+              "status": "Delivered",
+              "customer": "custom-10",
+              "product": "produc-4",
+              "handler": "tm-2",
+              "quantity": 2,
+              "total": 50,
+              "channel": "Website",
+              "ship_by": "@today-5d"
+            }
+          },
+          {
+            "key": "order-6",
+            "values": {
+              "order_name": "HH-4115",
+              "status": "Returned",
+              "customer": "custom-3",
+              "product": "produc-7",
+              "handler": "tm-3",
+              "quantity": 3,
+              "total": 265,
+              "channel": "Marketplace",
+              "ship_by": "@today-6d"
+            }
+          },
+          {
+            "key": "order-7",
+            "values": {
+              "order_name": "HH-4118",
+              "status": "Cancelled",
+              "customer": "custom-8",
+              "product": "produc-10",
+              "handler": "tm-4",
+              "quantity": 1,
+              "total": 16,
+              "channel": "Pop-up market"
+            }
+          },
+          {
+            "key": "order-8",
+            "values": {
+              "order_name": "HH-4121",
+              "status": "Packing",
+              "customer": "custom-1",
+              "product": "produc-3",
+              "handler": "tm-5",
+              "quantity": 2,
+              "total": 50,
+              "channel": "Wholesale",
+              "ship_by": "@today-1d"
+            }
+          },
+          {
+            "key": "order-9",
+            "values": {
+              "order_name": "HH-4124",
+              "status": "Paid",
+              "customer": "custom-6",
+              "product": "produc-6",
+              "handler": "tm-1",
+              "quantity": 3,
+              "total": 95,
+              "channel": "Website",
+              "ship_by": "@today",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-10",
+            "values": {
+              "order_name": "HH-4127",
+              "status": "Shipped",
+              "customer": "custom-11",
+              "product": "produc-9",
+              "handler": "tm-2",
+              "quantity": 1,
+              "total": 18,
+              "channel": "Marketplace",
+              "ship_by": "@today"
+            }
+          },
+          {
+            "key": "order-11",
+            "values": {
+              "order_name": "HH-4130",
+              "status": "Packing",
+              "customer": "custom-4",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 2,
+              "total": 90,
+              "channel": "Pop-up market",
+              "ship_by": "@mon",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-12",
+            "values": {
+              "order_name": "HH-4133",
+              "status": "Paid",
+              "customer": "custom-9",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 3,
+              "total": 110,
+              "channel": "Wholesale",
+              "ship_by": "@tue"
+            }
+          },
+          {
+            "key": "order-13",
+            "values": {
+              "order_name": "HH-4136",
+              "status": "New",
+              "customer": "custom-2",
+              "product": "produc-8",
+              "handler": "tm-5",
+              "quantity": 1,
+              "total": 3.2,
+              "channel": "Website",
+              "ship_by": "@wed",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-14",
+            "values": {
+              "order_name": "HH-4139",
+              "status": "Paid",
+              "customer": "custom-7",
+              "product": "produc-1",
+              "handler": "tm-1",
+              "quantity": 2,
+              "total": 55,
+              "channel": "Marketplace",
+              "ship_by": "@thu"
+            }
+          },
+          {
+            "key": "order-15",
+            "values": {
+              "order_name": "HH-4142",
+              "status": "New",
+              "customer": "custom-12",
+              "product": "produc-4",
+              "handler": "tm-2",
+              "quantity": 3,
+              "total": 70,
+              "channel": "Pop-up market",
+              "ship_by": "@fri",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-16",
+            "values": {
+              "order_name": "HH-4145",
+              "status": "Paid",
+              "customer": "custom-5",
+              "product": "produc-7",
+              "handler": "tm-3",
+              "quantity": 1,
+              "total": 90,
+              "channel": "Wholesale",
+              "ship_by": "@sat"
+            }
+          },
+          {
+            "key": "order-17",
+            "values": {
+              "order_name": "HH-4148",
+              "status": "New",
+              "customer": "custom-10",
+              "product": "produc-10",
+              "handler": "tm-4",
+              "quantity": 2,
+              "total": 32,
+              "channel": "Website",
+              "ship_by": "@sun"
+            }
+          },
+          {
+            "key": "order-18",
+            "values": {
+              "order_name": "HH-4151",
+              "status": "Paid",
+              "customer": "custom-3",
+              "product": "produc-3",
+              "handler": "tm-5",
+              "quantity": 3,
+              "total": 70,
+              "channel": "Marketplace",
+              "ship_by": "@tue+1w"
+            }
+          },
+          {
+            "key": "order-19",
+            "values": {
+              "order_name": "HH-4154",
+              "status": "New",
+              "customer": "custom-8",
+              "product": "produc-6",
+              "handler": "tm-1",
+              "quantity": 1,
+              "total": 30,
+              "channel": "Pop-up market",
+              "ship_by": "@thu+1w"
+            }
+          },
+          {
+            "key": "order-20",
+            "values": {
+              "order_name": "HH-4157",
+              "status": "Paid",
+              "customer": "custom-1",
+              "product": "produc-9",
+              "handler": "tm-2",
+              "quantity": 2,
+              "total": 36,
+              "channel": "Wholesale",
+              "ship_by": "@today+1d",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-21",
+            "values": {
+              "order_name": "HH-4160",
+              "status": "New",
+              "customer": "custom-6",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 3,
+              "total": 140,
+              "channel": "Website",
+              "ship_by": "@today+3d"
+            }
+          },
+          {
+            "key": "order-22",
+            "values": {
+              "order_name": "HH-4163",
+              "status": "New",
+              "customer": "custom-11",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 1,
+              "total": 35,
+              "channel": "Marketplace",
+              "ship_by": "@today+4d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each product belongs to one supplier.",
+        "fromTable": "product",
+        "fromField": "supplier_rel",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "products"
+      },
+      {
+        "describes": "Each order belongs to one customer.",
+        "fromTable": "order",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each order belongs to one product.",
+        "fromTable": "order",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each order belongs to one packer (staff).",
+        "fromTable": "order",
+        "fromField": "handler",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "orders_handled"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Annika Solheim",
+              "role": "Founder",
+              "work_email": "annika@hearthandhollow.net",
+              "mobile": "(401) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Dwayne Castellan",
+              "role": "Fulfillment lead",
+              "work_email": "dwayne@hearthandhollow.net",
+              "mobile": "(401) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Nomvula Dlamini",
+              "role": "Customer support",
+              "work_email": "nomvula@hearthandhollow.net",
+              "mobile": "(401) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Edmund Pryor",
+              "role": "Part-time packer",
+              "work_email": "edmund@hearthandhollow.net",
+              "mobile": "(401) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Rebekah Iwu",
+              "role": "Bookkeeper",
+              "work_email": "rebekah@hearthandhollow.net",
+              "mobile": "(401) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "order_request",
+        "name": "Place an order",
+        "describes": "How a customer or the team enters a new order.",
+        "audience": "staff",
+        "table": "order",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "Order reference?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "product",
+            "ask": "Which item?"
+          },
+          {
+            "fieldKey": "quantity",
+            "ask": "How many?"
+          }
+        ],
+        "submitLabel": "Send the order",
+        "confirmation": "Thanks. The order is on the board as New."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "order_shipped",
+        "table": "order",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_supplier",
+        "name": "All suppliers",
+        "table": "supplier",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "supplier_board",
+        "name": "Suppliers board",
+        "table": "supplier",
+        "kind": "kanban",
+        "groupBy": "terms"
+      },
+      {
+        "token": "all_product",
+        "name": "All products",
+        "table": "product",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "product_board",
+        "name": "Products board",
+        "table": "product",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Customers board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "segment"
+      },
+      {
+        "token": "all_order",
+        "name": "All orders",
+        "table": "order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "order_board",
+        "name": "Orders board",
+        "table": "order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "order_cal",
+        "name": "Orders calendar",
+        "table": "order",
+        "kind": "calendar",
+        "dateField": "ship_by",
+        "allDay": true
+      },
+      {
+        "token": "order_over",
+        "name": "Overdue",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_week",
+        "name": "Due this week",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_next7",
+        "name": "Next 7 days",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_mine",
+        "name": "My orders",
+        "table": "order",
+        "kind": "grid",
+        "me": [
+          "packer"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Online Store Operations Hub assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "product",
+          "describes": "Everything you sell, with price, cost, margin and stock against the reorder level."
+        },
+        {
+          "name": "related_tables",
+          "table": "supplier",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many orders are still waiting to be packed?",
+        "whyItMatters": "The packer starts each day with these.",
+        "expect": {
+          "table": "order",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Packing"
+          },
+          "answer": 2,
+          "unit": "orders"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open suppliers.",
+        "action": {
+          "kind": "open",
+          "surface": "supplier_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "supplier_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open products.",
+        "action": {
+          "kind": "open",
+          "surface": "product_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "product_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "hearthandhollow.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Cobbler Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "online-store-operations-hub",
+      "parent": null,
+      "title": "Online Store Operations Hub",
+      "icon": {
+        "emoji": "🛍️"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the store from one page. Orders move from New to Delivered, the packer sees their own list under Mine, and Mark shipped updates the board. Products flags what to reorder and Suppliers shows lead times. Start on the Dashboard."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:daily-fulfillment"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:returns-and-exchanges"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-stock-count"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Suppliers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Makers and wholesalers you buy from, with lead times and terms."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supplier",
+              "view": "supplier_board"
+            },
+            "inline": true,
+            "title": "Suppliers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "terms"
+              },
+              {
+                "id": "sup-t",
+                "name": "All suppliers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "sup-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything you sell, with price, cost, margin and stock against the reorder level."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Products",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pro-t",
+                "name": "All products",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone who has bought, with spend, returns and a tier."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "segment"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every order from paid to delivered, with who is packing it and when it ships."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "order_board"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ord-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ord-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ship_by"
+              },
+              {
+                "id": "ord-t",
+                "name": "All orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ord-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ship_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ship_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "packer"
+                ]
+              }
+            ],
+            "activeViewId": "ord-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "online-store-operations-hub",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Orders by status, sales by channel and products by category."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Orders by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Sales by channel",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "channel",
+                          "op": "sum",
+                          "field": "total"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "product",
+                      "view": "all_product"
+                    },
+                    "inline": true,
+                    "title": "Products",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Products by category",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late to ship"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Late to ship",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My orders",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "packer"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Returns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Returns",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Returned"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "daily-fulfillment",
+      "parent": "online-store-operations-hub",
+      "title": "Daily fulfillment routine",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Same-day shipping is the cheapest marketing you can do. Ship everything paid before 2 pm the same day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Orders board and look at New and Paid."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Print pick lists and pack by the oldest ship-by date first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check each order against the pick list before sealing the box."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add tracking and press Mark shipped."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cutoffs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Orders paid before 2 pm ship that day. Later ones ship the next business day and the customer is told so at checkout."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "returns-and-exchanges",
+      "parent": "online-store-operations-hub",
+      "title": "Returns and exchanges",
+      "icon": {
+        "emoji": "↩️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A friendly return policy sells more than it costs. Make it easy and fast."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for the order number and a photo if something arrived damaged."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a prepaid label for damage or errors; the customer pays return shipping for change of mind."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On receipt, inspect, restock if sellable and mark the order Returned."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Refund within two business days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every Friday, look at the Returns list for a pattern: one product, one supplier or one description."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "weekly-stock-count",
+      "parent": "online-store-operations-hub",
+      "title": "Weekly stock count and reorder",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Selling something you do not have is the most expensive mistake an online shop makes."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count one shelf at a time on Monday."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update On hand on the Products list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reorder anything marked Reorder, using the supplier lead time to decide the quantity."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Hide a product online when it hits zero."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lead times"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ceramics take three weeks. Candles ten days. Order with enough room for a surprise sale."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

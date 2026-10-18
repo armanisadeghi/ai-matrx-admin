@@ -116,6 +116,105 @@ def git(*args, check=True, raw=False, stdin=None):
     return r.returncode, out, err
 
 
+# ── single flight ───────────────────────────────────────────────────────────────────────────
+# One sync per checkout at a time (2026-10-18 00:41-01:02 PT: four syncs ran at once in aidream,
+# each stole the others' ref updates -- "GitHub moved while syncing" x5, then "cannot lock ref
+# 'refs/heads/main'" / "cannot lock ref 'HEAD'" -- and nobody's push landed for 150+ commits).
+# The lock is flock(2) on <git-common-dir>/sync-main.lock: the kernel drops it the instant the
+# holder exits or dies, so a crashed sync can never wedge the next one. A caller that finds it
+# held WAITS (printing who holds it), then runs its own full sync -- its files may still need
+# sweeping -- or exits 0 at once if the holder already pushed everything it had.
+# A sync-main started BY the holder (its env carries LOCK_ENV naming the same file) never waits
+# on its own parent.
+LOCK_NAME = "sync-main.lock"
+LOCK_ENV = "MATRX_SYNC_MAIN_LOCK_HELD"
+LOCK_WAIT_ENV = "MATRX_SYNC_MAIN_LOCK_WAIT_S"   # a value (seconds), for tests and slow machines
+LOCK_WAIT_S = 15 * 60
+LOCK_POLL_S = 1.0
+LOCK_NOTE_EVERY_S = 60
+_LOCK_FD = None
+
+
+def _lock_holder(fd):
+    try:
+        os.lseek(fd, 0, os.SEEK_SET)
+        info = json.loads(os.read(fd, 4096).decode("utf-8", "replace") or "{}")
+    except (OSError, ValueError):
+        return "an unnamed process"
+    since = info.get("started") or "?"
+    return "pid %s, %s, since %s" % (info.get("pid", "?"), info.get("session") or "no session id",
+                                      since)
+
+
+def acquire_sync_lock():
+    """Take this checkout's sync lock, waiting (bounded) for another holder. Returns True when we
+    had to wait (the caller may then find there is nothing left to do)."""
+    global _LOCK_FD
+    import fcntl
+    _, common, _ = git("rev-parse", "--git-common-dir")
+    path = os.path.realpath(os.path.join(os.getcwd(), common.strip(), LOCK_NAME))
+    if os.environ.get(LOCK_ENV) == path:
+        say("sync lock: held by the sync that started this one; not waiting on it.")
+        return False
+    fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o644)
+    try:
+        wait_s = float(os.environ.get(LOCK_WAIT_ENV) or LOCK_WAIT_S)
+    except ValueError:
+        wait_s = LOCK_WAIT_S
+    t0 = time.time()
+    waited = False
+    next_note = 0.0
+    while True:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except BlockingIOError:
+            pass
+        now = time.time() - t0
+        if now >= wait_s:
+            holder = _lock_holder(fd)
+            os.close(fd)
+            die("another sync-main has held this checkout for over %d min (%s). Waited %d s and "
+                "gave up so this caller is never stuck. If that process is gone, its lock is "
+                "already free -- just run this again; if it is alive, it is still syncing "
+                "(`ps -p <pid>`)." % (wait_s // 60, holder, now))
+        if now >= next_note:
+            say("SYNC WAITING: another sync-main is running in this checkout (%s); waiting for it "
+                "to finish (up to %d min) instead of racing it." % (_lock_holder(fd), wait_s // 60))
+            next_note = now + LOCK_NOTE_EVERY_S
+        waited = True
+        time.sleep(LOCK_POLL_S)
+    session = ""
+    for var, label in (("CLAUDE_CODE_SESSION_ID", "Claude session"),
+                       ("CODEX_THREAD_ID", "Codex session")):
+        if os.environ.get(var):
+            session = "%s %s" % (label, os.environ[var])
+            break
+    os.ftruncate(fd, 0)
+    os.lseek(fd, 0, os.SEEK_SET)
+    os.write(fd, json.dumps({"pid": os.getpid(), "session": session,
+                             "started": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                             "argv": sys.argv[1:]}).encode())
+    os.environ[LOCK_ENV] = path   # inherited by every child: a nested sync-main never self-waits
+    _LOCK_FD = fd                 # kept open for the life of the process == the lock's lifetime
+    if waited:
+        say("sync lock: the other sync finished after %d s; this one goes now." % (time.time() - t0))
+    return waited
+
+
+def nothing_left_after_wait():
+    """After waiting on another sync: True when it already pushed everything this caller has
+    (no uncommitted file, HEAD == GitHub's main), so this caller can stop at once."""
+    _, dirty, _ = git("status", "--porcelain", check=False)
+    if dirty.strip():
+        return False
+    if git("fetch", "-q", REMOTE, BRANCH, check=False)[0] != 0:
+        return False
+    _, head, _ = git("rev-parse", "HEAD")
+    rc, remote, _ = git("rev-parse", "%s/%s" % (REMOTE, BRANCH), check=False)
+    return rc == 0 and head.strip() == remote.strip()
+
+
 def style_for(path):
     base = os.path.basename(path)
     return STYLE.get(base) or STYLE.get(os.path.splitext(base)[1].lower())
@@ -2180,6 +2279,7 @@ def main():
     if sys.argv[1:2] == ["--replay"]:
         _, top, _ = git("rev-parse", "--show-toplevel")
         os.chdir(top.strip())
+        acquire_sync_lock()
         replay(sys.argv[2:])
         return
     argv = sys.argv[1:]
@@ -2212,6 +2312,13 @@ def main():
     hold_now = read_hold()
     if hold_now:
         say(hold_line(hold_now))
+    if acquire_sync_lock():
+        paused = read_pause()
+        if paused:
+            stop_paused(paused)
+        if nothing_left_after_wait():
+            say("synced: the sync this one waited for already pushed everything here; nothing to do.")
+            return
     # Show where we started, so the terminal holds the before-state if anything goes wrong.
     say("==================== git status (before sync) ====================")
     subprocess.run(["git", "status"])

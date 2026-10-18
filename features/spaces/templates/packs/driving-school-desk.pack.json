@@ -1,0 +1,3579 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0560",
+  "version": 1,
+  "title": "Driving School Desk",
+  "description": "Learners, instructors, cars, lessons and road tests for a driving school.",
+  "forWho": "Driving schools and driver-education programs",
+  "icon": {
+    "emoji": "🚗"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "driving school",
+    "lessons",
+    "vehicles",
+    "road tests"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-driving-school-desk",
+    "catalogueId": "SP0560",
+    "useCase": "Bernard Achebe-Lindqvist manages a driving school and uses this to see which cars are free, which learners are test-ready and which services are due.",
+    "industry": "education",
+    "vertical": "Driving school",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Steady Wheel Driving School",
+      "describes": "A driving school with six instructors and five dual-control cars, teaching about 40 new learners a month.",
+      "address": {
+        "line1": "19 Mesquite Plaza",
+        "city": "Las Vegas",
+        "region": "NV",
+        "postalCode": "89101",
+        "country": "US"
+      },
+      "phone": "(702) 555-0159",
+      "website": "steadywheeldriving.net",
+      "email": "book@steadywheeldriving.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-driving-school-desk",
+    "tables": [
+      {
+        "token": "learner",
+        "name": "Learners",
+        "labelSingular": "Learner",
+        "labelPlural": "Learners",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-round",
+        "titleField": "learner_name",
+        "describes": "Each learner with the hours they have driven, the hours they still need and their test date.",
+        "subject": "thing",
+        "independentOf": {
+          "instructor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "learner_name",
+            "label": "Learner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "choices": [
+              "Enrolled",
+              "In lessons",
+              "Test ready",
+              "Licensed",
+              "Stopped"
+            ],
+            "choiceColors": {
+              "Enrolled": "slate",
+              "In lessons": "blue",
+              "Test ready": "amber",
+              "Licensed": "violet",
+              "Stopped": "teal"
+            },
+            "required": true,
+            "default": "Enrolled",
+            "statusGroups": {
+              "Enrolled": "in_progress",
+              "In lessons": "in_progress",
+              "Test ready": "in_progress",
+              "Licensed": "done",
+              "Stopped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "package",
+            "label": "Package",
+            "parityType": "select",
+            "choices": [
+              "10 hour starter",
+              "20 hour standard",
+              "30 hour complete",
+              "Test day only"
+            ],
+            "choiceColors": {
+              "10 hour starter": "slate",
+              "20 hour standard": "blue",
+              "30 hour complete": "amber",
+              "Test day only": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_step_on",
+            "label": "Next step due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours_needed",
+            "label": "Hours in package",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "instructor",
+            "label": "Main instructor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours_done",
+            "label": "Hours driven",
+            "parityType": "rollup",
+            "via": "drives",
+            "pick": "hours",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "hours_left",
+            "label": "Hours left",
+            "parityType": "formula",
+            "formula": "MAX(0, {Hours in package} - {Hours driven})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "noshows",
+            "label": "No-shows",
+            "parityType": "rollup",
+            "via": "drives",
+            "pick": "drive_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "btn_inlessons",
+            "label": "Start lessons",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "learner_inlessons"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_testready",
+            "label": "Mark test ready",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "learner_testready"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_licensed",
+            "label": "Mark licensed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "learner_licensed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_drive",
+            "label": "Book a lesson",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "drives",
+              "template": "New lesson",
+              "prefill": {
+                "learner": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_test",
+            "label": "Book road test",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "road_test",
+              "template": "New road test",
+              "prefill": {
+                "learner": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New learner",
+            "values": {
+              "learner_name": "New learner",
+              "stage": "Enrolled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Starting point"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Permit date, prior driving and any fears."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Skills checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Mirrors and seat"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Steering"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Intersections"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lane changes"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Parking"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Highway merging"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "learner-1",
+            "values": {
+              "learner_name": "Avery K.",
+              "stage": "In lessons",
+              "package": "20 hour standard",
+              "email": "avery.k@mailbox.net",
+              "phone": "(702) 555-0121",
+              "next_step_on": "@today+2d",
+              "hours_needed": 20,
+              "instructor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "learner-2",
+            "values": {
+              "learner_name": "Benedetta F.",
+              "stage": "Test ready",
+              "package": "30 hour complete",
+              "email": "benedetta.f@mailbox.net",
+              "phone": "(702) 555-0122",
+              "next_step_on": "@today",
+              "hours_needed": 30,
+              "instructor": "tm-2"
+            }
+          },
+          {
+            "key": "learner-3",
+            "values": {
+              "learner_name": "Cyrus N.",
+              "stage": "In lessons",
+              "package": "20 hour standard",
+              "email": "cyrus.n@mailbox.net",
+              "phone": "(702) 555-0123",
+              "next_step_on": "@today+4d",
+              "hours_needed": 20,
+              "instructor": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "learner-4",
+            "values": {
+              "learner_name": "Delphine O.",
+              "stage": "Enrolled",
+              "package": "10 hour starter",
+              "email": "delphine.o@mailbox.net",
+              "phone": "(702) 555-0124",
+              "next_step_on": "@today+1d",
+              "hours_needed": 10,
+              "instructor": "tm-3"
+            }
+          },
+          {
+            "key": "learner-5",
+            "values": {
+              "learner_name": "Emre Y.",
+              "stage": "In lessons",
+              "package": "30 hour complete",
+              "email": "emre.y@mailbox.net",
+              "phone": "(702) 555-0125",
+              "next_step_on": "@today-3d",
+              "hours_needed": 30,
+              "instructor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "learner-6",
+            "values": {
+              "learner_name": "Farah A.",
+              "stage": "Licensed",
+              "package": "20 hour standard",
+              "email": "farah.a@mailbox.net",
+              "phone": "(702) 555-0126",
+              "hours_needed": 20,
+              "instructor": "tm-4"
+            }
+          },
+          {
+            "key": "learner-7",
+            "values": {
+              "learner_name": "Gustavo P.",
+              "stage": "Test ready",
+              "package": "20 hour standard",
+              "email": "gustavo.p@mailbox.net",
+              "phone": "(702) 555-0127",
+              "next_step_on": "@today+5d",
+              "hours_needed": 20,
+              "instructor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "learner-8",
+            "values": {
+              "learner_name": "Hollis B.",
+              "stage": "In lessons",
+              "package": "10 hour starter",
+              "email": "hollis.b@mailbox.net",
+              "phone": "(702) 555-0128",
+              "next_step_on": "@today+3d",
+              "hours_needed": 10,
+              "instructor": "tm-4"
+            }
+          },
+          {
+            "key": "learner-9",
+            "values": {
+              "learner_name": "Imani J.",
+              "stage": "Stopped",
+              "package": "20 hour standard",
+              "email": "imani.j@mailbox.net",
+              "phone": "(702) 555-0129",
+              "hours_needed": 20,
+              "instructor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "learner-10",
+            "values": {
+              "learner_name": "Joaquin R.",
+              "stage": "Enrolled",
+              "package": "Test day only",
+              "email": "joaquin.r@mailbox.net",
+              "phone": "(702) 555-0130",
+              "next_step_on": "@today+6d",
+              "hours_needed": 0,
+              "instructor": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "drives",
+        "name": "Lessons",
+        "labelSingular": "Lesson",
+        "labelPlural": "Lessons",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "route",
+        "titleField": "drive_name",
+        "describes": "Each lesson on the calendar, with the learner, instructor, car and hours.",
+        "subject": "thing",
+        "independentOf": {
+          "learner": "Either record can be created or change status before the other.",
+          "instructor": "Either record can be created or change status before the other.",
+          "vehicle": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "drive_name",
+            "label": "Lesson",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "learner",
+            "label": "Learner",
+            "parityType": "relation",
+            "relationTarget": "learner",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "instructor",
+            "label": "Instructor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "vehicle",
+            "label": "Car",
+            "parityType": "relation",
+            "relationTarget": "vehicle",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "focus",
+            "label": "Focus",
+            "parityType": "select",
+            "choices": [
+              "First drive",
+              "Parking",
+              "City streets",
+              "Highway",
+              "Night driving",
+              "Test practice"
+            ],
+            "choiceColors": {
+              "First drive": "slate",
+              "Parking": "blue",
+              "City streets": "amber",
+              "Highway": "violet",
+              "Night driving": "teal",
+              "Test practice": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Booked",
+              "Done",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Done": "blue",
+              "No-show": "red",
+              "Cancelled": "amber"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Done": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "drive_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 4
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "drives_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_noshow",
+            "label": "Mark no-show",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "drives_noshow"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New lesson",
+            "values": {
+              "drive_name": "New lesson",
+              "status": "Booked"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Route, skill and what the learner should show by the end."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After the lesson"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Hours recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Skills checklist updated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next lesson booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "drives-1",
+            "values": {
+              "drive_name": "Avery, city streets",
+              "learner": "learner-1",
+              "instructor": "tm-3",
+              "vehicle": "vehicle-1",
+              "focus": "City streets",
+              "status": "Booked",
+              "drive_at": "@today+2d 10:00",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "drives-2",
+            "values": {
+              "drive_name": "Benedetta, test practice",
+              "learner": "learner-2",
+              "instructor": "tm-2",
+              "vehicle": "vehicle-3",
+              "focus": "Test practice",
+              "status": "Booked",
+              "drive_at": "@today 14:00",
+              "hours": 1
+            }
+          },
+          {
+            "key": "drives-3",
+            "values": {
+              "drive_name": "Cyrus, highway",
+              "learner": "learner-3",
+              "instructor": "tm-4",
+              "vehicle": "vehicle-2",
+              "focus": "Highway",
+              "status": "Booked",
+              "drive_at": "@today+4d 16:00",
+              "hours": 1.5,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "drives-4",
+            "values": {
+              "drive_name": "Delphine, first drive",
+              "learner": "learner-4",
+              "instructor": "tm-3",
+              "vehicle": "vehicle-1",
+              "focus": "First drive",
+              "status": "Booked",
+              "drive_at": "@today+1d 09:00",
+              "hours": 1
+            }
+          },
+          {
+            "key": "drives-5",
+            "values": {
+              "drive_name": "Emre, parking",
+              "learner": "learner-5",
+              "instructor": "tm-2",
+              "vehicle": "vehicle-3",
+              "focus": "Parking",
+              "status": "Booked",
+              "drive_at": "@today-1d 11:00",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "drives-6",
+            "values": {
+              "drive_name": "Hollis, city streets",
+              "learner": "learner-8",
+              "instructor": "tm-4",
+              "vehicle": "vehicle-5",
+              "focus": "City streets",
+              "status": "Booked",
+              "drive_at": "@today+3d 15:00",
+              "hours": 1
+            }
+          },
+          {
+            "key": "drives-7",
+            "values": {
+              "drive_name": "Gustavo, test practice",
+              "learner": "learner-7",
+              "instructor": "tm-3",
+              "vehicle": "vehicle-2",
+              "focus": "Test practice",
+              "status": "Booked",
+              "drive_at": "@today+5d 13:00",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "drives-8",
+            "values": {
+              "drive_name": "Avery, parking",
+              "learner": "learner-1",
+              "instructor": "tm-3",
+              "vehicle": "vehicle-1",
+              "focus": "Parking",
+              "status": "Done",
+              "drive_at": "@today-7d 10:00",
+              "hours": 1
+            }
+          },
+          {
+            "key": "drives-9",
+            "values": {
+              "drive_name": "Benedetta, night driving",
+              "learner": "learner-2",
+              "instructor": "tm-2",
+              "vehicle": "vehicle-3",
+              "focus": "Night driving",
+              "status": "Done",
+              "drive_at": "@today-5d 19:00",
+              "hours": 1.5,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "drives-10",
+            "values": {
+              "drive_name": "Cyrus, first drive",
+              "learner": "learner-3",
+              "instructor": "tm-4",
+              "vehicle": "vehicle-2",
+              "focus": "First drive",
+              "status": "Done",
+              "drive_at": "@today-9d 16:00",
+              "hours": 1
+            }
+          },
+          {
+            "key": "drives-11",
+            "values": {
+              "drive_name": "Emre, city streets",
+              "learner": "learner-5",
+              "instructor": "tm-2",
+              "vehicle": "vehicle-3",
+              "focus": "City streets",
+              "status": "No-show",
+              "drive_at": "@today-6d 11:00",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "drives-12",
+            "values": {
+              "drive_name": "Hollis, first drive",
+              "learner": "learner-8",
+              "instructor": "tm-4",
+              "vehicle": "vehicle-5",
+              "focus": "First drive",
+              "status": "Done",
+              "drive_at": "@today-4d 15:00",
+              "hours": 1
+            }
+          }
+        ]
+      },
+      {
+        "token": "vehicle",
+        "name": "Vehicles",
+        "labelSingular": "Vehicle",
+        "labelPlural": "Vehicles",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "car",
+        "titleField": "vehicle_name",
+        "describes": "The school's dual-control cars, with service dates and miles.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "vehicle_name",
+            "label": "Vehicle",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "In service",
+              "In the shop",
+              "Retired"
+            ],
+            "choiceColors": {
+              "In service": "slate",
+              "In the shop": "blue",
+              "Retired": "amber"
+            },
+            "required": true,
+            "default": "In service",
+            "statusGroups": {
+              "In service": "todo",
+              "In the shop": "in_progress",
+              "Retired": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Compact sedan",
+              "Midsize sedan",
+              "Small SUV",
+              "Automatic",
+              "Manual"
+            ],
+            "choiceColors": {
+              "Compact sedan": "slate",
+              "Midsize sedan": "blue",
+              "Small SUV": "amber",
+              "Automatic": "violet",
+              "Manual": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plate",
+            "label": "Plate (fictional)",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "miles",
+            "label": "Odometer (miles)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "service_due",
+            "label": "Next service",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "inspection_due",
+            "label": "Next inspection",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "drives_booked",
+            "label": "Lessons booked",
+            "parityType": "rollup",
+            "via": "drives",
+            "pick": "drive_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "hours_driven",
+            "label": "Hours driven",
+            "parityType": "rollup",
+            "via": "drives",
+            "pick": "hours",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "btn_shop",
+            "label": "Send to the shop",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "vehicle_shop"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_back",
+            "label": "Back in service",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "vehicle_back"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New vehicle",
+            "values": {
+              "vehicle_name": "New vehicle",
+              "status": "In service"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Care"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Tire pressures, fluids and cleaning routine."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checks before each lesson"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Brake pedal and dual controls"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Mirrors"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tires and lights"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fuel"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "vehicle-1",
+            "values": {
+              "vehicle_name": "Blue compact, Car 1",
+              "status": "In service",
+              "kind": "Compact sedan",
+              "plate": "STD-101",
+              "miles": 48200,
+              "service_due": "@today+12d",
+              "inspection_due": "@today+90d"
+            }
+          },
+          {
+            "key": "vehicle-2",
+            "values": {
+              "vehicle_name": "Silver midsize, Car 2",
+              "status": "In service",
+              "kind": "Midsize sedan",
+              "plate": "STD-102",
+              "miles": 61300,
+              "service_due": "@today+3d",
+              "inspection_due": "@today+40d"
+            }
+          },
+          {
+            "key": "vehicle-3",
+            "values": {
+              "vehicle_name": "White small SUV, Car 3",
+              "status": "In service",
+              "kind": "Small SUV",
+              "plate": "STD-103",
+              "miles": 22800,
+              "service_due": "@today",
+              "inspection_due": "@today+150d"
+            }
+          },
+          {
+            "key": "vehicle-4",
+            "values": {
+              "vehicle_name": "Red manual, Car 4",
+              "status": "In the shop",
+              "kind": "Manual",
+              "plate": "STD-104",
+              "miles": 74500,
+              "service_due": "@today-4d",
+              "inspection_due": "@today+20d"
+            }
+          },
+          {
+            "key": "vehicle-5",
+            "values": {
+              "vehicle_name": "Gray automatic, Car 5",
+              "status": "In service",
+              "kind": "Automatic",
+              "plate": "STD-105",
+              "miles": 35100,
+              "service_due": "@today+30d",
+              "inspection_due": "@today+75d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "road_test",
+        "name": "Road tests",
+        "labelSingular": "Road test",
+        "labelPlural": "Road tests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flag",
+        "titleField": "test_name",
+        "describes": "Road tests booked with the licensing office, with the result.",
+        "subject": "thing",
+        "independentOf": {
+          "learner": "Either record can be created or change status before the other.",
+          "coach": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "test_name",
+            "label": "Road test",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "learner",
+            "label": "Learner",
+            "parityType": "relation",
+            "relationTarget": "learner",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Booked",
+              "Passed",
+              "Failed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Passed": "blue",
+              "Failed": "red",
+              "Cancelled": "amber"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Passed": "done",
+              "Failed": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "test_on",
+            "label": "Test on",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "coach",
+            "label": "Coach",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "site",
+            "label": "Test site",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_passed",
+            "label": "Mark passed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "road_test_passed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_failed",
+            "label": "Mark failed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "road_test_failed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New road test",
+            "values": {
+              "test_name": "New road test",
+              "status": "Booked"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the test"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Practice route, documents to bring and a warm-up lesson."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What went well and what to fix before a retest."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "road_test-1",
+            "values": {
+              "test_name": "Benedetta road test",
+              "learner": "learner-2",
+              "status": "Booked",
+              "test_on": "@today+1d 08:30",
+              "coach": "tm-2",
+              "site": "Westside test center",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "road_test-2",
+            "values": {
+              "test_name": "Gustavo road test",
+              "learner": "learner-7",
+              "status": "Booked",
+              "test_on": "@today+6d 10:00",
+              "coach": "tm-3",
+              "site": "Eastside test center"
+            }
+          },
+          {
+            "key": "road_test-3",
+            "values": {
+              "test_name": "Emre road test",
+              "learner": "learner-5",
+              "status": "Booked",
+              "test_on": "@today-1d 09:30",
+              "coach": "tm-2",
+              "site": "Westside test center",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "road_test-4",
+            "values": {
+              "test_name": "Farah road test",
+              "learner": "learner-6",
+              "status": "Passed",
+              "test_on": "@today-20d 09:00",
+              "coach": "tm-4",
+              "site": "Westside test center"
+            }
+          },
+          {
+            "key": "road_test-5",
+            "values": {
+              "test_name": "Imani road test",
+              "learner": "learner-9",
+              "status": "Failed",
+              "test_on": "@today-40d 13:00",
+              "coach": "tm-2",
+              "site": "Eastside test center",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "road_test-6",
+            "values": {
+              "test_name": "Avery road test",
+              "learner": "learner-1",
+              "status": "Booked",
+              "test_on": "@today+9d 11:00",
+              "coach": "tm-3",
+              "site": "Westside test center"
+            }
+          },
+          {
+            "key": "road_test-7",
+            "values": {
+              "test_name": "Cyrus road test",
+              "learner": "learner-3",
+              "status": "Booked",
+              "test_on": "@today 15:00",
+              "coach": "tm-4",
+              "site": "Eastside test center",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each learner belongs to one main instructor.",
+        "fromTable": "learner",
+        "fromField": "instructor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "learner_by_instructor"
+      },
+      {
+        "describes": "Each lesson belongs to one learner.",
+        "fromTable": "drives",
+        "fromField": "learner",
+        "toTable": "learner",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "drives"
+      },
+      {
+        "describes": "Each lesson belongs to one instructor.",
+        "fromTable": "drives",
+        "fromField": "instructor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "drive_by_instructor"
+      },
+      {
+        "describes": "Each lesson belongs to one car.",
+        "fromTable": "drives",
+        "fromField": "vehicle",
+        "toTable": "vehicle",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "drives"
+      },
+      {
+        "describes": "Each road test belongs to one learner.",
+        "fromTable": "road_test",
+        "fromField": "learner",
+        "toTable": "learner",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tests"
+      },
+      {
+        "describes": "Each road test belongs to one coach.",
+        "fromTable": "road_test",
+        "fromField": "coach",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "road_test_by_coach"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Bernard Achebe-Lindqvist",
+              "role": "School manager",
+              "work_email": "bernard@steadywheeldriving.net",
+              "mobile": "(702) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Yolanda Fitzpatrick-Oyelaran",
+              "role": "Senior instructor",
+              "work_email": "yolanda@steadywheeldriving.net",
+              "mobile": "(702) 555-0142",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Dmitri Halvorsen",
+              "role": "Instructor",
+              "work_email": "dmitri@steadywheeldriving.net",
+              "mobile": "(702) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Ximena Castellanos",
+              "role": "Instructor",
+              "work_email": "ximena@steadywheeldriving.net",
+              "mobile": "(702) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Kenji Obuya",
+              "role": "Booking desk",
+              "work_email": "kenji@steadywheeldriving.net",
+              "mobile": "(702) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Lesson enquiry",
+        "describes": "New learners ask about lessons here.",
+        "audience": "staff",
+        "table": "learner",
+        "fields": [
+          {
+            "fieldKey": "learner_name",
+            "ask": "What is your first name and last initial?",
+            "required": true
+          },
+          {
+            "fieldKey": "package",
+            "ask": "Which package interests you?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "What phone number is best?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The booking desk will call to book your first lesson."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "learner_inlessons",
+        "table": "learner",
+        "name": "Start lessons",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "In lessons"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "learner_testready",
+        "table": "learner",
+        "name": "Mark test ready",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Test ready"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "learner_licensed",
+        "table": "learner",
+        "name": "Mark licensed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Licensed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "drives_done",
+        "table": "drives",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "drives_noshow",
+        "table": "drives",
+        "name": "Mark no-show",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "No-show"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "vehicle_shop",
+        "table": "vehicle",
+        "name": "Send to the shop",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In the shop"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "vehicle_back",
+        "table": "vehicle",
+        "name": "Back in service",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In service"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "road_test_passed",
+        "table": "road_test",
+        "name": "Mark passed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Passed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "road_test_failed",
+        "table": "road_test",
+        "name": "Mark failed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Failed"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_learner",
+        "name": "All learners",
+        "table": "learner",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "learner_board",
+        "name": "By stage",
+        "table": "learner",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "learner_cal",
+        "name": "Calendar",
+        "table": "learner",
+        "kind": "calendar",
+        "dateField": "next_step_on",
+        "allDay": true
+      },
+      {
+        "token": "learner_over",
+        "name": "Overdue",
+        "table": "learner",
+        "kind": "grid",
+        "within": {
+          "next_step_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Enrolled",
+            "In lessons",
+            "Test ready"
+          ]
+        }
+      },
+      {
+        "token": "learner_week",
+        "name": "This week",
+        "table": "learner",
+        "kind": "grid",
+        "within": {
+          "next_step_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Enrolled",
+            "In lessons",
+            "Test ready"
+          ]
+        }
+      },
+      {
+        "token": "learner_next7",
+        "name": "Next 7 days",
+        "table": "learner",
+        "kind": "grid",
+        "within": {
+          "next_step_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Enrolled",
+            "In lessons",
+            "Test ready"
+          ]
+        }
+      },
+      {
+        "token": "learner_mine",
+        "name": "My learners",
+        "table": "learner",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_drives",
+        "name": "All lessons",
+        "table": "drives",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "drives_board",
+        "name": "By status",
+        "table": "drives",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "drives_cal",
+        "name": "Calendar",
+        "table": "drives",
+        "kind": "calendar",
+        "dateField": "drive_at",
+        "allDay": false
+      },
+      {
+        "token": "drives_today",
+        "name": "Today",
+        "table": "drives",
+        "kind": "grid",
+        "within": {
+          "drive_at": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "drives_over",
+        "name": "Overdue",
+        "table": "drives",
+        "kind": "grid",
+        "within": {
+          "drive_at": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "drives_week",
+        "name": "This week",
+        "table": "drives",
+        "kind": "grid",
+        "within": {
+          "drive_at": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "drives_next7",
+        "name": "Next 7 days",
+        "table": "drives",
+        "kind": "grid",
+        "within": {
+          "drive_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "drives_mine",
+        "name": "My lessons",
+        "table": "drives",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_vehicle",
+        "name": "All vehicles",
+        "table": "vehicle",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "vehicle_board",
+        "name": "By status",
+        "table": "vehicle",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "vehicle_cal",
+        "name": "Calendar",
+        "table": "vehicle",
+        "kind": "calendar",
+        "dateField": "service_due",
+        "allDay": true
+      },
+      {
+        "token": "vehicle_over",
+        "name": "Overdue",
+        "table": "vehicle",
+        "kind": "grid",
+        "within": {
+          "service_due": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "In service"
+        }
+      },
+      {
+        "token": "vehicle_week",
+        "name": "This week",
+        "table": "vehicle",
+        "kind": "grid",
+        "within": {
+          "service_due": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "In service"
+        }
+      },
+      {
+        "token": "vehicle_next7",
+        "name": "Next 7 days",
+        "table": "vehicle",
+        "kind": "grid",
+        "within": {
+          "service_due": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "In service"
+        }
+      },
+      {
+        "token": "all_road_test",
+        "name": "All road tests",
+        "table": "road_test",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "road_test_board",
+        "name": "By status",
+        "table": "road_test",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "road_test_cal",
+        "name": "Calendar",
+        "table": "road_test",
+        "kind": "calendar",
+        "dateField": "test_on",
+        "allDay": false
+      },
+      {
+        "token": "road_test_today",
+        "name": "Today",
+        "table": "road_test",
+        "kind": "grid",
+        "within": {
+          "test_on": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "road_test_over",
+        "name": "Overdue",
+        "table": "road_test",
+        "kind": "grid",
+        "within": {
+          "test_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "road_test_week",
+        "name": "This week",
+        "table": "road_test",
+        "kind": "grid",
+        "within": {
+          "test_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "road_test_next7",
+        "name": "Next 7 days",
+        "table": "road_test",
+        "kind": "grid",
+        "within": {
+          "test_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "road_test_mine",
+        "name": "My road tests",
+        "table": "road_test",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Driving School Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "learner",
+          "describes": "Each learner with the hours they have driven, the hours they still need and their test date."
+        },
+        {
+          "name": "related_tables",
+          "table": "drives",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many learners are test ready?",
+        "whyItMatters": "The booking desk books road tests for them each Friday.",
+        "expect": {
+          "table": "learner",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "stage": "Test ready"
+          },
+          "answer": 2,
+          "unit": "learners"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open learners.",
+        "action": {
+          "kind": "open",
+          "surface": "learner_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "learner_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open lessons.",
+        "action": {
+          "kind": "open",
+          "surface": "drives_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "drives_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open vehicles.",
+        "action": {
+          "kind": "open",
+          "surface": "vehicle_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "vehicle_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "steadywheeldriving.net"
+      ],
+      "fictionalStreets": [
+        "Mesquite Plaza"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "driving-school-desk",
+      "parent": null,
+      "title": "Driving School Desk",
+      "icon": {
+        "emoji": "🚗"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Learners, lessons, cars and road tests in one place. Start with the Dashboard each morning. Book every lesson with a car and an instructor, mark it done or no-show the same day, and send a car to the shop the moment a service is overdue."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:first-lesson-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:road-test-prep"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:vehicle-care-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each learner with the hours they have driven, the hours they still need and their test date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "learner",
+              "view": "learner_board"
+            },
+            "inline": true,
+            "title": "Learners",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "lea-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "lea-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_step_on"
+              },
+              {
+                "id": "lea-t",
+                "name": "All learners",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "lea-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_step_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Enrolled",
+                    "In lessons",
+                    "Test ready"
+                  ]
+                }
+              },
+              {
+                "id": "lea-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_step_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Enrolled",
+                    "In lessons",
+                    "Test ready"
+                  ]
+                }
+              },
+              {
+                "id": "lea-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_step_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Enrolled",
+                    "In lessons",
+                    "Test ready"
+                  ]
+                }
+              },
+              {
+                "id": "lea-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "lea-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lessons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each lesson on the calendar, with the learner, instructor, car and hours."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "drives",
+              "view": "drives_board"
+            },
+            "inline": true,
+            "title": "Lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dri-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "dri-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "drive_at"
+              },
+              {
+                "id": "dri-t",
+                "name": "All lessons",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "dri-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "drive_at": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "dri-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "drive_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "dri-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "drive_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "dri-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "drive_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "dri-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "dri-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vehicles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The school's dual-control cars, with service dates and miles."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vehicle",
+              "view": "vehicle_board"
+            },
+            "inline": true,
+            "title": "Vehicles",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "veh-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "veh-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "service_due"
+              },
+              {
+                "id": "veh-t",
+                "name": "All vehicles",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "veh-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "service_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "In service"
+                }
+              },
+              {
+                "id": "veh-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "service_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "In service"
+                }
+              },
+              {
+                "id": "veh-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "service_due": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "In service"
+                }
+              }
+            ],
+            "activeViewId": "veh-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Road tests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Road tests booked with the licensing office, with the result."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "road_test",
+              "view": "road_test_board"
+            },
+            "inline": true,
+            "title": "Road tests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "roa-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "roa-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "test_on"
+              },
+              {
+                "id": "roa-t",
+                "name": "All road tests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "roa-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "test_on": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "roa-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "test_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "roa-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "test_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "roa-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "test_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "roa-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "roa-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "driving-school-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The school at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "learner",
+                      "view": "all_learner"
+                    },
+                    "inline": true,
+                    "title": "Learners by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Learners by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "drives",
+                      "view": "all_drives"
+                    },
+                    "inline": true,
+                    "title": "Lessons by focus",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Lessons by focus",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "focus",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "drives",
+                      "view": "all_drives"
+                    },
+                    "inline": true,
+                    "title": "Hours driven by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Hours driven by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "road_test",
+                      "view": "all_road_test"
+                    },
+                    "inline": true,
+                    "title": "Road tests by result",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Road tests by result",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lessons in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "drives",
+              "view": "all_drives"
+            },
+            "inline": true,
+            "title": "Lessons in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Lessons in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "drive_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cars due for service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vehicle",
+              "view": "all_vehicle"
+            },
+            "inline": true,
+            "title": "Cars due for service",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Cars due for service",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "service_due": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "filters": {
+                  "status": "In service"
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Road tests this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "road_test",
+              "view": "all_road_test"
+            },
+            "inline": true,
+            "title": "Road tests this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Road tests this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "test_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours in the package minus hours of finished lessons"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer another block at 3 hours left"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No-shows"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lessons marked No-show for the learner"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two no-shows means a call about the schedule; apply your cancellation policy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lessons booked"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lessons still Booked for the car"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A car with none this week can take a test practice slot"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "first-lesson-guide",
+      "parent": "driving-school-desk",
+      "title": "The first lesson",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first lesson sets the learner's confidence. Choose a quiet place, go slowly and finish on a win."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before they get in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the permit and photo ID"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Walk around the car and name the controls"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Adjust seat and mirrors together"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the car"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Start in an empty lot: start, stop, steer, turn."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Name every action before the learner does it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stop for a short debrief before leaving."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark the lesson done and record the hours"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tick the skills covered on the learner's checklist"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Book the next lesson before the learner leaves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "road-test-prep",
+      "parent": "driving-school-desk",
+      "title": "Road test preparation",
+      "icon": {
+        "emoji": "🏁"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Test day should feel like another lesson. Rehearse the route and the paperwork."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark test ready only when the learner has met the checklist twice in a row."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book a practice lesson on the test route."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a reminder with documents to bring."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Arrive early and do a calm warm-up drive."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the car's lights, signals and insurance papers."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After the test, press Mark passed or Mark failed and add a note for the next lesson."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "vehicle-care-routine",
+      "parent": "driving-school-desk",
+      "title": "Vehicle care routine",
+      "icon": {
+        "emoji": "🧰"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A safe car is the first instructor. Keep a written routine and follow it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before each lesson"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check tires, lights and dual controls"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check fuel and fluids weekly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clean the windshield and mirrors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Review miles and next service date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "School manager"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Interior clean and sanitize"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Instructor of the car"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Report any fault the same day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Everyone"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

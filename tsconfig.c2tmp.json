@@ -1,0 +1,1 @@
+{ "extends": "./tsconfig.typecheck.json", "include": ["next-env.d.ts", "types/**/*.d.ts", "features/admin/spend-alarms/PausedAutomationSection.tsx", "features/admin/spend-alarms/SpendAlarmRecordPage.tsx", "features/scheduling/service/automationGuardrails.ts"], "compilerOptions": { "incremental": false } }

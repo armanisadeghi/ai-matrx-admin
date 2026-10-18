@@ -29,8 +29,6 @@
     "features/organizations/peek/kinds/TablePeek.tsx": "record peek preview",
     "features/scopes/components/management/ScopeOnboarding.tsx": "dimension-by-context onboarding matrix editor",
     "features/admin/performance-watch/PerformanceWatchConsole.tsx": "sample history is MatrxDataTable; remaining tables are tiny collector popovers",
-    "features/research/components/curation/CurationTable.tsx": "one source sits in several keyword/tag groups at once; table grouping is one row one group",
-    "features/scopes/components/pages/ScopesList.tsx": "cells load lazily per row from their own selectors with per-cell spinners; table can't sort/copy them",
     "features/scopes/components/management/OrgScopeTypeSection.tsx": "list is MatrxDataTable; remaining raw table is ghost placeholder rows",
     "features/tool-call-visualization/admin/ToolTestSamplesViewer.tsx": "samples are MatrxDataTable; remaining table is a tiny fixed cost breakdown"
   },
@@ -63,8 +61,6 @@
     "features/notes/components/cleanup/CleanupDebugPanel.tsx",
     "features/organizations/components/OrgModuleSettings.tsx",
     "features/organizations/peek/kinds/TablePeek.tsx",
-    "features/research/components/curation/CurationTable.tsx",
-    "features/scopes/components/pages/ScopesList.tsx",
     "features/scopes/components/management/OrgScopeTypeSection.tsx",
     "features/scopes/components/management/ScopeOnboarding.tsx",
     "features/tool-call-visualization/admin/ToolTestSamplesViewer.tsx"

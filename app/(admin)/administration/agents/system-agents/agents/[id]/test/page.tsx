@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { getAgent } from "@/lib/agents/data";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { AgentTestPage } from "@/features/agent-tests/components/AgentTestPage";
@@ -9,7 +10,10 @@ const ADMIN_BASE_PATH = "/administration/agents/system-agents/agents";
 
 // The system agent's test cases and platform test runs — read-only in Phase 1
 // (Agent Evaluation PLAN §8). Platform runs are filed in the admin's own admin
-// organization with purpose 'platform', never the Matrx System tenant.
+// organization with purpose 'platform', never the Matrx System tenant. SYSTEM
+// (builtin) agents only: a personal or organization agent belongs on the member
+// seat, so it is sent to its own Test tab (the server refuses a platform run on
+// a non-system agent too).
 export default async function AdminSystemAgentTestPage({
   params,
 }: {
@@ -26,6 +30,9 @@ export default async function AdminSystemAgentTestPage({
         fallbackLabel="System agents"
       />
     );
+  }
+  if (agent.agentType !== "builtin") {
+    redirect(`/agents/${id}/test`);
   }
   return (
     <Suspense>

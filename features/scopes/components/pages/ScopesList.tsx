@@ -12,7 +12,6 @@ import {
   ArrowUpRight,
   Building2,
   ChevronDown,
-  ChevronRight,
   ChevronUp,
   Layers,
   Boxes,
@@ -29,13 +28,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  MatrxDataTable,
+  type MatrxColumnDef,
+} from "@ai-matrx/design-system/data-table";
 import {
   Tooltip,
   TooltipContent,
@@ -62,7 +57,6 @@ import {
 } from "@/features/scopes/redux/contextItemCatalog";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
-import { makeSelectScopeValuesEntry } from "@/features/scopes/redux/selectors/context-values";
 import type { ContextValue } from "@ai-matrx/records/scopes";
 import { summarizeContextCell } from "@/features/scopes/utils/referenceCell";
 import { ensureContextValuesForScopes } from "@/features/scopes/redux/thunks/ensureContextValues";
@@ -98,6 +92,8 @@ import {
   updateScope,
 } from "@/features/scopes/redux/thunks/scopeTreeMutations";
 import { unwrapRecords } from "@ai-matrx/records";
+
+type ScopeRow = ReturnType<typeof selectScopesByType>[number];
 
 interface ScopesListProps {
   orgId: string;
@@ -145,6 +141,8 @@ export function ScopesList({
     resolvedTypeId ? selectItemsErrorForType(s, resolvedTypeId) : null,
   );
   const treeError = useAppSelector(selectTreeError);
+  /** Every scope's values entry, keyed by scope id (the slice's own map — one read for all rows). */
+  const valuesByScope = useAppSelector((s) => s.contextValues.byScope);
   /** The type's context-items read — its counts say "—" when it failed. */
   const itemsRead = {
     status: itemsError ? ("error" as const) : itemsLoaded ? ("ready" as const) : ("loading" as const),
@@ -298,6 +296,77 @@ export function ScopesList({
   const scopeCount = sorted.length;
   const typeSuggestions = sorted.flatMap((s) => suggestions.forScope(s.id));
 
+  // THE ONE MAP of every row's lazy values: the page asks the values door ONCE for every scope
+  // (`ensureContextValuesForScopes` above); a cell reads its value here and draws a skeleton
+  // (`loading`) until its scope's read has answered.
+  const valuesOf = (scopeId: string): Record<string, ContextValue> | null => {
+    const entry = valuesByScope[scopeId];
+    return entry && (entry.status === "ready" || entry.status === "error")
+      ? entry.values
+      : null;
+  };
+  const displayOf = (scopeId: string, itemId: string): string | null => {
+    const value = valuesOf(scopeId)?.[itemId];
+    return value ? renderValue(value) || null : null;
+  };
+
+  const scopeColumns: MatrxColumnDef<ScopeRow>[] = [
+    {
+      id: "name",
+      header: "Name",
+      label: "Name",
+      accessorKey: "name",
+      frozen: true,
+      width: 200,
+      cell: (scope) => {
+        const scopeSuggestions = suggestions.forScope(scope.id);
+        return (
+          <span className="flex items-center gap-1.5 w-full min-w-0">
+            <Link
+              href={scopeHref(orgSlugOrId, scopeType, scope)}
+              onClick={(event) => event.stopPropagation()}
+              className="truncate font-medium rounded-sm hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {scope.name}
+            </Link>
+            {scopeSuggestions.length > 0 && (
+              <span onClick={(e) => e.stopPropagation()} className="shrink-0">
+                <KgSuggestionHint
+                  variant="badge"
+                  rows={scopeSuggestions}
+                  accept={suggestions.accept}
+                  reject={suggestions.reject}
+                  defer={suggestions.defer}
+                  label={scope.name}
+                  align="start"
+                />
+              </span>
+            )}
+          </span>
+        );
+      },
+    },
+    ...items.map(
+      (item): MatrxColumnDef<ScopeRow> => ({
+        id: item.id,
+        header: item.label,
+        label: item.label,
+        width: 200,
+        accessorFn: (scope) => displayOf(scope.id, item.id),
+        loading: (scope) => valuesOf(scope.id) === null,
+        cell: (scope) => (
+          <ContextValueCell
+            display={displayOf(scope.id, item.id)}
+            suggestionRows={suggestions.byScopeItem.get(`${scope.id}:${item.id}`) ?? []}
+            accept={suggestions.accept}
+            reject={suggestions.reject}
+            defer={suggestions.defer}
+          />
+        ),
+      }),
+    ),
+  ];
+
   return (
     <div className="space-y-6">
       {/* ── Identity header: "<ORG> / <Type plural>" ─────────────── */}
@@ -444,70 +513,63 @@ export function ScopesList({
             </Button>
           </Card>
         ) : scopeCount > 0 ? (
-          <Card className="overflow-hidden">
-            {/* Scroll container: vertical + horizontal, with frozen name column + header */}
-            <div className="overflow-auto max-h-[65dvh]">
-              {/* Phone reflow: THE PHONE-STACK TABLE (app/globals.css). */}
-              <Table
-                className="w-full border-separate border-spacing-0"
-                wrapperClassName="phone-stack"
-              >
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="sticky left-0 top-0 z-30 bg-card px-3 w-[200px] min-w-[200px] border-b border-border whitespace-nowrap">
-                      Name
-                    </TableHead>
-                    {items.map((col) => (
-                      <TableHead
-                        key={col.id}
-                        className="sticky top-0 z-20 bg-card px-3 w-[200px] min-w-[200px] border-b border-border"
-                      >
-                        <span
-                          className="block truncate"
-                          title={col.label}
-                        >
-                          {col.label}
-                        </span>
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sorted.map((scope) => (
-                    <ScopeTableRow
-                      key={scope.id}
-                      scopeId={scope.id}
-                      scopeName={scope.name}
-                      columns={items}
-                      suggestionRows={suggestions.forScope(scope.id)}
-                      suggestionByItem={suggestions.byScopeItem}
-                      accept={suggestions.accept}
-                      reject={suggestions.reject}
-                      defer={suggestions.defer}
-                      canManage
-                      deleting={deletingScopeId === scope.id}
-                      onDelete={() => handleDeleteScope(scope.id, scope.name)}
-                      href={scopeHref(orgSlugOrId, scopeType, scope)}
-                      onClick={() =>
-                        router.push(scopeHref(orgSlugOrId, scopeType, scope))
-                      }
-                    />
+          <>
+            <MatrxDataTable<ScopeRow>
+              tableId={`scopes/type/${scopeType.id}`}
+              data={sorted}
+              columns={scopeColumns}
+              getRowId={(scope) => scope.id}
+              viewTabs={false}
+              getRowHref={(scope) => scopeHref(orgSlugOrId, scopeType, scope)}
+              rowClick="page"
+              rowVersion={(scope) => [
+                valuesByScope[scope.id],
+                deletingScopeId === scope.id,
+                ...suggestions.forScope(scope.id),
+              ]}
+              rowActions={(scope) => [
+                {
+                  id: "delete",
+                  icon: Trash2,
+                  label: `Delete ${scope.name}`,
+                  tooltip: "Delete",
+                  tone: "destructive",
+                  loading: deletingScopeId === scope.id,
+                  disabled: deletingScopeId === scope.id,
+                  onClick: (event) => {
+                    event.stopPropagation();
+                    void handleDeleteScope(scope.id, scope.name);
+                  },
+                },
+              ]}
+              mobileCardsBreakpoint="sm"
+              mobileCards={(scope, _index, controls) => (
+                <div className="space-y-1 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">{controls.renderCell("name")}</div>
+                    {controls.actions}
+                  </div>
+                  {items.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2 min-w-0">
+                      <span className="shrink-0 type-meta text-muted-foreground">
+                        {item.label}
+                      </span>
+                      <div className="min-w-0 flex-1">{controls.renderCell(item.id)}</div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+              )}
+            />
             {!adding && (
-              <div className="px-3 py-2 border-t border-border">
-                <Button
-                  icon={<Plus />}
-                  variant="quiet"
-                  onClick={() => setAdding(true)}
-                >
-                  Add {scopeType.label_singular.toLowerCase()}
-                </Button>
-              </div>
+              <Button
+                icon={<Plus />}
+                variant="quiet"
+                onClick={() => setAdding(true)}
+              >
+                Add {scopeType.label_singular.toLowerCase()}
+              </Button>
             )}
-          </Card>
+          </>
         ) : null}
       </div>
 
@@ -817,154 +879,51 @@ function ContextField({
   );
 }
 
-interface ScopeTableRowProps {
-  scopeId: string;
-  scopeName: string;
-  columns: { id: string; label: string }[];
-  suggestionRows: KgSuggestionRow[];
-  suggestionByItem: Map<string, KgSuggestionRow[]>;
-  accept: (id: string) => Promise<KgAcceptResult>;
-  reject: (id: string) => Promise<KgDecisionResponse>;
-  defer: (id: string) => Promise<KgDecisionResponse>;
-  canManage: boolean;
-  deleting: boolean;
-  onDelete: () => void;
-  href: string;
-  onClick: () => void;
-}
-
-function ScopeTableRow({
-  scopeId,
-  scopeName,
-  columns,
+/** One context-item cell: the value's one-line summary (full text on hover) and its KG suggestion dot. */
+function ContextValueCell({
+  display,
   suggestionRows,
-  suggestionByItem,
   accept,
   reject,
   defer,
-  canManage,
-  deleting,
-  onDelete,
-  href,
-  onClick,
-}: ScopeTableRowProps) {
-  // Read-only: the page asks the values door ONCE for every scope it lists
-  // (`ensureContextValuesForScopes` above); a row never reads its own scope.
-  const selectValuesEntry = useMemo(() => makeSelectScopeValuesEntry(), []);
-  const { values, status } = useAppSelector((s) => selectValuesEntry(s, scopeId));
-  const rows = status === "ready" || status === "error" ? values : null;
-
+}: {
+  display: string | null;
+  suggestionRows: KgSuggestionRow[];
+  accept: (id: string) => Promise<KgAcceptResult>;
+  reject: (id: string) => Promise<KgDecisionResponse>;
+  defer: (id: string) => Promise<KgDecisionResponse>;
+}) {
   return (
-    <TableRow onClick={onClick} className="cursor-pointer group">
-      <TableCell
-        className="sticky left-0 z-10 bg-card group-hover:bg-accent/40 px-3 font-medium w-[200px] min-w-[200px] border-b border-border"
-        data-phone="lead"
-      >
-        <span className="flex items-center gap-1.5 w-full min-w-0">
-          <Link
-            href={href}
-            onClick={(event) => event.stopPropagation()}
-            className="truncate rounded-sm hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {scopeName}
-          </Link>
-          {suggestionRows.length > 0 && (
-            <span onClick={(e) => e.stopPropagation()} className="shrink-0">
-              <KgSuggestionHint
-                variant="badge"
-                rows={suggestionRows}
-                accept={accept}
-                reject={reject}
-                defer={defer}
-                label={scopeName}
-                align="start"
-              />
-            </span>
-          )}
-          {canManage && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              disabled={deleting}
-              aria-label={`Delete ${scopeName}`}
-              className="ml-auto shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:text-destructive disabled:opacity-50"
-            >
-              {deleting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="h-3.5 w-3.5" />
-              )}
-            </button>
-          )}
-          <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+    <span className="flex items-center gap-1.5 min-w-0">
+      {display ? (
+        <TooltipProvider delayDuration={400}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate block cursor-help text-sm min-w-0">
+                {display}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-sm">
+              <p className="text-xs whitespace-pre-wrap break-words">{display}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        <span className="truncate block text-xs text-muted-foreground">—</span>
+      )}
+      {suggestionRows.length > 0 && (
+        <span onClick={(e) => e.stopPropagation()} className="shrink-0">
+          <KgSuggestionHint
+            variant="dot"
+            rows={suggestionRows}
+            accept={accept}
+            reject={reject}
+            defer={defer}
+            align="start"
+          />
         </span>
-      </TableCell>
-      {columns.map((col) => {
-        const row = rows?.[col.id];
-        const display = row ? renderValue(row) : "";
-        const isEmpty = !display;
-        const cellSuggestions =
-          suggestionByItem.get(`${scopeId}:${col.id}`) ?? [];
-
-        if (!rows) {
-          return (
-            <TableCell
-              key={col.id}
-              className="px-3 text-muted-foreground w-[200px] min-w-[200px] border-b border-border group-hover:bg-accent/40"
-              data-label={col.label}
-              data-phone="inline"
-            >
-              <Loader2 className="h-3 w-3 animate-spin" />
-            </TableCell>
-          );
-        }
-
-        return (
-          <TableCell
-            key={col.id}
-            className={`px-3 w-[200px] min-w-[200px] max-w-[200px] border-b border-border group-hover:bg-accent/40 ${isEmpty ? "text-muted-foreground" : ""}`}
-            data-label={col.label}
-            data-phone="inline"
-          >
-            <span className="flex items-center gap-1.5 min-w-0">
-              {isEmpty ? (
-                <span className="truncate block text-xs">—</span>
-              ) : (
-                <TooltipProvider delayDuration={400}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="truncate block cursor-help text-sm min-w-0">
-                        {display}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-sm">
-                      <p className="text-xs whitespace-pre-wrap break-words">
-                        {display}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              {cellSuggestions.length > 0 && (
-                <span onClick={(e) => e.stopPropagation()} className="shrink-0">
-                  <KgSuggestionHint
-                    variant="dot"
-                    rows={cellSuggestions}
-                    accept={accept}
-                    reject={reject}
-                    defer={defer}
-                    align="start"
-                  />
-                </span>
-              )}
-            </span>
-          </TableCell>
-        );
-      })}
-    </TableRow>
+      )}
+    </span>
   );
 }
 

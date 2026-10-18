@@ -1,0 +1,3793 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0550",
+  "version": 1,
+  "title": "Nonprofit Fundraising Desk",
+  "description": "Donors, gifts, pledges, campaigns and stewardship follow-ups in one place.",
+  "forWho": "Small and mid-size nonprofits with a development team",
+  "icon": {
+    "emoji": "💛"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "nonprofit",
+  "tags": [
+    "donors",
+    "fundraising",
+    "gifts",
+    "campaigns",
+    "nonprofit"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-nonprofit-fundraising-desk",
+    "catalogueId": "SP0550",
+    "useCase": "Marisol Ainsworth-Reyes leads development at a community nonprofit and uses this to see which pledges are overdue, which donors are due a thank-you call and how each campaign is tracking to goal.",
+    "industry": "nonprofit_community",
+    "vertical": "Nonprofit fundraising",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Harborlight Community Trust",
+      "describes": "A twelve-person community nonprofit running youth programs and a neighborhood food garden, funded by individual donors, local businesses and a few foundations.",
+      "address": {
+        "line1": "42 Larkspur Lane",
+        "city": "Tacoma",
+        "region": "WA",
+        "postalCode": "98402",
+        "country": "US"
+      },
+      "phone": "(253) 555-0171",
+      "website": "harborlighttrust.net",
+      "email": "hello@harborlighttrust.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-nonprofit-fundraising-desk",
+    "tables": [
+      {
+        "token": "donor",
+        "name": "Donors",
+        "labelSingular": "Donor",
+        "labelPlural": "Donors",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "heart-handshake",
+        "titleField": "donor_name",
+        "describes": "Everyone who gives or might give, with their total giving and the next planned contact.",
+        "subject": "thing",
+        "independentOf": {
+          "steward": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "first_gift_on",
+            "next_touch"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "donor_name",
+            "label": "Donor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "choices": [
+              "Individual",
+              "Family",
+              "Business",
+              "Foundation",
+              "Faith group"
+            ],
+            "choiceColors": {
+              "Individual": "slate",
+              "Family": "blue",
+              "Business": "amber",
+              "Foundation": "violet",
+              "Faith group": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "choices": [
+              "Prospect",
+              "Cultivating",
+              "Active",
+              "Lapsed",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Prospect": "slate",
+              "Cultivating": "blue",
+              "Active": "amber",
+              "Lapsed": "violet",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Cultivating": "in_progress",
+              "Active": "in_progress",
+              "Lapsed": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_gift_on",
+            "label": "First gift on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_touch",
+            "label": "Next planned contact",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "steward",
+            "label": "Relationship owner",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "gift_count",
+            "label": "Gifts received",
+            "parityType": "rollup",
+            "via": "gifts",
+            "pick": "gift_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Received"
+            }
+          },
+          {
+            "key": "total_given",
+            "label": "Total given (USD)",
+            "parityType": "rollup",
+            "via": "gifts",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Received"
+            }
+          },
+          {
+            "key": "pledged_open",
+            "label": "Pledged, not yet received (USD)",
+            "parityType": "rollup",
+            "via": "gifts",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Pledged"
+            }
+          },
+          {
+            "key": "giving_level",
+            "label": "Giving level",
+            "parityType": "formula",
+            "formula": "IF({Total given (USD)} >= 5000, \"Major\", IF({Total given (USD)} >= 500, \"Mid-level\", IF({Total given (USD)} > 0, \"Annual\", \"Not yet\")))",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "open_tasks",
+            "label": "Open follow-ups",
+            "parityType": "rollup",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "To do"
+            }
+          },
+          {
+            "key": "btn_won",
+            "label": "Mark active",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "donor_won"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_lapsed",
+            "label": "Mark lapsed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "donor_lapsed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_gift",
+            "label": "Record a gift",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "gift",
+              "template": "New gift",
+              "prefill": {
+                "donor": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_task",
+            "label": "Add a follow-up",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New follow-up",
+              "prefill": {
+                "donor": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New donor",
+            "values": {
+              "donor_name": "New donor",
+              "stage": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How we know them"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How they first came to the organization and who introduced them."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Interests"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Which programs they care about and what they have said about why they give."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preferences"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How they like to be contacted, whether they want to be recognized and any mailing limits."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "donor-1",
+            "values": {
+              "donor_name": "Ostrander Family Fund",
+              "kind": "Family",
+              "stage": "Active",
+              "email": "gifts@ostranderfund.net",
+              "phone": "(253) 555-0101",
+              "first_gift_on": "@today-4y",
+              "next_touch": "@today+3d",
+              "steward": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donor-2",
+            "values": {
+              "donor_name": "Lindqvist Hardware",
+              "kind": "Business",
+              "stage": "Active",
+              "email": "hello@lindqvisthardware.net",
+              "phone": "(253) 555-0102",
+              "first_gift_on": "@today-3y",
+              "next_touch": "@today+5d",
+              "steward": "tm-2"
+            }
+          },
+          {
+            "key": "donor-3",
+            "values": {
+              "donor_name": "Priya Venkataraman",
+              "kind": "Individual",
+              "stage": "Active",
+              "email": "priya.v@mailbox.net",
+              "phone": "(253) 555-0103",
+              "first_gift_on": "@today-2y",
+              "next_touch": "@today",
+              "steward": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donor-4",
+            "values": {
+              "donor_name": "Gideon Abara",
+              "kind": "Individual",
+              "stage": "Cultivating",
+              "email": "gideon.abara@mailbox.net",
+              "phone": "(253) 555-0104",
+              "first_gift_on": "@today-200d",
+              "next_touch": "@today-6d",
+              "steward": "tm-1"
+            }
+          },
+          {
+            "key": "donor-5",
+            "values": {
+              "donor_name": "Westshore Rotary Circle",
+              "kind": "Business",
+              "stage": "Active",
+              "email": "treasurer@westshorerotary.net",
+              "phone": "(253) 555-0105",
+              "first_gift_on": "@today-5y",
+              "next_touch": "@today+12d",
+              "steward": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donor-6",
+            "values": {
+              "donor_name": "Beatrix Colquhoun",
+              "kind": "Individual",
+              "stage": "Prospect",
+              "phone": "(253) 555-0106",
+              "next_touch": "@today+2d",
+              "steward": "tm-2"
+            }
+          },
+          {
+            "key": "donor-7",
+            "values": {
+              "donor_name": "Evergreen Faith Fellowship",
+              "kind": "Faith group",
+              "stage": "Active",
+              "email": "office@evergreenfellowship.net",
+              "phone": "(253) 555-0107",
+              "first_gift_on": "@today-6y",
+              "next_touch": "@today+20d",
+              "steward": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donor-8",
+            "values": {
+              "donor_name": "Nakashima Foundation",
+              "kind": "Foundation",
+              "stage": "Cultivating",
+              "email": "programs@nakashimafdn.net",
+              "phone": "(253) 555-0108",
+              "first_gift_on": "@today-300d",
+              "next_touch": "@today+1d",
+              "steward": "tm-5"
+            }
+          },
+          {
+            "key": "donor-9",
+            "values": {
+              "donor_name": "Hollis & June Prewitt",
+              "kind": "Family",
+              "stage": "Lapsed",
+              "email": "prewitts@mailbox.net",
+              "phone": "(253) 555-0109",
+              "first_gift_on": "@today-7y",
+              "next_touch": "@today-20d",
+              "steward": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donor-10",
+            "values": {
+              "donor_name": "Sunita Rao",
+              "kind": "Individual",
+              "stage": "Active",
+              "email": "sunita.rao@mailbox.net",
+              "phone": "(253) 555-0110",
+              "first_gift_on": "@today-18m",
+              "next_touch": "@today+9d",
+              "steward": "tm-1"
+            }
+          },
+          {
+            "key": "donor-11",
+            "values": {
+              "donor_name": "Brightwater Credit Union",
+              "kind": "Business",
+              "stage": "Cultivating",
+              "email": "community@brightwatercu.net",
+              "phone": "(253) 555-0111",
+              "first_gift_on": "@today-100d",
+              "next_touch": "@today+4d",
+              "steward": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donor-12",
+            "values": {
+              "donor_name": "Marcus Delacroix-Oyelaran",
+              "kind": "Individual",
+              "stage": "Declined",
+              "phone": "(253) 555-0112",
+              "steward": "tm-2"
+            }
+          },
+          {
+            "key": "donor-13",
+            "values": {
+              "donor_name": "Tamsin Reedy",
+              "kind": "Individual",
+              "stage": "Active",
+              "email": "tamsin.r@mailbox.net",
+              "phone": "(253) 555-0113",
+              "first_gift_on": "@today-9m",
+              "next_touch": "@today-2d",
+              "steward": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donor-14",
+            "values": {
+              "donor_name": "Pier 9 Coffee Roasters",
+              "kind": "Business",
+              "stage": "Prospect",
+              "email": "owner@pier9coffee.net",
+              "phone": "(253) 555-0114",
+              "next_touch": "@today+6d",
+              "steward": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "campaign",
+        "name": "Campaigns",
+        "labelSingular": "Campaign",
+        "labelPlural": "Campaigns",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "megaphone",
+        "titleField": "campaign_name",
+        "describes": "Each appeal or event, with its goal and how much has actually been received.",
+        "subject": "thing",
+        "independentOf": {
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "campaign_name",
+            "label": "Campaign",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planning",
+              "Live",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "Live": "blue",
+              "Closed": "amber"
+            },
+            "required": true,
+            "default": "Planning",
+            "statusGroups": {
+              "Planning": "todo",
+              "Live": "in_progress",
+              "Closed": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Annual appeal",
+              "Gala",
+              "Giving day",
+              "Capital project",
+              "Monthly giving"
+            ],
+            "choiceColors": {
+              "Annual appeal": "slate",
+              "Gala": "blue",
+              "Giving day": "amber",
+              "Capital project": "violet",
+              "Monthly giving": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "goal",
+            "label": "Goal (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "raised",
+            "label": "Received so far (USD)",
+            "parityType": "rollup",
+            "via": "campaign_gifts",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Received"
+            }
+          },
+          {
+            "key": "pledged",
+            "label": "Pledged, not received (USD)",
+            "parityType": "rollup",
+            "via": "campaign_gifts",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Pledged"
+            }
+          },
+          {
+            "key": "donor_gifts",
+            "label": "Gifts received",
+            "parityType": "rollup",
+            "via": "campaign_gifts",
+            "pick": "gift_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Received"
+            }
+          },
+          {
+            "key": "pct",
+            "label": "Goal reached (%)",
+            "parityType": "formula",
+            "formula": "IF({Goal (USD)} > 0, ROUND({Received so far (USD)} / {Goal (USD)} * 100, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_live",
+            "label": "Go live",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "campaign_live"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_close",
+            "label": "Close campaign",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "campaign_close"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_gift",
+            "label": "Record a gift",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "gift",
+              "template": "New gift",
+              "prefill": {
+                "campaign": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New campaign",
+            "values": {
+              "campaign_name": "New campaign",
+              "status": "Planning"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the money will pay for, in one plain sentence a donor would repeat."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Channels, dates, volunteers and the message for each."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Thank-you plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who thanks whom, by when and how."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "campaign-1",
+            "values": {
+              "campaign_name": "Spring Garden Appeal",
+              "status": "Live",
+              "kind": "Annual appeal",
+              "goal": 25000,
+              "starts_on": "@today-30d",
+              "ends_on": "@today-3d",
+              "lead": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-2",
+            "values": {
+              "campaign_name": "Harvest Supper and Auction",
+              "status": "Planning",
+              "kind": "Gala",
+              "goal": 40000,
+              "starts_on": "@today+40d",
+              "ends_on": "@today+41d",
+              "lead": "tm-4"
+            }
+          },
+          {
+            "key": "campaign-3",
+            "values": {
+              "campaign_name": "Giving Tuesday Match",
+              "status": "Planning",
+              "kind": "Giving day",
+              "goal": 15000,
+              "starts_on": "@today+2d",
+              "ends_on": "@today+4d",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-4",
+            "values": {
+              "campaign_name": "Youth Center Roof Fund",
+              "status": "Live",
+              "kind": "Capital project",
+              "goal": 120000,
+              "starts_on": "@today-200d",
+              "ends_on": "@today+150d",
+              "lead": "tm-5"
+            }
+          },
+          {
+            "key": "campaign-5",
+            "values": {
+              "campaign_name": "Sustainer Circle",
+              "status": "Live",
+              "kind": "Monthly giving",
+              "goal": 36000,
+              "starts_on": "@today-360d",
+              "ends_on": "@today",
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-6",
+            "values": {
+              "campaign_name": "Winter Warmth Drive",
+              "status": "Closed",
+              "kind": "Annual appeal",
+              "goal": 18000,
+              "starts_on": "@today-120d",
+              "ends_on": "@today-60d",
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "campaign-7",
+            "values": {
+              "campaign_name": "Summer Camp Scholarships",
+              "status": "Closed",
+              "kind": "Annual appeal",
+              "goal": 12000,
+              "starts_on": "@today-300d",
+              "ends_on": "@today-240d",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "gift",
+        "name": "Gifts",
+        "labelSingular": "Gift",
+        "labelPlural": "Gifts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "gift",
+        "titleField": "gift_name",
+        "describes": "Every gift and pledge, who gave it and which campaign it counts toward.",
+        "subject": "thing",
+        "independentOf": {
+          "donor": "Either record can be created or change status before the other.",
+          "campaign": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "received_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "due_on",
+            "received_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "gift_name",
+            "label": "Gift",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "donor",
+            "label": "Donor",
+            "parityType": "relation",
+            "relationTarget": "donor",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "relationTarget": "campaign",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Pledged",
+              "Received",
+              "Written off"
+            ],
+            "choiceColors": {
+              "Pledged": "slate",
+              "Received": "blue",
+              "Written off": "amber"
+            },
+            "required": true,
+            "default": "Pledged",
+            "statusGroups": {
+              "Pledged": "todo",
+              "Received": "done",
+              "Written off": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Pledge due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "choices": [
+              "Check",
+              "Card",
+              "Bank transfer",
+              "Cash",
+              "Stock",
+              "Online"
+            ],
+            "choiceColors": {
+              "Check": "slate",
+              "Card": "blue",
+              "Bank transfer": "amber",
+              "Cash": "violet",
+              "Stock": "teal",
+              "Online": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "thanked",
+            "label": "Thank-you sent",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_received",
+            "label": "Mark received",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "gift_received"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_thanked",
+            "label": "Mark thanked",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "gift_thanked"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New gift",
+            "values": {
+              "gift_name": "New gift",
+              "status": "Pledged"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Gift notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the donor said, any restriction on how it is used."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Thank-you checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Receipt sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Thank-you letter or call done"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Added to the next donor update"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "gift-1",
+            "values": {
+              "gift_name": "Spring appeal gift, Ostrander",
+              "donor": "donor-1",
+              "campaign": "campaign-1",
+              "amount": 2500,
+              "status": "Received",
+              "received_on": "@today-12d",
+              "method": "Check",
+              "thanked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-2",
+            "values": {
+              "gift_name": "Roof fund pledge, Lindqvist",
+              "donor": "donor-2",
+              "campaign": "campaign-4",
+              "amount": 10000,
+              "status": "Pledged",
+              "due_on": "@today+2d",
+              "method": "Bank transfer",
+              "thanked": false
+            }
+          },
+          {
+            "key": "gift-3",
+            "values": {
+              "gift_name": "Monthly gift, Priya",
+              "donor": "donor-3",
+              "campaign": "campaign-5",
+              "amount": 50,
+              "status": "Received",
+              "received_on": "@today-3d",
+              "method": "Card",
+              "thanked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-4",
+            "values": {
+              "gift_name": "Spring appeal pledge, Rotary",
+              "donor": "donor-5",
+              "campaign": "campaign-1",
+              "amount": 3000,
+              "status": "Pledged",
+              "due_on": "@today",
+              "thanked": false
+            }
+          },
+          {
+            "key": "gift-5",
+            "values": {
+              "gift_name": "Roof fund gift, Evergreen",
+              "donor": "donor-7",
+              "campaign": "campaign-4",
+              "amount": 4000,
+              "status": "Received",
+              "received_on": "@today-20d",
+              "method": "Check",
+              "thanked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-6",
+            "values": {
+              "gift_name": "Monthly gift, Sunita",
+              "donor": "donor-10",
+              "campaign": "campaign-5",
+              "amount": 100,
+              "status": "Received",
+              "received_on": "@today-5d",
+              "method": "Card",
+              "thanked": true
+            }
+          },
+          {
+            "key": "gift-7",
+            "values": {
+              "gift_name": "Winter drive gift, Prewitt",
+              "donor": "donor-9",
+              "campaign": "campaign-6",
+              "amount": 750,
+              "status": "Received",
+              "received_on": "@today-150d",
+              "method": "Check",
+              "thanked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-8",
+            "values": {
+              "gift_name": "Roof fund pledge, Foundation",
+              "donor": "donor-8",
+              "campaign": "campaign-4",
+              "amount": 25000,
+              "status": "Pledged",
+              "due_on": "@today-4d",
+              "method": "Bank transfer",
+              "thanked": false
+            }
+          },
+          {
+            "key": "gift-9",
+            "values": {
+              "gift_name": "Spring appeal gift, Tamsin",
+              "donor": "donor-13",
+              "campaign": "campaign-1",
+              "amount": 250,
+              "status": "Received",
+              "received_on": "@today-9d",
+              "method": "Online",
+              "thanked": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-10",
+            "values": {
+              "gift_name": "Giving day pledge, Brightwater",
+              "donor": "donor-11",
+              "campaign": "campaign-3",
+              "amount": 5000,
+              "status": "Pledged",
+              "due_on": "@today+5d",
+              "method": "Bank transfer",
+              "thanked": false
+            }
+          },
+          {
+            "key": "gift-11",
+            "values": {
+              "gift_name": "Winter drive gift, Westshore",
+              "donor": "donor-5",
+              "campaign": "campaign-6",
+              "amount": 2000,
+              "status": "Received",
+              "received_on": "@today-100d",
+              "method": "Check",
+              "thanked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-12",
+            "values": {
+              "gift_name": "Scholarship gift, Lindqvist",
+              "donor": "donor-2",
+              "campaign": "campaign-7",
+              "amount": 1500,
+              "status": "Received",
+              "received_on": "@today-270d",
+              "method": "Card",
+              "thanked": true
+            }
+          },
+          {
+            "key": "gift-13",
+            "values": {
+              "gift_name": "Spring appeal, Gideon",
+              "donor": "donor-4",
+              "campaign": "campaign-1",
+              "amount": 100,
+              "status": "Received",
+              "received_on": "@today-1d",
+              "method": "Online",
+              "thanked": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-14",
+            "values": {
+              "gift_name": "Roof fund gift, Priya",
+              "donor": "donor-3",
+              "campaign": "campaign-4",
+              "amount": 500,
+              "status": "Written off",
+              "due_on": "@today-90d",
+              "method": "Check",
+              "thanked": false
+            }
+          },
+          {
+            "key": "gift-15",
+            "values": {
+              "gift_name": "Roof fund pledge, Pier 9",
+              "donor": "donor-14",
+              "campaign": "campaign-4",
+              "amount": 1200,
+              "status": "Pledged",
+              "due_on": "@today+6d",
+              "method": "Card",
+              "thanked": false,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Follow-ups",
+        "labelSingular": "Follow-up",
+        "labelPlural": "Follow-ups",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "phone",
+        "titleField": "task_name",
+        "describes": "Thank-you calls, visits and asks that keep each relationship moving.",
+        "subject": "thing",
+        "independentOf": {
+          "donor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Follow-up",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "donor",
+            "label": "Donor",
+            "parityType": "relation",
+            "relationTarget": "donor",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Thank-you call",
+              "Thank-you letter",
+              "Visit",
+              "Ask",
+              "Update email",
+              "Event invite"
+            ],
+            "choiceColors": {
+              "Thank-you call": "slate",
+              "Thank-you letter": "blue",
+              "Visit": "amber",
+              "Ask": "violet",
+              "Update email": "teal",
+              "Event invite": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "To do",
+              "Done",
+              "Skipped"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Done": "blue",
+              "Skipped": "amber"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Done": "done",
+              "Skipped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New follow-up",
+            "values": {
+              "task_name": "New follow-up",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What to say"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The one thing the donor should hear from us."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What happened and what the next step is."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "task-1",
+            "values": {
+              "task_name": "Thank Priya for her monthly gift",
+              "donor": "donor-3",
+              "kind": "Thank-you call",
+              "status": "To do",
+              "due_on": "@today",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-2",
+            "values": {
+              "task_name": "Visit the Ostranders at the garden",
+              "donor": "donor-1",
+              "kind": "Visit",
+              "status": "To do",
+              "due_on": "@today+3d"
+            }
+          },
+          {
+            "key": "task-3",
+            "values": {
+              "task_name": "Send Lindqvist the roof progress photos",
+              "donor": "donor-2",
+              "kind": "Update email",
+              "status": "To do",
+              "due_on": "@today+1d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-4",
+            "values": {
+              "task_name": "Ask Nakashima Foundation for a site visit",
+              "donor": "donor-8",
+              "kind": "Ask",
+              "status": "To do",
+              "due_on": "@today-3d"
+            }
+          },
+          {
+            "key": "task-5",
+            "values": {
+              "task_name": "Thank Gideon for his first gift",
+              "donor": "donor-4",
+              "kind": "Thank-you letter",
+              "status": "To do",
+              "due_on": "@today-1d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-6",
+            "values": {
+              "task_name": "Invite Brightwater to the Harvest Supper",
+              "donor": "donor-11",
+              "kind": "Event invite",
+              "status": "To do",
+              "due_on": "@today+6d"
+            }
+          },
+          {
+            "key": "task-7",
+            "values": {
+              "task_name": "Call the Prewitts about coming back",
+              "donor": "donor-9",
+              "kind": "Thank-you call",
+              "status": "To do",
+              "due_on": "@today+4d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-8",
+            "values": {
+              "task_name": "Thank Westshore Rotary for last winter",
+              "donor": "donor-5",
+              "kind": "Thank-you letter",
+              "status": "Done",
+              "due_on": "@today-14d"
+            }
+          },
+          {
+            "key": "task-9",
+            "values": {
+              "task_name": "Update Evergreen on roof fund total",
+              "donor": "donor-7",
+              "kind": "Update email",
+              "status": "Done",
+              "due_on": "@today-7d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-10",
+            "values": {
+              "task_name": "Coffee with Beatrix Colquhoun",
+              "donor": "donor-6",
+              "kind": "Visit",
+              "status": "To do",
+              "due_on": "@today+2d"
+            }
+          },
+          {
+            "key": "task-11",
+            "values": {
+              "task_name": "Thank Tamsin for her spring gift",
+              "donor": "donor-13",
+              "kind": "Thank-you call",
+              "status": "To do",
+              "due_on": "@today-2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-12",
+            "values": {
+              "task_name": "Share pledge reminder with Pier 9",
+              "donor": "donor-14",
+              "kind": "Update email",
+              "status": "Skipped",
+              "due_on": "@today-10d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each donor belongs to one relationship owner.",
+        "fromTable": "donor",
+        "fromField": "steward",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "donor_by_steward"
+      },
+      {
+        "describes": "Each campaign belongs to one lead.",
+        "fromTable": "campaign",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "campaign_by_lead"
+      },
+      {
+        "describes": "Each gift belongs to one donor.",
+        "fromTable": "gift",
+        "fromField": "donor",
+        "toTable": "donor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "gifts"
+      },
+      {
+        "describes": "Each gift belongs to one campaign.",
+        "fromTable": "gift",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "campaign_gifts"
+      },
+      {
+        "describes": "Each follow-up belongs to one donor.",
+        "fromTable": "task",
+        "fromField": "donor",
+        "toTable": "donor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Marisol Ainsworth-Reyes",
+              "role": "Director of development",
+              "work_email": "marisol@harborlighttrust.net",
+              "mobile": "(253) 555-0141",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Dev Pillai",
+              "role": "Gift officer",
+              "work_email": "dev@harborlighttrust.net",
+              "mobile": "(253) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Ingrid Halvorsen",
+              "role": "Database and gift processing",
+              "work_email": "ingrid@harborlighttrust.net",
+              "mobile": "(253) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Tobias Nakamura",
+              "role": "Events coordinator",
+              "work_email": "tobias@harborlighttrust.net",
+              "mobile": "(253) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Charlene Mwangi",
+              "role": "Executive director",
+              "work_email": "charlene@harborlighttrust.net",
+              "mobile": "(253) 555-0145",
+              "start_date": "@today-7y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Add a prospect",
+        "describes": "Capture a new person or business who might give.",
+        "audience": "staff",
+        "table": "donor",
+        "fields": [
+          {
+            "fieldKey": "donor_name",
+            "ask": "Who is the donor?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "Is this a person, family, business or foundation?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What is their email?"
+          },
+          {
+            "fieldKey": "next_touch",
+            "ask": "When should we first reach out?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. They are on the donor list as a Prospect."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "donor_won",
+        "table": "donor",
+        "name": "Mark active",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "donor_lapsed",
+        "table": "donor",
+        "name": "Mark lapsed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Lapsed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "campaign_live",
+        "table": "campaign",
+        "name": "Go live",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Live"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "campaign_close",
+        "table": "campaign",
+        "name": "Close campaign",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Closed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "gift_received",
+        "table": "gift",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "gift_thanked",
+        "table": "gift",
+        "name": "Mark thanked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "thanked",
+            "set": "value",
+            "value": true
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_donor",
+        "name": "All donors",
+        "table": "donor",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "donor_board",
+        "name": "By stage",
+        "table": "donor",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "donor_cal",
+        "name": "Calendar",
+        "table": "donor",
+        "kind": "calendar",
+        "dateField": "next_touch",
+        "allDay": true
+      },
+      {
+        "token": "donor_over",
+        "name": "Overdue",
+        "table": "donor",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Prospect",
+            "Cultivating",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "donor_week",
+        "name": "This week",
+        "table": "donor",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Prospect",
+            "Cultivating",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "donor_next7",
+        "name": "Next 7 days",
+        "table": "donor",
+        "kind": "grid",
+        "within": {
+          "next_touch": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Prospect",
+            "Cultivating",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "donor_mine",
+        "name": "My donors",
+        "table": "donor",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_campaign",
+        "name": "All campaigns",
+        "table": "campaign",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "campaign_board",
+        "name": "By status",
+        "table": "campaign",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "campaign_cal",
+        "name": "Calendar",
+        "table": "campaign",
+        "kind": "calendar",
+        "dateField": "ends_on",
+        "allDay": true
+      },
+      {
+        "token": "campaign_over",
+        "name": "Overdue",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planning",
+            "Live"
+          ]
+        }
+      },
+      {
+        "token": "campaign_week",
+        "name": "This week",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planning",
+            "Live"
+          ]
+        }
+      },
+      {
+        "token": "campaign_next7",
+        "name": "Next 7 days",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planning",
+            "Live"
+          ]
+        }
+      },
+      {
+        "token": "campaign_mine",
+        "name": "My campaigns",
+        "table": "campaign",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_gift",
+        "name": "All gifts",
+        "table": "gift",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "gift_board",
+        "name": "By status",
+        "table": "gift",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "gift_cal",
+        "name": "Calendar",
+        "table": "gift",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "gift_over",
+        "name": "Overdue",
+        "table": "gift",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Pledged"
+        }
+      },
+      {
+        "token": "gift_week",
+        "name": "This week",
+        "table": "gift",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Pledged"
+        }
+      },
+      {
+        "token": "gift_next7",
+        "name": "Next 7 days",
+        "table": "gift",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Pledged"
+        }
+      },
+      {
+        "token": "gift_mine",
+        "name": "My gifts",
+        "table": "gift",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_task",
+        "name": "All follow-ups",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_board",
+        "name": "By status",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_cal",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "This week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "task_mine",
+        "name": "My follow-ups",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Nonprofit Fundraising Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "gift",
+          "describes": "Every gift and pledge, who gave it and which campaign it counts toward."
+        },
+        {
+          "name": "related_tables",
+          "table": "donor",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many pledges are still waiting to be received?",
+        "whyItMatters": "The gift team chases pledges every Monday.",
+        "expect": {
+          "table": "gift",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Pledged"
+          },
+          "answer": 5,
+          "unit": "pledges"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open donors.",
+        "action": {
+          "kind": "open",
+          "surface": "donor_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "donor_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open campaigns.",
+        "action": {
+          "kind": "open",
+          "surface": "campaign_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "campaign_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open gifts.",
+        "action": {
+          "kind": "open",
+          "surface": "gift_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "gift_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "harborlighttrust.net"
+      ],
+      "fictionalStreets": [
+        "Larkspur Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "nonprofit-fundraising-desk",
+      "parent": null,
+      "title": "Nonprofit Fundraising Desk",
+      "icon": {
+        "emoji": "💛"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything the development team runs on: donors and their giving, gifts and pledges, campaigns against goal and the thank-you calls that keep people giving. Start with the Dashboard each Monday, then work the Overdue and Mine views. Record every gift the day it arrives, and mark the thank-you done the same week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:gift-processing"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:stewardship-playbook"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:campaign-planning"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Donors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone who gives or might give, with their total giving and the next planned contact."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "donor",
+              "view": "donor_board"
+            },
+            "inline": true,
+            "title": "Donors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "don-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "don-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_touch"
+              },
+              {
+                "id": "don-t",
+                "name": "All donors",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "don-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_touch": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Prospect",
+                    "Cultivating",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "don-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_touch": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Prospect",
+                    "Cultivating",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "don-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_touch": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Prospect",
+                    "Cultivating",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "don-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "don-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Campaigns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each appeal or event, with its goal and how much has actually been received."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "campaign",
+              "view": "campaign_board"
+            },
+            "inline": true,
+            "title": "Campaigns",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cam-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cam-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ends_on"
+              },
+              {
+                "id": "cam-t",
+                "name": "All campaigns",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cam-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ends_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planning",
+                    "Live"
+                  ]
+                }
+              },
+              {
+                "id": "cam-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ends_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planning",
+                    "Live"
+                  ]
+                }
+              },
+              {
+                "id": "cam-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ends_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planning",
+                    "Live"
+                  ]
+                }
+              },
+              {
+                "id": "cam-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cam-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Gifts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every gift and pledge, who gave it and which campaign it counts toward."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "gift",
+              "view": "gift_board"
+            },
+            "inline": true,
+            "title": "Gifts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "gif-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "gif-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "gif-t",
+                "name": "All gifts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "gif-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Pledged"
+                }
+              },
+              {
+                "id": "gif-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Pledged"
+                }
+              },
+              {
+                "id": "gif-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Pledged"
+                }
+              },
+              {
+                "id": "gif-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "gif-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-ups"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Thank-you calls, visits and asks that keep each relationship moving."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Follow-ups",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tas-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tas-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tas-t",
+                "name": "All follow-ups",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tas-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "tas-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "tas-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "tas-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tas-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "nonprofit-fundraising-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Development at a glance. Charts read the live tables, so they move as gifts are recorded."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "gift",
+                      "view": "all_gift"
+                    },
+                    "inline": true,
+                    "title": "Gifts by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Gifts by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "gift",
+                      "view": "all_gift"
+                    },
+                    "inline": true,
+                    "title": "Gift dollars by campaign (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Gift dollars by campaign (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "campaign",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "donor",
+                      "view": "all_donor"
+                    },
+                    "inline": true,
+                    "title": "Donors by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Donors by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "campaign",
+                      "view": "all_campaign"
+                    },
+                    "inline": true,
+                    "title": "Goal by campaign (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Goal by campaign (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "campaign_name",
+                          "op": "sum",
+                          "field": "goal"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pledges past due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "gift",
+              "view": "all_gift"
+            },
+            "inline": true,
+            "title": "Pledges past due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Pledges past due",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Pledged"
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-ups overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Follow-ups overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Follow-ups overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contacts planned this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "donor",
+              "view": "all_donor"
+            },
+            "inline": true,
+            "title": "Contacts planned this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Contacts planned this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "next_touch": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Giving level"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Total received from that donor: under 500 is Annual, 500 and over is Mid-level, 5,000 and over is Major"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Assign a named owner to every Major donor; review Mid-level donors twice a year"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Goal reached (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Gifts received for the campaign divided by its goal; pledges are not counted until received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 50 percent with half the time gone means adding an ask or a second push"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pledged, not yet received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pledges still open for that donor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call before the due date, not after it"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "gift-processing",
+      "parent": "nonprofit-fundraising-desk",
+      "title": "Gift processing routine",
+      "icon": {
+        "emoji": "📬"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A gift is not finished until it is recorded, receipted and thanked. This routine keeps all three inside one week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The same day a gift arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Gifts table and add a row. Name it with the campaign and donor, and fill in amount, method and date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link the gift to the donor and the campaign it counts toward. If the donor is new, add them first from the intake form."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set Status to Received. A pledge stays Pledged until the money is actually in hand."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Deposit checks within two working days and note any restriction the donor wrote on the check or card."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Within a week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the tax receipt. Use the standard receipt wording your accountant approved."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make the thank-you call or write the letter, then press Mark thanked on the gift."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a follow-up for the donor if they asked a question or mentioned a program they love."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common mistakes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Counting a pledge as received: the campaign total will look better than the bank balance."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Recording one gift against two campaigns: split it into two rows with the right amounts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Forgetting matching gifts: ask every business donor whether their employer matches."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "stewardship-playbook",
+      "parent": "nonprofit-fundraising-desk",
+      "title": "Stewardship playbook",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Donors rarely leave because of a mistake. They leave because nobody told them what their gift did. Stewardship is the plan that prevents that."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What every donor should hear"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A personal thank-you within 48 hours of any gift."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "An honest update on the program their gift supports, at least twice a year."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "An invitation to see the work in person, once a year."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "By giving level"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Level"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Contact rhythm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who owns it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Major"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Visit or call each quarter, plus a personal note after every gift"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Director of development"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mid-level"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call after each gift, update email every two months, one invitation a year"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Gift officer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Annual"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Letter after each gift, newsletter and one appeal a quarter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Gift processing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a donor goes quiet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the donor row. If Lapsed, look at the last gift date and the last follow-up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make one warm call that asks nothing. Ask what they thought of the last update."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If they want to stop, set the stage to Declined and note why."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If they come back, set Active and thank them like a new donor."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "campaign-planning",
+      "parent": "nonprofit-fundraising-desk",
+      "title": "Planning a campaign",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every campaign gets a row, a goal and a lead before the first message goes out. A goal nobody wrote down cannot be missed or met."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before launch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the campaign row. Write the purpose in one sentence a donor would repeat."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set a goal from last year's result plus a realistic stretch, not a wish."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Name a lead and list every follow-up in the Follow-ups table with a due date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Build the thank-you plan first. Who calls whom, and when."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the campaign"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check Goal reached (%) every Monday."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the campaign to Live only when the first message is ready to send."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Chase pledges due this week before asking for anything new."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After it closes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Close campaign once the last gift is recorded."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count thank-yous done against gifts received. Anything missing goes on this week's list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write three lines on what worked and what to change, in the campaign row's page."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

@@ -171,7 +171,14 @@ stripped the `/api` prefix — that is the bug this layout fixes.)
    metadata, tools, and triggers — so a skill is never assigned blind. Below
    `lg` the detail takes over the picker body (the right column is collapsed
    at that width) and a back arrow returns to the list.
-4. `setAgentSkillConfig` marks the definition dirty; the existing agent
+5. **Skill sets** (`skill_type = "set"`, members in `config.set_members`,
+   read/written only through `features/skills/skill-sets.ts`) attach like any
+   skill; the server resolves them to members at run time. The picker's
+   **Sets** filter finds them; rows, the review pane and the detail pane show
+   members. `SkillDetailEditor` edits members (`SkillSetMembersEditor`) when
+   Type is `set`. Cross-repo system-of-record:
+   /Users/armanisadeghi/code/common-docs/systems/agents/agent-skills/STATE.md — read it before touching this feature in ANY repo.
+6. `setAgentSkillConfig` marks the definition dirty; the existing agent
    save flow persists `skill_config`.
 
 ---
@@ -278,6 +285,10 @@ Phases A–K of [`/.claude/plans/immutable-imagining-dove.md`](../../../../.clau
 ---
 
 ## Change log
+
+- `2026-10-18` — claude: skill sets — Sets filter + member display in
+  `SkillConfigPicker` / `SkillDetailView`, member editing in
+  `SkillDetailEditor`, helpers `skill-sets.ts` (+ jest test).
 
 - `2026-08-11` — claude: `SkillDetailEditor` is **agent-writable** on the
   `matrx-user/connections-skills` surface — 5 ask-policy `mode:"draft"` targets

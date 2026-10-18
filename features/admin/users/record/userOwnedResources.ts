@@ -4,6 +4,10 @@
 // 6.7 s of counts alone for admin@admin.com), so the census runs as SHARDS parallel calls, the way
 // aidream's user_inventory.py runs 8 concurrent counts. A failed shard never hides the others: its
 // error is returned beside the rows that did answer.
+//
+// Kept per person (lane Q S11, migration 20261018172000): admin.user_owned_resources_cached returns the
+// stored census with its computed_at; only Refresh (`refreshUserOwnedResources`) recomputes. Registry
+// types whose table no longer exists collapse into `unavailable` (one line), never one warning row each.
 
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";
@@ -18,6 +22,10 @@ export interface UserOwnedResources {
   /** Labels of the types this person owns none of. */
   none: string[];
   registered: number;
+  /** Labels of registered types whose table does not exist (registry rows pointing nowhere). */
+  unavailable: string[];
+  /** When the oldest kept shard was counted; null when nothing answered. */
+  computedAt: string | null;
   /** Slowest shard's server time. */
   elapsedMs: number;
   shardErrors: string[];
@@ -56,13 +64,30 @@ export function rowFromType(t: Json): OwnedResourceRow | null {
   };
 }
 
-export async function fetchUserOwnedResources(userId: string): Promise<UserOwnedResources> {
+/** A registry type whose table is gone: Postgres says "relation … does not exist" (42P01). */
+const MISSING_TABLE = /relation .* does not exist/i;
+
+/** The kept census (counted on first open, then read back). */
+export function fetchUserOwnedResources(userId: string): Promise<UserOwnedResources> {
+  return loadOwnedResources(userId, false);
+}
+
+/** Recount now (the tab's Refresh). */
+export function refreshUserOwnedResources(userId: string): Promise<UserOwnedResources> {
+  return loadOwnedResources(userId, true);
+}
+
+async function loadOwnedResources(userId: string, refresh: boolean): Promise<UserOwnedResources> {
   const supabase = createClient();
   const settled = await Promise.allSettled(
     Array.from({ length: SHARDS }, (_, shard) =>
-      supabase.schema("admin").rpc("user_owned_resources_shard", { p_user: userId, p_shard: shard, p_shards: SHARDS }),
+      supabase
+        .schema("admin")
+        .rpc("user_owned_resources_cached", { p_user: userId, p_shard: shard, p_shards: SHARDS, p_refresh: refresh }),
     ),
   );
+  const unavailable: string[] = [];
+  let computedAt: string | null = null;
   const rows: OwnedResourceRow[] = [];
   const none: string[] = [];
   const shardErrors: string[] = [];
@@ -80,10 +105,16 @@ export async function fetchUserOwnedResources(userId: string): Promise<UserOwned
       continue;
     }
     registered += body.types.length;
+    const at = str(body.computed_at);
+    if (at && (!computedAt || at < computedAt)) computedAt = at;
     elapsedMs = Math.max(elapsedMs, num(body.elapsed_ms) ?? 0);
     for (const t of body.types) {
       const row = rowFromType(t);
       if (!row) continue;
+      if (row.unread && MISSING_TABLE.test(row.unread)) {
+        unavailable.push(row.displayLabel);
+        continue;
+      }
       if (row.count === 0 && !row.archived) none.push(row.displayLabel);
       else rows.push(row);
     }
@@ -98,5 +129,6 @@ export async function fetchUserOwnedResources(userId: string): Promise<UserOwned
       a.displayLabel.localeCompare(b.displayLabel),
   );
   none.sort((a, b) => a.localeCompare(b));
-  return { rows, none, registered, elapsedMs, shardErrors };
+  unavailable.sort((a, b) => a.localeCompare(b));
+  return { rows, none, registered, unavailable, computedAt, elapsedMs, shardErrors };
 }

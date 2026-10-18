@@ -1,0 +1,3605 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0561",
+  "version": 1,
+  "title": "Online Academy Operations Desk",
+  "description": "Courses, cohorts, enrollments and learner support for an online academy.",
+  "forWho": "Online course academies and cohort-based programs",
+  "icon": {
+    "emoji": "🎓"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "online courses",
+    "cohorts",
+    "enrollment",
+    "learner support"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-online-academy-operations",
+    "catalogueId": "SP0561",
+    "useCase": "Sunniva Adeyemi-Park runs operations for a cohort-based online academy and uses this to see which cohorts are filling, which learners have asked for help and what revenue each cohort has brought.",
+    "industry": "education",
+    "vertical": "Online course academy",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Northlight Skills Academy",
+      "describes": "An online academy teaching practical business skills through live cohorts and self-paced courses to about 1,800 learners a year.",
+      "address": {
+        "line1": "130 Pembroke Row",
+        "city": "New York",
+        "region": "NY",
+        "postalCode": "10001",
+        "country": "US"
+      },
+      "phone": "(646) 555-0138",
+      "website": "northlightskills.net",
+      "email": "learn@northlightskills.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-online-academy-operations",
+    "tables": [
+      {
+        "token": "course",
+        "name": "Courses",
+        "labelSingular": "Course",
+        "labelPlural": "Courses",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "course_name",
+        "describes": "Every course the academy teaches or is building, with price and launch plan.",
+        "subject": "thing",
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "course_name",
+            "label": "Course",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Idea",
+              "In production",
+              "Live",
+              "Retired"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "In production": "blue",
+              "Live": "amber",
+              "Retired": "violet"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "in_progress",
+              "In production": "in_progress",
+              "Live": "in_progress",
+              "Retired": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "track",
+            "label": "Track",
+            "parityType": "select",
+            "choices": [
+              "Marketing",
+              "Finance basics",
+              "Leadership",
+              "Data skills",
+              "Design"
+            ],
+            "choiceColors": {
+              "Marketing": "slate",
+              "Finance basics": "blue",
+              "Leadership": "amber",
+              "Data skills": "violet",
+              "Design": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "choices": [
+              "Live cohort",
+              "Self-paced",
+              "Workshop"
+            ],
+            "choiceColors": {
+              "Live cohort": "slate",
+              "Self-paced": "blue",
+              "Workshop": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "launch_on",
+            "label": "Launch date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Course owner",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cohort_count",
+            "label": "Cohorts",
+            "parityType": "rollup",
+            "via": "cohorts",
+            "pick": "cohort_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Planned",
+                "Enrolling",
+                "Running",
+                "Finished"
+              ]
+            }
+          },
+          {
+            "key": "cohorts_open",
+            "label": "Cohorts taking applications",
+            "parityType": "rollup",
+            "via": "cohorts",
+            "pick": "cohort_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Enrolling"
+            }
+          },
+          {
+            "key": "btn_live",
+            "label": "Go live",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "course_live"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_cohort",
+            "label": "Add a cohort",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "cohort",
+              "template": "New cohort",
+              "prefill": {
+                "course": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New course",
+            "values": {
+              "course_name": "New course",
+              "status": "Idea"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Promise"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who it is for and what they can do afterwards."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Modules, lessons and assignments."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Production checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Outline approved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lessons recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Worksheets written"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pilot run"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pricing set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "course-1",
+            "values": {
+              "course_name": "Marketing Foundations",
+              "status": "Live",
+              "track": "Marketing",
+              "format": "Live cohort",
+              "price": 490,
+              "launch_on": "@today-300d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "course-2",
+            "values": {
+              "course_name": "Budgeting for Small Teams",
+              "status": "Live",
+              "track": "Finance basics",
+              "format": "Live cohort",
+              "price": 390,
+              "launch_on": "@today-200d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "course-3",
+            "values": {
+              "course_name": "Leading Your First Team",
+              "status": "Live",
+              "track": "Leadership",
+              "format": "Self-paced",
+              "price": 290,
+              "launch_on": "@today-400d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "course-4",
+            "values": {
+              "course_name": "Spreadsheet Analysis Essentials",
+              "status": "Live",
+              "track": "Data skills",
+              "format": "Workshop",
+              "price": 149,
+              "launch_on": "@today-150d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "course-5",
+            "values": {
+              "course_name": "Brand Design for Beginners",
+              "status": "In production",
+              "track": "Design",
+              "format": "Live cohort",
+              "price": 450,
+              "launch_on": "@today+6d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "course-6",
+            "values": {
+              "course_name": "Hiring Well",
+              "status": "In production",
+              "track": "Leadership",
+              "format": "Self-paced",
+              "price": 250,
+              "launch_on": "@today",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "course-7",
+            "values": {
+              "course_name": "Pricing Strategy Lab",
+              "status": "Idea",
+              "track": "Finance basics",
+              "format": "Workshop",
+              "price": 199,
+              "launch_on": "@today-4d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "course-8",
+            "values": {
+              "course_name": "Podcasting for Business",
+              "status": "Retired",
+              "track": "Marketing",
+              "format": "Self-paced",
+              "price": 199,
+              "launch_on": "@today-700d",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "cohort",
+        "name": "Cohorts",
+        "labelSingular": "Cohort",
+        "labelPlural": "Cohorts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "cohort_name",
+        "describes": "Each run of a course with its dates, seats and how many learners joined.",
+        "subject": "thing",
+        "independentOf": {
+          "course": "Either record can be created or change status before the other.",
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "cohort_name",
+            "label": "Cohort",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "course",
+            "label": "Course",
+            "parityType": "relation",
+            "relationTarget": "course",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Enrolling",
+              "Running",
+              "Finished",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Enrolling": "blue",
+              "Running": "amber",
+              "Finished": "violet",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Enrolling": "in_progress",
+              "Running": "in_progress",
+              "Finished": "in_progress",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead",
+            "label": "Lead instructor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "joined",
+            "label": "Learners enrolled",
+            "parityType": "rollup",
+            "via": "enrollments",
+            "pick": "learner_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Active",
+                "Completed"
+              ]
+            }
+          },
+          {
+            "key": "seats_left",
+            "label": "Seats left",
+            "parityType": "formula",
+            "formula": "MAX(0, {Seats} - {Learners enrolled})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue (USD)",
+            "parityType": "rollup",
+            "via": "enrollments",
+            "pick": "paid",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Active",
+                "Completed"
+              ]
+            }
+          },
+          {
+            "key": "refunds",
+            "label": "Refund requests",
+            "parityType": "rollup",
+            "via": "enrollments",
+            "pick": "learner_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Refunded"
+            }
+          },
+          {
+            "key": "btn_open",
+            "label": "Open enrollment",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "cohort_open"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_start",
+            "label": "Start cohort",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "cohort_start"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_finish",
+            "label": "Finish cohort",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "cohort_finish"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_enroll",
+            "label": "Enroll a learner",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "enrollments",
+              "template": "New enrollment",
+              "prefill": {
+                "cohort": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New cohort",
+            "values": {
+              "cohort_name": "New cohort",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Schedule"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Live sessions, office hours and deadlines."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Launch checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Course page live"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Email sent to the list"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Welcome message written"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Live room booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Support hours posted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "cohort-1",
+            "values": {
+              "cohort_name": "Marketing Foundations, spring run",
+              "course": "course-1",
+              "status": "Running",
+              "starts_on": "@today-20d",
+              "ends_on": "@today+36d",
+              "seats": 40,
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cohort-2",
+            "values": {
+              "cohort_name": "Marketing Foundations, summer run",
+              "course": "course-1",
+              "status": "Enrolling",
+              "starts_on": "@today+25d",
+              "ends_on": "@today+80d",
+              "seats": 40,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "cohort-3",
+            "values": {
+              "cohort_name": "Budgeting for Small Teams, spring run",
+              "course": "course-2",
+              "status": "Running",
+              "starts_on": "@today-10d",
+              "ends_on": "@today+40d",
+              "seats": 30,
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cohort-4",
+            "values": {
+              "cohort_name": "Budgeting for Small Teams, summer run",
+              "course": "course-2",
+              "status": "Planned",
+              "starts_on": "@today+60d",
+              "ends_on": "@today+110d",
+              "seats": 30,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "cohort-5",
+            "values": {
+              "cohort_name": "Spreadsheet Analysis workshop",
+              "course": "course-4",
+              "status": "Enrolling",
+              "starts_on": "@today+4d",
+              "ends_on": "@today+5d",
+              "seats": 60,
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cohort-6",
+            "values": {
+              "cohort_name": "Brand Design pilot",
+              "course": "course-5",
+              "status": "Planned",
+              "starts_on": "@today+6d",
+              "ends_on": "@today+60d",
+              "seats": 20,
+              "lead": "tm-4"
+            }
+          },
+          {
+            "key": "cohort-7",
+            "values": {
+              "cohort_name": "Marketing Foundations, winter run",
+              "course": "course-1",
+              "status": "Finished",
+              "starts_on": "@today-160d",
+              "ends_on": "@today-100d",
+              "seats": 40,
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cohort-8",
+            "values": {
+              "cohort_name": "Leading Your First Team, open cohort",
+              "course": "course-3",
+              "status": "Running",
+              "starts_on": "@today",
+              "ends_on": "@today+90d",
+              "seats": 100,
+              "lead": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "enrollment",
+        "name": "Enrollments",
+        "labelSingular": "Enrollment",
+        "labelPlural": "Enrollments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-plus",
+        "titleField": "learner_name",
+        "describes": "Each learner in each cohort, with payment and progress.",
+        "subject": "thing",
+        "independentOf": {
+          "cohort": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "learner_name",
+            "label": "Learner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "cohort",
+            "label": "Cohort",
+            "parityType": "relation",
+            "relationTarget": "cohort",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Applied",
+              "Active",
+              "Completed",
+              "Refunded",
+              "Dropped"
+            ],
+            "choiceColors": {
+              "Applied": "slate",
+              "Active": "blue",
+              "Completed": "amber",
+              "Refunded": "violet",
+              "Dropped": "teal"
+            },
+            "required": true,
+            "default": "Applied",
+            "statusGroups": {
+              "Applied": "in_progress",
+              "Active": "in_progress",
+              "Completed": "done",
+              "Refunded": "done",
+              "Dropped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "applied_on",
+            "label": "Applied on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid",
+            "label": "Paid (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "progress",
+            "label": "Lessons finished (%)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_accept",
+            "label": "Accept",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "enrollment_accept"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_complete",
+            "label": "Mark completed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "enrollment_complete"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New enrollment",
+            "values": {
+              "learner_name": "New enrollment",
+              "status": "Applied"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why they joined"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Their goal in their own words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check-ins"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Notes from any support conversation."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "enrollment-1",
+            "values": {
+              "learner_name": "Amara Okonkwo",
+              "cohort": "cohort-1",
+              "status": "Active",
+              "applied_on": "@today-30d",
+              "paid": 490,
+              "email": "amara.o@mailbox.net",
+              "progress": 55,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enrollment-2",
+            "values": {
+              "learner_name": "Bastien Lefèvre",
+              "cohort": "cohort-1",
+              "status": "Active",
+              "applied_on": "@today-28d",
+              "paid": 490,
+              "email": "bastien.l@mailbox.net",
+              "progress": 50
+            }
+          },
+          {
+            "key": "enrollment-3",
+            "values": {
+              "learner_name": "Camille Ruiz-Henderson",
+              "cohort": "cohort-1",
+              "status": "Active",
+              "applied_on": "@today-27d",
+              "paid": 490,
+              "email": "camille.rh@mailbox.net",
+              "progress": 60,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enrollment-4",
+            "values": {
+              "learner_name": "Dhruv Nair",
+              "cohort": "cohort-1",
+              "status": "Refunded",
+              "applied_on": "@today-26d",
+              "paid": 0,
+              "email": "dhruv.n@mailbox.net",
+              "progress": 10
+            }
+          },
+          {
+            "key": "enrollment-5",
+            "values": {
+              "learner_name": "Elke Sørensen",
+              "cohort": "cohort-2",
+              "status": "Applied",
+              "applied_on": "@today",
+              "paid": 0,
+              "email": "elke.s@mailbox.net",
+              "progress": 0,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enrollment-6",
+            "values": {
+              "learner_name": "Fela Adeniran",
+              "cohort": "cohort-2",
+              "status": "Applied",
+              "applied_on": "@today-1d",
+              "paid": 0,
+              "email": "fela.a@mailbox.net",
+              "progress": 0
+            }
+          },
+          {
+            "key": "enrollment-7",
+            "values": {
+              "learner_name": "Gwendolyn Marsh",
+              "cohort": "cohort-3",
+              "status": "Active",
+              "applied_on": "@today-15d",
+              "paid": 390,
+              "email": "gwen.m@mailbox.net",
+              "progress": 35,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enrollment-8",
+            "values": {
+              "learner_name": "Hamid Rostami",
+              "cohort": "cohort-3",
+              "status": "Active",
+              "applied_on": "@today-14d",
+              "paid": 390,
+              "email": "hamid.r@mailbox.net",
+              "progress": 30
+            }
+          },
+          {
+            "key": "enrollment-9",
+            "values": {
+              "learner_name": "Ingrid Falk",
+              "cohort": "cohort-5",
+              "status": "Applied",
+              "applied_on": "@today-2d",
+              "paid": 0,
+              "email": "ingrid.f@mailbox.net",
+              "progress": 0,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enrollment-10",
+            "values": {
+              "learner_name": "Jorge Quispe",
+              "cohort": "cohort-7",
+              "status": "Completed",
+              "applied_on": "@today-170d",
+              "paid": 490,
+              "email": "jorge.q@mailbox.net",
+              "progress": 100
+            }
+          },
+          {
+            "key": "enrollment-11",
+            "values": {
+              "learner_name": "Kamala Iyer",
+              "cohort": "cohort-7",
+              "status": "Completed",
+              "applied_on": "@today-168d",
+              "paid": 490,
+              "email": "kamala.i@mailbox.net",
+              "progress": 100,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enrollment-12",
+            "values": {
+              "learner_name": "Leopold Brandt",
+              "cohort": "cohort-8",
+              "status": "Active",
+              "applied_on": "@today-3d",
+              "paid": 290,
+              "email": "leopold.b@mailbox.net",
+              "progress": 8
+            }
+          },
+          {
+            "key": "enrollment-13",
+            "values": {
+              "learner_name": "Mirembe Kato",
+              "cohort": "cohort-3",
+              "status": "Dropped",
+              "applied_on": "@today-9d",
+              "paid": 390,
+              "email": "mirembe.k@mailbox.net",
+              "progress": 15,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "help_request",
+        "name": "Learner help requests",
+        "labelSingular": "Help request",
+        "labelPlural": "Learner help requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "life-buoy",
+        "titleField": "help_title",
+        "describes": "Questions from learners about access, payment, content and deadlines.",
+        "subject": "thing",
+        "independentOf": {
+          "enrollment": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "help_title",
+            "label": "Help request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "enrollment",
+            "label": "Enrollment",
+            "parityType": "relation",
+            "relationTarget": "enrollment",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "select",
+            "choices": [
+              "Login or access",
+              "Payment or refund",
+              "Content question",
+              "Extension request",
+              "Certificate"
+            ],
+            "choiceColors": {
+              "Login or access": "slate",
+              "Payment or refund": "blue",
+              "Content question": "amber",
+              "Extension request": "violet",
+              "Certificate": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Open",
+              "Waiting on learner",
+              "Solved"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Waiting on learner": "blue",
+              "Solved": "amber"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "in_progress",
+              "Waiting on learner": "in_progress",
+              "Solved": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reply_by",
+            "label": "Reply by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Assigned to",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_solved",
+            "label": "Mark solved",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "help_request_solved"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New help request",
+            "values": {
+              "help_title": "New help request",
+              "status": "Open"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they asked"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The learner's words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reply"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What we told them and any follow-up."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "help_request-1",
+            "values": {
+              "help_title": "Cannot open week 3 videos",
+              "enrollment": "enrollment-1",
+              "topic": "Login or access",
+              "status": "Open",
+              "reply_by": "@today",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "help_request-2",
+            "values": {
+              "help_title": "Asking about a refund",
+              "enrollment": "enrollment-4",
+              "topic": "Payment or refund",
+              "status": "Open",
+              "reply_by": "@today-1d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "help_request-3",
+            "values": {
+              "help_title": "Needs a two day extension",
+              "enrollment": "enrollment-7",
+              "topic": "Extension request",
+              "status": "Waiting on learner",
+              "reply_by": "@today+2d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "help_request-4",
+            "values": {
+              "help_title": "Certificate name spelled wrong",
+              "enrollment": "enrollment-10",
+              "topic": "Certificate",
+              "status": "Open",
+              "reply_by": "@today+3d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "help_request-5",
+            "values": {
+              "help_title": "Question on module 2 homework",
+              "enrollment": "enrollment-2",
+              "topic": "Content question",
+              "status": "Open",
+              "reply_by": "@today+1d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "help_request-6",
+            "values": {
+              "help_title": "Invoice copy requested",
+              "enrollment": "enrollment-8",
+              "topic": "Payment or refund",
+              "status": "Solved",
+              "reply_by": "@today-6d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "help_request-7",
+            "values": {
+              "help_title": "Cannot find the live link",
+              "enrollment": "enrollment-3",
+              "topic": "Login or access",
+              "status": "Solved",
+              "reply_by": "@today-10d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each course belongs to one course owner.",
+        "fromTable": "course",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "course_by_owner"
+      },
+      {
+        "describes": "Each cohort belongs to one course.",
+        "fromTable": "cohort",
+        "fromField": "course",
+        "toTable": "course",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "cohorts"
+      },
+      {
+        "describes": "Each cohort belongs to one lead instructor.",
+        "fromTable": "cohort",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "cohort_by_lead"
+      },
+      {
+        "describes": "Each enrollment belongs to one cohort.",
+        "fromTable": "enrollment",
+        "fromField": "cohort",
+        "toTable": "cohort",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "enrollments"
+      },
+      {
+        "describes": "Each help request belongs to one enrollment.",
+        "fromTable": "help_request",
+        "fromField": "enrollment",
+        "toTable": "enrollment",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "help_requests"
+      },
+      {
+        "describes": "Each help request belongs to one assigned to.",
+        "fromTable": "help_request",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "help_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Sunniva Adeyemi-Park",
+              "role": "Head of operations",
+              "work_email": "sunniva@northlightskills.net",
+              "mobile": "(646) 555-0141",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Lorcan Matsuda-Boyle",
+              "role": "Lead instructor",
+              "work_email": "lorcan@northlightskills.net",
+              "mobile": "(646) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Beatrix Oyelaran",
+              "role": "Learner support",
+              "work_email": "beatrix@northlightskills.net",
+              "mobile": "(646) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Quillon Desai",
+              "role": "Content producer",
+              "work_email": "quillon@northlightskills.net",
+              "mobile": "(646) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Cohort application",
+        "describes": "Learners apply for a cohort here.",
+        "audience": "staff",
+        "table": "enrollment",
+        "fields": [
+          {
+            "fieldKey": "learner_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "cohort",
+            "ask": "Which cohort?",
+            "required": true
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. Your application is received and you will get a reply within two working days."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "course_live",
+        "table": "course",
+        "name": "Go live",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Live"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cohort_open",
+        "table": "cohort",
+        "name": "Open enrollment",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Enrolling"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cohort_start",
+        "table": "cohort",
+        "name": "Start cohort",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Running"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cohort_finish",
+        "table": "cohort",
+        "name": "Finish cohort",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Finished"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "enrollment_accept",
+        "table": "enrollment",
+        "name": "Accept",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "enrollment_complete",
+        "table": "enrollment",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "help_request_solved",
+        "table": "help_request",
+        "name": "Mark solved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Solved"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_course",
+        "name": "All courses",
+        "table": "course",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "course_board",
+        "name": "By status",
+        "table": "course",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "course_cal",
+        "name": "Calendar",
+        "table": "course",
+        "kind": "calendar",
+        "dateField": "launch_on",
+        "allDay": true
+      },
+      {
+        "token": "course_over",
+        "name": "Overdue",
+        "table": "course",
+        "kind": "grid",
+        "within": {
+          "launch_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "In production"
+          ]
+        }
+      },
+      {
+        "token": "course_week",
+        "name": "This week",
+        "table": "course",
+        "kind": "grid",
+        "within": {
+          "launch_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "In production"
+          ]
+        }
+      },
+      {
+        "token": "course_next7",
+        "name": "Next 7 days",
+        "table": "course",
+        "kind": "grid",
+        "within": {
+          "launch_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "In production"
+          ]
+        }
+      },
+      {
+        "token": "course_mine",
+        "name": "My courses",
+        "table": "course",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_cohort",
+        "name": "All cohorts",
+        "table": "cohort",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "cohort_board",
+        "name": "By status",
+        "table": "cohort",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "cohort_cal",
+        "name": "Calendar",
+        "table": "cohort",
+        "kind": "calendar",
+        "dateField": "starts_on",
+        "allDay": true
+      },
+      {
+        "token": "cohort_over",
+        "name": "Overdue",
+        "table": "cohort",
+        "kind": "grid",
+        "within": {
+          "starts_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Enrolling",
+            "Running"
+          ]
+        }
+      },
+      {
+        "token": "cohort_week",
+        "name": "This week",
+        "table": "cohort",
+        "kind": "grid",
+        "within": {
+          "starts_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Enrolling",
+            "Running"
+          ]
+        }
+      },
+      {
+        "token": "cohort_next7",
+        "name": "Next 7 days",
+        "table": "cohort",
+        "kind": "grid",
+        "within": {
+          "starts_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Enrolling",
+            "Running"
+          ]
+        }
+      },
+      {
+        "token": "cohort_mine",
+        "name": "My cohorts",
+        "table": "cohort",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_enrollment",
+        "name": "All enrollments",
+        "table": "enrollment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "enrollment_board",
+        "name": "By status",
+        "table": "enrollment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "enrollment_cal",
+        "name": "Calendar",
+        "table": "enrollment",
+        "kind": "calendar",
+        "dateField": "applied_on",
+        "allDay": true
+      },
+      {
+        "token": "enrollment_over",
+        "name": "Overdue",
+        "table": "enrollment",
+        "kind": "grid",
+        "within": {
+          "applied_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Applied"
+        }
+      },
+      {
+        "token": "enrollment_week",
+        "name": "This week",
+        "table": "enrollment",
+        "kind": "grid",
+        "within": {
+          "applied_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Applied"
+        }
+      },
+      {
+        "token": "enrollment_next7",
+        "name": "Next 7 days",
+        "table": "enrollment",
+        "kind": "grid",
+        "within": {
+          "applied_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Applied"
+        }
+      },
+      {
+        "token": "enrollment_mine",
+        "name": "My enrollments",
+        "table": "enrollment",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_help_request",
+        "name": "All learner help requests",
+        "table": "help_request",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "help_request_board",
+        "name": "By status",
+        "table": "help_request",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "help_request_cal",
+        "name": "Calendar",
+        "table": "help_request",
+        "kind": "calendar",
+        "dateField": "reply_by",
+        "allDay": true
+      },
+      {
+        "token": "help_request_over",
+        "name": "Overdue",
+        "table": "help_request",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Waiting on learner"
+          ]
+        }
+      },
+      {
+        "token": "help_request_week",
+        "name": "This week",
+        "table": "help_request",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Waiting on learner"
+          ]
+        }
+      },
+      {
+        "token": "help_request_next7",
+        "name": "Next 7 days",
+        "table": "help_request",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Waiting on learner"
+          ]
+        }
+      },
+      {
+        "token": "help_request_mine",
+        "name": "My learner help requests",
+        "table": "help_request",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Online Academy Operations Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "cohort",
+          "describes": "Each run of a course with its dates, seats and how many learners joined."
+        },
+        {
+          "name": "related_tables",
+          "table": "course",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many cohorts are taking applications?",
+        "whyItMatters": "Marketing sends the enrollment push each Tuesday.",
+        "expect": {
+          "table": "cohort",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Enrolling"
+          },
+          "answer": 2,
+          "unit": "cohorts"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open courses.",
+        "action": {
+          "kind": "open",
+          "surface": "course_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "course_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open cohorts.",
+        "action": {
+          "kind": "open",
+          "surface": "cohort_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "cohort_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open enrollments.",
+        "action": {
+          "kind": "open",
+          "surface": "enrollment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "enrollment_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "northlightskills.net"
+      ],
+      "fictionalStreets": [
+        "Pembroke Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "online-academy-operations",
+      "parent": null,
+      "title": "Online Academy Operations Desk",
+      "icon": {
+        "emoji": "🎓"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Courses, cohorts, learners and support in one place. Start with the Dashboard each Monday. Keep seats and revenue honest by moving enrollments through Applied, Active and Completed, and answer every help request before its reply-by date."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:cohort-launch-playbook"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:learner-support-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:course-production-workflow"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Courses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every course the academy teaches or is building, with price and launch plan."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "course",
+              "view": "course_board"
+            },
+            "inline": true,
+            "title": "Courses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cou-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cou-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "launch_on"
+              },
+              {
+                "id": "cou-t",
+                "name": "All courses",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cou-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "launch_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "In production"
+                  ]
+                }
+              },
+              {
+                "id": "cou-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "launch_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "In production"
+                  ]
+                }
+              },
+              {
+                "id": "cou-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "launch_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "In production"
+                  ]
+                }
+              },
+              {
+                "id": "cou-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cou-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cohorts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each run of a course with its dates, seats and how many learners joined."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cohort",
+              "view": "cohort_board"
+            },
+            "inline": true,
+            "title": "Cohorts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "coh-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "coh-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_on"
+              },
+              {
+                "id": "coh-t",
+                "name": "All cohorts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "coh-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "starts_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Enrolling",
+                    "Running"
+                  ]
+                }
+              },
+              {
+                "id": "coh-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "starts_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Enrolling",
+                    "Running"
+                  ]
+                }
+              },
+              {
+                "id": "coh-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Enrolling",
+                    "Running"
+                  ]
+                }
+              },
+              {
+                "id": "coh-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "coh-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Enrollments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each learner in each cohort, with payment and progress."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "enrollment",
+              "view": "enrollment_board"
+            },
+            "inline": true,
+            "title": "Enrollments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "enr-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "enr-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "applied_on"
+              },
+              {
+                "id": "enr-t",
+                "name": "All enrollments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "enr-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "applied_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Applied"
+                }
+              },
+              {
+                "id": "enr-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "applied_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Applied"
+                }
+              },
+              {
+                "id": "enr-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "applied_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Applied"
+                }
+              },
+              {
+                "id": "enr-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "enr-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learner help requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Questions from learners about access, payment, content and deadlines."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "help_request",
+              "view": "help_request_board"
+            },
+            "inline": true,
+            "title": "Learner help requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "hel-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "hel-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "reply_by"
+              },
+              {
+                "id": "hel-t",
+                "name": "All learner help requests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "hel-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "reply_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Waiting on learner"
+                  ]
+                }
+              },
+              {
+                "id": "hel-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "reply_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Waiting on learner"
+                  ]
+                }
+              },
+              {
+                "id": "hel-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "reply_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Waiting on learner"
+                  ]
+                }
+              },
+              {
+                "id": "hel-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "hel-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "online-academy-operations",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The academy at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "cohort",
+                      "view": "all_cohort"
+                    },
+                    "inline": true,
+                    "title": "Cohorts by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Cohorts by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "cohort",
+                      "view": "all_cohort"
+                    },
+                    "inline": true,
+                    "title": "Revenue by cohort (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Revenue by cohort (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "cohort_name",
+                          "op": "sum",
+                          "field": "revenue"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "enrollment",
+                      "view": "all_enrollment"
+                    },
+                    "inline": true,
+                    "title": "Enrollments by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Enrollments by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "help_request",
+                      "view": "all_help_request"
+                    },
+                    "inline": true,
+                    "title": "Help requests by topic",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Help requests by topic",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "topic",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Help requests due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "help_request",
+              "view": "all_help_request"
+            },
+            "inline": true,
+            "title": "Help requests due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Help requests due",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "reply_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Waiting on learner"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cohorts starting soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cohort",
+              "view": "all_cohort"
+            },
+            "inline": true,
+            "title": "Cohorts starting soon",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Cohorts starting soon",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "starts_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Enrolling"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Applications waiting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "enrollment",
+              "view": "all_enrollment"
+            },
+            "inline": true,
+            "title": "Applications waiting",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Applications waiting",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Applied"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Seats left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Seats minus active and completed learners"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Open a waitlist when it reaches 0"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Revenue (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sum of paid amounts for active and completed enrollments; refunds are excluded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with the cohort's target at the halfway point"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cohorts taking applications"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cohorts of the course marked Enrolling"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Put the course's page in the next email"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "cohort-launch-playbook",
+      "parent": "online-academy-operations",
+      "title": "Cohort launch playbook",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A cohort launches well when learners know what they are getting, when it starts and how to ask for help."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Four weeks before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set dates, seats and the lead instructor on the cohort row"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open enrollment and publish the course page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write the welcome email and the first week's plan"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "One week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Email accepted learners their access details"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Test the live room and recording"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Post office hours and support hours"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check who has not logged in by day three and send a friendly nudge."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Answer every help request within a working day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for a one-line goal from each learner to use later in feedback."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "learner-support-guide",
+      "parent": "online-academy-operations",
+      "title": "Learner support guide",
+      "icon": {
+        "emoji": "💬"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most support requests are about access and deadlines. Fast, kind answers keep people in the course."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reply times"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Topic"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reply by"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Login or access"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Same day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Learner support"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Payment or refund"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One working day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Head of operations"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Content question"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two working days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead instructor"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Extension request"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One working day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead instructor"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Refund rule of thumb"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Refund within the published window without questions. Press Refunded on the enrollment so revenue is correct and the seat opens."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "course-production-workflow",
+      "parent": "online-academy-operations",
+      "title": "Course production workflow",
+      "icon": {
+        "emoji": "🎬"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A course is built in passes. Finishing each pass before the next saves most of the rework."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Passes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Outline and learning goals, approved by the lead instructor."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Scripts and slide drafts reviewed by one learner from the target group."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Recording and editing in batches."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Worksheets and assessments."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pilot with a small group and fix what confuses them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before it goes live"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All lessons play and captions are correct"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pricing, refund window and certificate are set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The course page has an honest outline"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Press Go live on the course row"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

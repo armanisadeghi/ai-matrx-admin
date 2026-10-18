@@ -1,0 +1,2834 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0521",
+  "version": 1,
+  "title": "Independent Bookstore HQ",
+  "description": "Manage titles, special orders, publishers, events and readers for a bookstore.",
+  "forWho": "Independent bookstores and book sellers",
+  "icon": {
+    "emoji": "📚"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "retail",
+  "tags": [
+    "bookstore",
+    "titles",
+    "special orders",
+    "events"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-independent-bookstore-hq",
+    "catalogueId": "SP0521",
+    "useCase": "The owner of Folio and Fable Books uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "retail_ecommerce",
+    "vertical": "Independent bookstore",
+    "job": "inventory",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Folio and Fable Books",
+      "describes": "An independent neighborhood bookstore with new releases, a children's corner, a special-order desk, local authors on consignment and monthly author events.",
+      "address": {
+        "line1": "404 Chapter Street",
+        "city": "Ann Arbor",
+        "region": "MI",
+        "postalCode": "48104",
+        "country": "US"
+      },
+      "phone": "(734) 555-0105",
+      "website": "folioandfable.net",
+      "email": "info@folioandfable.net",
+      "timezone": "America/Detroit"
+    },
+    "cleanupTag": "use-case:spaces-independent-bookstore-hq",
+    "tables": [
+      {
+        "token": "supplier",
+        "name": "Publishers and distributors",
+        "labelSingular": "Publisher or distributor",
+        "labelPlural": "Publishers and distributors",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "supplier_name",
+        "describes": "Where your books come from, with terms and return windows.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "supplier_name",
+            "label": "Publisher or distributor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead_days",
+            "label": "Lead time (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "key": "terms",
+            "label": "Terms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Net 30",
+              "Net 60",
+              "Consignment"
+            ],
+            "choiceColors": {
+              "Net 30": "slate",
+              "Net 60": "blue",
+              "Consignment": "amber"
+            }
+          },
+          {
+            "key": "product_n",
+            "label": "Titles active",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "products",
+            "pick": "product_name",
+            "agg": "count",
+            "filter": {
+              "status": "Active"
+            }
+          },
+          {
+            "key": "draft_n",
+            "label": "Titles in draft",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "products",
+            "pick": "product_name",
+            "agg": "count",
+            "filter": {
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "suppli-1",
+            "values": {
+              "supplier_name": "Great Lakes Book Distribution",
+              "email": "marisol.whitlock@folioandfable.net",
+              "phone": "(734) 555-0134",
+              "lead_days": 5,
+              "terms": "Net 30"
+            }
+          },
+          {
+            "key": "suppli-2",
+            "values": {
+              "supplier_name": "Birchwood Press",
+              "email": "teodor.carrow@folioandfable.net",
+              "phone": "(734) 555-0171",
+              "lead_days": 14,
+              "terms": "Net 60"
+            }
+          },
+          {
+            "key": "suppli-3",
+            "values": {
+              "supplier_name": "Local authors (consignment)",
+              "email": "odette.halvorsen@folioandfable.net",
+              "phone": "(734) 555-0108",
+              "lead_days": 0,
+              "terms": "Consignment"
+            }
+          },
+          {
+            "key": "suppli-4",
+            "values": {
+              "supplier_name": "Ember Children's Books",
+              "email": "greta.montague@folioandfable.net",
+              "phone": "(734) 555-0145",
+              "lead_days": 7,
+              "terms": "Net 30"
+            }
+          }
+        ]
+      },
+      {
+        "token": "product",
+        "name": "Titles",
+        "labelSingular": "Title",
+        "labelPlural": "Titles",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "product_name",
+        "describes": "Every title on the shelf with price, cost, stock and the publisher it comes from.",
+        "subject": "thing",
+        "independentOf": {
+          "supplier_rel": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "SKU",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fiction",
+              "Nonfiction",
+              "Children",
+              "Gifts"
+            ],
+            "choiceColors": {
+              "Fiction": "slate",
+              "Nonfiction": "blue",
+              "Children": "amber",
+              "Gifts": "violet"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "cost",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "supplier_rel",
+            "label": "Publisher or distributor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Draft",
+              "Discontinued"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Draft": "blue",
+              "Discontinued": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Cost (USD)}) / {Price (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Cost (USD)}"
+          },
+          {
+            "key": "sold",
+            "label": "Units delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "quantity",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Title",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Title notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Author, format, ISBN and shelf location."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Buying"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cost and discount confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Return terms noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Staff pick written if recommended"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "produc-1",
+            "values": {
+              "product_name": "The Salt Road (hardcover)",
+              "sku": "FF-101",
+              "category": "Fiction",
+              "price": 28,
+              "cost": 14,
+              "on_hand": 6,
+              "reorder_at": 3,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-2",
+            "values": {
+              "product_name": "Beekeeping for Beginners",
+              "sku": "FF-108",
+              "category": "Nonfiction",
+              "price": 24,
+              "cost": 12,
+              "on_hand": 4,
+              "reorder_at": 3,
+              "supplier_rel": "suppli-2",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-3",
+            "values": {
+              "product_name": "Lighthouse Mornings (paperback)",
+              "sku": "FF-115",
+              "category": "Fiction",
+              "price": 17,
+              "cost": 8.5,
+              "on_hand": 12,
+              "reorder_at": 4,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-4",
+            "values": {
+              "product_name": "A Field Guide to Local Birds",
+              "sku": "FF-122",
+              "category": "Nonfiction",
+              "price": 22,
+              "cost": 11,
+              "on_hand": 3,
+              "reorder_at": 3,
+              "supplier_rel": "suppli-2",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-5",
+            "values": {
+              "product_name": "Moonlight Hollow, picture book",
+              "sku": "FF-129",
+              "category": "Children",
+              "price": 18,
+              "cost": 9,
+              "on_hand": 9,
+              "reorder_at": 4,
+              "supplier_rel": "suppli-4",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-6",
+            "values": {
+              "product_name": "The Quiet Orchard (local author)",
+              "sku": "FF-136",
+              "category": "Fiction",
+              "price": 19,
+              "cost": 11.4,
+              "on_hand": 7,
+              "reorder_at": 3,
+              "supplier_rel": "suppli-3",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-7",
+            "values": {
+              "product_name": "Letters from the Sea Coast",
+              "sku": "FF-143",
+              "category": "Nonfiction",
+              "price": 26,
+              "cost": 13,
+              "on_hand": 5,
+              "reorder_at": 3,
+              "supplier_rel": "suppli-1",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-8",
+            "values": {
+              "product_name": "Book light",
+              "sku": "FF-150",
+              "category": "Gifts",
+              "price": 14,
+              "cost": 5.5,
+              "on_hand": 11,
+              "reorder_at": 5,
+              "supplier_rel": "suppli-2",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "produc-9",
+            "values": {
+              "product_name": "Cookbook of the Season",
+              "sku": "FF-157",
+              "category": "Nonfiction",
+              "price": 35,
+              "cost": 17.5,
+              "on_hand": 0,
+              "reorder_at": 2,
+              "supplier_rel": "suppli-1",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "produc-10",
+            "values": {
+              "product_name": "Overstock bargain bundle",
+              "sku": "FF-164",
+              "category": "Fiction",
+              "price": 12,
+              "cost": 5,
+              "on_hand": 8,
+              "reorder_at": 2,
+              "supplier_rel": "suppli-2",
+              "status": "Discontinued"
+            }
+          }
+        ]
+      },
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "Readers and book clubs with spend, special orders and returns.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "segment",
+            "label": "Segment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Regular",
+              "Book club",
+              "Teacher",
+              "Online"
+            ],
+            "choiceColors": {
+              "Regular": "slate",
+              "Book club": "blue",
+              "Teacher": "amber",
+              "Online": "violet"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_order",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "order_n",
+            "label": "Sales and orders delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "spent",
+            "label": "Spent to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "returns_n",
+            "label": "Returns",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": "Returned"
+            }
+          },
+          {
+            "key": "tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Spent to date} >= 250, \"Best\", IF({Spent to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_order_btn",
+            "label": "New sale or order",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "order",
+              "template": "Order sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer record",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reading tastes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Genres, authors and the last recommendation."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Book club, birthdays and special orders."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Leopold Carrow",
+              "segment": "Regular",
+              "email": "leopold.carrow@inbox-mail.net",
+              "phone": "(734) 555-0184",
+              "first_order": "@today-20d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Imelda Jessup",
+              "segment": "Book club",
+              "email": "imelda.jessup@inbox-mail.net",
+              "phone": "(734) 555-0121",
+              "first_order": "@today-63d",
+              "area": "Sunset Flats"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Anders Rutherford",
+              "segment": "Teacher",
+              "email": "anders.rutherford@inbox-mail.net",
+              "phone": "(734) 555-0158",
+              "first_order": "@today-106d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Ottoline Brannigan",
+              "segment": "Online",
+              "email": "ottoline.brannigan@inbox-mail.net",
+              "phone": "(734) 555-0195",
+              "first_order": "@today-149d",
+              "area": "Eastgate"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Humphrey Iyer",
+              "segment": "Regular",
+              "email": "humphrey.iyer@inbox-mail.net",
+              "phone": "(734) 555-0132",
+              "first_order": "@today-192d",
+              "area": "Riverbend"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Tamsin Pemberton",
+              "segment": "Book club",
+              "email": "tamsin.pemberton@inbox-mail.net",
+              "phone": "(734) 555-0169",
+              "first_order": "@today-235d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Desmond Yamamoto",
+              "segment": "Teacher",
+              "email": "desmond.yamamoto@inbox-mail.net",
+              "phone": "(734) 555-0106",
+              "first_order": "@today-278d",
+              "area": "Cedar Park"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Noor Fontaine",
+              "segment": "Online",
+              "email": "noor.fontaine@inbox-mail.net",
+              "phone": "(734) 555-0143",
+              "first_order": "@today-321d",
+              "area": "Lakeview"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Silas Montague",
+              "segment": "Regular",
+              "email": "silas.montague@inbox-mail.net",
+              "phone": "(734) 555-0180",
+              "first_order": "@today-364d",
+              "area": "Foxglove Court"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Kasia Westbrook",
+              "segment": "Book club",
+              "email": "kasia.westbrook@inbox-mail.net",
+              "phone": "(734) 555-0117",
+              "first_order": "@today-407d",
+              "area": "Stonebridge"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Tobias Eastwick",
+              "segment": "Teacher",
+              "email": "tobias.eastwick@inbox-mail.net",
+              "phone": "(734) 555-0154",
+              "first_order": "@today-450d",
+              "area": "Harbor Heights"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Greta Lindqvist",
+              "segment": "Online",
+              "email": "greta.lindqvist@inbox-mail.net",
+              "phone": "(734) 555-0191",
+              "first_order": "@today-493d",
+              "area": "Willow Creek"
+            }
+          }
+        ]
+      },
+      {
+        "token": "order",
+        "name": "Sales and orders",
+        "labelSingular": "Sale or order",
+        "labelPlural": "Sales and orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-bag",
+        "titleField": "order_name",
+        "describes": "Sales, online orders and special orders, with who is handling each and when it is due.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "product": "Either record can be created or change status before the other.",
+          "handler": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Sale or order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Paid",
+              "Packing",
+              "Shipped",
+              "Delivered",
+              "Returned",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Paid": "blue",
+              "Packing": "amber",
+              "Shipped": "violet",
+              "Delivered": "teal",
+              "Returned": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Paid": "todo",
+              "Packing": "in_progress",
+              "Shipped": "in_progress",
+              "Delivered": "done",
+              "Returned": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "product",
+            "label": "Title",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "handler",
+            "label": "Bookseller (staff)",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "quantity",
+            "label": "Quantity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In store",
+              "Online",
+              "Special order",
+              "Event table"
+            ],
+            "choiceColors": {
+              "In store": "slate",
+              "Online": "blue",
+              "Special order": "amber",
+              "Event table": "violet"
+            }
+          },
+          {
+            "key": "ship_by",
+            "label": "Ship by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "packer",
+            "label": "Bookseller",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ship_btn",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_shipped"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Order sheet",
+            "values": {
+              "status": "New",
+              "order_name": "New sale or order"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Order details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Title, format and customer contact."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Special order steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Deposit taken"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Order placed with the distributor"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Customer called when it arrives"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "order-1",
+            "values": {
+              "order_name": "B-4100",
+              "status": "Delivered",
+              "customer": "custom-2",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 1,
+              "total": 25,
+              "channel": "In store",
+              "ship_by": "@today-17d"
+            }
+          },
+          {
+            "key": "order-2",
+            "values": {
+              "order_name": "B-4103",
+              "status": "Delivered",
+              "customer": "custom-7",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 2,
+              "total": 36,
+              "channel": "Online",
+              "ship_by": "@today-13d"
+            }
+          },
+          {
+            "key": "order-3",
+            "values": {
+              "order_name": "B-4106",
+              "status": "Delivered",
+              "customer": "custom-12",
+              "product": "produc-8",
+              "handler": "tm-5",
+              "quantity": 3,
+              "total": 42,
+              "channel": "Special order",
+              "ship_by": "@today-10d"
+            }
+          },
+          {
+            "key": "order-4",
+            "values": {
+              "order_name": "B-4109",
+              "status": "Delivered",
+              "customer": "custom-5",
+              "product": "produc-1",
+              "handler": "tm-1",
+              "quantity": 1,
+              "total": 30,
+              "channel": "Event table",
+              "ship_by": "@today-7d"
+            }
+          },
+          {
+            "key": "order-5",
+            "values": {
+              "order_name": "B-4112",
+              "status": "Delivered",
+              "customer": "custom-10",
+              "product": "produc-4",
+              "handler": "tm-2",
+              "quantity": 2,
+              "total": 45,
+              "channel": "In store",
+              "ship_by": "@today-5d"
+            }
+          },
+          {
+            "key": "order-6",
+            "values": {
+              "order_name": "B-4115",
+              "status": "Returned",
+              "customer": "custom-3",
+              "product": "produc-7",
+              "handler": "tm-3",
+              "quantity": 3,
+              "total": 80,
+              "channel": "Online",
+              "ship_by": "@today-6d"
+            }
+          },
+          {
+            "key": "order-7",
+            "values": {
+              "order_name": "B-4118",
+              "status": "Cancelled",
+              "customer": "custom-8",
+              "product": "produc-10",
+              "handler": "tm-4",
+              "quantity": 1,
+              "total": 12,
+              "channel": "Special order"
+            }
+          },
+          {
+            "key": "order-8",
+            "values": {
+              "order_name": "B-4121",
+              "status": "Packing",
+              "customer": "custom-1",
+              "product": "produc-3",
+              "handler": "tm-5",
+              "quantity": 2,
+              "total": 34,
+              "channel": "Event table",
+              "ship_by": "@today-1d"
+            }
+          },
+          {
+            "key": "order-9",
+            "values": {
+              "order_name": "B-4124",
+              "status": "Paid",
+              "customer": "custom-6",
+              "product": "produc-6",
+              "handler": "tm-1",
+              "quantity": 3,
+              "total": 57,
+              "channel": "In store",
+              "ship_by": "@today",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-10",
+            "values": {
+              "order_name": "B-4127",
+              "status": "Shipped",
+              "customer": "custom-11",
+              "product": "produc-9",
+              "handler": "tm-2",
+              "quantity": 1,
+              "total": 35,
+              "channel": "Online",
+              "ship_by": "@today"
+            }
+          },
+          {
+            "key": "order-11",
+            "values": {
+              "order_name": "B-4130",
+              "status": "Packing",
+              "customer": "custom-4",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 2,
+              "total": 50,
+              "channel": "Special order",
+              "ship_by": "@mon",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-12",
+            "values": {
+              "order_name": "B-4133",
+              "status": "Paid",
+              "customer": "custom-9",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 3,
+              "total": 54,
+              "channel": "Event table",
+              "ship_by": "@tue"
+            }
+          },
+          {
+            "key": "order-13",
+            "values": {
+              "order_name": "B-4136",
+              "status": "New",
+              "customer": "custom-2",
+              "product": "produc-8",
+              "handler": "tm-5",
+              "quantity": 1,
+              "total": 14,
+              "channel": "In store",
+              "ship_by": "@wed",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-14",
+            "values": {
+              "order_name": "B-4139",
+              "status": "Paid",
+              "customer": "custom-7",
+              "product": "produc-1",
+              "handler": "tm-1",
+              "quantity": 2,
+              "total": 55,
+              "channel": "Online",
+              "ship_by": "@thu"
+            }
+          },
+          {
+            "key": "order-15",
+            "values": {
+              "order_name": "B-4142",
+              "status": "New",
+              "customer": "custom-12",
+              "product": "produc-4",
+              "handler": "tm-2",
+              "quantity": 3,
+              "total": 65,
+              "channel": "Special order",
+              "ship_by": "@fri",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-16",
+            "values": {
+              "order_name": "B-4145",
+              "status": "Paid",
+              "customer": "custom-5",
+              "product": "produc-7",
+              "handler": "tm-3",
+              "quantity": 1,
+              "total": 25,
+              "channel": "Event table",
+              "ship_by": "@sat"
+            }
+          },
+          {
+            "key": "order-17",
+            "values": {
+              "order_name": "B-4148",
+              "status": "New",
+              "customer": "custom-10",
+              "product": "produc-10",
+              "handler": "tm-4",
+              "quantity": 2,
+              "total": 24,
+              "channel": "In store",
+              "ship_by": "@sun"
+            }
+          },
+          {
+            "key": "order-18",
+            "values": {
+              "order_name": "B-4151",
+              "status": "Paid",
+              "customer": "custom-3",
+              "product": "produc-3",
+              "handler": "tm-5",
+              "quantity": 3,
+              "total": 51,
+              "channel": "Online",
+              "ship_by": "@tue+1w"
+            }
+          },
+          {
+            "key": "order-19",
+            "values": {
+              "order_name": "B-4154",
+              "status": "New",
+              "customer": "custom-8",
+              "product": "produc-6",
+              "handler": "tm-1",
+              "quantity": 1,
+              "total": 19,
+              "channel": "Special order",
+              "ship_by": "@thu+1w"
+            }
+          },
+          {
+            "key": "order-20",
+            "values": {
+              "order_name": "B-4157",
+              "status": "Paid",
+              "customer": "custom-1",
+              "product": "produc-9",
+              "handler": "tm-2",
+              "quantity": 2,
+              "total": 70,
+              "channel": "Event table",
+              "ship_by": "@today+1d",
+              "packer": "@installer"
+            }
+          },
+          {
+            "key": "order-21",
+            "values": {
+              "order_name": "B-4160",
+              "status": "New",
+              "customer": "custom-6",
+              "product": "produc-2",
+              "handler": "tm-3",
+              "quantity": 3,
+              "total": 70,
+              "channel": "In store",
+              "ship_by": "@today+3d"
+            }
+          },
+          {
+            "key": "order-22",
+            "values": {
+              "order_name": "B-4163",
+              "status": "New",
+              "customer": "custom-11",
+              "product": "produc-5",
+              "handler": "tm-4",
+              "quantity": 1,
+              "total": 18,
+              "channel": "Online",
+              "ship_by": "@today+4d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each title belongs to one publisher or distributor.",
+        "fromTable": "product",
+        "fromField": "supplier_rel",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "products"
+      },
+      {
+        "describes": "Each sale or order belongs to one customer.",
+        "fromTable": "order",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each sale or order belongs to one title.",
+        "fromTable": "order",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each sale or order belongs to one bookseller (staff).",
+        "fromTable": "order",
+        "fromField": "handler",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "orders_handled"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Winifred Aldous",
+              "role": "Owner",
+              "work_email": "winifred@folioandfable.net",
+              "mobile": "(734) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Tomasz Brzezinski",
+              "role": "Store manager",
+              "work_email": "tomasz@folioandfable.net",
+              "mobile": "(734) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Marisela Cortez",
+              "role": "Bookseller",
+              "work_email": "marisela@folioandfable.net",
+              "mobile": "(734) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Elias Nakagawa",
+              "role": "Bookseller",
+              "work_email": "elias@folioandfable.net",
+              "mobile": "(734) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Rosamund Teague",
+              "role": "Events coordinator",
+              "work_email": "rosamund@folioandfable.net",
+              "mobile": "(734) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "order_request",
+        "name": "Place an order",
+        "describes": "How a customer or the team enters a new order.",
+        "audience": "staff",
+        "table": "order",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "Order reference?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "product",
+            "ask": "Which item?"
+          },
+          {
+            "fieldKey": "quantity",
+            "ask": "How many?"
+          }
+        ],
+        "submitLabel": "Send the order",
+        "confirmation": "Thanks. The order is on the board as New."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "order_shipped",
+        "table": "order",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_supplier",
+        "name": "All publishers and distributors",
+        "table": "supplier",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "supplier_board",
+        "name": "Publishers and distributors board",
+        "table": "supplier",
+        "kind": "kanban",
+        "groupBy": "terms"
+      },
+      {
+        "token": "all_product",
+        "name": "All titles",
+        "table": "product",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "product_board",
+        "name": "Titles board",
+        "table": "product",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Customers board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "segment"
+      },
+      {
+        "token": "all_order",
+        "name": "All sales and orders",
+        "table": "order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "order_board",
+        "name": "Sales and orders board",
+        "table": "order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "order_cal",
+        "name": "Sales and orders calendar",
+        "table": "order",
+        "kind": "calendar",
+        "dateField": "ship_by",
+        "allDay": true
+      },
+      {
+        "token": "order_over",
+        "name": "Overdue",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_week",
+        "name": "Due this week",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_next7",
+        "name": "Next 7 days",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Paid",
+            "Packing"
+          ]
+        }
+      },
+      {
+        "token": "order_mine",
+        "name": "My sales and orders",
+        "table": "order",
+        "kind": "grid",
+        "me": [
+          "packer"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Independent Bookstore HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "product",
+          "describes": "Every title on the shelf with price, cost, stock and the publisher it comes from."
+        },
+        {
+          "name": "related_tables",
+          "table": "supplier",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many sales and orders are still waiting to be packed?",
+        "whyItMatters": "The packer starts each day with these.",
+        "expect": {
+          "table": "order",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Packing"
+          },
+          "answer": 2,
+          "unit": "sales and orders"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open publishers and distributors.",
+        "action": {
+          "kind": "open",
+          "surface": "supplier_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "supplier_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open titles.",
+        "action": {
+          "kind": "open",
+          "surface": "product_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "product_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "folioandfable.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Chapter Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "independent-bookstore-hq",
+      "parent": null,
+      "title": "Independent Bookstore HQ",
+      "icon": {
+        "emoji": "📚"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the shop from one page. Titles, publishers, readers and orders are linked. Special orders move from New to Delivered, each bookseller sees their own list under Mine, and Titles flags what to reorder or send back. Start on the Dashboard."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:special-orders"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:returns-to-publishers"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:author-events"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Publishers and distributors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Where your books come from, with terms and return windows."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supplier",
+              "view": "supplier_board"
+            },
+            "inline": true,
+            "title": "Publishers and distributors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "terms"
+              },
+              {
+                "id": "sup-t",
+                "name": "All publishers and distributors",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "sup-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Titles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every title on the shelf with price, cost, stock and the publisher it comes from."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Titles",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pro-t",
+                "name": "All titles",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Readers and book clubs with spend, special orders and returns."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "segment"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sales and orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Sales, online orders and special orders, with who is handling each and when it is due."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "order_board"
+            },
+            "inline": true,
+            "title": "Sales and orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ord-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ord-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ship_by"
+              },
+              {
+                "id": "ord-t",
+                "name": "All sales and orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ord-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ship_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ship_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "packer"
+                ]
+              }
+            ],
+            "activeViewId": "ord-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "independent-bookstore-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Orders by status, sales by channel and titles by category."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Sales and orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Sales and orders by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Sales and orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Sales by channel",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "channel",
+                          "op": "sum",
+                          "field": "total"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "product",
+                      "view": "all_product"
+                    },
+                    "inline": true,
+                    "title": "Titles",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Titles by category",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late to ship"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Sales and orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Late to ship",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My sales and orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Sales and orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My sales and orders",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "packer"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Returns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Sales and orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Returns",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Returned"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "special-orders",
+      "parent": "independent-bookstore-hq",
+      "title": "Handling special orders",
+      "icon": {
+        "emoji": "📖"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A special order is a promise. Track it from deposit to pickup."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take a deposit and the customer phone number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter the order and place it with the distributor the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark it Paid and then Packing when it arrives."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the customer and hold the book for ten days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If it will be late"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Call the customer before they call you, with a new date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "returns-to-publishers",
+      "parent": "independent-bookstore-hq",
+      "title": "Returns to publishers",
+      "icon": {
+        "emoji": "📤"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Returns keep shelves fresh and cash flowing. Do them on a schedule."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each quarter, list titles that have not sold in six months."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the return window for each publisher."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pack, label and ship them, keeping the copy of the form."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record credits when they arrive."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never return"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Signed copies, local author books and staff picks."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "author-events",
+      "parent": "independent-bookstore-hq",
+      "title": "Planning an author event",
+      "icon": {
+        "emoji": "🎤"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Events turn a shop into a gathering place. Plan six weeks ahead."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Timeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "6 weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirm the author and the date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4 weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order books and announce"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1 week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Set up chairs and signage"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Event day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sell, sign and collect emails"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Thank the author and send a recap"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Settle consignment and event sales within a week."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

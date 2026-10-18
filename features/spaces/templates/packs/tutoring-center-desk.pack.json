@@ -1,0 +1,3255 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0557",
+  "version": 1,
+  "title": "Tutoring Center Desk",
+  "description": "Students, tutors, sessions and prepaid hour packages for a tutoring business.",
+  "forWho": "Tutoring centers and independent tutor groups",
+  "icon": {
+    "emoji": "📚"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "tutoring",
+    "sessions",
+    "packages",
+    "students"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-tutoring-center-desk",
+    "catalogueId": "SP0557",
+    "useCase": "Quentin Abiola-Marsh runs a small tutoring center and uses this to see which sessions are today, which packages are nearly used up and which students are due a progress note.",
+    "industry": "education",
+    "vertical": "Tutoring center",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Brightpath Learning Studio",
+      "describes": "A tutoring center with eight part-time tutors helping about 90 students a week in math, reading, writing and test preparation.",
+      "address": {
+        "line1": "205 Quarry Street",
+        "city": "Albuquerque",
+        "region": "NM",
+        "postalCode": "87102",
+        "country": "US"
+      },
+      "phone": "(505) 555-0149",
+      "website": "brightpathstudio.net",
+      "email": "hello@brightpathstudio.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-tutoring-center-desk",
+    "tables": [
+      {
+        "token": "student",
+        "name": "Students",
+        "labelSingular": "Student",
+        "labelPlural": "Students",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "graduation-cap",
+        "titleField": "student_name",
+        "describes": "Each learner with their subject, guardian contact, hours remaining and next progress review.",
+        "subject": "thing",
+        "independentOf": {
+          "tutor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "student_name",
+            "label": "Student",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Inquiry",
+              "Assessment booked",
+              "Active",
+              "Paused",
+              "Finished"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Assessment booked": "blue",
+              "Active": "amber",
+              "Paused": "violet",
+              "Finished": "teal"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "in_progress",
+              "Assessment booked": "in_progress",
+              "Active": "in_progress",
+              "Paused": "in_progress",
+              "Finished": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "grade",
+            "label": "Grade",
+            "parityType": "select",
+            "choices": [
+              "Grade 3",
+              "Grade 4",
+              "Grade 5",
+              "Grade 6",
+              "Grade 7",
+              "Grade 8",
+              "Grade 9",
+              "Grade 10",
+              "Grade 11",
+              "Grade 12"
+            ],
+            "choiceColors": {
+              "Grade 3": "slate",
+              "Grade 4": "blue",
+              "Grade 5": "amber",
+              "Grade 6": "violet",
+              "Grade 7": "teal",
+              "Grade 8": "green",
+              "Grade 9": "orange",
+              "Grade 10": "pink",
+              "Grade 11": "yellow",
+              "Grade 12": "brown"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "subject",
+            "label": "Main subject",
+            "parityType": "select",
+            "choices": [
+              "Math",
+              "Reading",
+              "Writing",
+              "Science",
+              "SAT or ACT prep",
+              "Study skills"
+            ],
+            "choiceColors": {
+              "Math": "slate",
+              "Reading": "blue",
+              "Writing": "amber",
+              "Science": "violet",
+              "SAT or ACT prep": "teal",
+              "Study skills": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guardian",
+            "label": "Guardian",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_review",
+            "label": "Next progress review",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tutor",
+            "label": "Main tutor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours_bought",
+            "label": "Hours bought",
+            "parityType": "rollup",
+            "via": "packages",
+            "pick": "hours",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Active",
+                "Used up"
+              ]
+            }
+          },
+          {
+            "key": "hours_used",
+            "label": "Hours used",
+            "parityType": "rollup",
+            "via": "sessions",
+            "pick": "hours",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "hours_left",
+            "label": "Hours left",
+            "parityType": "formula",
+            "formula": "{Hours bought} - {Hours used}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "missed",
+            "label": "Missed sessions",
+            "parityType": "rollup",
+            "via": "sessions",
+            "pick": "session_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Missed"
+            }
+          },
+          {
+            "key": "btn_active",
+            "label": "Mark active",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "student_active"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_session",
+            "label": "Book a session",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "sessions",
+              "template": "New session",
+              "prefill": {
+                "student": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_package",
+            "label": "Sell a package",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "package",
+              "template": "New package",
+              "prefill": {
+                "student": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_note",
+            "label": "Add a progress note",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "note",
+              "template": "New progress note",
+              "prefill": {
+                "student": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Email guardian",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New student",
+            "values": {
+              "student_name": "New student",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the family wants to change, in their words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Strengths and struggles"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the student enjoys and where they get stuck."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Assessment plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Which skills to check in the first session."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "student-1",
+            "values": {
+              "student_name": "Alder P.",
+              "status": "Active",
+              "grade": "Grade 6",
+              "subject": "Math",
+              "guardian": "Renata Pierce",
+              "email": "renata.pierce@mailbox.net",
+              "phone": "(505) 555-0121",
+              "next_review": "@today+10d",
+              "tutor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "student-2",
+            "values": {
+              "student_name": "Bao T.",
+              "status": "Active",
+              "grade": "Grade 9",
+              "subject": "SAT or ACT prep",
+              "guardian": "Linh Tran",
+              "email": "linh.tran@mailbox.net",
+              "phone": "(505) 555-0122",
+              "next_review": "@today+3d",
+              "tutor": "tm-4"
+            }
+          },
+          {
+            "key": "student-3",
+            "values": {
+              "student_name": "Calista M.",
+              "status": "Active",
+              "grade": "Grade 4",
+              "subject": "Reading",
+              "guardian": "Dmitri Markov",
+              "email": "dmitri.m@mailbox.net",
+              "phone": "(505) 555-0123",
+              "next_review": "@today",
+              "tutor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "student-4",
+            "values": {
+              "student_name": "Dario F.",
+              "status": "Inquiry",
+              "grade": "Grade 7",
+              "subject": "Writing",
+              "guardian": "Alessandra Ferrante",
+              "email": "a.ferrante@mailbox.net",
+              "phone": "(505) 555-0124",
+              "next_review": "@today+2d",
+              "tutor": "tm-3"
+            }
+          },
+          {
+            "key": "student-5",
+            "values": {
+              "student_name": "Esperanza R.",
+              "status": "Active",
+              "grade": "Grade 11",
+              "subject": "SAT or ACT prep",
+              "guardian": "Carmen Reyes",
+              "email": "carmen.reyes@mailbox.net",
+              "phone": "(505) 555-0125",
+              "next_review": "@today+6d",
+              "tutor": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "student-6",
+            "values": {
+              "student_name": "Finnegan O.",
+              "status": "Assessment booked",
+              "grade": "Grade 5",
+              "subject": "Math",
+              "guardian": "Siobhan O'Neill",
+              "email": "siobhan.on@mailbox.net",
+              "phone": "(505) 555-0126",
+              "next_review": "@today+1d",
+              "tutor": "tm-2"
+            }
+          },
+          {
+            "key": "student-7",
+            "values": {
+              "student_name": "Gaia N.",
+              "status": "Active",
+              "grade": "Grade 8",
+              "subject": "Science",
+              "guardian": "Thabo Nkosi",
+              "email": "thabo.nkosi@mailbox.net",
+              "phone": "(505) 555-0127",
+              "next_review": "@today-3d",
+              "tutor": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "student-8",
+            "values": {
+              "student_name": "Hiroshi K.",
+              "status": "Paused",
+              "grade": "Grade 10",
+              "subject": "Math",
+              "guardian": "Yuki Kondo",
+              "email": "yuki.kondo@mailbox.net",
+              "phone": "(505) 555-0128",
+              "next_review": "@today+30d",
+              "tutor": "tm-2"
+            }
+          },
+          {
+            "key": "student-9",
+            "values": {
+              "student_name": "Ilse V.",
+              "status": "Active",
+              "grade": "Grade 3",
+              "subject": "Reading",
+              "guardian": "Pieter Visser",
+              "email": "pieter.v@mailbox.net",
+              "phone": "(505) 555-0129",
+              "next_review": "@today+14d",
+              "tutor": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "student-10",
+            "values": {
+              "student_name": "Jovan D.",
+              "status": "Finished",
+              "grade": "Grade 12",
+              "subject": "SAT or ACT prep",
+              "guardian": "Milica Djordjevic",
+              "email": "milica.d@mailbox.net",
+              "phone": "(505) 555-0130",
+              "tutor": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "sessions",
+        "name": "Sessions",
+        "labelSingular": "Session",
+        "labelPlural": "Sessions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clock",
+        "titleField": "session_name",
+        "describes": "Every one-to-one or small-group session, with the tutor, the subject and the hours it uses.",
+        "subject": "thing",
+        "independentOf": {
+          "student": "Either record can be created or change status before the other.",
+          "tutor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "session_name",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "student",
+            "label": "Student",
+            "parityType": "relation",
+            "relationTarget": "student",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tutor",
+            "label": "Tutor",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "subject",
+            "label": "Subject",
+            "parityType": "select",
+            "choices": [
+              "Math",
+              "Reading",
+              "Writing",
+              "Science",
+              "SAT or ACT prep",
+              "Study skills"
+            ],
+            "choiceColors": {
+              "Math": "slate",
+              "Reading": "blue",
+              "Writing": "amber",
+              "Science": "violet",
+              "SAT or ACT prep": "teal",
+              "Study skills": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Scheduled",
+              "Done",
+              "Missed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Done": "blue",
+              "Missed": "amber",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Done": "done",
+              "Missed": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "session_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 4
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "sessions_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_missed",
+            "label": "Mark missed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "sessions_missed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New session",
+            "values": {
+              "session_name": "New session",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The skill to work on and the materials to bring."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After the session"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Hours recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Homework set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Note for the guardian"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "sessions-1",
+            "values": {
+              "session_name": "Alder, fractions",
+              "student": "student-1",
+              "tutor": "tm-2",
+              "subject": "Math",
+              "status": "Scheduled",
+              "session_at": "@today+1d 16:00",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sessions-2",
+            "values": {
+              "session_name": "Bao, SAT reading",
+              "student": "student-2",
+              "tutor": "tm-4",
+              "subject": "SAT or ACT prep",
+              "status": "Scheduled",
+              "session_at": "@today 17:00",
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "sessions-3",
+            "values": {
+              "session_name": "Calista, phonics",
+              "student": "student-3",
+              "tutor": "tm-3",
+              "subject": "Reading",
+              "status": "Scheduled",
+              "session_at": "@today 15:30",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sessions-4",
+            "values": {
+              "session_name": "Esperanza, SAT math",
+              "student": "student-5",
+              "tutor": "tm-4",
+              "subject": "SAT or ACT prep",
+              "status": "Scheduled",
+              "session_at": "@today+2d 18:00",
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "sessions-5",
+            "values": {
+              "session_name": "Finnegan, assessment",
+              "student": "student-6",
+              "tutor": "tm-2",
+              "subject": "Math",
+              "status": "Scheduled",
+              "session_at": "@today+1d 15:00",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sessions-6",
+            "values": {
+              "session_name": "Gaia, lab report",
+              "student": "student-7",
+              "tutor": "tm-2",
+              "subject": "Science",
+              "status": "Scheduled",
+              "session_at": "@today-1d 16:30",
+              "hours": 1
+            }
+          },
+          {
+            "key": "sessions-7",
+            "values": {
+              "session_name": "Ilse, read-aloud",
+              "student": "student-9",
+              "tutor": "tm-3",
+              "subject": "Reading",
+              "status": "Scheduled",
+              "session_at": "@today+3d 15:30",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sessions-8",
+            "values": {
+              "session_name": "Bao, SAT writing",
+              "student": "student-2",
+              "tutor": "tm-4",
+              "subject": "SAT or ACT prep",
+              "status": "Done",
+              "session_at": "@today-4d 17:00",
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "sessions-9",
+            "values": {
+              "session_name": "Alder, decimals",
+              "student": "student-1",
+              "tutor": "tm-2",
+              "subject": "Math",
+              "status": "Done",
+              "session_at": "@today-5d 16:00",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sessions-10",
+            "values": {
+              "session_name": "Calista, comprehension",
+              "student": "student-3",
+              "tutor": "tm-3",
+              "subject": "Reading",
+              "status": "Done",
+              "session_at": "@today-6d 15:30",
+              "hours": 1
+            }
+          },
+          {
+            "key": "sessions-11",
+            "values": {
+              "session_name": "Gaia, graphing",
+              "student": "student-7",
+              "tutor": "tm-2",
+              "subject": "Science",
+              "status": "Missed",
+              "session_at": "@today-8d 16:30",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "sessions-12",
+            "values": {
+              "session_name": "Esperanza, SAT essay",
+              "student": "student-5",
+              "tutor": "tm-4",
+              "subject": "SAT or ACT prep",
+              "status": "Done",
+              "session_at": "@today-3d 18:00",
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "sessions-13",
+            "values": {
+              "session_name": "Ilse, letter sounds",
+              "student": "student-9",
+              "tutor": "tm-3",
+              "subject": "Reading",
+              "status": "Done",
+              "session_at": "@today-10d 15:30",
+              "hours": 1,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "package",
+        "name": "Hour packages",
+        "labelSingular": "Hour package",
+        "labelPlural": "Hour packages",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "ticket",
+        "titleField": "package_name",
+        "describes": "Prepaid bundles of tutoring hours, with price and expiry.",
+        "subject": "thing",
+        "independentOf": {
+          "student": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "package_name",
+            "label": "Hour package",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "student",
+            "label": "Student",
+            "parityType": "relation",
+            "relationTarget": "student",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours",
+            "label": "Hours in package",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Active",
+              "Used up",
+              "Expired",
+              "Refunded"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Used up": "blue",
+              "Expired": "amber",
+              "Refunded": "violet"
+            },
+            "required": true,
+            "default": "Active",
+            "statusGroups": {
+              "Active": "in_progress",
+              "Used up": "done",
+              "Expired": "done",
+              "Refunded": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_used",
+            "label": "Mark used up",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "package_used"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New package",
+            "values": {
+              "package_name": "New package",
+              "status": "Active"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Hours included, expiry and any sibling discount."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Payment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Method and date paid."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "package-1",
+            "values": {
+              "package_name": "Alder, 20 hour math pack",
+              "student": "student-1",
+              "hours": 20,
+              "price": 1300,
+              "status": "Active",
+              "expires_on": "@today+120d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "package-2",
+            "values": {
+              "package_name": "Bao, 30 hour SAT pack",
+              "student": "student-2",
+              "hours": 30,
+              "price": 2100,
+              "status": "Active",
+              "expires_on": "@today+2d"
+            }
+          },
+          {
+            "key": "package-3",
+            "values": {
+              "package_name": "Calista, 10 hour reading pack",
+              "student": "student-3",
+              "hours": 10,
+              "price": 650,
+              "status": "Active",
+              "expires_on": "@today",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "package-4",
+            "values": {
+              "package_name": "Esperanza, 30 hour SAT pack",
+              "student": "student-5",
+              "hours": 30,
+              "price": 2100,
+              "status": "Active",
+              "expires_on": "@today+5d"
+            }
+          },
+          {
+            "key": "package-5",
+            "values": {
+              "package_name": "Gaia, 10 hour science pack",
+              "student": "student-7",
+              "hours": 10,
+              "price": 650,
+              "status": "Active",
+              "expires_on": "@today-3d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "package-6",
+            "values": {
+              "package_name": "Ilse, 10 hour reading pack",
+              "student": "student-9",
+              "hours": 10,
+              "price": 650,
+              "status": "Active",
+              "expires_on": "@today+90d"
+            }
+          },
+          {
+            "key": "package-7",
+            "values": {
+              "package_name": "Jovan, 30 hour SAT pack",
+              "student": "student-10",
+              "hours": 30,
+              "price": 2100,
+              "status": "Used up",
+              "expires_on": "@today-60d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "package-8",
+            "values": {
+              "package_name": "Hiroshi, 20 hour math pack",
+              "student": "student-8",
+              "hours": 20,
+              "price": 1300,
+              "status": "Expired",
+              "expires_on": "@today-45d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "note",
+        "name": "Progress notes",
+        "labelSingular": "Progress note",
+        "labelPlural": "Progress notes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "notebook-pen",
+        "titleField": "note_name",
+        "describes": "Short notes on what a student can now do, shared with guardians.",
+        "subject": "thing",
+        "independentOf": {
+          "student": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "note_name",
+            "label": "Progress note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "student",
+            "label": "Student",
+            "parityType": "relation",
+            "relationTarget": "student",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "noted_on",
+            "label": "Noted on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "level",
+            "label": "Where they are",
+            "parityType": "select",
+            "choices": [
+              "Needs support",
+              "Getting there",
+              "On track",
+              "Ahead"
+            ],
+            "choiceColors": {
+              "Needs support": "slate",
+              "Getting there": "blue",
+              "On track": "amber",
+              "Ahead": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "summary",
+            "label": "What changed",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New progress note",
+            "values": {
+              "note_name": "New progress note"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Skills now solid"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the student can do on their own."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next focus"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The one skill for the next three sessions."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "note-1",
+            "values": {
+              "note_name": "Alder, fractions check-in",
+              "student": "student-1",
+              "noted_on": "@today-12d",
+              "level": "Getting there",
+              "summary": "Adds fractions with unlike denominators with a model; still needs one reminder about common denominators.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "note-2",
+            "values": {
+              "note_name": "Bao, practice test 2",
+              "student": "student-2",
+              "noted_on": "@today-9d",
+              "level": "On track",
+              "summary": "Reading score moved up 40 points; writing timing still slow."
+            }
+          },
+          {
+            "key": "note-3",
+            "values": {
+              "note_name": "Calista, reading level check",
+              "student": "student-3",
+              "noted_on": "@today-15d",
+              "level": "Getting there",
+              "summary": "Decodes two-syllable words; practicing fluency with short passages.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "note-4",
+            "values": {
+              "note_name": "Gaia, lab report skills",
+              "student": "student-7",
+              "noted_on": "@today-20d",
+              "level": "Needs support",
+              "summary": "Lab report structure is clear; conclusions need evidence."
+            }
+          },
+          {
+            "key": "note-5",
+            "values": {
+              "note_name": "Ilse, first month summary",
+              "student": "student-9",
+              "noted_on": "@today-8d",
+              "level": "On track",
+              "summary": "Knows all letter sounds and blends three-letter words.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "note-6",
+            "values": {
+              "note_name": "Esperanza, essay clinic",
+              "student": "student-5",
+              "noted_on": "@today-6d",
+              "level": "Ahead",
+              "summary": "Thesis statements are strong; working on transitions."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each student belongs to one main tutor.",
+        "fromTable": "student",
+        "fromField": "tutor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "student_by_tutor"
+      },
+      {
+        "describes": "Each session belongs to one student.",
+        "fromTable": "sessions",
+        "fromField": "student",
+        "toTable": "student",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "sessions"
+      },
+      {
+        "describes": "Each session belongs to one tutor.",
+        "fromTable": "sessions",
+        "fromField": "tutor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "session_by_tutor"
+      },
+      {
+        "describes": "Each hour package belongs to one student.",
+        "fromTable": "package",
+        "fromField": "student",
+        "toTable": "student",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "packages"
+      },
+      {
+        "describes": "Each progress note belongs to one student.",
+        "fromTable": "note",
+        "fromField": "student",
+        "toTable": "student",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "notes"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Quentin Abiola-Marsh",
+              "role": "Center director",
+              "work_email": "quentin@brightpathstudio.net",
+              "mobile": "(505) 555-0141",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Saoirse Lindqvist",
+              "role": "Math tutor",
+              "work_email": "saoirse@brightpathstudio.net",
+              "mobile": "(505) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Emeka Chowdhury",
+              "role": "Reading and writing tutor",
+              "work_email": "emeka@brightpathstudio.net",
+              "mobile": "(505) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Wilhelmina Torres",
+              "role": "Test prep tutor",
+              "work_email": "wilhelmina@brightpathstudio.net",
+              "mobile": "(505) 555-0144",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Jasper Okafor-Hale",
+              "role": "Front desk and scheduling",
+              "work_email": "jasper@brightpathstudio.net",
+              "mobile": "(505) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Tutoring inquiry",
+        "describes": "Families ask about tutoring here.",
+        "audience": "staff",
+        "table": "student",
+        "fields": [
+          {
+            "fieldKey": "student_name",
+            "ask": "What is the student's first name and last initial?",
+            "required": true
+          },
+          {
+            "fieldKey": "grade",
+            "ask": "What grade are they in?"
+          },
+          {
+            "fieldKey": "subject",
+            "ask": "What subject do they need help with?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The center will call within one working day to book an assessment."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "student_active",
+        "table": "student",
+        "name": "Mark active",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "sessions_done",
+        "table": "sessions",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "sessions_missed",
+        "table": "sessions",
+        "name": "Mark missed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Missed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "package_used",
+        "table": "package",
+        "name": "Mark used up",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Used up"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_student",
+        "name": "All students",
+        "table": "student",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "student_board",
+        "name": "By status",
+        "table": "student",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "student_cal",
+        "name": "Calendar",
+        "table": "student",
+        "kind": "calendar",
+        "dateField": "next_review",
+        "allDay": true
+      },
+      {
+        "token": "student_over",
+        "name": "Overdue",
+        "table": "student",
+        "kind": "grid",
+        "within": {
+          "next_review": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Assessment booked",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "student_week",
+        "name": "This week",
+        "table": "student",
+        "kind": "grid",
+        "within": {
+          "next_review": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Assessment booked",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "student_next7",
+        "name": "Next 7 days",
+        "table": "student",
+        "kind": "grid",
+        "within": {
+          "next_review": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Assessment booked",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "student_mine",
+        "name": "My students",
+        "table": "student",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_sessions",
+        "name": "All sessions",
+        "table": "sessions",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "sessions_board",
+        "name": "By status",
+        "table": "sessions",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "sessions_cal",
+        "name": "Calendar",
+        "table": "sessions",
+        "kind": "calendar",
+        "dateField": "session_at",
+        "allDay": false
+      },
+      {
+        "token": "sessions_today",
+        "name": "Today",
+        "table": "sessions",
+        "kind": "grid",
+        "within": {
+          "session_at": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "sessions_over",
+        "name": "Overdue",
+        "table": "sessions",
+        "kind": "grid",
+        "within": {
+          "session_at": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "sessions_week",
+        "name": "This week",
+        "table": "sessions",
+        "kind": "grid",
+        "within": {
+          "session_at": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "sessions_next7",
+        "name": "Next 7 days",
+        "table": "sessions",
+        "kind": "grid",
+        "within": {
+          "session_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "sessions_mine",
+        "name": "My sessions",
+        "table": "sessions",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_package",
+        "name": "All hour packages",
+        "table": "package",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "package_board",
+        "name": "By status",
+        "table": "package",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "package_cal",
+        "name": "Calendar",
+        "table": "package",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true
+      },
+      {
+        "token": "package_over",
+        "name": "Overdue",
+        "table": "package",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Active"
+        }
+      },
+      {
+        "token": "package_week",
+        "name": "This week",
+        "table": "package",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Active"
+        }
+      },
+      {
+        "token": "package_next7",
+        "name": "Next 7 days",
+        "table": "package",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Active"
+        }
+      },
+      {
+        "token": "package_mine",
+        "name": "My hour packages",
+        "table": "package",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_note",
+        "name": "All progress notes",
+        "table": "note",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "note_board",
+        "name": "By where they are",
+        "table": "note",
+        "kind": "kanban",
+        "groupBy": "level"
+      },
+      {
+        "token": "note_mine",
+        "name": "My progress notes",
+        "table": "note",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Tutoring Center Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "sessions",
+          "describes": "Every one-to-one or small-group session, with the tutor, the subject and the hours it uses."
+        },
+        {
+          "name": "related_tables",
+          "table": "student",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many sessions are still scheduled?",
+        "whyItMatters": "The front desk confirms sessions the evening before.",
+        "expect": {
+          "table": "sessions",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Scheduled"
+          },
+          "answer": 7,
+          "unit": "sessions"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open students.",
+        "action": {
+          "kind": "open",
+          "surface": "student_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "student_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open sessions.",
+        "action": {
+          "kind": "open",
+          "surface": "sessions_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sessions_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open hour packages.",
+        "action": {
+          "kind": "open",
+          "surface": "package_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "package_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "brightpathstudio.net"
+      ],
+      "fictionalStreets": [
+        "Quarry Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "tutoring-center-desk",
+      "parent": null,
+      "title": "Tutoring Center Desk",
+      "icon": {
+        "emoji": "📚"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The center's day in one place: students and their goals, sessions, prepaid hour packages and the short progress notes families trust. Start with the Dashboard each afternoon. Mark every session done or missed the same day so hours left is always true."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:assessment-first-session"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:package-rules"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:tutor-handbook"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Students"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each learner with their subject, guardian contact, hours remaining and next progress review."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "student",
+              "view": "student_board"
+            },
+            "inline": true,
+            "title": "Students",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "stu-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "stu-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_review"
+              },
+              {
+                "id": "stu-t",
+                "name": "All students",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "stu-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_review": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Assessment booked",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "stu-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_review": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Assessment booked",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "stu-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_review": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Assessment booked",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "stu-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "stu-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every one-to-one or small-group session, with the tutor, the subject and the hours it uses."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sessions",
+              "view": "sessions_board"
+            },
+            "inline": true,
+            "title": "Sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ses-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ses-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "session_at"
+              },
+              {
+                "id": "ses-t",
+                "name": "All sessions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ses-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "session_at": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "ses-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "session_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "ses-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "session_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "ses-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "session_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "ses-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ses-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hour packages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Prepaid bundles of tutoring hours, with price and expiry."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "package",
+              "view": "package_board"
+            },
+            "inline": true,
+            "title": "Hour packages",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pac-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pac-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "pac-t",
+                "name": "All hour packages",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pac-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              },
+              {
+                "id": "pac-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              },
+              {
+                "id": "pac-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              },
+              {
+                "id": "pac-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pac-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Progress notes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Short notes on what a student can now do, shared with guardians."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "note",
+              "view": "note_board"
+            },
+            "inline": true,
+            "title": "Progress notes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "not-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "level"
+              },
+              {
+                "id": "not-t",
+                "name": "All progress notes",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "not-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "not-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "tutoring-center-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The center at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "sessions",
+                      "view": "all_sessions"
+                    },
+                    "inline": true,
+                    "title": "Sessions by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Sessions by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "sessions",
+                      "view": "all_sessions"
+                    },
+                    "inline": true,
+                    "title": "Hours by subject",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Hours by subject",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "subject",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "student",
+                      "view": "all_student"
+                    },
+                    "inline": true,
+                    "title": "Students by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Students by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "package",
+                      "view": "all_package"
+                    },
+                    "inline": true,
+                    "title": "Packages by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Packages by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sessions in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sessions",
+              "view": "all_sessions"
+            },
+            "inline": true,
+            "title": "Sessions in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Sessions in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "session_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packages expiring soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "package",
+              "view": "all_package"
+            },
+            "inline": true,
+            "title": "Packages expiring soon",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Packages expiring soon",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Progress reviews this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "student",
+              "view": "all_student"
+            },
+            "inline": true,
+            "title": "Progress reviews this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Progress reviews this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "next_review": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours in active and used-up packages minus hours of finished sessions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the guardian at 3 hours left to offer another package"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Missed sessions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sessions marked Missed for the student"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two missed in a month means a call about the schedule"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Packages expiring soon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Active packages with an expiry date in the next 14 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer to schedule sessions before the date; do not let hours lapse silently"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "assessment-first-session",
+      "parent": "tutoring-center-desk",
+      "title": "The first session",
+      "icon": {
+        "emoji": "🌱"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A student decides in ten minutes whether tutoring is safe. Spend those minutes on connection before correction."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the inquiry and the goals the family wrote down."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose two short activities: one the student will find easy and one that shows the gap."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep the first session to a conversation and one achievable win."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write a progress note with the starting level"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recommend a plan and a package size"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call the guardian within a day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "package-rules",
+      "parent": "tutoring-center-desk",
+      "title": "Package and policy guide",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clear rules protect families and the center. Print this and give it to every new guardian."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How packages work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hours are used as sessions are finished, not when they are booked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Packages expire on the date shown; a short extension is possible for illness."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Siblings can share a package only when agreed in writing at the start."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Notice"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "24 hours or more"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Session moves free of charge"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 24 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Half the session hours are used"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No show"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The full session hours are used"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "tutor-handbook",
+      "parent": "tutoring-center-desk",
+      "title": "Tutor handbook",
+      "icon": {
+        "emoji": "🧑‍🏫"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Great tutors listen more than they talk. This page is the shared standard for every session."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read the last progress note before the student arrives"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Start with a quick win"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask the student to explain their thinking"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Leave five minutes to write what changed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write a progress note for each student you see weekly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell the director about any student who is stuck."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Share a resource that worked so others can use it."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

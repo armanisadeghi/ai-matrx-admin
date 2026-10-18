@@ -1,0 +1,3279 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0556",
+  "version": 1,
+  "title": "School Operations Office",
+  "description": "Staff, class sections, school events, substitute cover and office requests.",
+  "forWho": "Principals and office managers at K-12 schools",
+  "icon": {
+    "emoji": "🏫"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "school",
+    "classes",
+    "events",
+    "staff",
+    "substitutes"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-school-operations-office",
+    "catalogueId": "SP0556",
+    "useCase": "Imogen Castellanos-Reed manages the front office of an elementary school and uses this to see which classes are covered, which events are coming and which facility requests are waiting.",
+    "industry": "education",
+    "vertical": "K-12 school operations",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Lakeview Elementary School",
+      "describes": "A public elementary school with 420 students, 26 classroom teachers and a small front office team.",
+      "address": {
+        "line1": "600 Sycamore Drive",
+        "city": "Raleigh",
+        "region": "NC",
+        "postalCode": "27601",
+        "country": "US"
+      },
+      "phone": "(919) 555-0117",
+      "website": "lakeviewelementary.net",
+      "email": "office@lakeviewelementary.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-school-operations-office",
+    "tables": [
+      {
+        "token": "section",
+        "name": "Class sections",
+        "labelSingular": "Class section",
+        "labelPlural": "Class sections",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "school",
+        "titleField": "section_name",
+        "describes": "Every class section with its teacher, room and size, so the front office always knows where everyone is.",
+        "subject": "thing",
+        "independentOf": {
+          "teacher": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "section_name",
+            "label": "Class section",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Running",
+              "Combined",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Running": "blue",
+              "Combined": "amber",
+              "Closed": "violet"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Running": "in_progress",
+              "Combined": "in_progress",
+              "Closed": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "grade",
+            "label": "Grade",
+            "parityType": "select",
+            "choices": [
+              "Kindergarten",
+              "Grade 1",
+              "Grade 2",
+              "Grade 3",
+              "Grade 4",
+              "Grade 5"
+            ],
+            "choiceColors": {
+              "Kindergarten": "slate",
+              "Grade 1": "blue",
+              "Grade 2": "amber",
+              "Grade 3": "violet",
+              "Grade 4": "teal",
+              "Grade 5": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "teacher",
+            "label": "Homeroom teacher",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "size",
+            "label": "Students enrolled",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cap",
+            "label": "Class size limit",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "seats",
+            "label": "Seats open",
+            "parityType": "formula",
+            "formula": "MAX(0, {Class size limit} - {Students enrolled})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "absence_count",
+            "label": "Teacher absences logged",
+            "parityType": "rollup",
+            "via": "absences",
+            "pick": "absence_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Needs cover",
+                "Covered"
+              ]
+            }
+          },
+          {
+            "key": "add_absence",
+            "label": "Log an absence",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "absences",
+              "template": "New absence",
+              "prefill": {
+                "section": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New class section",
+            "values": {
+              "section_name": "New class section",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Schedule"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Specials, lunch and recess times."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Supports"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Aides, interventions and anything the substitute should know."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "section-1",
+            "values": {
+              "section_name": "Kindergarten, Room 3",
+              "status": "Running",
+              "grade": "Kindergarten",
+              "room": "3",
+              "teacher": "tm-4",
+              "size": 22,
+              "cap": 24,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "section-2",
+            "values": {
+              "section_name": "Grade 1, Room 5",
+              "status": "Running",
+              "grade": "Grade 1",
+              "room": "5",
+              "teacher": "tm-4",
+              "size": 23,
+              "cap": 24
+            }
+          },
+          {
+            "key": "section-3",
+            "values": {
+              "section_name": "Grade 2, Room 7",
+              "status": "Running",
+              "grade": "Grade 2",
+              "room": "7",
+              "teacher": "tm-5",
+              "size": 24,
+              "cap": 26,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "section-4",
+            "values": {
+              "section_name": "Grade 3, Room 9",
+              "status": "Running",
+              "grade": "Grade 3",
+              "room": "9",
+              "teacher": "tm-4",
+              "size": 26,
+              "cap": 28
+            }
+          },
+          {
+            "key": "section-5",
+            "values": {
+              "section_name": "Grade 3, Room 10",
+              "status": "Running",
+              "grade": "Grade 3",
+              "room": "10",
+              "teacher": "tm-5",
+              "size": 25,
+              "cap": 28,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "section-6",
+            "values": {
+              "section_name": "Grade 4, Room 12",
+              "status": "Running",
+              "grade": "Grade 4",
+              "room": "12",
+              "teacher": "tm-5",
+              "size": 27,
+              "cap": 28
+            }
+          },
+          {
+            "key": "section-7",
+            "values": {
+              "section_name": "Grade 5, Room 14",
+              "status": "Running",
+              "grade": "Grade 5",
+              "room": "14",
+              "teacher": "tm-5",
+              "size": 29,
+              "cap": 30,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "section-8",
+            "values": {
+              "section_name": "Grade 5 combined with 4",
+              "status": "Combined",
+              "grade": "Grade 5",
+              "room": "15",
+              "teacher": "tm-5",
+              "size": 18,
+              "cap": 20
+            }
+          },
+          {
+            "key": "section-9",
+            "values": {
+              "section_name": "Kindergarten, Room 4 (next year)",
+              "status": "Planned",
+              "grade": "Kindergarten",
+              "room": "4",
+              "size": 0,
+              "cap": 24,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "school_event",
+        "name": "School events",
+        "labelSingular": "School event",
+        "labelPlural": "School events",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-star",
+        "titleField": "event_name",
+        "describes": "Assemblies, field trips, conferences and fairs, with who leads each and what it needs.",
+        "subject": "thing",
+        "independentOf": {
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "School event",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Confirmed",
+              "Done",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Confirmed": "blue",
+              "Done": "amber",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "in_progress",
+              "Confirmed": "in_progress",
+              "Done": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Assembly",
+              "Field trip",
+              "Family night",
+              "Testing window",
+              "Fundraiser",
+              "Staff meeting",
+              "Picture day"
+            ],
+            "choiceColors": {
+              "Assembly": "slate",
+              "Field trip": "blue",
+              "Family night": "amber",
+              "Testing window": "violet",
+              "Fundraiser": "teal",
+              "Staff meeting": "green",
+              "Picture day": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "starts_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "place",
+            "label": "Where",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expected",
+            "label": "Expected attendance",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notice_sent",
+            "label": "Family notice sent",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_confirm",
+            "label": "Confirm",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "school_event_confirm"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "school_event_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New school event",
+            "values": {
+              "event_name": "New school event",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Purpose, schedule and who is responsible for what."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Room or bus booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Staff cover arranged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Notice home sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Supplies ready"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Thank-you sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "school_event-1",
+            "values": {
+              "event_name": "Grade 3 field trip to the science museum",
+              "status": "Confirmed",
+              "kind": "Field trip",
+              "starts_at": "@today+3d 08:30",
+              "place": "Science museum",
+              "expected": 52,
+              "lead": "tm-4",
+              "notice_sent": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "school_event-2",
+            "values": {
+              "event_name": "Family reading night",
+              "status": "Planned",
+              "kind": "Family night",
+              "starts_at": "@today+5d 18:00",
+              "place": "Library",
+              "expected": 120,
+              "lead": "tm-6",
+              "notice_sent": false
+            }
+          },
+          {
+            "key": "school_event-3",
+            "values": {
+              "event_name": "All-school assembly",
+              "status": "Confirmed",
+              "kind": "Assembly",
+              "starts_at": "@today 14:00",
+              "place": "Gym",
+              "expected": 420,
+              "lead": "tm-2",
+              "notice_sent": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "school_event-4",
+            "values": {
+              "event_name": "Spring picture day",
+              "status": "Planned",
+              "kind": "Picture day",
+              "starts_at": "@today+6d 08:00",
+              "place": "Gym",
+              "expected": 420,
+              "lead": "tm-1",
+              "notice_sent": false
+            }
+          },
+          {
+            "key": "school_event-5",
+            "values": {
+              "event_name": "Staff meeting",
+              "status": "Confirmed",
+              "kind": "Staff meeting",
+              "starts_at": "@today+1d 15:30",
+              "place": "Library",
+              "expected": 32,
+              "lead": "tm-2",
+              "notice_sent": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "school_event-6",
+            "values": {
+              "event_name": "Book fair opening",
+              "status": "Confirmed",
+              "kind": "Fundraiser",
+              "starts_at": "@today+2d 08:00",
+              "place": "Library",
+              "expected": 300,
+              "lead": "tm-6",
+              "notice_sent": true
+            }
+          },
+          {
+            "key": "school_event-7",
+            "values": {
+              "event_name": "Reading assessment window",
+              "status": "Planned",
+              "kind": "Testing window",
+              "starts_at": "@today-2d 08:00",
+              "place": "Classrooms",
+              "expected": 420,
+              "lead": "tm-2",
+              "notice_sent": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "school_event-8",
+            "values": {
+              "event_name": "Parent-teacher conferences",
+              "status": "Done",
+              "kind": "Family night",
+              "starts_at": "@today-20d 15:00",
+              "place": "Classrooms",
+              "expected": 250,
+              "lead": "tm-2",
+              "notice_sent": true
+            }
+          },
+          {
+            "key": "school_event-9",
+            "values": {
+              "event_name": "Winter concert",
+              "status": "Cancelled",
+              "kind": "Assembly",
+              "starts_at": "@today-30d 18:30",
+              "place": "Gym",
+              "expected": 300,
+              "lead": "tm-6",
+              "notice_sent": false,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "absences",
+        "name": "Absences and cover",
+        "labelSingular": "Absence",
+        "labelPlural": "Absences and cover",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-minus",
+        "titleField": "absence_name",
+        "describes": "Teacher absences and who is covering each one.",
+        "subject": "thing",
+        "independentOf": {
+          "section": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "absence_name",
+            "label": "Absence",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "section",
+            "label": "Class section",
+            "parityType": "relation",
+            "relationTarget": "section",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Needs cover",
+              "Covered",
+              "Not needed"
+            ],
+            "choiceColors": {
+              "Needs cover": "slate",
+              "Covered": "blue",
+              "Not needed": "amber"
+            },
+            "required": true,
+            "default": "Needs cover",
+            "statusGroups": {
+              "Needs cover": "todo",
+              "Covered": "done",
+              "Not needed": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "absent_on",
+            "label": "Absent on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "select",
+            "choices": [
+              "Sick",
+              "Training",
+              "Family",
+              "Jury duty",
+              "Other"
+            ],
+            "choiceColors": {
+              "Sick": "slate",
+              "Training": "blue",
+              "Family": "amber",
+              "Jury duty": "violet",
+              "Other": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cover",
+            "label": "Covered by",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plans_in",
+            "label": "Lesson plans in",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_covered",
+            "label": "Mark covered",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "absences_covered"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New absence",
+            "values": {
+              "absence_name": "New absence",
+              "status": "Needs cover"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "For the substitute"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where the plans are, the bell schedule and any students who need support."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Cover checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Substitute booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Plans left"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Key or badge given"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Teacher thanked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "absences-1",
+            "values": {
+              "absence_name": "Grade 4 sick day",
+              "section": "section-6",
+              "status": "Needs cover",
+              "absent_on": "@today",
+              "reason": "Sick",
+              "plans_in": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "absences-2",
+            "values": {
+              "absence_name": "Grade 3 training day",
+              "section": "section-4",
+              "status": "Covered",
+              "absent_on": "@today+2d",
+              "reason": "Training",
+              "cover": "Marlon Pierce",
+              "plans_in": true
+            }
+          },
+          {
+            "key": "absences-3",
+            "values": {
+              "absence_name": "Kindergarten family leave",
+              "section": "section-1",
+              "status": "Needs cover",
+              "absent_on": "@today+3d",
+              "reason": "Family",
+              "plans_in": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "absences-4",
+            "values": {
+              "absence_name": "Grade 1 sick day",
+              "section": "section-2",
+              "status": "Covered",
+              "absent_on": "@today-1d",
+              "reason": "Sick",
+              "cover": "Hana Yoshida",
+              "plans_in": true
+            }
+          },
+          {
+            "key": "absences-5",
+            "values": {
+              "absence_name": "Grade 5 jury duty",
+              "section": "section-7",
+              "status": "Needs cover",
+              "absent_on": "@today+5d",
+              "reason": "Jury duty",
+              "plans_in": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "absences-6",
+            "values": {
+              "absence_name": "Grade 2 training day",
+              "section": "section-3",
+              "status": "Needs cover",
+              "absent_on": "@today-2d",
+              "reason": "Training",
+              "plans_in": true
+            }
+          },
+          {
+            "key": "absences-7",
+            "values": {
+              "absence_name": "Grade 3 sick day",
+              "section": "section-5",
+              "status": "Covered",
+              "absent_on": "@today-6d",
+              "reason": "Sick",
+              "cover": "Marlon Pierce",
+              "plans_in": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "absences-8",
+            "values": {
+              "absence_name": "Grade 4 training",
+              "section": "section-6",
+              "status": "Not needed",
+              "absent_on": "@today-12d",
+              "reason": "Training",
+              "plans_in": true
+            }
+          }
+        ]
+      },
+      {
+        "token": "request",
+        "name": "Office requests",
+        "labelSingular": "Office request",
+        "labelPlural": "Office requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "request_name",
+        "describes": "Repairs, supplies, room set-ups and questions staff send to the office.",
+        "subject": "thing",
+        "independentOf": {
+          "requester": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "request_name",
+            "label": "Office request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Repair",
+              "Supplies",
+              "Room set-up",
+              "Technology",
+              "Safety",
+              "Other"
+            ],
+            "choiceColors": {
+              "Repair": "slate",
+              "Supplies": "blue",
+              "Room set-up": "amber",
+              "Technology": "violet",
+              "Safety": "teal",
+              "Other": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "New",
+              "In progress",
+              "Done",
+              "Declined"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "In progress": "blue",
+              "Done": "amber",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "In progress": "in_progress",
+              "Done": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "needed_by",
+            "label": "Needed by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "requester",
+            "label": "Requested by",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "choices": [
+              "Low",
+              "Normal",
+              "Urgent"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Normal": "blue",
+              "Urgent": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_start",
+            "label": "Start work",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "request_start"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "request_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New office request",
+            "values": {
+              "request_name": "New office request",
+              "status": "New"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is needed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where, what and by when."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was done and who did it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "request-1",
+            "values": {
+              "request_name": "Projector bulb in Room 9",
+              "kind": "Technology",
+              "status": "In progress",
+              "needed_by": "@today+1d",
+              "requester": "tm-4",
+              "priority": "Normal",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "request-2",
+            "values": {
+              "request_name": "Leaking sink in Room 3",
+              "kind": "Repair",
+              "status": "New",
+              "needed_by": "@today",
+              "requester": "tm-1",
+              "priority": "Urgent"
+            }
+          },
+          {
+            "key": "request-3",
+            "values": {
+              "request_name": "Chairs for family reading night",
+              "kind": "Room set-up",
+              "status": "New",
+              "needed_by": "@today+4d",
+              "requester": "tm-6",
+              "priority": "Normal",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "request-4",
+            "values": {
+              "request_name": "Replace gym floor mat",
+              "kind": "Safety",
+              "status": "In progress",
+              "needed_by": "@today+6d",
+              "requester": "tm-3",
+              "priority": "Normal"
+            }
+          },
+          {
+            "key": "request-5",
+            "values": {
+              "request_name": "Whiteboard markers, Grade 5",
+              "kind": "Supplies",
+              "status": "New",
+              "needed_by": "@today-2d",
+              "requester": "tm-5",
+              "priority": "Low",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "request-6",
+            "values": {
+              "request_name": "Door lock check, east hall",
+              "kind": "Safety",
+              "status": "New",
+              "needed_by": "@today+2d",
+              "requester": "tm-3",
+              "priority": "Urgent"
+            }
+          },
+          {
+            "key": "request-7",
+            "values": {
+              "request_name": "Chromebook cart charging",
+              "kind": "Technology",
+              "status": "Done",
+              "needed_by": "@today-10d",
+              "requester": "tm-5",
+              "priority": "Normal",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "request-8",
+            "values": {
+              "request_name": "Paint touch-up, front hall",
+              "kind": "Repair",
+              "status": "Declined",
+              "needed_by": "@today-20d",
+              "requester": "tm-2",
+              "priority": "Low"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each class section belongs to one homeroom teacher.",
+        "fromTable": "section",
+        "fromField": "teacher",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "section_by_teacher"
+      },
+      {
+        "describes": "Each school event belongs to one lead.",
+        "fromTable": "school_event",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "event_by_lead"
+      },
+      {
+        "describes": "Each absence belongs to one class section.",
+        "fromTable": "absences",
+        "fromField": "section",
+        "toTable": "section",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "absences"
+      },
+      {
+        "describes": "Each office request belongs to one requested by.",
+        "fromTable": "request",
+        "fromField": "requester",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "request_by_requester"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Imogen Castellanos-Reed",
+              "role": "Office manager",
+              "work_email": "imogen@lakeviewelementary.net",
+              "mobile": "(919) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Dr. Folasade Whitaker",
+              "role": "Principal",
+              "work_email": "fwhitaker@lakeviewelementary.net",
+              "mobile": "(919) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Matthias Eriksen",
+              "role": "Facilities lead",
+              "work_email": "meriksen@lakeviewelementary.net",
+              "mobile": "(919) 555-0143",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Priscilla Tran",
+              "role": "Grade 3 teacher",
+              "work_email": "ptran@lakeviewelementary.net",
+              "mobile": "(919) 555-0144",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Rafael Okonkwo-Bell",
+              "role": "Grade 5 teacher",
+              "work_email": "rokonkwo@lakeviewelementary.net",
+              "mobile": "(919) 555-0145",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Delphine Aguirre",
+              "role": "Librarian",
+              "work_email": "daguirre@lakeviewelementary.net",
+              "mobile": "(919) 555-0146",
+              "start_date": "@today-12y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Office request form",
+        "describes": "Staff send repairs and requests to the front office.",
+        "audience": "staff",
+        "table": "request",
+        "fields": [
+          {
+            "fieldKey": "request_name",
+            "ask": "What do you need?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of request is it?"
+          },
+          {
+            "fieldKey": "needed_by",
+            "ask": "When do you need it by?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The office will reply within a day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "school_event_confirm",
+        "table": "school_event",
+        "name": "Confirm",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "school_event_done",
+        "table": "school_event",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "absences_covered",
+        "table": "absences",
+        "name": "Mark covered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Covered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "request_start",
+        "table": "request",
+        "name": "Start work",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "request_done",
+        "table": "request",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_section",
+        "name": "All class sections",
+        "table": "section",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "section_board",
+        "name": "By status",
+        "table": "section",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "section_mine",
+        "name": "My class sections",
+        "table": "section",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_school_event",
+        "name": "All school events",
+        "table": "school_event",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "school_event_board",
+        "name": "By status",
+        "table": "school_event",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "school_event_cal",
+        "name": "Calendar",
+        "table": "school_event",
+        "kind": "calendar",
+        "dateField": "starts_at",
+        "allDay": false
+      },
+      {
+        "token": "school_event_today",
+        "name": "Today",
+        "table": "school_event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "school_event_over",
+        "name": "Overdue",
+        "table": "school_event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "school_event_week",
+        "name": "This week",
+        "table": "school_event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "school_event_next7",
+        "name": "Next 7 days",
+        "table": "school_event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "school_event_mine",
+        "name": "My school events",
+        "table": "school_event",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_absences",
+        "name": "All absences and cover",
+        "table": "absences",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "absences_board",
+        "name": "By status",
+        "table": "absences",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "absences_cal",
+        "name": "Calendar",
+        "table": "absences",
+        "kind": "calendar",
+        "dateField": "absent_on",
+        "allDay": true
+      },
+      {
+        "token": "absences_over",
+        "name": "Overdue",
+        "table": "absences",
+        "kind": "grid",
+        "within": {
+          "absent_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Needs cover"
+        }
+      },
+      {
+        "token": "absences_week",
+        "name": "This week",
+        "table": "absences",
+        "kind": "grid",
+        "within": {
+          "absent_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Needs cover"
+        }
+      },
+      {
+        "token": "absences_next7",
+        "name": "Next 7 days",
+        "table": "absences",
+        "kind": "grid",
+        "within": {
+          "absent_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Needs cover"
+        }
+      },
+      {
+        "token": "absences_mine",
+        "name": "My absences and cover",
+        "table": "absences",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_request",
+        "name": "All office requests",
+        "table": "request",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "request_board",
+        "name": "By status",
+        "table": "request",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "request_cal",
+        "name": "Calendar",
+        "table": "request",
+        "kind": "calendar",
+        "dateField": "needed_by",
+        "allDay": true
+      },
+      {
+        "token": "request_over",
+        "name": "Overdue",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "needed_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "request_week",
+        "name": "This week",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "needed_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "request_next7",
+        "name": "Next 7 days",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "needed_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "request_mine",
+        "name": "My office requests",
+        "table": "request",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "School Operations Office assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "absences",
+          "describes": "Teacher absences and who is covering each one."
+        },
+        {
+          "name": "related_tables",
+          "table": "section",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many absences still need a substitute?",
+        "whyItMatters": "The office manager books substitutes each morning.",
+        "expect": {
+          "table": "absences",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Needs cover"
+          },
+          "answer": 4,
+          "unit": "absences"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open class sections.",
+        "action": {
+          "kind": "open",
+          "surface": "section_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "section_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open school events.",
+        "action": {
+          "kind": "open",
+          "surface": "school_event_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "school_event_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open absences and cover.",
+        "action": {
+          "kind": "open",
+          "surface": "absences_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "absences_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lakeviewelementary.net"
+      ],
+      "fictionalStreets": [
+        "Sycamore Drive"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "school-operations-office",
+      "parent": null,
+      "title": "School Operations Office",
+      "icon": {
+        "emoji": "🏫"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The school office in one place: class sections and rooms, school events, teacher absences that need cover, and the requests staff send to the front office. Start each morning with the Dashboard and the Needs cover view. Keep student names out of this workspace; it is for staff and logistics only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:morning-office-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:event-planning-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:substitute-coverage-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Class sections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every class section with its teacher, room and size, so the front office always knows where everyone is."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "section",
+              "view": "section_board"
+            },
+            "inline": true,
+            "title": "Class sections",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sec-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sec-t",
+                "name": "All class sections",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sec-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sec-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "School events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Assemblies, field trips, conferences and fairs, with who leads each and what it needs."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "school_event",
+              "view": "school_event_board"
+            },
+            "inline": true,
+            "title": "School events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sch-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sch-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_at"
+              },
+              {
+                "id": "sch-t",
+                "name": "All school events",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sch-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "starts_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "sch-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "starts_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "sch-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "sch-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "sch-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sch-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Absences and cover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Teacher absences and who is covering each one."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "absences",
+              "view": "absences_board"
+            },
+            "inline": true,
+            "title": "Absences and cover",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "abs-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "abs-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "absent_on"
+              },
+              {
+                "id": "abs-t",
+                "name": "All absences and cover",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "abs-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "absent_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Needs cover"
+                }
+              },
+              {
+                "id": "abs-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "absent_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Needs cover"
+                }
+              },
+              {
+                "id": "abs-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "absent_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Needs cover"
+                }
+              },
+              {
+                "id": "abs-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "abs-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Office requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Repairs, supplies, room set-ups and questions staff send to the office."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "request_board"
+            },
+            "inline": true,
+            "title": "Office requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "req-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "req-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "needed_by"
+              },
+              {
+                "id": "req-t",
+                "name": "All office requests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "req-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "needed_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "req-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "needed_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "req-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "needed_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "req-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "req-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "school-operations-office",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The school at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "absences",
+                      "view": "all_absences"
+                    },
+                    "inline": true,
+                    "title": "Absences by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Absences by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "school_event",
+                      "view": "all_school_event"
+                    },
+                    "inline": true,
+                    "title": "Events by kind",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Events by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_request"
+                    },
+                    "inline": true,
+                    "title": "Office requests by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Office requests by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "section",
+                      "view": "all_section"
+                    },
+                    "inline": true,
+                    "title": "Students by grade",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Students by grade",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "grade",
+                          "op": "sum",
+                          "field": "size"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Absences needing cover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "absences",
+              "view": "all_absences"
+            },
+            "inline": true,
+            "title": "Absences needing cover",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Absences needing cover",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Needs cover"
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "school_event",
+              "view": "all_school_event"
+            },
+            "inline": true,
+            "title": "Events this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Events this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Urgent or overdue requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "all_request"
+            },
+            "inline": true,
+            "title": "Urgent or overdue requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Urgent or overdue requests",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "needed_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Seats open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Class size limit minus students enrolled, never below zero"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use it when a new family enrolls; do not exceed the limit without the principal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Teacher absences logged"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Absences for the section marked Needs cover or Covered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A section with many absences may need a longer-term plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Family notice sent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A checkbox on each event"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No event is Confirmed until the notice has gone home"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "morning-office-routine",
+      "parent": "school-operations-office",
+      "title": "Morning office routine",
+      "icon": {
+        "emoji": "🌅"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first hour sets the day. Doing the same things in the same order means nothing is missed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the bell"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open Absences and cover and book substitutes for every row marked Needs cover"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check Office requests for anything Urgent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read the day's events and confirm rooms and staff"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Put the day's changes on the staff board"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the bell"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reconcile attendance with the student information system."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call families of students absent without notice, following school policy."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log any new requests that arrive at the desk."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "event-planning-guide",
+      "parent": "school-operations-office",
+      "title": "Planning a school event",
+      "icon": {
+        "emoji": "📅"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Events go well when families hear early and staff know their role. Start six weeks ahead for anything with buses or food."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Timeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Six weeks ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Add the event, pick a lead and book the space or bus"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Four weeks ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirm staff cover and permission slips"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two weeks ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send the family notice and tick the box on the event"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The week of"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check supplies, walk the route and brief staff"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The day after"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Mark done and note what to change next time"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Always check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Accessibility for every family and student."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Allergies and dietary needs for any food."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A rain plan for outdoor events."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "substitute-coverage-guide",
+      "parent": "school-operations-office",
+      "title": "Substitute coverage",
+      "icon": {
+        "emoji": "🧑‍🏫"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A substitute walking into a prepared room has a good day. One walking into a surprise does not."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What every teacher leaves"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A seating chart and bell schedule."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lesson plans for each period and where materials are."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Names of two nearby teachers who can help."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Notes on students who need support, kept private and brief."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the office does"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the substitute and press Mark covered."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the front desk who is in which room."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Collect feedback from the substitute at the end of the day."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

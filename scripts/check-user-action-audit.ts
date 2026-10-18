@@ -11,7 +11,10 @@
  *   2. LIVE — makes a disposable persona through the persona factory (tagged, expiring,
  *      torn down in `finally`), then inside ONE transaction that is always ROLLED BACK
  *      runs each action once against it as the test super admin (admin lane on) and
- *      asserts each call added exactly one audit row for that person.
+ *      asserts each call added exactly one audit row for that person, with the expected action
+ *      word AND a non-empty metadata.reason (every admin action on a person carries its reason —
+ *      users one-roof B3). A step marked `none` asserts the call wrote NO row (a reopen of a person
+ *      who was not closed changes nothing).
  *
  *   --static-only   skip the live half
  *   --self-test     prove the static judge goes red on a body without the helper and
@@ -44,8 +47,15 @@ export const DECLARED: readonly Declared[] = [
   { fn: "billing.user_plan_set(uuid,text,text,timestamptz)", reaches: [HELPER] },
   { fn: "billing.free_months_apply(uuid[],text,integer,text)", reaches: [HELPER] },
   { fn: "billing.usage_reset_apply(uuid,billing.meter_period[],text)", reaches: [HELPER] },
-  // Already wrote its own row before the helper existed; a direct insert counts.
-  { fn: "admin.set_top_tier_model_access(uuid,boolean,text)", reaches: [HELPER, "admin.admin_audit_log"] },
+  // p_note is the audit reason since lane Q (20261018170000).
+  { fn: "admin.set_top_tier_model_access(uuid,boolean,text)", reaches: [HELPER] },
+  // Lane Q (users one-roof adversarial fixes, 2026-10-18).
+  { fn: "iam.admin_manage_organization_membership(text,uuid,uuid,text,text)", reaches: [HELPER] },
+  { fn: "iam.admin_set_account_flags(uuid,boolean,boolean,text)", reaches: [HELPER] },
+  { fn: "billing.coupon_create(text,text,integer,integer,jsonb,timestamptz,text)", reaches: [HELPER] },
+  { fn: "billing.coupon_revoke(uuid,text)", reaches: [HELPER] },
+  { fn: "public.admin_set_guest_block(uuid,boolean,text,timestamptz)", reaches: [HELPER] },
+  { fn: "admin.record_contact(text,uuid,text,text,jsonb,uuid)", reaches: [HELPER] },
   // Every support-session lifecycle event funnels through _support_session_log.
   { fn: "admin._support_session_log(admin.support_sessions,text,text)", reaches: [HELPER] },
   { fn: "admin._support_session_close(uuid,text,text)", reaches: [SUPPORT_LOG] },
@@ -132,13 +142,31 @@ async function liveHalf(c: Client, target: string): Promise<string[]> {
     };
     // Every row for the person, as the owner. created_at is now() and so the same for every row in
     // one transaction: new rows are found by id, never by time.
-    const rows = async (): Promise<Array<{ id: string; action: string }>> => {
-      const r = await c.query("select id, action from admin.admin_audit_log where target_user_id = $1", [target]);
+    const rows = async (): Promise<Array<{ id: string; action: string; reason: string | null }>> => {
+      const r = await c.query(
+        "select id, action, nullif(btrim(metadata->>'reason'), '') as reason from admin.admin_audit_log where target_user_id = $1",
+        [target],
+      );
       return r.rows;
     };
+    const t = await c.query("select email from auth.users where id = $1", [target]);
+    const targetEmail: string | null = t.rows[0]?.email ?? null;
+    // An organization the test admin owns, for the membership steps (the person is added, re-roled and
+    // removed inside this rolled-back transaction).
+    const o = await c.query(
+      `select m.container_id as id from iam.memberships m
+        where m.user_id = $1 and m.container_type = 'organization' and m.role = 'owner'
+          and m.status = 'active' and m.deleted_at is null
+          and not exists (select 1 from iam.memberships x where x.container_id = m.container_id
+                           and x.container_type = 'organization' and x.user_id = $2 and x.deleted_at is null)
+        order by m.created_at limit 1`,
+      [adminId, target],
+    );
+    const orgId: string | undefined = o.rows[0]?.id;
+    let couponId: string | null = null;
 
     let sessionId: string | null = null;
-    const steps: Array<{ name: string; as: () => Promise<void>; run: () => Promise<unknown>; action: string }> = [
+    const steps: Array<{ name: string; as: () => Promise<void>; run: () => Promise<unknown>; action: string; none?: boolean }> = [
       { name: "iam.sign_out_everywhere", as: asAdmin, action: "sign_out_everywhere",
         run: () => c.query("select iam.sign_out_everywhere($1, 'audit guard')", [target]) },
       { name: "iam.admin_confirm_email", as: asAdmin, action: "email_verified",
@@ -185,6 +213,67 @@ async function liveHalf(c: Client, target: string): Promise<string[]> {
         run: () => c.query("select iam.close_account($1, 'audit guard')", [target]) },
       { name: "iam.reopen_account", as: asAdmin, action: "account_reopen",
         run: () => c.query("select iam.reopen_account($1, 'audit guard')", [target]) },
+      // B2: a person banned with no open closure row is unbanned and audited (orphan ban)…
+      { name: "iam.reopen_account (orphan ban)", as: asAdmin, action: "account_reopen",
+        run: async () => {
+          await c.query("reset role");
+          await c.query("update auth.users set banned_until = now() + interval '100 years' where id = $1", [target]);
+          await asAdmin();
+          const r = await c.query("select iam.reopen_account($1, 'audit guard') j", [target]);
+          if (r.rows[0].j.reopened !== true || r.rows[0].j.orphan_ban !== true) throw new Error(`answered ${JSON.stringify(r.rows[0].j)}`);
+          await c.query("reset role");
+          const b = await c.query("select banned_until from auth.users where id = $1", [target]);
+          if (b.rows[0].banned_until !== null) throw new Error("still banned after an orphan-ban reopen");
+        } },
+      // …and a person who was not closed is told so, with nothing changed and nothing audited.
+      { name: "iam.reopen_account (not closed)", as: asAdmin, action: "", none: true,
+        run: async () => {
+          const r = await c.query("select iam.reopen_account($1, 'audit guard') j", [target]);
+          if (r.rows[0].j.reopened !== false || r.rows[0].j.was_not_closed !== true) throw new Error(`answered ${JSON.stringify(r.rows[0].j)}`);
+        } },
+      { name: "iam.admin_set_account_flags (onboarding)", as: asAdmin, action: "onboarding_flag_set",
+        run: () => c.query("select iam.admin_set_account_flags($1, true, null, 'audit guard')", [target]) },
+      { name: "iam.admin_set_account_flags (full MCP access)", as: asAdmin, action: "mcp_full_access_grant",
+        run: () => c.query("select iam.admin_set_account_flags($1, null, true, 'audit guard')", [target]) },
+      { name: "iam.admin_manage_organization_membership (add)", as: asAdmin, action: "org_membership_add",
+        run: () => {
+          if (!orgId) throw new Error(`${ADMIN_EMAIL} owns no organization to add the person to`);
+          return c.query("select iam.admin_manage_organization_membership('add', $1, $2, 'member', 'audit guard')", [orgId, target]);
+        } },
+      { name: "iam.admin_manage_organization_membership (set_role)", as: asAdmin, action: "org_membership_set_role",
+        run: () => c.query("select iam.admin_manage_organization_membership('set_role', $1, $2, 'admin', 'audit guard')", [orgId, target]) },
+      { name: "iam.admin_manage_organization_membership (remove)", as: asAdmin, action: "org_membership_remove",
+        run: () => c.query("select iam.admin_manage_organization_membership('remove', $1, $2, null, 'audit guard')", [orgId, target]) },
+      { name: "billing.coupon_create (for the person)", as: asAdmin, action: "coupon_create",
+        run: async () => {
+          const r = await c.query(
+            "select id from billing.coupon_create('existing_account', 'personal-pro', 1, 1, jsonb_build_array(jsonb_build_object('user_id', $1::text)), null, 'audit guard')",
+            [target],
+          );
+          couponId = r.rows[0].id;
+        } },
+      { name: "billing.coupon_revoke", as: asAdmin, action: "coupon_revoke",
+        run: () => c.query("select billing.coupon_revoke($1, 'audit guard')", [couponId]) },
+      { name: "public.admin_set_guest_block (guest who is the person)", as: asAdmin, action: "guest_block",
+        run: async () => {
+          await c.query("reset role");
+          const g = await c.query(
+            "insert into users.guest_executions (fingerprint, auth_user_id) values ('audit-guard-' || md5(random()::text), $1) returning id",
+            [target],
+          );
+          await asAdmin();
+          await c.query("select public.admin_set_guest_block($1, true, 'audit guard', null)", [g.rows[0].id]);
+        } },
+      { name: "admin.record_contact (direct message)", as: asAdmin, action: "message_sent",
+        run: () => c.query(
+          "select admin.record_contact('message_sent', $1, null, 'audit guard', jsonb_build_object('conversation_id', gen_random_uuid()))",
+          [target],
+        ) },
+      { name: "admin.record_contact (email, by address, server)", as: asServiceRole, action: "email_sent",
+        run: () => c.query(
+          "select admin.record_contact('email_sent', null, $1, 'audit guard', '{}'::jsonb, $2)",
+          [targetEmail, adminId],
+        ) },
       { name: "billing.user_plan_set (clear)", as: asAdmin, action: "plan_clear",
         run: () => c.query("select billing.user_plan_set($1, null, 'audit guard')", [target]) },
       { name: "billing.free_months_apply", as: asAdmin, action: "free_months_grant",
@@ -231,11 +320,19 @@ async function liveHalf(c: Client, target: string): Promise<string[]> {
         const fresh = (await rows()).filter((r) => !seen.has(r.id));
         const delta = fresh.length;
         const act = fresh.map((r) => r.action).join(",") || null;
-        if (delta !== 1 || act !== s.action) {
+        if (s.none) {
+          if (delta !== 0) {
+            failures.push(`${s.name}: ${delta} audit row(s) written for a call that changed nothing (${act})`);
+            console.log(`FAIL  ${s.name}: +${delta} (${act})`);
+          } else console.log(`PASS  ${s.name}: no row (nothing changed)`);
+        } else if (delta !== 1 || act !== s.action) {
           failures.push(`${s.name}: ${delta} new audit row(s), last action ${act ?? "none"} (expected 1 × ${s.action})`);
           console.log(`FAIL  ${s.name}: +${delta} (${act ?? "none"})`);
+        } else if (!fresh[0].reason) {
+          failures.push(`${s.name}: the ${act} row carries no reason (metadata.reason empty)`);
+          console.log(`FAIL  ${s.name}: +1 ${act} WITHOUT a reason`);
         } else {
-          console.log(`PASS  ${s.name}: +1 ${act}`);
+          console.log(`PASS  ${s.name}: +1 ${act} (reason "${fresh[0].reason}")`);
         }
         await c.query("release savepoint step");
       } catch (e) {

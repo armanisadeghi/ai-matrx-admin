@@ -1,0 +1,3150 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0504",
+  "version": 1,
+  "title": "Auto Repair Shop HQ",
+  "description": "Track repair orders from estimate to pickup, manage parts stock and unpaid invoices.",
+  "forWho": "Independent auto repair shops and garages",
+  "icon": {
+    "emoji": "🔧"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "trades",
+  "tags": [
+    "auto",
+    "repair orders",
+    "garage",
+    "parts"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-auto-repair-shop-hq",
+    "catalogueId": "SP0504",
+    "useCase": "The owner of Ridgeline Auto Service uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "automotive",
+    "vertical": "Auto repair shop",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Ridgeline Auto Service",
+      "describes": "A six-bay independent auto repair shop doing maintenance, brakes, diagnostics and tires for local drivers and a few small delivery fleets.",
+      "address": {
+        "line1": "1190 Foundry Road",
+        "city": "Grand Rapids",
+        "region": "MI",
+        "postalCode": "49503",
+        "country": "US"
+      },
+      "phone": "(616) 555-0175",
+      "website": "ridgelineautoservice.net",
+      "email": "info@ridgelineautoservice.net",
+      "timezone": "America/Detroit"
+    },
+    "cleanupTag": "use-case:spaces-auto-repair-shop-hq",
+    "tables": [
+      {
+        "token": "customer",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "customer_name",
+        "describes": "Drivers and fleets, what they have spent and what they still owe.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer_type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Driver",
+              "Fleet",
+              "Dealer referral",
+              "Student"
+            ],
+            "choiceColors": {
+              "Driver": "slate",
+              "Fleet": "blue",
+              "Dealer referral": "amber",
+              "Student": "violet"
+            }
+          },
+          {
+            "key": "customer_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Lead",
+              "Inactive"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Lead": "blue",
+              "Inactive": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Customer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "job_count",
+            "label": "Repair orders done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "value_tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Billed to date} >= 1500, \"Top account\", IF({Billed to date} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_job_btn",
+            "label": "New repair order",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "job",
+              "template": "Job sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer intake",
+            "values": {
+              "customer_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The driver"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Name, phone, preferred contact method and whether the car is a fleet vehicle."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The car"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Year, make, model, mileage, plate and anything the driver mentions."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approval"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Estimate limit agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Okay to call before extra work"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Courtesy ride needed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "custom-1",
+            "values": {
+              "customer_name": "Callum Pemberton",
+              "customer_type": "Driver",
+              "customer_status": "Active",
+              "phone": "(616) 555-0185",
+              "email": "callum.pemberton@inbox-mail.net",
+              "area": "Lakeview",
+              "since": "@today-40d"
+            }
+          },
+          {
+            "key": "custom-2",
+            "values": {
+              "customer_name": "Lucinda Whitlock",
+              "customer_type": "Fleet",
+              "customer_status": "Active",
+              "phone": "(616) 555-0122",
+              "email": "lucinda.whitlock@inbox-mail.net",
+              "area": "Foxglove Court",
+              "since": "@today-95d"
+            }
+          },
+          {
+            "key": "custom-3",
+            "values": {
+              "customer_name": "Kwame Eriksen",
+              "customer_type": "Dealer referral",
+              "customer_status": "Active",
+              "phone": "(616) 555-0159",
+              "email": "kwame.eriksen@inbox-mail.net",
+              "area": "Stonebridge",
+              "since": "@today-150d"
+            }
+          },
+          {
+            "key": "custom-4",
+            "values": {
+              "customer_name": "Fenella Montague",
+              "customer_type": "Student",
+              "customer_status": "Lead",
+              "phone": "(616) 555-0196",
+              "email": "fenella.montague@inbox-mail.net",
+              "area": "Harbor Heights",
+              "since": "@today-205d"
+            }
+          },
+          {
+            "key": "custom-5",
+            "values": {
+              "customer_name": "Leopold Valdez",
+              "customer_type": "Driver",
+              "customer_status": "Active",
+              "phone": "(616) 555-0133",
+              "email": "leopold.valdez@inbox-mail.net",
+              "area": "Willow Creek",
+              "since": "@today-260d"
+            }
+          },
+          {
+            "key": "custom-6",
+            "values": {
+              "customer_name": "Imelda Dunmore",
+              "customer_type": "Fleet",
+              "customer_status": "Active",
+              "phone": "(616) 555-0170",
+              "email": "imelda.dunmore@inbox-mail.net",
+              "area": "North Ridge",
+              "since": "@today-315d"
+            }
+          },
+          {
+            "key": "custom-7",
+            "values": {
+              "customer_name": "Anders Lindqvist",
+              "customer_type": "Dealer referral",
+              "customer_status": "Active",
+              "phone": "(616) 555-0107",
+              "email": "anders.lindqvist@inbox-mail.net",
+              "area": "Sunset Flats",
+              "since": "@today-370d"
+            }
+          },
+          {
+            "key": "custom-8",
+            "values": {
+              "customer_name": "Ottoline Sandoval",
+              "customer_type": "Student",
+              "customer_status": "Active",
+              "phone": "(616) 555-0144",
+              "email": "ottoline.sandoval@inbox-mail.net",
+              "area": "Maple Hollow",
+              "since": "@today-425d"
+            }
+          },
+          {
+            "key": "custom-9",
+            "values": {
+              "customer_name": "Humphrey Abernathy",
+              "customer_type": "Driver",
+              "customer_status": "Active",
+              "phone": "(616) 555-0181",
+              "email": "humphrey.abernathy@inbox-mail.net",
+              "area": "Eastgate",
+              "since": "@today-13d"
+            }
+          },
+          {
+            "key": "custom-10",
+            "values": {
+              "customer_name": "Tamsin Ibarra",
+              "customer_type": "Fleet",
+              "customer_status": "Inactive",
+              "phone": "(616) 555-0118",
+              "email": "tamsin.ibarra@inbox-mail.net",
+              "area": "Riverbend",
+              "since": "@today-14d"
+            }
+          },
+          {
+            "key": "custom-11",
+            "values": {
+              "customer_name": "Desmond Prescott",
+              "customer_type": "Dealer referral",
+              "customer_status": "Active",
+              "phone": "(616) 555-0155",
+              "email": "desmond.prescott@inbox-mail.net",
+              "area": "Old Mill",
+              "since": "@today-15d"
+            }
+          },
+          {
+            "key": "custom-12",
+            "values": {
+              "customer_name": "Noor Zuberi",
+              "customer_type": "Student",
+              "customer_status": "Active",
+              "phone": "(616) 555-0192",
+              "email": "noor.zuberi@inbox-mail.net",
+              "area": "Cedar Park",
+              "since": "@today-16d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "job",
+        "name": "Repair orders",
+        "labelSingular": "Repair order",
+        "labelPlural": "Repair orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "job_name",
+        "describes": "Every repair order from estimate to pickup, who is working it, cost and margin.",
+        "subject": "thing",
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Repair order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New request",
+              "Scheduled",
+              "In progress",
+              "On hold",
+              "Completed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New request": "slate",
+              "Scheduled": "blue",
+              "In progress": "amber",
+              "On hold": "violet",
+              "Completed": "teal",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "New request",
+            "statusGroups": {
+              "New request": "todo",
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "On hold": "in_progress",
+              "Completed": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "job_type",
+            "label": "Work type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Oil change and inspection",
+              "Brake pads and rotors",
+              "Check engine diagnostic",
+              "Tire rotation and balance",
+              "Battery and charging system",
+              "AC recharge",
+              "Timing belt service",
+              "Suspension repair"
+            ],
+            "choiceColors": {
+              "Oil change and inspection": "slate",
+              "Brake pads and rotors": "blue",
+              "Check engine diagnostic": "amber",
+              "Tire rotation and balance": "violet",
+              "Battery and charging system": "teal",
+              "AC recharge": "orange",
+              "Timing belt service": "green",
+              "Suspension repair": "yellow"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Routine",
+              "Urgent",
+              "Emergency"
+            ],
+            "choiceColors": {
+              "Routine": "slate",
+              "Urgent": "blue",
+              "Emergency": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "tech",
+            "label": "Lead tech",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "scheduled_on",
+            "label": "Scheduled for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "quote",
+            "label": "Quote (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "parts_cost",
+            "label": "Parts cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Labor hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "margin_flag",
+            "label": "Margin check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+          },
+          {
+            "key": "collected",
+            "label": "Collected",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Job sheet",
+            "values": {
+              "status": "New request",
+              "job_name": "New repair order"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Concern"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the driver says, in their words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Inspection"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Multi-point inspection done and photographed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Codes read if a light is on"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Estimate sent and approved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Work performed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Parts replaced and labor notes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pickup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Old parts offered back"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Road test done"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Driver told what to watch for"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "job-1",
+            "values": {
+              "job_name": "Oil change and inspection - Eriksen",
+              "status": "Completed",
+              "customer": "custom-3",
+              "job_type": "Oil change and inspection",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-21d",
+              "quote": 95,
+              "parts_cost": 25,
+              "labor_cost": 45,
+              "hours": 0.8
+            }
+          },
+          {
+            "key": "job-2",
+            "values": {
+              "job_name": "Brake pads and rotors - Sandoval",
+              "status": "Completed",
+              "customer": "custom-8",
+              "job_type": "Brake pads and rotors",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@today-16d",
+              "quote": 595,
+              "parts_cost": 285,
+              "labor_cost": 160,
+              "hours": 2.8
+            }
+          },
+          {
+            "key": "job-3",
+            "values": {
+              "job_name": "Check engine diagnostic - Pemberton",
+              "status": "Completed",
+              "customer": "custom-1",
+              "job_type": "Check engine diagnostic",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-12d",
+              "quote": 220,
+              "parts_cost": 10,
+              "labor_cost": 85,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-4",
+            "values": {
+              "job_name": "Tire rotation and balance - Dunmore",
+              "status": "Completed",
+              "customer": "custom-6",
+              "job_type": "Tire rotation and balance",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-9d",
+              "quote": 75,
+              "parts_cost": 5,
+              "labor_cost": 45,
+              "hours": 0.8
+            }
+          },
+          {
+            "key": "job-5",
+            "values": {
+              "job_name": "Battery and charging system - Prescott",
+              "status": "Completed",
+              "customer": "custom-11",
+              "job_type": "Battery and charging system",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@today-6d",
+              "quote": 280,
+              "parts_cost": 155,
+              "labor_cost": 60,
+              "hours": 1
+            }
+          },
+          {
+            "key": "job-6",
+            "values": {
+              "job_name": "AC recharge - Montague",
+              "status": "Completed",
+              "customer": "custom-4",
+              "job_type": "AC recharge",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-4d",
+              "quote": 315,
+              "parts_cost": 95,
+              "labor_cost": 85,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-7",
+            "values": {
+              "job_name": "Timing belt service - Abernathy",
+              "status": "Cancelled",
+              "customer": "custom-9",
+              "job_type": "Timing belt service",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today-8d",
+              "quote": 935,
+              "parts_cost": 395,
+              "labor_cost": 290,
+              "hours": 5
+            }
+          },
+          {
+            "key": "job-8",
+            "values": {
+              "job_name": "Suspension repair - Whitlock",
+              "status": "On hold",
+              "customer": "custom-2",
+              "job_type": "Suspension repair",
+              "priority": "Emergency",
+              "tech": "tm-4",
+              "scheduled_on": "@today-5d",
+              "quote": 940,
+              "parts_cost": 425,
+              "labor_cost": 230,
+              "hours": 4
+            }
+          },
+          {
+            "key": "job-9",
+            "values": {
+              "job_name": "Oil change and inspection - Lindqvist",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Oil change and inspection",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today-2d",
+              "quote": 95,
+              "parts_cost": 25,
+              "labor_cost": 45,
+              "hours": 0.8
+            }
+          },
+          {
+            "key": "job-10",
+            "values": {
+              "job_name": "Brake pads and rotors - Zuberi",
+              "status": "In progress",
+              "customer": "custom-12",
+              "job_type": "Brake pads and rotors",
+              "priority": "Urgent",
+              "tech": "tm-3",
+              "scheduled_on": "@mon",
+              "quote": 580,
+              "parts_cost": 280,
+              "labor_cost": 160,
+              "hours": 2.8,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-11",
+            "values": {
+              "job_name": "Check engine diagnostic - Valdez",
+              "status": "In progress",
+              "customer": "custom-5",
+              "job_type": "Check engine diagnostic",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@tue",
+              "quote": 215,
+              "parts_cost": 10,
+              "labor_cost": 85,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "job-12",
+            "values": {
+              "job_name": "Tire rotation and balance - Ibarra",
+              "status": "Scheduled",
+              "customer": "custom-10",
+              "job_type": "Tire rotation and balance",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@wed",
+              "quote": 70,
+              "parts_cost": 5,
+              "labor_cost": 45,
+              "hours": 0.8,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-13",
+            "values": {
+              "job_name": "Battery and charging system - Eriksen",
+              "status": "Scheduled",
+              "customer": "custom-3",
+              "job_type": "Battery and charging system",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@thu",
+              "quote": 270,
+              "parts_cost": 150,
+              "labor_cost": 60,
+              "hours": 1
+            }
+          },
+          {
+            "key": "job-14",
+            "values": {
+              "job_name": "AC recharge - Sandoval",
+              "status": "Scheduled",
+              "customer": "custom-8",
+              "job_type": "AC recharge",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@fri",
+              "quote": 310,
+              "parts_cost": 95,
+              "labor_cost": 85,
+              "hours": 1.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-15",
+            "values": {
+              "job_name": "Timing belt service - Pemberton",
+              "status": "New request",
+              "customer": "custom-1",
+              "job_type": "Timing belt service",
+              "priority": "Emergency",
+              "tech": "tm-5",
+              "scheduled_on": "@sat",
+              "quote": 910,
+              "parts_cost": 380,
+              "labor_cost": 290,
+              "hours": 5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-16",
+            "values": {
+              "job_name": "Suspension repair - Dunmore",
+              "status": "New request",
+              "customer": "custom-6",
+              "job_type": "Suspension repair",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@sun",
+              "quote": 910,
+              "parts_cost": 410,
+              "labor_cost": 230,
+              "hours": 4
+            }
+          },
+          {
+            "key": "job-17",
+            "values": {
+              "job_name": "Oil change and inspection - Prescott",
+              "status": "Scheduled",
+              "customer": "custom-11",
+              "job_type": "Oil change and inspection",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "scheduled_on": "@tue+1w",
+              "quote": 95,
+              "parts_cost": 25,
+              "labor_cost": 45,
+              "hours": 0.8
+            }
+          },
+          {
+            "key": "job-18",
+            "values": {
+              "job_name": "Brake pads and rotors - Montague",
+              "status": "New request",
+              "customer": "custom-4",
+              "job_type": "Brake pads and rotors",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@thu+1w",
+              "quote": 560,
+              "parts_cost": 270,
+              "labor_cost": 160,
+              "hours": 2.8
+            }
+          },
+          {
+            "key": "job-19",
+            "values": {
+              "job_name": "Check engine diagnostic - Abernathy",
+              "status": "Scheduled",
+              "customer": "custom-9",
+              "job_type": "Check engine diagnostic",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "scheduled_on": "@today",
+              "quote": 210,
+              "parts_cost": 10,
+              "labor_cost": 85,
+              "hours": 1.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "job-20",
+            "values": {
+              "job_name": "Tire rotation and balance - Whitlock",
+              "status": "Scheduled",
+              "customer": "custom-2",
+              "job_type": "Tire rotation and balance",
+              "priority": "Urgent",
+              "tech": "tm-4",
+              "scheduled_on": "@today+2d",
+              "quote": 70,
+              "parts_cost": 5,
+              "labor_cost": 45,
+              "hours": 0.8
+            }
+          },
+          {
+            "key": "job-21",
+            "values": {
+              "job_name": "Battery and charging system - Lindqvist",
+              "status": "Scheduled",
+              "customer": "custom-7",
+              "job_type": "Battery and charging system",
+              "priority": "Routine",
+              "tech": "tm-5",
+              "scheduled_on": "@today+4d",
+              "quote": 265,
+              "parts_cost": 145,
+              "labor_cost": 60,
+              "hours": 1
+            }
+          }
+        ]
+      },
+      {
+        "token": "part",
+        "name": "Parts stock",
+        "labelSingular": "Part",
+        "labelPlural": "Parts stock",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "part_name",
+        "describes": "Shelf stock for common jobs, with cost, count and reorder level.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "part_name",
+            "label": "Part",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fluids",
+              "Filters",
+              "Brakes",
+              "Electrical",
+              "Engine",
+              "Accessories"
+            ],
+            "choiceColors": {
+              "Fluids": "slate",
+              "Filters": "blue",
+              "Brakes": "amber",
+              "Electrical": "violet",
+              "Engine": "teal",
+              "Accessories": "orange"
+            }
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Unit cost (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "part-1",
+            "values": {
+              "part_name": "Synthetic oil 5W-30, 5 qt",
+              "category": "Fluids",
+              "unit": "jug",
+              "unit_cost": 24,
+              "on_hand": 18,
+              "reorder_at": 8,
+              "supplier": "Midlake Auto Parts",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "part-2",
+            "values": {
+              "part_name": "Oil filter",
+              "category": "Filters",
+              "unit": "each",
+              "unit_cost": 5,
+              "on_hand": 40,
+              "reorder_at": 20,
+              "supplier": "Midlake Auto Parts",
+              "counted_on": "@today-5d"
+            }
+          },
+          {
+            "key": "part-3",
+            "values": {
+              "part_name": "Cabin air filter",
+              "category": "Filters",
+              "unit": "each",
+              "unit_cost": 11,
+              "on_hand": 15,
+              "reorder_at": 8,
+              "supplier": "Midlake Auto Parts",
+              "counted_on": "@today-7d"
+            }
+          },
+          {
+            "key": "part-4",
+            "values": {
+              "part_name": "Front brake pads",
+              "category": "Brakes",
+              "unit": "set",
+              "unit_cost": 46,
+              "on_hand": 6,
+              "reorder_at": 4,
+              "supplier": "Great Lakes Brake Supply",
+              "counted_on": "@today-9d"
+            }
+          },
+          {
+            "key": "part-5",
+            "values": {
+              "part_name": "Brake rotor",
+              "category": "Brakes",
+              "unit": "each",
+              "unit_cost": 54,
+              "on_hand": 8,
+              "reorder_at": 4,
+              "supplier": "Great Lakes Brake Supply",
+              "counted_on": "@today-11d"
+            }
+          },
+          {
+            "key": "part-6",
+            "values": {
+              "part_name": "Brake fluid DOT 3, qt",
+              "category": "Fluids",
+              "unit": "bottle",
+              "unit_cost": 9,
+              "on_hand": 10,
+              "reorder_at": 5,
+              "supplier": "Midlake Auto Parts",
+              "counted_on": "@today-13d"
+            }
+          },
+          {
+            "key": "part-7",
+            "values": {
+              "part_name": "12V battery group 24F",
+              "category": "Electrical",
+              "unit": "each",
+              "unit_cost": 118,
+              "on_hand": 3,
+              "reorder_at": 2,
+              "supplier": "Lakefront Battery and Tire",
+              "counted_on": "@today-15d"
+            }
+          },
+          {
+            "key": "part-8",
+            "values": {
+              "part_name": "Serpentine belt",
+              "category": "Engine",
+              "unit": "each",
+              "unit_cost": 28,
+              "on_hand": 4,
+              "reorder_at": 3,
+              "supplier": "Midlake Auto Parts",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "part-9",
+            "values": {
+              "part_name": "Wiper blades pair",
+              "category": "Accessories",
+              "unit": "pair",
+              "unit_cost": 16,
+              "on_hand": 14,
+              "reorder_at": 8,
+              "supplier": "Midlake Auto Parts",
+              "counted_on": "@today-19d"
+            }
+          },
+          {
+            "key": "part-10",
+            "values": {
+              "part_name": "Coolant 50/50, gallon",
+              "category": "Fluids",
+              "unit": "gallon",
+              "unit_cost": 13,
+              "on_hand": 9,
+              "reorder_at": 6,
+              "supplier": "Great Lakes Brake Supply",
+              "counted_on": "@today-21d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "invoice_name",
+        "describes": "What has been billed, what is paid and what is overdue.",
+        "subject": "thing",
+        "independentOf": {
+          "job": "Either record can be created or change status before the other.",
+          "customer": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "invoice_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Overdue",
+              "Paid",
+              "Void"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Overdue": "red",
+              "Paid": "amber",
+              "Void": "pink"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done",
+              "Void": "done"
+            }
+          },
+          {
+            "key": "job",
+            "label": "Repair order",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card",
+              "Check",
+              "Bank transfer",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Card": "slate",
+              "Check": "blue",
+              "Bank transfer": "amber",
+              "Cash": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "invoic-1",
+            "values": {
+              "invoice_name": "INV-1040",
+              "status": "Overdue",
+              "job": "job-1",
+              "customer": "custom-3",
+              "amount": 106.4,
+              "issued_on": "@today-21d",
+              "due_on": "@today-7d"
+            }
+          },
+          {
+            "key": "invoic-2",
+            "values": {
+              "invoice_name": "INV-1041",
+              "status": "Paid",
+              "job": "job-2",
+              "customer": "custom-8",
+              "amount": 727.1,
+              "issued_on": "@today-16d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-12d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "invoic-3",
+            "values": {
+              "invoice_name": "INV-1042",
+              "status": "Paid",
+              "job": "job-3",
+              "customer": "custom-1",
+              "amount": 272.8,
+              "issued_on": "@today-12d",
+              "due_on": "@today+2d",
+              "paid_on": "@today-8d",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "invoic-4",
+            "values": {
+              "invoice_name": "INV-1043",
+              "status": "Sent",
+              "job": "job-4",
+              "customer": "custom-6",
+              "amount": 109.0,
+              "issued_on": "@today-9d",
+              "due_on": "@fri"
+            }
+          },
+          {
+            "key": "invoic-5",
+            "values": {
+              "invoice_name": "INV-1044",
+              "status": "Sent",
+              "job": "job-5",
+              "customer": "custom-11",
+              "amount": 330.4,
+              "issued_on": "@today-6d",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "invoic-6",
+            "values": {
+              "invoice_name": "INV-1045",
+              "status": "Draft",
+              "job": "job-6",
+              "customer": "custom-4",
+              "amount": 415.6,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each repair order belongs to one customer.",
+        "fromTable": "job",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each repair order belongs to one lead tech.",
+        "fromTable": "job",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "jobs_led"
+      },
+      {
+        "describes": "Each invoice belongs to one repair order.",
+        "fromTable": "invoice",
+        "fromField": "job",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each invoice belongs to one customer.",
+        "fromTable": "invoice",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Augustin Delacroix",
+              "role": "Owner",
+              "work_email": "augustin@ridgelineautoservice.net",
+              "mobile": "(616) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Perpetua Lindgren",
+              "role": "Service advisor",
+              "work_email": "perpetua@ridgelineautoservice.net",
+              "mobile": "(616) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Cyrus Abernathy",
+              "role": "Lead technician",
+              "work_email": "cyrus@ridgelineautoservice.net",
+              "mobile": "(616) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Mabel Oyelowo",
+              "role": "Technician",
+              "work_email": "mabel@ridgelineautoservice.net",
+              "mobile": "(616) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Gideon Sparks",
+              "role": "Technician",
+              "work_email": "gideon@ridgelineautoservice.net",
+              "mobile": "(616) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Rhona Duffy",
+              "role": "Shop manager",
+              "work_email": "rhona@ridgelineautoservice.net",
+              "mobile": "(616) 555-0145",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "job_request",
+        "name": "Request a repair order",
+        "describes": "How a customer or the office asks for work.",
+        "audience": "staff",
+        "table": "job",
+        "fields": [
+          {
+            "fieldKey": "job_name",
+            "ask": "What do you need done?",
+            "required": true
+          },
+          {
+            "fieldKey": "customer",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          },
+          {
+            "fieldKey": "scheduled_on",
+            "ask": "When would you like us there?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is on the board as New request."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "job_done",
+        "table": "job",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_customer",
+        "name": "All customers",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Customers board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "customer_status"
+      },
+      {
+        "token": "all_job",
+        "name": "All repair orders",
+        "table": "job",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "job_board",
+        "name": "Repair orders board",
+        "table": "job",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "job_cal",
+        "name": "Repair orders calendar",
+        "table": "job",
+        "kind": "calendar",
+        "dateField": "scheduled_on",
+        "allDay": true
+      },
+      {
+        "token": "job_over",
+        "name": "Overdue",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_week",
+        "name": "Due this week",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_next7",
+        "name": "Next 7 days",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New request",
+            "Scheduled",
+            "In progress",
+            "On hold"
+          ]
+        }
+      },
+      {
+        "token": "job_mine",
+        "name": "My repair orders",
+        "table": "job",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_part",
+        "name": "All parts stock",
+        "table": "part",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "part_board",
+        "name": "Parts stock board",
+        "table": "part",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoices board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Auto Repair Shop HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "job",
+          "describes": "Every repair order from estimate to pickup, who is working it, cost and margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "customer",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many repair orders are on hold right now?",
+        "whyItMatters": "The office clears holds first thing each morning.",
+        "expect": {
+          "table": "job",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "On hold"
+          },
+          "answer": 1,
+          "unit": "repair orders"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open repair orders.",
+        "action": {
+          "kind": "open",
+          "surface": "job_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "job_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open parts stock.",
+        "action": {
+          "kind": "open",
+          "surface": "part_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "part_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "ridgelineautoservice.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Foundry Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "auto-repair-shop-hq",
+      "parent": null,
+      "title": "Auto Repair Shop HQ",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the shop from one page. A car arrives, a repair order goes on the board, the technician takes it and Mark done moves it to pickup. Parts shows what to restock and Invoices shows unpaid work. Check the Dashboard at the morning huddle."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:intake-and-estimate"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:parts-ordering"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:quality-and-pickup"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Drivers and fleets, what they have spent and what they still owe."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "customer_status"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repair orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every repair order from estimate to pickup, who is working it, cost and margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "job_board"
+            },
+            "inline": true,
+            "title": "Repair orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "job-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "job-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "scheduled_on"
+              },
+              {
+                "id": "job-t",
+                "name": "All repair orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "job-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              },
+              {
+                "id": "job-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "job-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parts stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Shelf stock for common jobs, with cost, count and reorder level."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "part",
+              "view": "part_board"
+            },
+            "inline": true,
+            "title": "Parts stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "par-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "par-t",
+                "name": "All parts stock",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "par-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What has been billed, what is paid and what is overdue."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inv-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inv-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inv-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "inv-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "auto-repair-shop-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Bays this week, revenue by type of work and open invoices."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Repair orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Repair orders by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Repair orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Revenue by work type",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "job_type",
+                          "op": "sum",
+                          "field": "quote"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue repair orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Repair orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Overdue repair orders",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress",
+                    "On hold"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My repair orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Repair orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My repair orders",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Overdue invoices",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "intake-and-estimate",
+      "parent": "auto-repair-shop-hq",
+      "title": "Writing a repair order and estimate",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A clear estimate prevents most arguments. Write it before anything is taken apart."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the counter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Greet the driver, walk around the car and note existing dents."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the concern in their words, not in shop words."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for a phone number and the best way to reach them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Estimate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Inspect and diagnose before quoting."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Quote parts and labor separately and list what is optional."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Get an approval by text or phone and note the time on the repair order."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Extra work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Never add work that was not approved. Call, explain, and wait for a yes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "parts-ordering",
+      "parent": "auto-repair-shop-hq",
+      "title": "Parts ordering and returns",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Stock the fast movers, order the rest the same day. Parts delays cost more than the part."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read tomorrow repair orders and list what you do not stock."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Order before 10:00 for same day delivery."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Receive parts against the repair order and mark them on the sheet."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Returns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Return unused or wrong parts within a week and note the credit. Keep core returns in a labeled bin."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "quality-and-pickup",
+      "parent": "auto-repair-shop-hq",
+      "title": "Quality check and pickup",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The last ten minutes of a job are the ones the driver remembers."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before calling the driver"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Another technician road tests the car."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wheel torque, fluid levels and warning lights checked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Invoice matched to the estimate."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At pickup"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Explain what was done and what to watch."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Show any worn parts and mention what is coming due."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set a reminder for the next service."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

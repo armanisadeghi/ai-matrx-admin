@@ -1,0 +1,3234 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0558",
+  "version": 1,
+  "title": "Early Learning Center Desk",
+  "description": "Rooms, enrollment, the waitlist and the safety checks a daycare owes.",
+  "forWho": "Daycares, preschools and early learning centers",
+  "icon": {
+    "emoji": "🧸"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "daycare",
+    "preschool",
+    "waitlist",
+    "enrollment",
+    "safety"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-early-learning-center-desk",
+    "catalogueId": "SP0558",
+    "useCase": "Noelle Abara-Fitzgerald directs a small preschool and uses this to see which rooms have openings, who is on the waitlist and which safety checks are due.",
+    "industry": "education",
+    "vertical": "Daycare and preschool",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Little Acorn Early Learning",
+      "describes": "A licensed early learning center with four classrooms for ages six weeks to five years and a waitlist of about 30 families.",
+      "address": {
+        "line1": "88 Meadowlark Court",
+        "city": "Salt Lake City",
+        "region": "UT",
+        "postalCode": "84101",
+        "country": "US"
+      },
+      "phone": "(801) 555-0173",
+      "website": "littleacornlearning.net",
+      "email": "director@littleacornlearning.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-early-learning-center-desk",
+    "tables": [
+      {
+        "token": "room",
+        "name": "Classrooms",
+        "labelSingular": "Classroom",
+        "labelPlural": "Classrooms",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "blocks",
+        "titleField": "room_name",
+        "describes": "Each classroom with its age group, licensed capacity and how many children and staff it has.",
+        "subject": "thing",
+        "independentOf": {
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "room_name",
+            "label": "Classroom",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Open",
+              "Full",
+              "Closed for repairs"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Full": "blue",
+              "Closed for repairs": "amber"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "in_progress",
+              "Full": "in_progress",
+              "Closed for repairs": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "age_group",
+            "label": "Age group",
+            "parityType": "select",
+            "choices": [
+              "Infants (6 weeks to 12 months)",
+              "Toddlers (1 to 2 years)",
+              "Twos (2 to 3 years)",
+              "Preschool (3 to 5 years)"
+            ],
+            "choiceColors": {
+              "Infants (6 weeks to 12 months)": "slate",
+              "Toddlers (1 to 2 years)": "blue",
+              "Twos (2 to 3 years)": "amber",
+              "Preschool (3 to 5 years)": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "capacity",
+            "label": "Licensed capacity",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ratio",
+            "label": "Children per teacher",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "teachers",
+            "label": "Teachers scheduled",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead",
+            "label": "Lead teacher",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "enrolled",
+            "label": "Children enrolled",
+            "parityType": "rollup",
+            "via": "children",
+            "pick": "child_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Enrolled"
+            }
+          },
+          {
+            "key": "spots",
+            "label": "Spots open",
+            "parityType": "formula",
+            "formula": "MAX(0, {Licensed capacity} - {Children enrolled})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ratio_ok",
+            "label": "Staffing check",
+            "parityType": "formula",
+            "formula": "IF({Children enrolled} <= {Teachers scheduled} * {Children per teacher}, \"Within ratio\", \"Needs another teacher\")",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_child",
+            "label": "Enroll a child",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "children",
+              "template": "New child",
+              "prefill": {
+                "room": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New classroom",
+            "values": {
+              "room_name": "New classroom",
+              "status": "Open"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Layout, learning areas and safety notes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Daily rhythm"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Arrival, meals, nap and outdoor times."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "room-1",
+            "values": {
+              "room_name": "Sprouts room",
+              "status": "Open",
+              "age_group": "Infants (6 weeks to 12 months)",
+              "capacity": 8,
+              "ratio": 4,
+              "teachers": 2,
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "room-2",
+            "values": {
+              "room_name": "Seedlings room",
+              "status": "Open",
+              "age_group": "Toddlers (1 to 2 years)",
+              "capacity": 12,
+              "ratio": 6,
+              "teachers": 2,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "room-3",
+            "values": {
+              "room_name": "Saplings room",
+              "status": "Open",
+              "age_group": "Twos (2 to 3 years)",
+              "capacity": 14,
+              "ratio": 7,
+              "teachers": 2,
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "room-4",
+            "values": {
+              "room_name": "Oaks room",
+              "status": "Full",
+              "age_group": "Preschool (3 to 5 years)",
+              "capacity": 20,
+              "ratio": 10,
+              "teachers": 2,
+              "lead": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "children",
+        "name": "Children",
+        "labelSingular": "Child",
+        "labelPlural": "Children",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "baby",
+        "titleField": "child_name",
+        "describes": "Enrolled children by first name and last initial, with schedule and allergy flags.",
+        "subject": "thing",
+        "independentOf": {
+          "room": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "start_on",
+            "review_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "child_name",
+            "label": "Child",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "room",
+            "label": "Classroom",
+            "parityType": "relation",
+            "relationTarget": "room",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Enrolled",
+              "On leave",
+              "Graduated",
+              "Withdrawn"
+            ],
+            "choiceColors": {
+              "Enrolled": "slate",
+              "On leave": "blue",
+              "Graduated": "amber",
+              "Withdrawn": "red"
+            },
+            "required": true,
+            "default": "Enrolled",
+            "statusGroups": {
+              "Enrolled": "in_progress",
+              "On leave": "in_progress",
+              "Graduated": "done",
+              "Withdrawn": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "schedule",
+            "label": "Schedule",
+            "parityType": "select",
+            "choices": [
+              "Full week",
+              "Three days",
+              "Two days",
+              "Mornings only"
+            ],
+            "choiceColors": {
+              "Full week": "slate",
+              "Three days": "blue",
+              "Two days": "amber",
+              "Mornings only": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "start_on",
+            "label": "Started on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "review_on",
+            "label": "Next family check-in",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "allergy",
+            "label": "Allergy or medical plan on file",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guardian",
+            "label": "Guardian",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guardian_phone",
+            "label": "Guardian phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_leave",
+            "label": "Mark on leave",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "children_leave"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New child",
+            "values": {
+              "child_name": "New child",
+              "status": "Enrolled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Welcome"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Likes, comforts, routines and words for the toilet or bottle."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Health"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Allergies, medicine and who may collect them."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Enrollment checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Contract signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Immunization record seen"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Emergency contacts on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tour of the room done"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "children-1",
+            "values": {
+              "child_name": "Ada L.",
+              "room": "room-1",
+              "status": "Enrolled",
+              "schedule": "Full week",
+              "start_on": "@today-120d",
+              "review_on": "@today+30d",
+              "allergy": false,
+              "guardian": "Marcus Lopez",
+              "guardian_phone": "(801) 555-0111",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "children-2",
+            "values": {
+              "child_name": "Bram K.",
+              "room": "room-1",
+              "status": "Enrolled",
+              "schedule": "Full week",
+              "start_on": "@today-60d",
+              "review_on": "@today",
+              "allergy": true,
+              "guardian": "Katja Kowalski",
+              "guardian_phone": "(801) 555-0112"
+            }
+          },
+          {
+            "key": "children-3",
+            "values": {
+              "child_name": "Chidi A.",
+              "room": "room-2",
+              "status": "Enrolled",
+              "schedule": "Three days",
+              "start_on": "@today-300d",
+              "review_on": "@today+14d",
+              "allergy": false,
+              "guardian": "Ngozi Adeyemi",
+              "guardian_phone": "(801) 555-0113",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "children-4",
+            "values": {
+              "child_name": "Delia M.",
+              "room": "room-2",
+              "status": "Enrolled",
+              "schedule": "Full week",
+              "start_on": "@today-200d",
+              "review_on": "@today-2d",
+              "allergy": false,
+              "guardian": "Santiago Morales",
+              "guardian_phone": "(801) 555-0114"
+            }
+          },
+          {
+            "key": "children-5",
+            "values": {
+              "child_name": "Elio F.",
+              "room": "room-3",
+              "status": "Enrolled",
+              "schedule": "Two days",
+              "start_on": "@today-400d",
+              "review_on": "@today+5d",
+              "allergy": true,
+              "guardian": "Giulia Ferrari",
+              "guardian_phone": "(801) 555-0115",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "children-6",
+            "values": {
+              "child_name": "Fenn H.",
+              "room": "room-3",
+              "status": "Enrolled",
+              "schedule": "Full week",
+              "start_on": "@today-90d",
+              "review_on": "@today+20d",
+              "allergy": false,
+              "guardian": "Olivia Hartman",
+              "guardian_phone": "(801) 555-0116"
+            }
+          },
+          {
+            "key": "children-7",
+            "values": {
+              "child_name": "Gwen T.",
+              "room": "room-4",
+              "status": "Enrolled",
+              "schedule": "Mornings only",
+              "start_on": "@today-500d",
+              "review_on": "@today+2d",
+              "allergy": false,
+              "guardian": "Declan Thompson",
+              "guardian_phone": "(801) 555-0117",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "children-8",
+            "values": {
+              "child_name": "Hana S.",
+              "room": "room-4",
+              "status": "Enrolled",
+              "schedule": "Full week",
+              "start_on": "@today-250d",
+              "review_on": "@today+40d",
+              "allergy": true,
+              "guardian": "Mika Saito",
+              "guardian_phone": "(801) 555-0118"
+            }
+          },
+          {
+            "key": "children-9",
+            "values": {
+              "child_name": "Idris B.",
+              "room": "room-4",
+              "status": "On leave",
+              "schedule": "Full week",
+              "start_on": "@today-150d",
+              "review_on": "@today+60d",
+              "allergy": false,
+              "guardian": "Fatou Bah",
+              "guardian_phone": "(801) 555-0119",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "children-10",
+            "values": {
+              "child_name": "Juno P.",
+              "room": "room-4",
+              "status": "Graduated",
+              "schedule": "Full week",
+              "start_on": "@today-900d",
+              "allergy": false,
+              "guardian": "Theodora Petrov",
+              "guardian_phone": "(801) 555-0120"
+            }
+          }
+        ]
+      },
+      {
+        "token": "inquiry",
+        "name": "Waitlist and tours",
+        "labelSingular": "Waitlist family",
+        "labelPlural": "Waitlist and tours",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "family_name",
+        "describes": "Families asking about a place, from first inquiry to a signed contract.",
+        "subject": "thing",
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "tour_on",
+            "wanted_start"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "family_name",
+            "label": "Family",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Inquiry",
+              "Tour booked",
+              "Waitlisted",
+              "Offered",
+              "Enrolled",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Tour booked": "blue",
+              "Waitlisted": "amber",
+              "Offered": "violet",
+              "Enrolled": "teal",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "in_progress",
+              "Tour booked": "in_progress",
+              "Waitlisted": "in_progress",
+              "Offered": "in_progress",
+              "Enrolled": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "age_group",
+            "label": "Child's age group",
+            "parityType": "select",
+            "choices": [
+              "Infants (6 weeks to 12 months)",
+              "Toddlers (1 to 2 years)",
+              "Twos (2 to 3 years)",
+              "Preschool (3 to 5 years)"
+            ],
+            "choiceColors": {
+              "Infants (6 weeks to 12 months)": "slate",
+              "Toddlers (1 to 2 years)": "blue",
+              "Twos (2 to 3 years)": "amber",
+              "Preschool (3 to 5 years)": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tour_on",
+            "label": "Tour on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "wanted_start",
+            "label": "Wanted start",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Follow up with",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_tour",
+            "label": "Mark tour booked",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_tour"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_offer",
+            "label": "Make an offer",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_offer"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_enrolled",
+            "label": "Mark enrolled",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_enrolled"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New inquiry",
+            "values": {
+              "family_name": "New inquiry",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they need"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Days, hours and start date."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tour notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Questions asked and what they liked."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "inquiry-1",
+            "values": {
+              "family_name": "Whitfield family",
+              "status": "Tour booked",
+              "age_group": "Toddlers (1 to 2 years)",
+              "tour_on": "@today+2d",
+              "wanted_start": "@today+60d",
+              "email": "whitfield.family@mailbox.net",
+              "phone": "(801) 555-0181",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-2",
+            "values": {
+              "family_name": "Oyelaran-Beck family",
+              "status": "Waitlisted",
+              "age_group": "Infants (6 weeks to 12 months)",
+              "tour_on": "@today-20d",
+              "wanted_start": "@today+120d",
+              "email": "oyelaran.beck@mailbox.net",
+              "phone": "(801) 555-0182",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "inquiry-3",
+            "values": {
+              "family_name": "Santoro family",
+              "status": "Inquiry",
+              "age_group": "Preschool (3 to 5 years)",
+              "wanted_start": "@today+90d",
+              "email": "santoro.fam@mailbox.net",
+              "phone": "(801) 555-0183",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-4",
+            "values": {
+              "family_name": "Mbatha family",
+              "status": "Offered",
+              "age_group": "Twos (2 to 3 years)",
+              "tour_on": "@today-10d",
+              "wanted_start": "@today+14d",
+              "email": "mbatha.fam@mailbox.net",
+              "phone": "(801) 555-0184",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "inquiry-5",
+            "values": {
+              "family_name": "Lindgren-Park family",
+              "status": "Tour booked",
+              "age_group": "Infants (6 weeks to 12 months)",
+              "tour_on": "@today",
+              "wanted_start": "@today+150d",
+              "email": "lindgren.park@mailbox.net",
+              "phone": "(801) 555-0185",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-6",
+            "values": {
+              "family_name": "Alvarez family",
+              "status": "Waitlisted",
+              "age_group": "Toddlers (1 to 2 years)",
+              "tour_on": "@today-30d",
+              "wanted_start": "@today+45d",
+              "email": "alvarez.fam@mailbox.net",
+              "phone": "(801) 555-0186",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "inquiry-7",
+            "values": {
+              "family_name": "Rahimi family",
+              "status": "Inquiry",
+              "age_group": "Twos (2 to 3 years)",
+              "wanted_start": "@today+30d",
+              "email": "rahimi.fam@mailbox.net",
+              "phone": "(801) 555-0187",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-8",
+            "values": {
+              "family_name": "Kowalski-Dube family",
+              "status": "Tour booked",
+              "age_group": "Preschool (3 to 5 years)",
+              "tour_on": "@today+4d",
+              "wanted_start": "@today+75d",
+              "email": "kowalski.dube@mailbox.net",
+              "phone": "(801) 555-0188",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "inquiry-9",
+            "values": {
+              "family_name": "Nakamura family",
+              "status": "Enrolled",
+              "age_group": "Toddlers (1 to 2 years)",
+              "tour_on": "@today-60d",
+              "wanted_start": "@today-30d",
+              "email": "nakamura.fam@mailbox.net",
+              "phone": "(801) 555-0189",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-10",
+            "values": {
+              "family_name": "Egwu family",
+              "status": "Declined",
+              "age_group": "Twos (2 to 3 years)",
+              "tour_on": "@today-40d",
+              "wanted_start": "@today+10d",
+              "email": "egwu.fam@mailbox.net",
+              "phone": "(801) 555-0190",
+              "owner": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "safety_check",
+        "name": "Safety and licensing checks",
+        "labelSingular": "Safety check",
+        "labelPlural": "Safety and licensing checks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shield-check",
+        "titleField": "check_name",
+        "describes": "Fire drills, inspections, certifications and other recurring checks the license depends on.",
+        "subject": "thing",
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "check_name",
+            "label": "Safety check",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Fire drill",
+              "Playground inspection",
+              "Staff certification",
+              "Food safety",
+              "Emergency kit",
+              "Licensing visit",
+              "Medication log review"
+            ],
+            "choiceColors": {
+              "Fire drill": "slate",
+              "Playground inspection": "blue",
+              "Staff certification": "amber",
+              "Food safety": "violet",
+              "Emergency kit": "teal",
+              "Licensing visit": "green",
+              "Medication log review": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "To do",
+              "Done",
+              "Skipped"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Done": "blue",
+              "Skipped": "amber"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Done": "done",
+              "Skipped": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Responsible",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "safety_check_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New safety check",
+            "values": {
+              "check_name": "New safety check",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How to do it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Steps and where the checklist lives."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was found and what was fixed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "safety_check-1",
+            "values": {
+              "check_name": "Monthly fire drill",
+              "kind": "Fire drill",
+              "status": "To do",
+              "due_on": "@today+4d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "safety_check-2",
+            "values": {
+              "check_name": "Playground inspection",
+              "kind": "Playground inspection",
+              "status": "To do",
+              "due_on": "@today",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "safety_check-3",
+            "values": {
+              "check_name": "First aid and CPR renewal, Sprouts staff",
+              "kind": "Staff certification",
+              "status": "To do",
+              "due_on": "@today+6d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "safety_check-4",
+            "values": {
+              "check_name": "Kitchen temperature log review",
+              "kind": "Food safety",
+              "status": "To do",
+              "due_on": "@today-2d",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "safety_check-5",
+            "values": {
+              "check_name": "Emergency kit refresh",
+              "kind": "Emergency kit",
+              "status": "To do",
+              "due_on": "@today+2d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "safety_check-6",
+            "values": {
+              "check_name": "Licensing renewal visit",
+              "kind": "Licensing visit",
+              "status": "To do",
+              "due_on": "@today+25d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "safety_check-7",
+            "values": {
+              "check_name": "Medication log review",
+              "kind": "Medication log review",
+              "status": "To do",
+              "due_on": "@today-1d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "safety_check-8",
+            "values": {
+              "check_name": "Last month's fire drill",
+              "kind": "Fire drill",
+              "status": "Done",
+              "due_on": "@today-28d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "safety_check-9",
+            "values": {
+              "check_name": "Playground inspection, prior",
+              "kind": "Playground inspection",
+              "status": "Done",
+              "due_on": "@today-30d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each classroom belongs to one lead teacher.",
+        "fromTable": "room",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "room_by_lead"
+      },
+      {
+        "describes": "Each child belongs to one classroom.",
+        "fromTable": "children",
+        "fromField": "room",
+        "toTable": "room",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "children"
+      },
+      {
+        "describes": "Each waitlist family belongs to one follow up with.",
+        "fromTable": "inquiry",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "inquiry_by_owner"
+      },
+      {
+        "describes": "Each safety check belongs to one responsible.",
+        "fromTable": "safety_check",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "safety_check_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Noelle Abara-Fitzgerald",
+              "role": "Director",
+              "work_email": "noelle@littleacornlearning.net",
+              "mobile": "(801) 555-0141",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Perrin Haldane-Okoye",
+              "role": "Lead teacher, toddlers",
+              "work_email": "perrin@littleacornlearning.net",
+              "mobile": "(801) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Zuzana Kovalenko",
+              "role": "Lead teacher, preschool",
+              "work_email": "zuzana@littleacornlearning.net",
+              "mobile": "(801) 555-0143",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Rhys Mbeki",
+              "role": "Lead teacher, infants",
+              "work_email": "rhys@littleacornlearning.net",
+              "mobile": "(801) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Anselma Rivera",
+              "role": "Cook and office assistant",
+              "work_email": "anselma@littleacornlearning.net",
+              "mobile": "(801) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Tour request",
+        "describes": "Families ask for a tour or a place here.",
+        "audience": "staff",
+        "table": "inquiry",
+        "fields": [
+          {
+            "fieldKey": "family_name",
+            "ask": "What is your family name?",
+            "required": true
+          },
+          {
+            "fieldKey": "age_group",
+            "ask": "How old is your child?"
+          },
+          {
+            "fieldKey": "wanted_start",
+            "ask": "When would you like to start?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The director will reply within one working day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "children_leave",
+        "table": "children",
+        "name": "Mark on leave",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "On leave"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inquiry_tour",
+        "table": "inquiry",
+        "name": "Mark tour booked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Tour booked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inquiry_offer",
+        "table": "inquiry",
+        "name": "Make an offer",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Offered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inquiry_enrolled",
+        "table": "inquiry",
+        "name": "Mark enrolled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Enrolled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "safety_check_done",
+        "table": "safety_check",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_room",
+        "name": "All classrooms",
+        "table": "room",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "room_board",
+        "name": "By status",
+        "table": "room",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "room_mine",
+        "name": "My classrooms",
+        "table": "room",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_children",
+        "name": "All children",
+        "table": "children",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "children_board",
+        "name": "By status",
+        "table": "children",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "children_cal",
+        "name": "Calendar",
+        "table": "children",
+        "kind": "calendar",
+        "dateField": "review_on",
+        "allDay": true
+      },
+      {
+        "token": "children_over",
+        "name": "Overdue",
+        "table": "children",
+        "kind": "grid",
+        "within": {
+          "review_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Enrolled"
+        }
+      },
+      {
+        "token": "children_week",
+        "name": "This week",
+        "table": "children",
+        "kind": "grid",
+        "within": {
+          "review_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Enrolled"
+        }
+      },
+      {
+        "token": "children_next7",
+        "name": "Next 7 days",
+        "table": "children",
+        "kind": "grid",
+        "within": {
+          "review_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Enrolled"
+        }
+      },
+      {
+        "token": "children_mine",
+        "name": "My children",
+        "table": "children",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_inquiry",
+        "name": "All waitlist and tours",
+        "table": "inquiry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "inquiry_board",
+        "name": "By status",
+        "table": "inquiry",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "inquiry_cal",
+        "name": "Calendar",
+        "table": "inquiry",
+        "kind": "calendar",
+        "dateField": "tour_on",
+        "allDay": true
+      },
+      {
+        "token": "inquiry_over",
+        "name": "Overdue",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "tour_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Tour booked",
+            "Waitlisted",
+            "Offered"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_week",
+        "name": "This week",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "tour_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Tour booked",
+            "Waitlisted",
+            "Offered"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_next7",
+        "name": "Next 7 days",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "tour_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Tour booked",
+            "Waitlisted",
+            "Offered"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_mine",
+        "name": "My waitlist and tours",
+        "table": "inquiry",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_safety_check",
+        "name": "All safety and licensing checks",
+        "table": "safety_check",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "safety_check_board",
+        "name": "By status",
+        "table": "safety_check",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "safety_check_cal",
+        "name": "Calendar",
+        "table": "safety_check",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "safety_check_over",
+        "name": "Overdue",
+        "table": "safety_check",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "safety_check_week",
+        "name": "This week",
+        "table": "safety_check",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "safety_check_next7",
+        "name": "Next 7 days",
+        "table": "safety_check",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "safety_check_mine",
+        "name": "My safety and licensing checks",
+        "table": "safety_check",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Early Learning Center Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "inquiry",
+          "describes": "Families asking about a place, from first inquiry to a signed contract."
+        },
+        {
+          "name": "related_tables",
+          "table": "room",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many families are on the waitlist?",
+        "whyItMatters": "The director offers openings from the waitlist in order.",
+        "expect": {
+          "table": "inquiry",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Waitlisted"
+          },
+          "answer": 2,
+          "unit": "families"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open classrooms.",
+        "action": {
+          "kind": "open",
+          "surface": "room_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "room_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open children.",
+        "action": {
+          "kind": "open",
+          "surface": "children_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "children_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open waitlist and tours.",
+        "action": {
+          "kind": "open",
+          "surface": "inquiry_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "inquiry_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "littleacornlearning.net"
+      ],
+      "fictionalStreets": [
+        "Meadowlark Court"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "early-learning-center-desk",
+      "parent": null,
+      "title": "Early Learning Center Desk",
+      "icon": {
+        "emoji": "🧸"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Classrooms, children, the waitlist and the safety checks behind your license, in one place. Start with the Dashboard each morning. Keep staffing ratios visible, answer inquiries within a day and mark every safety check done the day it is done. Use first names and last initials only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:daily-opening-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:waitlist-and-enrollment"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:ratios-and-safety"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Classrooms"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each classroom with its age group, licensed capacity and how many children and staff it has."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "room",
+              "view": "room_board"
+            },
+            "inline": true,
+            "title": "Classrooms",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "roo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "roo-t",
+                "name": "All classrooms",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "roo-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "roo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Children"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enrolled children by first name and last initial, with schedule and allergy flags."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "children",
+              "view": "children_board"
+            },
+            "inline": true,
+            "title": "Children",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "chi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "chi-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "review_on"
+              },
+              {
+                "id": "chi-t",
+                "name": "All children",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "chi-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "review_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Enrolled"
+                }
+              },
+              {
+                "id": "chi-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "review_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Enrolled"
+                }
+              },
+              {
+                "id": "chi-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "review_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Enrolled"
+                }
+              },
+              {
+                "id": "chi-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "chi-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waitlist and tours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Families asking about a place, from first inquiry to a signed contract."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inquiry",
+              "view": "inquiry_board"
+            },
+            "inline": true,
+            "title": "Waitlist and tours",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inq-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inq-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "tour_on"
+              },
+              {
+                "id": "inq-t",
+                "name": "All waitlist and tours",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inq-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "tour_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Tour booked",
+                    "Waitlisted",
+                    "Offered"
+                  ]
+                }
+              },
+              {
+                "id": "inq-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "tour_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Tour booked",
+                    "Waitlisted",
+                    "Offered"
+                  ]
+                }
+              },
+              {
+                "id": "inq-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "tour_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Tour booked",
+                    "Waitlisted",
+                    "Offered"
+                  ]
+                }
+              },
+              {
+                "id": "inq-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "inq-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety and licensing checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fire drills, inspections, certifications and other recurring checks the license depends on."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "safety_check",
+              "view": "safety_check_board"
+            },
+            "inline": true,
+            "title": "Safety and licensing checks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "saf-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "saf-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "saf-t",
+                "name": "All safety and licensing checks",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "saf-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "saf-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "saf-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "saf-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "saf-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "early-learning-center-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The center at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Waitlist and tours by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Waitlist and tours by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "room",
+                      "view": "all_room"
+                    },
+                    "inline": true,
+                    "title": "Licensed capacity by room",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Licensed capacity by room",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "room_name",
+                          "op": "sum",
+                          "field": "capacity"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "children",
+                      "view": "all_children"
+                    },
+                    "inline": true,
+                    "title": "Children by schedule",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Children by schedule",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "schedule",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "safety_check",
+                      "view": "all_safety_check"
+                    },
+                    "inline": true,
+                    "title": "Safety checks by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Safety checks by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety checks overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "safety_check",
+              "view": "all_safety_check"
+            },
+            "inline": true,
+            "title": "Safety checks overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Safety checks overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tours this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inquiry",
+              "view": "all_inquiry"
+            },
+            "inline": true,
+            "title": "Tours this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Tours this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "tour_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Tour booked",
+                    "Waitlisted",
+                    "Offered"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Family check-ins this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "children",
+              "view": "all_children"
+            },
+            "inline": true,
+            "title": "Family check-ins this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Family check-ins this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "review_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Enrolled"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Spots open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Licensed capacity minus enrolled children"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer a spot to the first family on the waitlist for that age group"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Staffing check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compares enrolled children to teachers scheduled times children per teacher"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Needs another teacher means a call-in before the room opens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Allergy or medical plan on file"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A checkbox on each child"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every ticked child needs a plan posted where staff can see it"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "daily-opening-checklist",
+      "parent": "early-learning-center-desk",
+      "title": "Opening and closing checklist",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The same checks, every day, keep children safe and give inspectors something to see. Initial and date your copy."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Opening"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Walk each room for hazards, cleaned toys and working outlets covers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check temperatures of the refrigerator and freezer and write them down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm each room's teachers are in and ratios are met"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review allergy and medical plans for the children arriving today"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Take a head count and sign out every child"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wipe tables, wash toys and take out the trash"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lock exterior doors and set the alarm"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note incidents and send a report to the director"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "waitlist-and-enrollment",
+      "parent": "early-learning-center-desk",
+      "title": "Waitlist and enrollment",
+      "icon": {
+        "emoji": "📝"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A fair, written waitlist protects the center and the families. Offer spots in order and say how the order works."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "From inquiry to enrolled"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reply to the inquiry within one working day and offer a tour."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the tour, press Mark tour booked or move to Waitlisted with the wanted start date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When a spot opens, offer it to the first matching family and set a deadline to reply."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On acceptance, complete the paperwork and press Mark enrolled, then add the child to the classroom."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Paperwork every child needs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Signed contract and fee schedule."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Immunization record and health form."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Emergency contacts and authorized pick-up list."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ratios-and-safety",
+      "parent": "early-learning-center-desk",
+      "title": "Ratios and safety basics",
+      "icon": {
+        "emoji": "📏"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Ratios are set by your licensing agency, not by this page. Enter your own numbers on each classroom row and check them every day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily habits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count children and teachers at every transition."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep sleeping infants within sight and sound."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hold fire drills monthly and record each one as a safety check."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something happens"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First step"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A child is hurt"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Care first, then notify the guardian and write the incident the same day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A teacher calls out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the on-call teacher; combine rooms only if ratios stay safe"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "An unknown adult arrives"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Do not release any child; call the director"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A fire alarm sounds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Evacuate by the posted route and count children at the meeting spot"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

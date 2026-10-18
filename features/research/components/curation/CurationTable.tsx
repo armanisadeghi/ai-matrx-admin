@@ -2,19 +2,19 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Eye, EyeOff, ExternalLink, ListChecks } from "lucide-react";
 import {
-  Eye,
-  EyeOff,
-  ExternalLink,
-  ListChecks,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
+  MatrxDataTable,
+  occurrenceGroup,
+  occurrenceId,
+  occurrenceRecordId,
+  rowOccurrences,
+  type MatrxColumnDef,
+  type MatrxDataTableRead,
+  type RowOccurrence,
+} from "@ai-matrx/design-system/data-table";
 import { recordToast, toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Skeleton } from "@ai-matrx/design-system";
 import { useTopicContext } from "../../context/ResearchContext";
 import { useCurationData } from "../../hooks/useResearchState";
 import {
@@ -36,45 +36,17 @@ import {
   PRIORITY_SCORE_LABEL,
   POST_READ_SCORE_LABEL,
   AUTH_SCORE_LABEL,
-  formatPreReadDisplay,
 } from "../sources/sourceScoreDisplay";
-import {
-  ColumnFilterMenu,
-  type ColumnFilterOption,
-} from "../sources/ColumnFilterMenu";
 import { CurationBatchBar } from "./CurationBatchBar";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { ResearchFilterBar, type FilterDef } from "../shared/ResearchFilterBar";
 import type { FilterOption } from "@/components/hierarchy-filter/HierarchyFilterPill";
-import { ReadFailure } from "@ai-matrx/design-system";
-import {
-  MOBILE_TABLE,
-} from "@/components/official/mobile-table/mobileTable";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type GroupBy = "none" | "keyword" | "tag";
 
-/**
- * Every column sorts through ONE client-side axis (this table already holds the
- * whole topic in memory). Tri-state per header: asc → desc → none. Exactly one
- * arrow is ever lit — mirrors the SourceList data table so the two read the same.
- *
- * `rank` sorts by the source's BEST rank across all keywords (`importance.bestRank`)
- * — the SAME number the `#N` cell shows — never a mixed per-keyword rank.
- */
-type SortKey =
-  | "rank"
-  | "pre"
-  | "source"
-  | "scrape"
-  | "authority"
-  | "post"
-  | "verdict"
-  | "chars"
-  | "analysis"
-  | "tags"
-  | "included";
-type SortDir = "asc" | "desc";
+/** One drawn row: a source in one of its keyword/tag groups (`rowOccurrences`). */
+type CurationOccurrence = RowOccurrence<CurationRow>;
 
 /** Analysis outcome → a SORT weight (more complete = higher). */
 const ANALYSIS_SORT: Record<CurationAnalysisState, number> = {
@@ -174,62 +146,18 @@ function rankInKeyword(row: CurationRow, keywordId: string): number | null {
   );
 }
 
-/** One tri-state column header (asc → desc → none) shared by every column. */
-function SortHeader({
-  label,
-  field,
-  currentSort,
-  currentDir,
-  onSort,
-  className,
-}: {
-  label: string;
-  field: SortKey;
-  currentSort: SortKey | null;
-  currentDir: SortDir;
-  onSort: (field: SortKey) => void;
-  className?: string;
-}) {
-  const isActive = currentSort === field;
-  return (
-    <button
-      onClick={() => onSort(field)}
-      className={cn(
-        "inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-medium text-muted-foreground hover:text-foreground transition-colors",
-        isActive && "text-foreground",
-        className,
-      )}
-    >
-      {label}
-      {isActive ? (
-        currentDir === "asc" ? (
-          <ArrowUp className="h-3 w-3" />
-        ) : (
-          <ArrowDown className="h-3 w-3" />
-        )
-      ) : (
-        <ArrowUpDown className="h-3 w-3 opacity-40" />
-      )}
-    </button>
-  );
-}
-
 export default function CurationTable() {
   const { topicId } = useTopicContext();
   const { data, isLoading, error: curationError, refresh } = useCurationData(topicId);
 
   const [search, setSearch] = useState("");
   const [groupBy, setGroupBy] = useState<GroupBy>("none");
-  // ONE unified, client-side sort axis. null = default order (importance score,
-  // or — when grouped by keyword — each keyword's own search-rank order).
-  const [sort, setSort] = useState<{ key: SortKey; dir: SortDir } | null>(null);
   const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
-  const [scrapeFilter, setScrapeFilter] = useState<string | null>(null);
-  const [tierFilter, setTierFilter] = useState<string | null>(null);
-  const [analysisFilter, setAnalysisFilter] = useState<string | null>(null);
   const [includedFilter, setIncludedFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Unique sources the table shows after ITS filters too (Read / Tier / Analysis / Tags / In).
+  const [viewSourceCount, setViewSourceCount] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [createTagOpen, setCreateTagOpen] = useState(false);
   const [creatingTag, setCreatingTag] = useState(false);
@@ -238,6 +166,8 @@ export default function CurationTable() {
   const keywords = data?.keywords ?? [];
   const tags = data?.tags ?? [];
 
+  // The bar's facets (Show / Keyword / Tag) and its search compose (AND) with the table's own
+  // column filters.
   const filtered = useMemo(() => {
     let items = rows;
     if (keywordFilter)
@@ -246,11 +176,6 @@ export default function CurationTable() {
       );
     if (tagFilter)
       items = items.filter((r) => r.tags.some((t) => t.id === tagFilter));
-    if (scrapeFilter)
-      items = items.filter((r) => r.source.scrape_status === scrapeFilter);
-    if (tierFilter) items = items.filter((r) => tierFromRow(r) === tierFilter);
-    if (analysisFilter)
-      items = items.filter((r) => r.analysis === analysisFilter);
     if (includedFilter === "included")
       items = items.filter((r) => r.source.is_included);
     else if (includedFilter === "excluded")
@@ -265,158 +190,46 @@ export default function CurationTable() {
       );
     }
     return items;
-  }, [
-    rows,
-    keywordFilter,
-    tagFilter,
-    scrapeFilter,
-    tierFilter,
-    analysisFilter,
-    includedFilter,
-    search,
-  ]);
+  }, [rows, keywordFilter, tagFilter, includedFilter, search]);
 
-  // Comparator for the active sort axis. Un-set values always sort last,
-  // regardless of direction (matches the SourceList convention).
-  const sortRows = useMemo(() => {
-    return (items: CurationRow[]): CurationRow[] => {
-      if (!sort) {
-        return [...items].sort((a, b) =>
-          compareSourcesByResearchScore(a.source, b.source),
-        );
+  // ONE SOURCE IN SEVERAL GROUPS: grouped by keyword (or tag), a source is drawn once under every
+  // keyword it ranks for; its checkbox is the same everywhere (`occurrenceRecordId`). Ungrouped,
+  // each source is one row. The rows arrive in the default order — the research score, or each
+  // keyword's own search-rank when grouped by keyword — and a header sort reorders within groups.
+  const occurrences = useMemo((): CurationOccurrence[] => {
+    const groupsOf = (r: CurationRow): readonly string[] =>
+      groupBy === "keyword"
+        ? (r.importance?.perKeyword ?? []).map((p) => p.keyword_id)
+        : groupBy === "tag"
+          ? r.tags.map((t) => t.id)
+          : [];
+    const all = rowOccurrences(filtered, (r) => r.source.id, groupsOf);
+    return all.sort((a, b) => {
+      if (groupBy === "keyword") {
+        const g = occurrenceGroup(a);
+        if (g && g === occurrenceGroup(b))
+          return (
+            (rankInKeyword(a, g) ?? Infinity) - (rankInKeyword(b, g) ?? Infinity)
+          );
       }
-      const dir = sort.dir === "desc" ? -1 : 1;
-      const valueOf = (r: CurationRow): string | number | null => {
-        switch (sort.key) {
-          case "rank":
-            return r.importance?.bestRank ?? null;
-          case "pre":
-            return r.source.pre_read_score ?? null;
-          case "source":
-            return (
-              r.source.hostname ??
-              r.source.title ??
-              r.source.url ??
-              ""
-            ).toLowerCase();
-          case "scrape":
-            return r.source.scrape_status ?? null;
-          case "authority":
-            return r.source.authority_score ?? null;
-          case "post":
-            return r.source.post_read_score ?? null;
-          case "verdict":
-            return r.source.final_source_score ?? null;
-          case "chars":
-            return r.charCount ?? null;
-          case "analysis":
-            return ANALYSIS_SORT[r.analysis];
-          case "tags":
-            return r.tags.length;
-          case "included":
-            return r.source.is_included ? 1 : 0;
-        }
-      };
-      return [...items].sort((a, b) => {
-        const av = valueOf(a);
-        const bv = valueOf(b);
-        if (av === bv) return 0;
-        if (av == null) return 1;
-        if (bv == null) return -1;
-        return av < bv ? -1 * dir : 1 * dir;
-      });
-    };
-  }, [sort]);
-
-  const groups = useMemo(() => {
-    if (groupBy === "keyword") {
-      const g = keywords.map((k) => {
-        const kwRows = filtered.filter((r) =>
-          r.importance?.perKeyword?.some((p) => p.keyword_id === k.id),
-        );
-        return {
-          key: k.id,
-          label: k.keyword,
-          // Default view = this keyword's search-rank order; any explicit
-          // column sort is honored within the group instead.
-          rows:
-            sort === null
-              ? [...kwRows].sort(
-                  (a, b) =>
-                    (rankInKeyword(a, k.id) ?? Infinity) -
-                    (rankInKeyword(b, k.id) ?? Infinity),
-                )
-              : sortRows(kwRows),
-        };
-      });
-      const none = filtered.filter(
-        (r) => !r.importance || r.importance.perKeyword.length === 0,
-      );
-      if (none.length)
-        g.push({ key: "__none", label: "No keyword", rows: sortRows(none) });
-      return g.filter((x) => x.rows.length > 0);
-    }
-    if (groupBy === "tag") {
-      const g = tags.map((t) => ({
-        key: t.id,
-        label: t.name,
-        rows: sortRows(
-          filtered.filter((r) => r.tags.some((x) => x.id === t.id)),
-        ),
-      }));
-      const untagged = filtered.filter((r) => r.tags.length === 0);
-      if (untagged.length)
-        g.push({
-          key: "__untagged",
-          label: "Untagged",
-          rows: sortRows(untagged),
-        });
-      return g.filter((x) => x.rows.length > 0);
-    }
-    return [{ key: "__all", label: "", rows: sortRows(filtered) }];
-  }, [filtered, groupBy, keywords, tags, sort, sortRows]);
-
-  // Unique visible source ids (a source can appear in multiple keyword/tag groups)
-  const visibleIds = useMemo(() => {
-    const set = new Set<string>();
-    for (const g of groups) for (const r of g.rows) set.add(r.source.id);
-    return set;
-  }, [groups]);
-
-  // "Are all CURRENTLY-VISIBLE rows selected" — not size-equality (the
-  // selection can hold off-screen ids from other searches).
-  const allVisibleSelected =
-    visibleIds.size > 0 && [...visibleIds].every((id) => selected.has(id));
-
-  // Toggle ONLY the visible rows in/out of the existing selection — never
-  // discard off-screen selections. This is what makes the "select all → search
-  // junk → deselect visible → … → tag the remainder" workflow work.
-  const toggleAll = () =>
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (allVisibleSelected) {
-        for (const id of visibleIds) next.delete(id);
-      } else {
-        for (const id of visibleIds) next.add(id);
-      }
-      return next;
+      return compareSourcesByResearchScore(a.source, b.source);
     });
-  const toggleOne = (id: string) =>
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  }, [filtered, groupBy]);
 
-  // One tri-state toggle (asc → desc → none) shared by EVERY column header.
-  const handleSort = (field: SortKey) =>
-    setSort((prev) => {
-      if (field === "verdict" && !prev) return { key: field, dir: "asc" };
-      if (prev?.key !== field) return { key: field, dir: "asc" };
-      if (prev.dir === "asc") return { key: field, dir: "desc" };
-      return null;
-    });
+  // Section order = the keyword / tag list order; the "No keyword" / "Untagged" section is last.
+  const groupList: { id: string; label: string }[] =
+    groupBy === "keyword"
+      ? keywords.map((k) => ({ id: k.id, label: k.keyword }))
+      : groupBy === "tag"
+        ? tags
+            .map((t) => ({ id: t.id, label: t.name }))
+        : [];
+  const groupIndex = new Map(groupList.map((g, i) => [g.id, i]));
+  const groupLabel = new Map(groupList.map((g) => [g.id, g.label]));
+  const emptyGroupLabel = groupBy === "keyword" ? "No keyword" : "Untagged";
+
+  const visibleSourceCount =
+    viewSourceCount ?? new Set(filtered.map((r) => r.source.id)).size;
 
   const runBulk = async (
     action: "include" | "exclude" | "mark_stale" | "mark_complete",
@@ -492,9 +305,8 @@ export default function CurationTable() {
     }
   };
 
-  // Top bar keeps GROUPING + the broad facet filters. Per-column sort + the
-  // per-column header filters (Scrape / Authority tier / Analysis / Tag) compose
-  // (AND) with these — exactly the SourceList model.
+  // Top bar keeps GROUPING + the broad facet filters. The per-column filters (Read / Authority
+  // tier / Analysis / Tags / In) live in each column's header menu and compose (AND) with these.
   const filterDefs: FilterDef[] = useMemo(() => {
     const opt = (
       key: string,
@@ -554,51 +366,251 @@ export default function CurationTable() {
     return defs;
   }, [groupBy, includedFilter, keywordFilter, tagFilter, keywords, tags]);
 
-  // Per-column header filter options.
-  const scrapeFilterOptions: ColumnFilterOption[] = useMemo(
-    () => [
-      { id: "success", label: "Success" },
-      { id: "complete", label: "Complete" },
-      { id: "thin", label: "Thin" },
-      { id: "failed", label: "Failed" },
-      { id: "pending", label: "Pending" },
-    ],
-    [],
-  );
-  const tierFilterOptions: ColumnFilterOption[] = useMemo(
-    () => [
-      { id: "high", label: "High" },
-      { id: "medium", label: "Medium" },
-      { id: "low", label: "Low" },
-    ],
-    [],
-  );
-  const analysisFilterOptions: ColumnFilterOption[] = useMemo(
-    () => [
-      { id: "content", label: "Report ready" },
-      { id: "empty", label: "No content" },
-      { id: "failed", label: "Failed" },
-      { id: "none", label: "Not analyzed" },
-    ],
-    [],
-  );
-  const tagFilterOptions: ColumnFilterOption[] = useMemo(
-    () => tags.map((t) => ({ id: t.id, label: t.name })),
-    [tags],
-  );
+  const columns: MatrxColumnDef<CurationOccurrence>[] = [
+    {
+      // The section a row is drawn in (grouped views only). Numeric so sections keep the
+      // keyword / tag list order; the header names it.
+      id: "group",
+      header: groupBy === "tag" ? "Tag group" : "Keyword group",
+      label: groupBy === "tag" ? "Tag group" : "Keyword group",
+      hidden: true,
+      accessorFn: (r) => {
+        const g = occurrenceGroup(r);
+        return g ? (groupIndex.get(g) ?? null) : null;
+      },
+      copyValue: (r) => groupLabel.get(occurrenceGroup(r)) ?? emptyGroupLabel,
+      filter: false, // table-filter-off: the section column; the bar's Keyword / Tag filters narrow it
+    },
+    {
+      // Sorts by the source's BEST rank across all keywords (`importance.bestRank`) — the SAME
+      // number the `#N` cell shows — never a mixed per-keyword rank.
+      id: "rank",
+      header: "Best",
+      label: "Best",
+      width: 64,
+      format: { id: "integer" },
+      accessorFn: (r) => r.importance?.bestRank ?? null,
+      cell: (r) => (
+        <div
+          title={
+            r.importance
+              ? `Importance ${r.importance.score} across ${r.importance.keywordCount} keyword${r.importance.keywordCount === 1 ? "" : "s"}`
+              : "Not ranked for any keyword"
+          }
+        >
+          {r.importance?.bestRank != null ? (
+            <>
+              <div className="type-title tabular-nums leading-none">
+                #{r.importance.bestRank}
+              </div>
+              {r.importance.keywordCount > 1 && (
+                <div className="mt-0.5 text-[9px] text-muted-foreground tabular-nums">
+                  in {r.importance.keywordCount} kw
+                </div>
+              )}
+            </>
+          ) : (
+            <span className="type-meta text-muted-foreground">—</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "source",
+      header: "Source",
+      label: "Source",
+      width: 360,
+      accessorFn: (r) => r.source.title || r.source.hostname || r.source.url,
+      sortValue: (r) =>
+        (r.source.hostname ?? r.source.title ?? r.source.url ?? "").toLowerCase(),
+      cell: (r) => {
+        const s = r.source;
+        return (
+          <div className="flex items-center gap-2 min-w-0">
+            <SourceTypeIcon type={sourceTypeFromDb(s.source_type)} source={s} size={20} />
+            <div className="min-w-0">
+              <Link
+                href={`/research/topics/${topicId}/sources/${s.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="type-secondary font-medium truncate max-w-[22rem] block hover:text-primary "
+              >
+                {s.title || s.hostname || s.url}
+              </Link>
+              <div className="flex items-center gap-1 type-meta text-muted-foreground">
+                <span className="truncate max-w-[16rem]">{s.hostname}</span>
+                <OutboundLink
+                  href={s.url}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:text-foreground"
+                >
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </OutboundLink>
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "scrape",
+      header: "Read",
+      label: "Read",
+      width: 110,
+      accessorFn: (r) => r.source.scrape_status ?? null,
+      format: { id: "choice" },
+      filter: "select",
+      filterSingle: true,
+      filterOptions: [
+        { value: "success", label: "Success" },
+        { value: "complete", label: "Complete" },
+        { value: "thin", label: "Thin" },
+        { value: "failed", label: "Failed" },
+        { value: "pending", label: "Pending" },
+      ],
+      cell: (r) => <StatusBadge status={r.source.scrape_status} />,
+    },
+    {
+      id: "pre",
+      header: PRIORITY_SCORE_LABEL,
+      label: PRIORITY_SCORE_LABEL,
+      width: 84,
+      align: "right",
+      format: { id: "number" },
+      accessorFn: (r) => r.source.pre_read_score ?? null,
+      cell: (r) => (
+        <ScoreCell value={sourceScoreValues(r.source, r.importance?.bestRank ?? null).priority} />
+      ),
+    },
+    {
+      id: "authority",
+      header: AUTH_SCORE_LABEL,
+      label: AUTH_SCORE_LABEL,
+      width: 84,
+      align: "right",
+      accessorFn: (r) => r.source.authority_score ?? null,
+      // Filtered by authority TIER (high / medium / low), sorted by the score.
+      filterValue: (r) => tierFromRow(r),
+      filter: "select",
+      filterSingle: true,
+      filterOptions: [
+        { value: "high", label: "High" },
+        { value: "medium", label: "Medium" },
+        { value: "low", label: "Low" },
+      ],
+      cell: (r) => <ScoreCell value={sourceScoreValues(r.source).auth} />,
+    },
+    {
+      id: "post",
+      header: POST_READ_SCORE_LABEL,
+      label: POST_READ_SCORE_LABEL,
+      width: 72,
+      align: "right",
+      format: { id: "number" },
+      accessorFn: (r) => r.source.post_read_score ?? null,
+      cell: (r) => <ScoreCell value={sourceScoreValues(r.source).post} />,
+    },
+    {
+      id: "verdict",
+      header: QUALITY_SCORE_LABEL,
+      label: QUALITY_SCORE_LABEL,
+      width: 84,
+      align: "right",
+      format: { id: "number" },
+      accessorFn: (r) => r.source.final_source_score ?? null,
+      cell: (r) => <ScoreCell value={sourceScoreValues(r.source).quality} />,
+    },
+    {
+      id: "chars",
+      header: "Chars",
+      label: "Chars",
+      width: 84,
+      align: "right",
+      format: { id: "integer" },
+      accessorFn: (r) => r.charCount ?? null,
+      cell: (r) => (
+        <span className="type-meta tabular-nums whitespace-nowrap text-muted-foreground">
+          {fmtInt(r.charCount)}
+        </span>
+      ),
+    },
+    {
+      id: "analysis",
+      header: "Analysis",
+      label: "Analysis",
+      width: 120,
+      accessorFn: (r) => r.analysis,
+      sortValue: (r) => ANALYSIS_SORT[r.analysis],
+      copyValue: (r) =>
+        r.analysis === "none" ? "Not analyzed" : ANALYSIS_OUTCOME[r.analysis].label,
+      format: { id: "choice" },
+      filter: "select",
+      filterSingle: true,
+      filterOptions: [
+        { value: "content", label: "Report ready" },
+        { value: "empty", label: "No content" },
+        { value: "failed", label: "Failed" },
+        { value: "none", label: "Not analyzed" },
+      ],
+      cell: (r) => <AnalysisCell state={r.analysis} />,
+    },
+    {
+      id: "tags",
+      header: "Tags",
+      label: "Tags",
+      width: 180,
+      accessorFn: (r) => r.tags.map((t) => t.name).join(", "),
+      sortValue: (r) => r.tags.length,
+      filterValue: (r) => r.tags.map((t) => t.id),
+      filter: "select",
+      filterSingle: true,
+      filterOptions: tags.map((t) => ({ value: t.id, label: t.name })),
+      cell: (r) => (
+        <div className="flex flex-wrap gap-1 max-w-[14rem]">
+          {r.tags.map((t) => (
+            <span
+              key={t.id}
+              className="inline-flex rounded border border-border/60 bg-muted/30 px-1.5 py-px type-meta text-muted-foreground truncate max-w-[8rem]"
+            >
+              {t.name}
+            </span>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: "included",
+      header: "In",
+      label: "Included",
+      width: 48,
+      align: "center",
+      compact: true,
+      format: { id: "boolean" },
+      accessorFn: (r) => !!r.source.is_included,
+      sortValue: (r) => (r.source.is_included ? 1 : 0),
+      cell: (r) => (
+        <IncludedCell
+          included={!!r.source.is_included}
+          onToggle={() => void toggleIncluded(r.source.id, !!r.source.is_included)}
+        />
+      ),
+    },
+  ];
 
-  const sortKey = sort?.key ?? "verdict";
-  const sortDir = sort?.dir ?? "desc";
-  // 10 columns: select, rank, source, scrape, authority, verdict, chars,
-  // analysis, tags, included. Keep in sync with the header + body rows.
-  const colCount = 12;
+  const tableRead: MatrxDataTableRead = curationError
+    ? {
+        status: "error",
+        error: curationError,
+        onRetry: refresh,
+        what: "this topic's sources",
+      }
+    : { status: isLoading ? "loading" : "ready" };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-2">
         <ResearchFilterBar
           title="Curate"
-          count={isLoading ? "—" : `${visibleIds.size}/${rows.length}`}
+          count={isLoading ? "—" : `${visibleSourceCount}/${rows.length}`}
           read={{ status: curationError ? "error" : "ready", error: curationError }}
           filters={filterDefs}
           search={search}
@@ -611,204 +623,64 @@ export default function CurationTable() {
         </p>
       </div>
 
-      <div className="flex-1 overflow-auto px-3 sm:px-4 pb-24">
-        {isLoading ? (
-          <div className="space-y-1.5 pt-2">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 rounded-lg" />
-            ))}
-          </div>
-        ) : curationError && rows.length === 0 ? (
-          <ReadFailure error={curationError} what="this topic's sources" onRetry={refresh} />
-        ) : rows.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center">
-            <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
-              <ListChecks className="h-6 w-6 text-primary/40" />
-            </div>
-            <p className="type-secondary font-medium text-foreground/70">
-              No sources yet — run search to populate the workbench.
-            </p>
-          </div>
-        ) : (
-          <table className={cn("text-left border-separate border-spacing-0", MOBILE_TABLE)}>
-            <thead className="sticky top-0 z-10 bg-background">
-              <tr className="[&>th]:border-b [&>th]:border-border/60 [&>th]:py-1.5">
-                <th className="pl-1 pr-1 w-8 align-middle">
-                  <Checkbox
-                    aria-label="Select all visible"
-                    checked={allVisibleSelected}
-                    onCheckedChange={toggleAll}
-                  />
-                </th>
-                <th className="px-1 w-16 align-middle">
-                  <SortHeader
-                    label="Best"
-                    field="rank"
-                    currentSort={sortKey}
-                    currentDir={sortDir}
-                    onSort={handleSort}
-                  />
-                </th>
-                <th className="px-1 align-middle">
-                  <SortHeader
-                    label="Source"
-                    field="source"
-                    currentSort={sortKey}
-                    currentDir={sortDir}
-                    onSort={handleSort}
-                  />
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap">
-                  <div className="flex items-center gap-1">
-                    <SortHeader
-                      label="Read"
-                      field="scrape"
-                      currentSort={sortKey}
-                      currentDir={sortDir}
-                      onSort={handleSort}
-                    />
-                    <ColumnFilterMenu
-                      label="Read"
-                      options={scrapeFilterOptions}
-                      selectedId={scrapeFilter}
-                      onSelect={setScrapeFilter}
-                    />
-                  </div>
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap text-right">
-                  <SortHeader
-                    label={PRIORITY_SCORE_LABEL}
-                    field="pre"
-                    currentSort={sortKey}
-                    currentDir={sortDir}
-                    onSort={handleSort}
-                    className="justify-end w-full"
-                  />
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <SortHeader
-                      label={AUTH_SCORE_LABEL}
-                      field="authority"
-                      currentSort={sortKey}
-                      currentDir={sortDir}
-                      onSort={handleSort}
-                      className="justify-end"
-                    />
-                    <ColumnFilterMenu
-                      label="Tier"
-                      options={tierFilterOptions}
-                      selectedId={tierFilter}
-                      onSelect={setTierFilter}
-                    />
-                  </div>
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap text-right">
-                  <SortHeader
-                    label={POST_READ_SCORE_LABEL}
-                    field="post"
-                    currentSort={sortKey}
-                    currentDir={sortDir}
-                    onSort={handleSort}
-                    className="justify-end w-full"
-                  />
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap text-right">
-                  <SortHeader
-                    label={QUALITY_SCORE_LABEL}
-                    field="verdict"
-                    currentSort={sortKey}
-                    currentDir={sortDir}
-                    onSort={handleSort}
-                    className="justify-end w-full"
-                  />
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap text-right">
-                  <SortHeader
-                    label="Chars"
-                    field="chars"
-                    currentSort={sortKey}
-                    currentDir={sortDir}
-                    onSort={handleSort}
-                    className="justify-end"
-                  />
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap">
-                  <div className="flex items-center gap-1">
-                    <SortHeader
-                      label="Analysis"
-                      field="analysis"
-                      currentSort={sortKey}
-                      currentDir={sortDir}
-                      onSort={handleSort}
-                    />
-                    <ColumnFilterMenu
-                      label="Analysis"
-                      options={analysisFilterOptions}
-                      selectedId={analysisFilter}
-                      onSelect={setAnalysisFilter}
-                    />
-                  </div>
-                </th>
-                <th className="px-2 align-middle whitespace-nowrap">
-                  <div className="flex items-center gap-1">
-                    <SortHeader
-                      label="Tags"
-                      field="tags"
-                      currentSort={sortKey}
-                      currentDir={sortDir}
-                      onSort={handleSort}
-                    />
-                    {tagFilterOptions.length > 0 && (
-                      <ColumnFilterMenu
-                        label="Tag"
-                        options={tagFilterOptions}
-                        selectedId={tagFilter}
-                        onSelect={setTagFilter}
-                      />
-                    )}
-                  </div>
-                </th>
-                <th className="px-2 w-12 align-middle text-center">
-                  <SortHeader
-                    label="In"
-                    field="included"
-                    currentSort={sortKey}
-                    currentDir={sortDir}
-                    onSort={handleSort}
-                    className="justify-center w-full"
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((group) => (
-                <GroupRows
-                  key={group.key}
-                  group={group}
-                  groupBy={groupBy}
-                  colCount={colCount}
-                  topicId={topicId}
-                  selected={selected}
-                  onToggleOne={toggleOne}
-                  onToggleIncluded={toggleIncluded}
-                />
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="flex-1 min-h-0 flex flex-col px-3 sm:px-4 pb-3">
+        <MatrxDataTable<CurationOccurrence>
+          tableId={`research/curation/${topicId}`}
+          data={occurrences}
+          columns={columns}
+          getRowId={occurrenceId}
+          viewTabs={false}
+          frameHeight="fill"
+          fitToWidth="grow"
+          isLoading={isLoading}
+          read={tableRead}
+          // The bar above owns this list's search (title, host, url).
+          toolbar={{ search: false }}
+          rowClick="none"
+          getRowHref={(r) => `/research/topics/${topicId}/sources/${r.source.id}`}
+          onViewChange={(view) =>
+            setViewSourceCount(new Set(view.map(occurrenceRecordId)).size)
+          }
+          rowClassName={(r) => (!r.source.is_included ? "opacity-50" : undefined)}
+          grouping={
+            groupBy === "none"
+              ? undefined
+              : {
+                  columnId: "group",
+                  groupableColumnIds: ["group"],
+                  order: "value-asc",
+                  emptyLabel: emptyGroupLabel,
+                  rowNoun: "source",
+                  renderLabel: (group) =>
+                    groupLabel.get(occurrenceGroup(group.rows[0]!)) ?? emptyGroupLabel,
+                }
+          }
+          selection={{
+            selectedIds: [...selected],
+            onSelectedIdsChange: (ids) => setSelected(new Set(ids)),
+            getSelectionId: occurrenceRecordId,
+            noun: "source",
+            actions: () => (
+              <CurationBatchBar
+                tags={tags}
+                onInclude={() => runBulk("include", "Included")}
+                onExclude={() => runBulk("exclude", "Excluded")}
+                onAddTag={handleAddTag}
+                onCreateTag={() => setCreateTagOpen(true)}
+                busy={busy}
+              />
+            ),
+          }}
+          emptyState={
+            rows.length === 0
+              ? {
+                  icon: <ListChecks />,
+                  title: "No sources yet — run search to populate the workbench.",
+                }
+              : { icon: <ListChecks />, title: "No sources match these filters" }
+          }
+        />
       </div>
-
-      <CurationBatchBar
-        selectedCount={selected.size}
-        tags={tags}
-        onInclude={() => runBulk("include", "Included")}
-        onExclude={() => runBulk("exclude", "Excluded")}
-        onAddTag={handleAddTag}
-        onCreateTag={() => setCreateTagOpen(true)}
-        onClear={() => setSelected(new Set())}
-        busy={busy}
-      />
 
       <TextInputDialog
         open={createTagOpen}
@@ -821,149 +693,5 @@ export default function CurationTable() {
         onConfirm={handleCreateTag}
       />
     </div>
-  );
-}
-
-function GroupRows({
-  group,
-  groupBy,
-  colCount,
-  topicId,
-  selected,
-  onToggleOne,
-  onToggleIncluded,
-}: {
-  group: { key: string; label: string; rows: CurationRow[] };
-  groupBy: GroupBy;
-  colCount: number;
-  topicId: string;
-  selected: Set<string>;
-  onToggleOne: (id: string) => void;
-  onToggleIncluded: (id: string, current: boolean) => void;
-}) {
-  return (
-    <>
-      {groupBy !== "none" && (
-        <tr>
-          <td
-            colSpan={colCount}
-            className="bg-muted/40 px-2 py-1 type-meta font-semibold uppercase tracking-wider text-muted-foreground border-y border-border/40"
-          >
-            {group.label}{" "}
-            <span className="text-muted-foreground/60">
-              ({group.rows.length})
-            </span>
-          </td>
-        </tr>
-      )}
-      {group.rows.map((r) => {
-        const s = r.source;
-        const isSel = selected.has(s.id);
-        const scores = sourceScoreValues(s, r.importance?.bestRank ?? null);
-        return (
-          <tr
-            key={`${group.key}:${s.id}`}
-            className={cn(
-              "border-b border-border/20 hover:bg-muted/30 transition-colors",
-              !s.is_included && "opacity-50",
-              isSel && "bg-primary/[0.04]",
-            )}
-          >
-            <td className="py-1.5 pl-1 pr-1 align-middle">
-              <Checkbox
-                aria-label="Select source"
-                checked={isSel}
-                onCheckedChange={() => onToggleOne(s.id)}
-              />
-            </td>
-            <td
-              className="py-1.5 px-1 align-middle"
-              title={
-                r.importance
-                  ? `Importance ${r.importance.score} across ${r.importance.keywordCount} keyword${r.importance.keywordCount === 1 ? "" : "s"}`
-                  : "Not ranked for any keyword"
-              }
-            >
-              {r.importance?.bestRank != null ? (
-                <>
-                  <div className="type-title tabular-nums leading-none">
-                    #{r.importance.bestRank}
-                  </div>
-                  {r.importance.keywordCount > 1 && (
-                    <div className="mt-0.5 text-[9px] text-muted-foreground tabular-nums">
-                      in {r.importance.keywordCount} kw
-                    </div>
-                  )}
-                </>
-              ) : (
-                <span className="type-meta text-muted-foreground">—</span>
-              )}
-            </td>
-            <td className="py-1.5 px-1 align-middle">
-              <div className="flex items-center gap-2 min-w-0">
-                <SourceTypeIcon type={sourceTypeFromDb(s.source_type)} source={s} size={20} />
-                <div className="min-w-0">
-                  <Link
-                    href={`/research/topics/${topicId}/sources/${s.id}`}
-                    className="type-secondary font-medium truncate max-w-[22rem] block hover:text-primary "
-                  >
-                    {s.title || s.hostname || s.url}
-                  </Link>
-                  <div className="flex items-center gap-1 type-meta text-muted-foreground">
-                    <span className="truncate max-w-[16rem]">{s.hostname}</span>
-                    <OutboundLink
-                      href={s.url}
-                      onClick={(e) => e.stopPropagation()}
-                      className="hover:text-foreground"
-                    >
-                      <ExternalLink className="h-2.5 w-2.5" />
-                    </OutboundLink>
-                  </div>
-                </div>
-              </div>
-            </td>
-            <td className="py-1.5 px-2 align-middle">
-              <StatusBadge status={s.scrape_status} />
-            </td>
-            <td className="py-1.5 px-2 align-middle text-right">
-              <ScoreCell value={scores.priority} />
-            </td>
-            <td className="py-1.5 px-2 align-middle text-right">
-              <ScoreCell value={scores.auth} />
-            </td>
-            <td className="py-1.5 px-2 align-middle text-right">
-              <ScoreCell value={scores.post} />
-            </td>
-            <td className="py-1.5 px-2 align-middle text-right">
-              <ScoreCell value={scores.quality} />
-            </td>
-            <td className="py-1.5 px-2 align-middle text-right type-meta tabular-nums whitespace-nowrap text-muted-foreground">
-              {fmtInt(r.charCount)}
-            </td>
-            <td className="py-1.5 px-2 align-middle">
-              <AnalysisCell state={r.analysis} />
-            </td>
-            <td className="py-1.5 px-2 align-middle">
-              <div className="flex flex-wrap gap-1 max-w-[14rem]">
-                {r.tags.map((t) => (
-                  <span
-                    key={t.id}
-                    className="inline-flex rounded border border-border/60 bg-muted/30 px-1.5 py-px type-meta text-muted-foreground truncate max-w-[8rem]"
-                  >
-                    {t.name}
-                  </span>
-                ))}
-              </div>
-            </td>
-            <td className="py-1.5 px-2 align-middle text-center">
-              <IncludedCell
-                included={!!s.is_included}
-                onToggle={() => onToggleIncluded(s.id, !!s.is_included)}
-              />
-            </td>
-          </tr>
-        );
-      })}
-    </>
   );
 }

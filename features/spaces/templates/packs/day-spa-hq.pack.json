@@ -1,0 +1,3019 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0514",
+  "version": 1,
+  "title": "Day Spa HQ",
+  "description": "Book treatments by room and therapist, sell gift cards, and track retail stock.",
+  "forWho": "Day spas and wellness retreats",
+  "icon": {
+    "emoji": "🌸"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "wellness",
+  "tags": [
+    "spa",
+    "treatments",
+    "rooms",
+    "gift cards"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-day-spa-hq",
+    "catalogueId": "SP0514",
+    "useCase": "The owner of Juniper and Sage Day Spa uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "fitness_beauty_wellness",
+    "vertical": "Day spa",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Juniper and Sage Day Spa",
+      "describes": "An eight-room day spa offering massage, facials and body treatments with a retail shelf, couples packages and seasonal gift card sales.",
+      "address": {
+        "line1": "300 Hollis Terrace",
+        "city": "Sedona",
+        "region": "AZ",
+        "postalCode": "86336",
+        "country": "US"
+      },
+      "phone": "(928) 555-0159",
+      "website": "junipersagespa.net",
+      "email": "info@junipersagespa.net",
+      "timezone": "America/Phoenix"
+    },
+    "cleanupTag": "use-case:spaces-day-spa-hq",
+    "tables": [
+      {
+        "token": "plan",
+        "name": "Treatments and packages",
+        "labelSingular": "Treatment",
+        "labelPlural": "Treatments and packages",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "ticket",
+        "titleField": "plan_name",
+        "describes": "The treatment menu with prices, times and members on each.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "plan_name",
+            "label": "Treatment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Massage",
+              "Facial",
+              "Body",
+              "Package",
+              "Membership"
+            ],
+            "choiceColors": {
+              "Massage": "slate",
+              "Facial": "blue",
+              "Body": "amber",
+              "Package": "violet",
+              "Membership": "teal"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Per visit",
+              "Monthly"
+            ],
+            "choiceColors": {
+              "Per visit": "slate",
+              "Monthly": "blue"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "valid_days",
+            "label": "Valid for (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 730
+              }
+            ]
+          },
+          {
+            "key": "includes",
+            "label": "Includes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "active_n",
+            "label": "Active guests",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Active"
+            }
+          },
+          {
+            "key": "cancelled_n",
+            "label": "Cancelled",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Cancelled"
+            }
+          },
+          {
+            "key": "churn",
+            "label": "Churn (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Active guests} + {Cancelled} > 0, ROUND({Cancelled} / ({Active guests} + {Cancelled}) * 100, 0), 0)"
+          },
+          {
+            "key": "recurring",
+            "label": "Recurring value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Active guests} * {Price (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Treatment",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is included"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Steps, products and the experience."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Booking notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Buffer time, room setup and who can perform it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "plan-1",
+            "values": {
+              "plan_name": "Signature massage, 60 min",
+              "category": "Massage",
+              "price": 120,
+              "billing": "Per visit",
+              "minutes": 60,
+              "valid_days": 1,
+              "includes": "massage, per visit"
+            }
+          },
+          {
+            "key": "plan-2",
+            "values": {
+              "plan_name": "Deep tissue massage, 90 min",
+              "category": "Massage",
+              "price": 170,
+              "billing": "Per visit",
+              "minutes": 90,
+              "valid_days": 1,
+              "includes": "massage, per visit"
+            }
+          },
+          {
+            "key": "plan-3",
+            "values": {
+              "plan_name": "Classic facial",
+              "category": "Facial",
+              "price": 105,
+              "billing": "Per visit",
+              "minutes": 60,
+              "valid_days": 1,
+              "includes": "facial, per visit"
+            }
+          },
+          {
+            "key": "plan-4",
+            "values": {
+              "plan_name": "Body scrub and wrap",
+              "category": "Body",
+              "price": 140,
+              "billing": "Per visit",
+              "minutes": 75,
+              "valid_days": 1,
+              "includes": "body, per visit"
+            }
+          },
+          {
+            "key": "plan-5",
+            "values": {
+              "plan_name": "Couples retreat",
+              "category": "Package",
+              "price": 320,
+              "billing": "Per visit",
+              "minutes": 120,
+              "valid_days": 1,
+              "includes": "package, per visit"
+            }
+          },
+          {
+            "key": "plan-6",
+            "values": {
+              "plan_name": "Monthly spa membership",
+              "category": "Membership",
+              "price": 99,
+              "billing": "Monthly",
+              "minutes": 60,
+              "valid_days": 30,
+              "includes": "membership, monthly"
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Guests",
+        "labelSingular": "Guest",
+        "labelPlural": "Guests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Guests and members, with treatments, spend and gift cards.",
+        "subject": "thing",
+        "independentOf": {
+          "plan": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Guest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Member",
+              "Gift card",
+              "Walk-in",
+              "Couples package"
+            ],
+            "choiceColors": {
+              "Member": "slate",
+              "Gift card": "blue",
+              "Walk-in": "amber",
+              "Couples package": "violet"
+            }
+          },
+          {
+            "key": "client_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Frozen",
+              "Cancelled",
+              "Lead"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Frozen": "blue",
+              "Cancelled": "red",
+              "Lead": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "plan",
+            "label": "Treatment",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "joined_on",
+            "label": "Joined",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visits",
+            "label": "Visits",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "no_shows",
+            "label": "No-shows",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "paid_total",
+            "label": "Paid to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "failed_n",
+            "label": "Failed payments",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "count",
+            "filter": {
+              "status": "Failed"
+            }
+          },
+          {
+            "key": "risk",
+            "label": "Retention check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
+          },
+          {
+            "key": "add_booking_btn",
+            "label": "Book a visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "Visit note",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Guest intake",
+            "values": {
+              "client_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preferences"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pressure, scents, music and areas to avoid."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Comfort"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Allergies and sensitivities noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Told the guest to mention any health concern to their therapist"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consent form signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the therapist should know before the guest arrives."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Kwame Westbrook",
+              "kind": "Member",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(928) 555-0155",
+              "email": "kwame.westbrook@inbox-mail.net",
+              "joined_on": "@today-30d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Fenella Eastwick",
+              "kind": "Gift card",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(928) 555-0192",
+              "email": "fenella.eastwick@inbox-mail.net",
+              "joined_on": "@today-77d",
+              "area": "Cedar Park"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Leopold Lindqvist",
+              "kind": "Walk-in",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(928) 555-0129",
+              "email": "leopold.lindqvist@inbox-mail.net",
+              "joined_on": "@today-124d",
+              "area": "Lakeview"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Imelda Thackeray",
+              "kind": "Couples package",
+              "client_status": "Active",
+              "plan": "plan-4",
+              "phone": "(928) 555-0166",
+              "email": "imelda.thackeray@inbox-mail.net",
+              "joined_on": "@today-171d",
+              "area": "Foxglove Court"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Anders Boateng",
+              "kind": "Member",
+              "client_status": "Active",
+              "plan": "plan-5",
+              "phone": "(928) 555-0103",
+              "email": "anders.boateng@inbox-mail.net",
+              "joined_on": "@today-218d",
+              "area": "Stonebridge"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Ottoline Ibarra",
+              "kind": "Gift card",
+              "client_status": "Active",
+              "plan": "plan-6",
+              "phone": "(928) 555-0140",
+              "email": "ottoline.ibarra@inbox-mail.net",
+              "joined_on": "@today-265d",
+              "area": "Harbor Heights"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Humphrey Rutherford",
+              "kind": "Walk-in",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(928) 555-0177",
+              "email": "humphrey.rutherford@inbox-mail.net",
+              "joined_on": "@today-312d",
+              "area": "Willow Creek"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Tamsin Aldercott",
+              "kind": "Couples package",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(928) 555-0114",
+              "email": "tamsin.aldercott@inbox-mail.net",
+              "joined_on": "@today-359d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "client-9",
+            "values": {
+              "client_name": "Desmond Hartigan",
+              "kind": "Member",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(928) 555-0151",
+              "email": "desmond.hartigan@inbox-mail.net",
+              "joined_on": "@today-406d",
+              "area": "Sunset Flats"
+            }
+          },
+          {
+            "key": "client-10",
+            "values": {
+              "client_name": "Noor Pemberton",
+              "kind": "Gift card",
+              "client_status": "Frozen",
+              "plan": "plan-4",
+              "phone": "(928) 555-0188",
+              "email": "noor.pemberton@inbox-mail.net",
+              "joined_on": "@today-453d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "client-11",
+            "values": {
+              "client_name": "Silas Whitlock",
+              "kind": "Walk-in",
+              "client_status": "Cancelled",
+              "plan": "plan-5",
+              "phone": "(928) 555-0125",
+              "email": "silas.whitlock@inbox-mail.net",
+              "joined_on": "@today-500d",
+              "area": "Eastgate"
+            }
+          },
+          {
+            "key": "client-12",
+            "values": {
+              "client_name": "Kasia Eriksen",
+              "kind": "Couples package",
+              "client_status": "Cancelled",
+              "plan": "plan-6",
+              "phone": "(928) 555-0162",
+              "email": "kasia.eriksen@inbox-mail.net",
+              "joined_on": "@today-547d",
+              "area": "Riverbend"
+            }
+          },
+          {
+            "key": "client-13",
+            "values": {
+              "client_name": "Tobias Montague",
+              "kind": "Member",
+              "client_status": "Lead",
+              "plan": "plan-1",
+              "phone": "(928) 555-0199",
+              "email": "tobias.montague@inbox-mail.net",
+              "joined_on": "@today-594d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "client-14",
+            "values": {
+              "client_name": "Greta Valdez",
+              "kind": "Gift card",
+              "client_status": "Lead",
+              "plan": "plan-2",
+              "phone": "(928) 555-0136",
+              "email": "greta.valdez@inbox-mail.net",
+              "joined_on": "@today-641d",
+              "area": "Cedar Park"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Treatment bookings",
+        "labelSingular": "Treatment booking",
+        "labelPlural": "Treatment bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "booking_name",
+        "describes": "Who is in which room with which therapist, and when.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "plan": "Either record can be created or change status before the other.",
+          "staff": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Treatment booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Checked in": "blue",
+              "Completed": "amber",
+              "No-show": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Guest",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "plan",
+            "label": "Treatment",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "staff",
+            "label": "Therapist",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_on",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "visit_type",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Massage",
+              "Facial",
+              "Body treatment",
+              "Couples"
+            ],
+            "choiceColors": {
+              "Massage": "slate",
+              "Facial": "blue",
+              "Body treatment": "amber",
+              "Couples": "violet"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "mine",
+            "label": "My treatment",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Visit note",
+            "values": {
+              "status": "Booked",
+              "booking_name": "New treatment booking"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Room setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Linens, products and temperature."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check-in"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Guest welcomed and shown the locker"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Intake reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consent confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Aftercare shared, rebook offered and retail recommended."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "bookin-1",
+            "values": {
+              "booking_name": "Body scrub and wrap - Eastwick",
+              "status": "Completed",
+              "client": "client-2",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@today-12d",
+              "visit_type": "Massage",
+              "minutes": 75,
+              "price": 140
+            }
+          },
+          {
+            "key": "bookin-2",
+            "values": {
+              "booking_name": "Facial - Boateng",
+              "status": "Completed",
+              "client": "client-5",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "when_on": "@today-9d",
+              "visit_type": "Facial",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-3",
+            "values": {
+              "booking_name": "Deep tissue massage, 90 min - Aldercott",
+              "status": "Completed",
+              "client": "client-8",
+              "plan": "plan-2",
+              "staff": "tm-5",
+              "when_on": "@today-7d",
+              "visit_type": "Body treatment",
+              "minutes": 90,
+              "price": 170
+            }
+          },
+          {
+            "key": "bookin-4",
+            "values": {
+              "booking_name": "Body scrub and wrap - Whitlock",
+              "status": "Completed",
+              "client": "client-11",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@today-5d",
+              "visit_type": "Couples",
+              "minutes": 75,
+              "price": 140
+            }
+          },
+          {
+            "key": "bookin-5",
+            "values": {
+              "booking_name": "Massage - Valdez",
+              "status": "Completed",
+              "client": "client-14",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "when_on": "@today-3d",
+              "visit_type": "Massage",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-6",
+            "values": {
+              "booking_name": "Deep tissue massage, 90 min - Lindqvist",
+              "status": "No-show",
+              "client": "client-3",
+              "plan": "plan-2",
+              "staff": "tm-5",
+              "when_on": "@today-4d",
+              "visit_type": "Facial",
+              "minutes": 90,
+              "price": 170
+            }
+          },
+          {
+            "key": "bookin-7",
+            "values": {
+              "booking_name": "Body scrub and wrap - Ibarra",
+              "status": "Cancelled",
+              "client": "client-6",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@today-2d",
+              "visit_type": "Body treatment",
+              "minutes": 75,
+              "price": 140
+            }
+          },
+          {
+            "key": "bookin-8",
+            "values": {
+              "booking_name": "Couples - Hartigan",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "when_on": "@today-1d",
+              "visit_type": "Couples",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-9",
+            "values": {
+              "booking_name": "Deep tissue massage, 90 min - Eriksen",
+              "status": "Booked",
+              "client": "client-12",
+              "plan": "plan-2",
+              "staff": "tm-5",
+              "when_on": "@today-2d",
+              "visit_type": "Massage",
+              "minutes": 90,
+              "price": 170
+            }
+          },
+          {
+            "key": "bookin-10",
+            "values": {
+              "booking_name": "Body scrub and wrap - Westbrook",
+              "status": "Checked in",
+              "client": "client-1",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@mon",
+              "visit_type": "Facial",
+              "minutes": 75,
+              "price": 140,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-11",
+            "values": {
+              "booking_name": "Body treatment - Thackeray",
+              "status": "Booked",
+              "client": "client-4",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "when_on": "@tue",
+              "visit_type": "Body treatment",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-12",
+            "values": {
+              "booking_name": "Deep tissue massage, 90 min - Rutherford",
+              "status": "Booked",
+              "client": "client-7",
+              "plan": "plan-2",
+              "staff": "tm-5",
+              "when_on": "@wed",
+              "visit_type": "Couples",
+              "minutes": 90,
+              "price": 170,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-13",
+            "values": {
+              "booking_name": "Body scrub and wrap - Pemberton",
+              "status": "Booked",
+              "client": "client-10",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@thu",
+              "visit_type": "Massage",
+              "minutes": 75,
+              "price": 140
+            }
+          },
+          {
+            "key": "bookin-14",
+            "values": {
+              "booking_name": "Facial - Montague",
+              "status": "Booked",
+              "client": "client-13",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "when_on": "@fri",
+              "visit_type": "Facial",
+              "minutes": 60,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-15",
+            "values": {
+              "booking_name": "Deep tissue massage, 90 min - Eastwick",
+              "status": "Booked",
+              "client": "client-2",
+              "plan": "plan-2",
+              "staff": "tm-5",
+              "when_on": "@sat",
+              "visit_type": "Body treatment",
+              "minutes": 90,
+              "price": 170,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-16",
+            "values": {
+              "booking_name": "Body scrub and wrap - Boateng",
+              "status": "Booked",
+              "client": "client-5",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@sun",
+              "visit_type": "Couples",
+              "minutes": 75,
+              "price": 140
+            }
+          },
+          {
+            "key": "bookin-17",
+            "values": {
+              "booking_name": "Massage - Aldercott",
+              "status": "Booked",
+              "client": "client-8",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "when_on": "@mon+1w",
+              "visit_type": "Massage",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-18",
+            "values": {
+              "booking_name": "Deep tissue massage, 90 min - Whitlock",
+              "status": "Booked",
+              "client": "client-11",
+              "plan": "plan-2",
+              "staff": "tm-5",
+              "when_on": "@wed+1w",
+              "visit_type": "Facial",
+              "minutes": 90,
+              "price": 170
+            }
+          },
+          {
+            "key": "bookin-19",
+            "values": {
+              "booking_name": "Body scrub and wrap - Valdez",
+              "status": "Booked",
+              "client": "client-14",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@today",
+              "visit_type": "Body treatment",
+              "minutes": 75,
+              "price": 140,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-20",
+            "values": {
+              "booking_name": "Couples - Lindqvist",
+              "status": "Booked",
+              "client": "client-3",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "when_on": "@today+2d",
+              "visit_type": "Couples",
+              "minutes": 60,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-21",
+            "values": {
+              "booking_name": "Deep tissue massage, 90 min - Ibarra",
+              "status": "Booked",
+              "client": "client-6",
+              "plan": "plan-2",
+              "staff": "tm-5",
+              "when_on": "@today+4d",
+              "visit_type": "Massage",
+              "minutes": 90,
+              "price": 170
+            }
+          },
+          {
+            "key": "bookin-22",
+            "values": {
+              "booking_name": "Body scrub and wrap - Hartigan",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@today+1d",
+              "visit_type": "Facial",
+              "minutes": 75,
+              "price": 140
+            }
+          }
+        ]
+      },
+      {
+        "token": "payment",
+        "name": "Payments",
+        "labelSingular": "Payment",
+        "labelPlural": "Payments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "credit-card",
+        "titleField": "payment_name",
+        "describes": "Charges, failed cards and refunds, tied to each client.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "method"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "payment_name",
+            "label": "Payment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Failed",
+              "Paid",
+              "Refunded"
+            ],
+            "choiceColors": {
+              "Pending": "slate",
+              "Failed": "red",
+              "Paid": "blue",
+              "Refunded": "pink"
+            },
+            "required": true,
+            "default": "Pending",
+            "statusGroups": {
+              "Pending": "todo",
+              "Failed": "in_progress",
+              "Paid": "done",
+              "Refunded": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Guest",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card",
+              "Gift card",
+              "Cash",
+              "Membership credit"
+            ],
+            "choiceColors": {
+              "Card": "slate",
+              "Gift card": "blue",
+              "Cash": "amber",
+              "Membership credit": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "payment_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "paymen-1",
+            "values": {
+              "payment_name": "PAY-2210",
+              "status": "Paid",
+              "client": "client-3",
+              "amount": 105,
+              "due_on": "@today-30d",
+              "method": "Card"
+            }
+          },
+          {
+            "key": "paymen-2",
+            "values": {
+              "payment_name": "PAY-2211",
+              "status": "Paid",
+              "client": "client-8",
+              "amount": 170,
+              "due_on": "@today-28d",
+              "method": "Gift card"
+            }
+          },
+          {
+            "key": "paymen-3",
+            "values": {
+              "payment_name": "PAY-2212",
+              "status": "Paid",
+              "client": "client-13",
+              "amount": 120,
+              "due_on": "@today-14d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-4",
+            "values": {
+              "payment_name": "PAY-2213",
+              "status": "Paid",
+              "client": "client-4",
+              "amount": 140,
+              "due_on": "@today-10d",
+              "method": "Membership credit"
+            }
+          },
+          {
+            "key": "paymen-5",
+            "values": {
+              "payment_name": "PAY-2214",
+              "status": "Failed",
+              "client": "client-9",
+              "amount": 105,
+              "due_on": "@today-3d",
+              "method": "Card"
+            }
+          },
+          {
+            "key": "paymen-6",
+            "values": {
+              "payment_name": "PAY-2215",
+              "status": "Failed",
+              "client": "client-14",
+              "amount": 170,
+              "due_on": "@today-1d",
+              "method": "Gift card"
+            }
+          },
+          {
+            "key": "paymen-7",
+            "values": {
+              "payment_name": "PAY-2216",
+              "status": "Pending",
+              "client": "client-5",
+              "amount": 320,
+              "due_on": "@fri",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-8",
+            "values": {
+              "payment_name": "PAY-2217",
+              "status": "Pending",
+              "client": "client-10",
+              "amount": 140,
+              "due_on": "@today+3d",
+              "method": "Membership credit"
+            }
+          },
+          {
+            "key": "paymen-9",
+            "values": {
+              "payment_name": "PAY-2218",
+              "status": "Pending",
+              "client": "client-1",
+              "amount": 120,
+              "due_on": "@today+5d",
+              "method": "Card"
+            }
+          },
+          {
+            "key": "paymen-10",
+            "values": {
+              "payment_name": "PAY-2219",
+              "status": "Paid",
+              "client": "client-6",
+              "amount": 99,
+              "due_on": "@today-6d",
+              "method": "Gift card"
+            }
+          },
+          {
+            "key": "paymen-11",
+            "values": {
+              "payment_name": "PAY-2220",
+              "status": "Refunded",
+              "client": "client-11",
+              "amount": 320,
+              "due_on": "@today-9d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-12",
+            "values": {
+              "payment_name": "PAY-2221",
+              "status": "Pending",
+              "client": "client-2",
+              "amount": 170,
+              "due_on": "@today+6d",
+              "method": "Membership credit"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each guest belongs to one treatment.",
+        "fromTable": "client",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "members"
+      },
+      {
+        "describes": "Each treatment booking belongs to one guest.",
+        "fromTable": "booking",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each treatment booking belongs to one treatment.",
+        "fromTable": "booking",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each treatment booking belongs to one therapist.",
+        "fromTable": "booking",
+        "fromField": "staff",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings_taken"
+      },
+      {
+        "describes": "Each payment belongs to one guest.",
+        "fromTable": "payment",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "payments"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Genevieve Aldridge",
+              "role": "Owner",
+              "work_email": "genevieve@junipersagespa.net",
+              "mobile": "(928) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Priyanka Deshmukh",
+              "role": "Spa manager",
+              "work_email": "priyanka@junipersagespa.net",
+              "mobile": "(928) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Anton Leclercq",
+              "role": "Massage therapist",
+              "work_email": "anton@junipersagespa.net",
+              "mobile": "(928) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Sibyl Ormerod",
+              "role": "Esthetician",
+              "work_email": "sibyl@junipersagespa.net",
+              "mobile": "(928) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Chidera Eze",
+              "role": "Esthetician",
+              "work_email": "chidera@junipersagespa.net",
+              "mobile": "(928) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Wren Halloran",
+              "role": "Front desk",
+              "work_email": "wren@junipersagespa.net",
+              "mobile": "(928) 555-0145",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Guest enquiry",
+        "describes": "How someone asks to join or book.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Email address?"
+          },
+          {
+            "fieldKey": "plan",
+            "ask": "What are you interested in?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The enquiry is saved as a new lead."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "booking_done",
+        "table": "booking",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "payment_paid",
+        "table": "payment",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_plan",
+        "name": "All treatments and packages",
+        "table": "plan",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "plan_board",
+        "name": "Treatments and packages board",
+        "table": "plan",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_client",
+        "name": "All guests",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Guests board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "client_status"
+      },
+      {
+        "token": "all_booking",
+        "name": "All treatment bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Treatment bookings board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Treatment bookings calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "when_on",
+        "allDay": true
+      },
+      {
+        "token": "booking_over",
+        "name": "Overdue",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "Due this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_mine",
+        "name": "My treatment bookings",
+        "table": "booking",
+        "kind": "grid",
+        "me": [
+          "mine"
+        ]
+      },
+      {
+        "token": "all_payment",
+        "name": "All payments",
+        "table": "payment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "payment_board",
+        "name": "Payments board",
+        "table": "payment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "payment_over",
+        "name": "Overdue",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_week",
+        "name": "Due this week",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_next7",
+        "name": "Next 7 days",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Day Spa HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "client",
+          "describes": "Guests and members, with treatments, spend and gift cards."
+        },
+        {
+          "name": "related_tables",
+          "table": "plan",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many guests are active right now?",
+        "whyItMatters": "The owner reviews the active count at the start of every month.",
+        "expect": {
+          "table": "client",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "client_status": "Active"
+          },
+          "answer": 9,
+          "unit": "guests"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open treatments and packages.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open guests.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open treatment bookings.",
+        "action": {
+          "kind": "open",
+          "surface": "booking_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "booking_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "junipersagespa.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Hollis Terrace"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "day-spa-hq",
+      "parent": null,
+      "title": "Day Spa HQ",
+      "icon": {
+        "emoji": "🌸"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the spa from one page. Guests, treatments and payments are linked, every treatment is a booking with a therapist, and each therapist sees their own list under Mine. The treatment list shows member counts and churn."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:room-turnover"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:gift-cards"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:retail-inventory"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Treatments and packages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The treatment menu with prices, times and members on each."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "plan_board"
+            },
+            "inline": true,
+            "title": "Treatments and packages",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pla-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pla-t",
+                "name": "All treatments and packages",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pla-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Guests and members, with treatments, spend and gift cards."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Guests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "client_status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All guests",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Treatment bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who is in which room with which therapist, and when."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Treatment bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_on"
+              },
+              {
+                "id": "boo-t",
+                "name": "All treatment bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Charges, failed cards and refunds, tied to each client."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "payment_board"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pay-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pay-t",
+                "name": "All payments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pay-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "pay-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "day-spa-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Treatments this week, payments and member health."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Treatment bookings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Treatment bookings by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Treatment bookings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Treatment bookings by kind",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "visit_type",
+                          "op": "count"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "payment",
+                      "view": "all_payment"
+                    },
+                    "inline": true,
+                    "title": "Payments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Payments by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Not yet marked"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Treatment bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Not yet marked",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My treatment bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Treatment bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My treatment bookings",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Failed payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "all_payment"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Failed payments",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Failed"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "room-turnover",
+      "parent": "day-spa-hq",
+      "title": "Room turnover and linens",
+      "icon": {
+        "emoji": "🛏️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A 15 minute buffer between guests is non-negotiable. It protects the experience and the schedule."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Between guests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Strip and bag used linens."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wipe surfaces and the table with disinfectant."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set fresh linens, restock products and reset the music."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the temperature and the lighting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the end of day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Count towels in and out. Report any shortfall to the spa manager."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "gift-cards",
+      "parent": "day-spa-hq",
+      "title": "Selling and redeeming gift cards",
+      "icon": {
+        "emoji": "🎁"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Gift cards are a promise. Track them as carefully as cash."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the card number, amount and buyer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Hand over the card with the expiry rules."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On redemption, subtract the amount and note the new balance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the balance report at the end of each month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check local rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Gift card expiry and accounting differ by state. Ask your accountant before setting policy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "retail-inventory",
+      "parent": "day-spa-hq",
+      "title": "Retail and product inventory",
+      "icon": {
+        "emoji": "🧴"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A spa shelf sells when it is tidy and full. Name an inventory captain."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count the retail shelf and the treatment room products."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reorder when stock drops to the par level."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move slow sellers to a feature display or discount."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Treatment products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep two boxes per room and reorder when one is left. Popular items get three."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

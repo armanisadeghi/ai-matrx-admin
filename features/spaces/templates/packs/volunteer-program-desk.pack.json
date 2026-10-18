@@ -1,0 +1,3637 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0551",
+  "version": 1,
+  "title": "Volunteer Program Desk",
+  "description": "Recruit, onboard, schedule and thank volunteers, and see hours given.",
+  "forWho": "Volunteer coordinators at nonprofits and community groups",
+  "icon": {
+    "emoji": "🙌"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "nonprofit",
+  "tags": [
+    "volunteers",
+    "shifts",
+    "hours",
+    "onboarding"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-volunteer-program-desk",
+    "catalogueId": "SP0551",
+    "useCase": "Odalys Fenwick-Ruiz coordinates volunteers for a neighborhood library friends group and uses this to see which shifts are short, who has not finished onboarding and how many hours the program gave this month.",
+    "industry": "nonprofit_community",
+    "vertical": "Volunteer management",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Cedar Row Neighborhood Alliance",
+      "describes": "A neighborhood alliance with 140 active volunteers running a tool library, a weekend market and a youth reading program.",
+      "address": {
+        "line1": "905 Marlowe Court",
+        "city": "Seattle",
+        "region": "WA",
+        "postalCode": "98107",
+        "country": "US"
+      },
+      "phone": "(206) 555-0163",
+      "website": "cedarrowalliance.net",
+      "email": "volunteer@cedarrowalliance.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-volunteer-program-desk",
+    "tables": [
+      {
+        "token": "volunteer",
+        "name": "Volunteers",
+        "labelSingular": "Volunteer",
+        "labelPlural": "Volunteers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "hand-heart",
+        "titleField": "volunteer_name",
+        "describes": "Everyone who has applied or given time, with their onboarding stage, hours and open training.",
+        "subject": "thing",
+        "independentOf": {
+          "coordinator": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "volunteer_name",
+            "label": "Volunteer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "choices": [
+              "Applicant",
+              "Onboarding",
+              "Active",
+              "On break",
+              "Retired"
+            ],
+            "choiceColors": {
+              "Applicant": "slate",
+              "Onboarding": "blue",
+              "Active": "amber",
+              "On break": "violet",
+              "Retired": "teal"
+            },
+            "required": true,
+            "default": "Applicant",
+            "statusGroups": {
+              "Applicant": "todo",
+              "Onboarding": "in_progress",
+              "Active": "in_progress",
+              "On break": "in_progress",
+              "Retired": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Main area",
+            "parityType": "select",
+            "choices": [
+              "Tool library",
+              "Weekend market",
+              "Reading program",
+              "Events",
+              "Office"
+            ],
+            "choiceColors": {
+              "Tool library": "slate",
+              "Weekend market": "blue",
+              "Reading program": "amber",
+              "Events": "violet",
+              "Office": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "start_by",
+            "label": "Start by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "coordinator",
+            "label": "Coordinator",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours_total",
+            "label": "Hours given",
+            "parityType": "rollup",
+            "via": "signups",
+            "pick": "hours",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Attended"
+            }
+          },
+          {
+            "key": "shifts_done",
+            "label": "Shifts attended",
+            "parityType": "rollup",
+            "via": "signups",
+            "pick": "signup_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Attended"
+            }
+          },
+          {
+            "key": "shifts_missed",
+            "label": "No-shows",
+            "parityType": "rollup",
+            "via": "signups",
+            "pick": "signup_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "training_open",
+            "label": "Training still to do",
+            "parityType": "rollup",
+            "via": "trainings",
+            "pick": "training_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "To do"
+            }
+          },
+          {
+            "key": "reliability",
+            "label": "Reliability",
+            "parityType": "formula",
+            "formula": "IF({Shifts attended} + {No-shows} = 0, \"New\", IF({No-shows} = 0, \"Steady\", IF({No-shows} * 4 > {Shifts attended}, \"Check in\", \"Mostly steady\")))",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_approve",
+            "label": "Move to onboarding",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "volunteer_approve"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_active",
+            "label": "Mark active",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "volunteer_active"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_training",
+            "label": "Add training",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "training",
+              "template": "New training",
+              "prefill": {
+                "volunteer": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_signup",
+            "label": "Sign up for a shift",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "signup",
+              "template": "New sign-up",
+              "prefill": {
+                "volunteer": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New volunteer",
+            "values": {
+              "volunteer_name": "New volunteer",
+              "stage": "Applicant"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why they want to help"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "In their own words, and what they hope to learn or give."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Skills and limits"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they are good at, what they cannot do and any access needs."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Availability"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Days and times, and how often they expect to come."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "volunteer-1",
+            "values": {
+              "volunteer_name": "Ines Karlsson",
+              "stage": "Active",
+              "area": "Weekend market",
+              "email": "ines.k@mailbox.net",
+              "phone": "(206) 555-0111",
+              "start_by": "@today-300d",
+              "coordinator": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "volunteer-2",
+            "values": {
+              "volunteer_name": "Theo Abernathy-Nwosu",
+              "stage": "Active",
+              "area": "Tool library",
+              "email": "theo.a@mailbox.net",
+              "phone": "(206) 555-0112",
+              "start_by": "@today-250d",
+              "coordinator": "tm-4"
+            }
+          },
+          {
+            "key": "volunteer-3",
+            "values": {
+              "volunteer_name": "Marguerite Polanski",
+              "stage": "Onboarding",
+              "area": "Reading program",
+              "email": "marguerite.p@mailbox.net",
+              "phone": "(206) 555-0113",
+              "start_by": "@today+2d",
+              "coordinator": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "volunteer-4",
+            "values": {
+              "volunteer_name": "Dashiell Okonkwo",
+              "stage": "Applicant",
+              "area": "Events",
+              "email": "dashiell.o@mailbox.net",
+              "phone": "(206) 555-0114",
+              "start_by": "@today+6d",
+              "coordinator": "tm-1"
+            }
+          },
+          {
+            "key": "volunteer-5",
+            "values": {
+              "volunteer_name": "Lupe Estrada-Whitcombe",
+              "stage": "Active",
+              "area": "Reading program",
+              "email": "lupe.e@mailbox.net",
+              "phone": "(206) 555-0115",
+              "start_by": "@today-400d",
+              "coordinator": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "volunteer-6",
+            "values": {
+              "volunteer_name": "Bram van der Linden",
+              "stage": "Onboarding",
+              "area": "Tool library",
+              "email": "bram.vdl@mailbox.net",
+              "phone": "(206) 555-0116",
+              "start_by": "@today",
+              "coordinator": "tm-4"
+            }
+          },
+          {
+            "key": "volunteer-7",
+            "values": {
+              "volunteer_name": "Noor Haddad",
+              "stage": "Active",
+              "area": "Weekend market",
+              "email": "noor.h@mailbox.net",
+              "phone": "(206) 555-0117",
+              "start_by": "@today-90d",
+              "coordinator": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "volunteer-8",
+            "values": {
+              "volunteer_name": "Cordelia Fitzgerald",
+              "stage": "On break",
+              "area": "Events",
+              "email": "cordelia.f@mailbox.net",
+              "phone": "(206) 555-0118",
+              "start_by": "@today-500d",
+              "coordinator": "tm-1"
+            }
+          },
+          {
+            "key": "volunteer-9",
+            "values": {
+              "volunteer_name": "Jun Takeda",
+              "stage": "Applicant",
+              "area": "Office",
+              "email": "jun.t@mailbox.net",
+              "phone": "(206) 555-0119",
+              "start_by": "@today-3d",
+              "coordinator": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "volunteer-10",
+            "values": {
+              "volunteer_name": "Aurelio Montague",
+              "stage": "Active",
+              "area": "Tool library",
+              "email": "aurelio.m@mailbox.net",
+              "phone": "(206) 555-0120",
+              "start_by": "@today-20d",
+              "coordinator": "tm-4"
+            }
+          },
+          {
+            "key": "volunteer-11",
+            "values": {
+              "volunteer_name": "Sabine Oyelowo",
+              "stage": "Retired",
+              "area": "Reading program",
+              "start_by": "@today-900d",
+              "coordinator": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "volunteer-12",
+            "values": {
+              "volunteer_name": "Prudence Lindgren",
+              "stage": "Onboarding",
+              "area": "Weekend market",
+              "email": "prudence.l@mailbox.net",
+              "phone": "(206) 555-0122",
+              "start_by": "@today+4d",
+              "coordinator": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "shift",
+        "name": "Shifts",
+        "labelSingular": "Shift",
+        "labelPlural": "Shifts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "shift_name",
+        "describes": "Each time slot that needs people, with how many are needed and how many have signed up.",
+        "subject": "thing",
+        "independentOf": {
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "shift_name",
+            "label": "Shift",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Open",
+              "Filled",
+              "Done",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Filled": "blue",
+              "Done": "amber",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "in_progress",
+              "Filled": "in_progress",
+              "Done": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "select",
+            "choices": [
+              "Tool library",
+              "Weekend market",
+              "Reading program",
+              "Events",
+              "Office"
+            ],
+            "choiceColors": {
+              "Tool library": "slate",
+              "Weekend market": "blue",
+              "Reading program": "amber",
+              "Events": "violet",
+              "Office": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shift_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "needed",
+            "label": "People needed",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "signed_up",
+            "label": "People signed up",
+            "parityType": "rollup",
+            "via": "signups",
+            "pick": "signup_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Signed up",
+                "Attended"
+              ]
+            }
+          },
+          {
+            "key": "gap",
+            "label": "Spots left",
+            "parityType": "formula",
+            "formula": "MAX(0, {People needed} - {People signed up})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours_given",
+            "label": "Hours given",
+            "parityType": "rollup",
+            "via": "signups",
+            "pick": "hours",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Attended"
+            }
+          },
+          {
+            "key": "lead",
+            "label": "Shift lead",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_filled",
+            "label": "Mark filled",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "shift_filled"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "shift_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_signup",
+            "label": "Add a sign-up",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "signup",
+              "template": "New sign-up",
+              "prefill": {
+                "shift": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New shift",
+            "values": {
+              "shift_name": "New shift",
+              "status": "Open"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the team will do"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The tasks, in the order the shift runs."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before they arrive"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What to bring, wear and know."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Closing checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Count hours"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Thank the team"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Note anything to fix"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "shift-1",
+            "values": {
+              "shift_name": "Saturday market setup",
+              "status": "Open",
+              "area": "Weekend market",
+              "shift_at": "@today+1d 07:00",
+              "needed": 6,
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shift-2",
+            "values": {
+              "shift_name": "Tool library Tuesday desk",
+              "status": "Filled",
+              "area": "Tool library",
+              "shift_at": "@today 16:00",
+              "needed": 3,
+              "lead": "tm-4"
+            }
+          },
+          {
+            "key": "shift-3",
+            "values": {
+              "shift_name": "Story hour helpers",
+              "status": "Open",
+              "area": "Reading program",
+              "shift_at": "@today+2d 15:30",
+              "needed": 4,
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shift-4",
+            "values": {
+              "shift_name": "Market teardown",
+              "status": "Open",
+              "area": "Weekend market",
+              "shift_at": "@today+1d 13:00",
+              "needed": 5,
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "shift-5",
+            "values": {
+              "shift_name": "Tool repair evening",
+              "status": "Open",
+              "area": "Tool library",
+              "shift_at": "@today+4d 18:00",
+              "needed": 4,
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shift-6",
+            "values": {
+              "shift_name": "Reading buddies, Wednesday",
+              "status": "Filled",
+              "area": "Reading program",
+              "shift_at": "@today+3d 16:00",
+              "needed": 6,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "shift-7",
+            "values": {
+              "shift_name": "Spring clean-up day",
+              "status": "Open",
+              "area": "Events",
+              "shift_at": "@today+6d 09:00",
+              "needed": 15,
+              "lead": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shift-8",
+            "values": {
+              "shift_name": "Market tokens desk",
+              "status": "Done",
+              "area": "Weekend market",
+              "shift_at": "@today-3d 09:00",
+              "needed": 2,
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "shift-9",
+            "values": {
+              "shift_name": "Tool library Thursday desk",
+              "status": "Done",
+              "area": "Tool library",
+              "shift_at": "@today-5d 16:00",
+              "needed": 3,
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shift-10",
+            "values": {
+              "shift_name": "Reading buddies, last Wednesday",
+              "status": "Done",
+              "area": "Reading program",
+              "shift_at": "@today-4d 16:00",
+              "needed": 6,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "shift-11",
+            "values": {
+              "shift_name": "Mailing party",
+              "status": "Open",
+              "area": "Office",
+              "shift_at": "@today-1d 10:00",
+              "needed": 5,
+              "lead": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shift-12",
+            "values": {
+              "shift_name": "Autumn open house",
+              "status": "Cancelled",
+              "area": "Events",
+              "shift_at": "@today-8d 11:00",
+              "needed": 10,
+              "lead": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "signup",
+        "name": "Sign-ups",
+        "labelSingular": "Sign-up",
+        "labelPlural": "Sign-ups",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-check",
+        "titleField": "signup_name",
+        "describes": "Who signed up for which shift, and the hours they actually gave.",
+        "subject": "thing",
+        "independentOf": {
+          "volunteer": "Either record can be created or change status before the other.",
+          "shift": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "signup_name",
+            "label": "Sign-up",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "volunteer",
+            "label": "Volunteer",
+            "parityType": "relation",
+            "relationTarget": "volunteer",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shift",
+            "label": "Shift",
+            "parityType": "relation",
+            "relationTarget": "shift",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Signed up",
+              "Attended",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Signed up": "slate",
+              "Attended": "blue",
+              "No-show": "red",
+              "Cancelled": "amber"
+            },
+            "required": true,
+            "default": "Signed up",
+            "statusGroups": {
+              "Signed up": "todo",
+              "Attended": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shift_day",
+            "label": "Shift day",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours",
+            "label": "Hours given",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 16
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_attended",
+            "label": "Mark attended",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "signup_attended"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_noshow",
+            "label": "Mark no-show",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "signup_noshow"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New sign-up",
+            "values": {
+              "signup_name": "New sign-up",
+              "status": "Signed up"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the shift lead should know: a late arrival, a buddy or a limit."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "signup-1",
+            "values": {
+              "signup_name": "Ines, market teardown",
+              "volunteer": "volunteer-1",
+              "shift": "shift-4",
+              "status": "Signed up",
+              "shift_day": "@today+1d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "signup-2",
+            "values": {
+              "signup_name": "Theo, Tuesday desk",
+              "volunteer": "volunteer-2",
+              "shift": "shift-2",
+              "status": "Signed up",
+              "shift_day": "@today"
+            }
+          },
+          {
+            "key": "signup-3",
+            "values": {
+              "signup_name": "Bram, tool repair",
+              "volunteer": "volunteer-6",
+              "shift": "shift-5",
+              "status": "Signed up",
+              "shift_day": "@today+4d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "signup-4",
+            "values": {
+              "signup_name": "Lupe, story hour",
+              "volunteer": "volunteer-5",
+              "shift": "shift-3",
+              "status": "Signed up",
+              "shift_day": "@today+2d"
+            }
+          },
+          {
+            "key": "signup-5",
+            "values": {
+              "signup_name": "Noor, market setup",
+              "volunteer": "volunteer-7",
+              "shift": "shift-1",
+              "status": "Signed up",
+              "shift_day": "@today+1d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "signup-6",
+            "values": {
+              "signup_name": "Aurelio, tool repair",
+              "volunteer": "volunteer-10",
+              "shift": "shift-5",
+              "status": "Signed up",
+              "shift_day": "@today+4d"
+            }
+          },
+          {
+            "key": "signup-7",
+            "values": {
+              "signup_name": "Ines, market tokens",
+              "volunteer": "volunteer-1",
+              "shift": "shift-8",
+              "status": "Attended",
+              "shift_day": "@today-3d",
+              "hours": 3,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "signup-8",
+            "values": {
+              "signup_name": "Theo, Thursday desk",
+              "volunteer": "volunteer-2",
+              "shift": "shift-9",
+              "status": "Attended",
+              "shift_day": "@today-5d",
+              "hours": 3
+            }
+          },
+          {
+            "key": "signup-9",
+            "values": {
+              "signup_name": "Lupe, reading buddies",
+              "volunteer": "volunteer-5",
+              "shift": "shift-10",
+              "status": "Attended",
+              "shift_day": "@today-4d",
+              "hours": 2,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "signup-10",
+            "values": {
+              "signup_name": "Noor, market tokens",
+              "volunteer": "volunteer-7",
+              "shift": "shift-8",
+              "status": "Attended",
+              "shift_day": "@today-3d",
+              "hours": 3
+            }
+          },
+          {
+            "key": "signup-11",
+            "values": {
+              "signup_name": "Aurelio, Thursday desk",
+              "volunteer": "volunteer-10",
+              "shift": "shift-9",
+              "status": "No-show",
+              "shift_day": "@today-5d",
+              "hours": 0,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "signup-12",
+            "values": {
+              "signup_name": "Cordelia, spring clean-up",
+              "volunteer": "volunteer-8",
+              "shift": "shift-7",
+              "status": "Signed up",
+              "shift_day": "@today-2d"
+            }
+          },
+          {
+            "key": "signup-13",
+            "values": {
+              "signup_name": "Marguerite, story hour",
+              "volunteer": "volunteer-3",
+              "shift": "shift-3",
+              "status": "Signed up",
+              "shift_day": "@today+3d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "signup-14",
+            "values": {
+              "signup_name": "Lupe, mailing party",
+              "volunteer": "volunteer-5",
+              "shift": "shift-11",
+              "status": "Attended",
+              "shift_day": "@today-1d",
+              "hours": 2
+            }
+          }
+        ]
+      },
+      {
+        "token": "training",
+        "name": "Training",
+        "labelSingular": "Training",
+        "labelPlural": "Training",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "graduation-cap",
+        "titleField": "training_name",
+        "describes": "The orientation, safety and role training each volunteer must finish before working alone.",
+        "subject": "thing",
+        "independentOf": {
+          "volunteer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "training_name",
+            "label": "Training",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "volunteer",
+            "label": "Volunteer",
+            "parityType": "relation",
+            "relationTarget": "volunteer",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Orientation",
+              "Safety walk-through",
+              "Role shadowing",
+              "Background check form",
+              "Child safeguarding module"
+            ],
+            "choiceColors": {
+              "Orientation": "slate",
+              "Safety walk-through": "blue",
+              "Role shadowing": "amber",
+              "Background check form": "violet",
+              "Child safeguarding module": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "To do",
+              "Done",
+              "Waived"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Done": "blue",
+              "Waived": "amber"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Done": "done",
+              "Waived": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "training_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New training",
+            "values": {
+              "training_name": "New training",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What this covers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the volunteer will know after it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sign-off"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who confirmed they did it, and how."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "training-1",
+            "values": {
+              "training_name": "Orientation, Marguerite",
+              "volunteer": "volunteer-3",
+              "kind": "Orientation",
+              "status": "To do",
+              "due_on": "@today+1d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "training-2",
+            "values": {
+              "training_name": "Safety walk-through, Bram",
+              "volunteer": "volunteer-6",
+              "kind": "Safety walk-through",
+              "status": "To do",
+              "due_on": "@today"
+            }
+          },
+          {
+            "key": "training-3",
+            "values": {
+              "training_name": "Reading program safeguarding, Marguerite",
+              "volunteer": "volunteer-3",
+              "kind": "Child safeguarding module",
+              "status": "To do",
+              "due_on": "@today-2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "training-4",
+            "values": {
+              "training_name": "Role shadowing, Prudence",
+              "volunteer": "volunteer-12",
+              "kind": "Role shadowing",
+              "status": "To do",
+              "due_on": "@today+5d"
+            }
+          },
+          {
+            "key": "training-5",
+            "values": {
+              "training_name": "Orientation, Dashiell",
+              "volunteer": "volunteer-4",
+              "kind": "Orientation",
+              "status": "To do",
+              "due_on": "@today+3d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "training-6",
+            "values": {
+              "training_name": "Background check form, Jun",
+              "volunteer": "volunteer-9",
+              "kind": "Background check form",
+              "status": "To do",
+              "due_on": "@today-4d"
+            }
+          },
+          {
+            "key": "training-7",
+            "values": {
+              "training_name": "Orientation, Aurelio",
+              "volunteer": "volunteer-10",
+              "kind": "Orientation",
+              "status": "Done",
+              "due_on": "@today-18d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "training-8",
+            "values": {
+              "training_name": "Safety walk-through, Theo",
+              "volunteer": "volunteer-2",
+              "kind": "Safety walk-through",
+              "status": "Done",
+              "due_on": "@today-240d"
+            }
+          },
+          {
+            "key": "training-9",
+            "values": {
+              "training_name": "Safeguarding module, Lupe",
+              "volunteer": "volunteer-5",
+              "kind": "Child safeguarding module",
+              "status": "Done",
+              "due_on": "@today-390d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "training-10",
+            "values": {
+              "training_name": "Role shadowing, Noor",
+              "volunteer": "volunteer-7",
+              "kind": "Role shadowing",
+              "status": "Done",
+              "due_on": "@today-85d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each volunteer belongs to one coordinator.",
+        "fromTable": "volunteer",
+        "fromField": "coordinator",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "volunteer_by_coordinator"
+      },
+      {
+        "describes": "Each shift belongs to one shift lead.",
+        "fromTable": "shift",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "shift_by_lead"
+      },
+      {
+        "describes": "Each sign-up belongs to one volunteer.",
+        "fromTable": "signup",
+        "fromField": "volunteer",
+        "toTable": "volunteer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "signups"
+      },
+      {
+        "describes": "Each sign-up belongs to one shift.",
+        "fromTable": "signup",
+        "fromField": "shift",
+        "toTable": "shift",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "signups"
+      },
+      {
+        "describes": "Each training belongs to one volunteer.",
+        "fromTable": "training",
+        "fromField": "volunteer",
+        "toTable": "volunteer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "trainings"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Odalys Fenwick-Ruiz",
+              "role": "Volunteer coordinator",
+              "work_email": "odalys@cedarrowalliance.net",
+              "mobile": "(206) 555-0141",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Mateus Brandvold",
+              "role": "Program manager, reading",
+              "work_email": "mateus@cedarrowalliance.net",
+              "mobile": "(206) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Hye-jin Castellanos",
+              "role": "Market manager",
+              "work_email": "hyejin@cedarrowalliance.net",
+              "mobile": "(206) 555-0143",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Rurik Oduya",
+              "role": "Tool library lead",
+              "work_email": "rurik@cedarrowalliance.net",
+              "mobile": "(206) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Volunteer application",
+        "describes": "Anyone who wants to help fills this in.",
+        "audience": "staff",
+        "table": "volunteer",
+        "fields": [
+          {
+            "fieldKey": "volunteer_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          },
+          {
+            "fieldKey": "area",
+            "ask": "Where would you like to help?"
+          },
+          {
+            "fieldKey": "start_by",
+            "ask": "When could you start?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thank you. The coordinator will be in touch within three working days."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "volunteer_approve",
+        "table": "volunteer",
+        "name": "Move to onboarding",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Onboarding"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "volunteer_active",
+        "table": "volunteer",
+        "name": "Mark active",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "shift_filled",
+        "table": "shift",
+        "name": "Mark filled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Filled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "shift_done",
+        "table": "shift",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "signup_attended",
+        "table": "signup",
+        "name": "Mark attended",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Attended"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "signup_noshow",
+        "table": "signup",
+        "name": "Mark no-show",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "No-show"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "training_done",
+        "table": "training",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_volunteer",
+        "name": "All volunteers",
+        "table": "volunteer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "volunteer_board",
+        "name": "By stage",
+        "table": "volunteer",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "volunteer_cal",
+        "name": "Calendar",
+        "table": "volunteer",
+        "kind": "calendar",
+        "dateField": "start_by",
+        "allDay": true
+      },
+      {
+        "token": "volunteer_over",
+        "name": "Overdue",
+        "table": "volunteer",
+        "kind": "grid",
+        "within": {
+          "start_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Applicant",
+            "Onboarding"
+          ]
+        }
+      },
+      {
+        "token": "volunteer_week",
+        "name": "This week",
+        "table": "volunteer",
+        "kind": "grid",
+        "within": {
+          "start_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Applicant",
+            "Onboarding"
+          ]
+        }
+      },
+      {
+        "token": "volunteer_next7",
+        "name": "Next 7 days",
+        "table": "volunteer",
+        "kind": "grid",
+        "within": {
+          "start_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Applicant",
+            "Onboarding"
+          ]
+        }
+      },
+      {
+        "token": "volunteer_mine",
+        "name": "My volunteers",
+        "table": "volunteer",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_shift",
+        "name": "All shifts",
+        "table": "shift",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shift_board",
+        "name": "By status",
+        "table": "shift",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "shift_cal",
+        "name": "Calendar",
+        "table": "shift",
+        "kind": "calendar",
+        "dateField": "shift_at",
+        "allDay": false
+      },
+      {
+        "token": "shift_today",
+        "name": "Today",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "shift_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Filled"
+          ]
+        }
+      },
+      {
+        "token": "shift_over",
+        "name": "Overdue",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "shift_at": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Filled"
+          ]
+        }
+      },
+      {
+        "token": "shift_week",
+        "name": "This week",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "shift_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Filled"
+          ]
+        }
+      },
+      {
+        "token": "shift_next7",
+        "name": "Next 7 days",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "shift_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Filled"
+          ]
+        }
+      },
+      {
+        "token": "shift_mine",
+        "name": "My shifts",
+        "table": "shift",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_signup",
+        "name": "All sign-ups",
+        "table": "signup",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "signup_board",
+        "name": "By status",
+        "table": "signup",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "signup_cal",
+        "name": "Calendar",
+        "table": "signup",
+        "kind": "calendar",
+        "dateField": "shift_day",
+        "allDay": true
+      },
+      {
+        "token": "signup_over",
+        "name": "Overdue",
+        "table": "signup",
+        "kind": "grid",
+        "within": {
+          "shift_day": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Signed up"
+        }
+      },
+      {
+        "token": "signup_week",
+        "name": "This week",
+        "table": "signup",
+        "kind": "grid",
+        "within": {
+          "shift_day": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Signed up"
+        }
+      },
+      {
+        "token": "signup_next7",
+        "name": "Next 7 days",
+        "table": "signup",
+        "kind": "grid",
+        "within": {
+          "shift_day": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Signed up"
+        }
+      },
+      {
+        "token": "signup_mine",
+        "name": "My sign-ups",
+        "table": "signup",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_training",
+        "name": "All training",
+        "table": "training",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "training_board",
+        "name": "By status",
+        "table": "training",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "training_cal",
+        "name": "Calendar",
+        "table": "training",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "training_over",
+        "name": "Overdue",
+        "table": "training",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "training_week",
+        "name": "This week",
+        "table": "training",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "training_next7",
+        "name": "Next 7 days",
+        "table": "training",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "To do"
+        }
+      },
+      {
+        "token": "training_mine",
+        "name": "My training",
+        "table": "training",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Volunteer Program Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "shift",
+          "describes": "Each time slot that needs people, with how many are needed and how many have signed up."
+        },
+        {
+          "name": "related_tables",
+          "table": "volunteer",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many shifts still need people?",
+        "whyItMatters": "The coordinator sends a reminder email every Thursday.",
+        "expect": {
+          "table": "shift",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Open"
+          },
+          "answer": 6,
+          "unit": "shifts"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open volunteers.",
+        "action": {
+          "kind": "open",
+          "surface": "volunteer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "volunteer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open shifts.",
+        "action": {
+          "kind": "open",
+          "surface": "shift_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "shift_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open sign-ups.",
+        "action": {
+          "kind": "open",
+          "surface": "signup_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "signup_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "cedarrowalliance.net"
+      ],
+      "fictionalStreets": [
+        "Marlowe Court"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "volunteer-program-desk",
+      "parent": null,
+      "title": "Volunteer Program Desk",
+      "icon": {
+        "emoji": "🙌"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the whole volunteer program here: applications, onboarding, shifts and sign-ups, and hours given. Check the Dashboard at the start of each week for short shifts and unfinished training. Press Mark attended after every shift so hours stay true. Thank people in the week they helped."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:onboarding-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:shift-day-checklist"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:recognition-and-retention"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Volunteers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone who has applied or given time, with their onboarding stage, hours and open training."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "volunteer",
+              "view": "volunteer_board"
+            },
+            "inline": true,
+            "title": "Volunteers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vol-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "vol-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "start_by"
+              },
+              {
+                "id": "vol-t",
+                "name": "All volunteers",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "vol-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "start_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Applicant",
+                    "Onboarding"
+                  ]
+                }
+              },
+              {
+                "id": "vol-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "start_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Applicant",
+                    "Onboarding"
+                  ]
+                }
+              },
+              {
+                "id": "vol-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "start_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Applicant",
+                    "Onboarding"
+                  ]
+                }
+              },
+              {
+                "id": "vol-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "vol-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shifts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each time slot that needs people, with how many are needed and how many have signed up."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shift",
+              "view": "shift_board"
+            },
+            "inline": true,
+            "title": "Shifts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "shi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "shi-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "shift_at"
+              },
+              {
+                "id": "shi-t",
+                "name": "All shifts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "shi-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "shift_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Filled"
+                  ]
+                }
+              },
+              {
+                "id": "shi-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "shift_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Filled"
+                  ]
+                }
+              },
+              {
+                "id": "shi-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "shift_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Filled"
+                  ]
+                }
+              },
+              {
+                "id": "shi-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "shift_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Filled"
+                  ]
+                }
+              },
+              {
+                "id": "shi-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "shi-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sign-ups"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who signed up for which shift, and the hours they actually gave."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "signup",
+              "view": "signup_board"
+            },
+            "inline": true,
+            "title": "Sign-ups",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sig-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sig-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "shift_day"
+              },
+              {
+                "id": "sig-t",
+                "name": "All sign-ups",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sig-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "shift_day": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Signed up"
+                }
+              },
+              {
+                "id": "sig-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "shift_day": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Signed up"
+                }
+              },
+              {
+                "id": "sig-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "shift_day": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Signed up"
+                }
+              },
+              {
+                "id": "sig-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sig-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Training"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The orientation, safety and role training each volunteer must finish before working alone."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "training",
+              "view": "training_board"
+            },
+            "inline": true,
+            "title": "Training",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tra-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tra-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tra-t",
+                "name": "All training",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tra-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "tra-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "tra-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              },
+              {
+                "id": "tra-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tra-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "volunteer-program-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The program at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "volunteer",
+                      "view": "all_volunteer"
+                    },
+                    "inline": true,
+                    "title": "Volunteers by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Volunteers by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shift",
+                      "view": "all_shift"
+                    },
+                    "inline": true,
+                    "title": "Shifts by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Shifts by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "signup",
+                      "view": "all_signup"
+                    },
+                    "inline": true,
+                    "title": "Hours given by sign-up status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Hours given by sign-up status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shift",
+                      "view": "all_shift"
+                    },
+                    "inline": true,
+                    "title": "People needed by area",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "People needed by area",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "area",
+                          "op": "sum",
+                          "field": "needed"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shifts coming up this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shift",
+              "view": "all_shift"
+            },
+            "inline": true,
+            "title": "Shifts coming up this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Shifts coming up this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "shift_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Filled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Training overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "training",
+              "view": "all_training"
+            },
+            "inline": true,
+            "title": "Training overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Training overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "To do"
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Starting in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "volunteer",
+              "view": "all_volunteer"
+            },
+            "inline": true,
+            "title": "Starting in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Starting in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "start_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Applicant",
+                    "Onboarding"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Spots left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "People needed minus people signed up or attended"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Anything above zero within three days gets a personal message, not another group email"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reliability"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Attended shifts against no-shows; Check in means more than one no-show in four shifts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call and ask if the schedule still works before taking them off shifts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Training still to do"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Training rows for that volunteer not marked done"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No one works alone with open safeguarding or safety training"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "onboarding-guide",
+      "parent": "volunteer-program-desk",
+      "title": "Onboarding a new volunteer",
+      "icon": {
+        "emoji": "🚪"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good first month decides whether someone stays for years. Keep it short, specific and warm."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week 1: welcome"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reply to the application within three working days and offer a short call."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the volunteer to Onboarding and add their training rows from the Training table."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pair them with a named buddy for the first two shifts."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week 2 to 4: practice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "They shadow a shift, then run a task with the buddy beside them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask after each shift what felt confusing. Fix the confusing thing for the next person."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When training is done and two shifts are attended, press Mark active."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Not a fit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If the role is wrong, offer another one before saying goodbye. If nothing fits, thank them and set the stage to Retired with a note."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "shift-day-checklist",
+      "parent": "volunteer-program-desk",
+      "title": "Shift day checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A shift runs well when the lead arrives first and everyone leaves knowing they mattered."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before people arrive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open the shift row and read the sign-up list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Print or open the task list and the contact sheet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set up the space, tools and sign-in sheet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When they arrive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Greet each person by name"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Brief the team on the plan and any safety points"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pair new volunteers with someone experienced"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the end"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Press Mark attended on each sign-up and type the hours given"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Press Mark no-show for anyone who did not come or call"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank everyone before they leave"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note anything that needs fixing before the next shift"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "recognition-and-retention",
+      "parent": "volunteer-program-desk",
+      "title": "Recognition and retention",
+      "icon": {
+        "emoji": "🎖️"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "People stay when they are noticed. Recognition costs little and should never be skipped."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A simple calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Within 24 hours of a first shift"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A short personal message"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shift lead"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After 10 shifts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A handwritten card"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coordinator"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Each quarter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A thank-you note listing hours given"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coordinator"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Each year"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An appreciation event with the whole team"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Program manager"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Spotting people who drift"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open the Volunteers table and sort by Reliability. Anyone showing Check in gets a call this week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look for active volunteers with no shifts in the last 60 days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask what would make the next month easier, then act on the answer."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

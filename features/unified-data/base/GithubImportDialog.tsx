@@ -5,6 +5,7 @@
 // The repositories come from the person's OWN GitHub connection (no token is typed here). With no connection the dialog says so in a
 // sentence and offers the connect action. Picking one brings its issues in; "Sync now" on the table keeps it current.
 
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -16,7 +17,12 @@ interface Repo { full_name: string; visibility: string | null }
 interface RepoList { connected: boolean; remedy: string | null; repositories: Repo[] }
 interface Imported { repository: string; table_id: string | null; issues: number; notices: string[] }
 
+// The body mounts only while the dialog is open, so every open starts from clean state (no reset effect needed).
 export function GithubImportDialog({ open, onClose, organizationId }: { open: boolean; onClose: () => void; organizationId: string }) {
+  return open ? <GithubImportBody open={open} onClose={onClose} organizationId={organizationId} /> : null;
+}
+
+function GithubImportBody({ open, onClose, organizationId }: { open: boolean; onClose: () => void; organizationId: string }) {
   const [list, setList] = useState<RepoList | null>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -29,7 +35,13 @@ export function GithubImportDialog({ open, onClose, organizationId }: { open: bo
       setList(data); setProblem(null);
     } catch (e) { setProblem(e instanceof Error ? e.message : "GitHub did not answer."); }
   }, [organizationId]);
-  useEffect(() => { if (open) { setList(null); setDone(null); setProblem(null); setQuery(""); void load(""); } }, [open, load]);
+  useEffect(() => {
+    let live = true;
+    postJson<RepoList>("/github-sync/repositories", { query: null }, { organizationId })
+      .then(({ data }) => { if (live) setList(data); })
+      .catch((e: unknown) => { if (live) setProblem(e instanceof Error ? e.message : "GitHub did not answer."); });
+    return () => { live = false; };
+  }, [organizationId]);
 
   const bring = async (repo: string) => {
     setBusy(repo); setProblem(null);
@@ -78,7 +90,7 @@ export function GithubImportDialog({ open, onClose, organizationId }: { open: bo
             </ul>
           </div>
         ) : null}
-        {problem ? <p className="text-xs text-destructive" role="alert">{problem}</p> : null}
+        {problem ? <ErrorNotice message={problem} size="inline" /> : null}
       </DialogContent>
     </Dialog>
   );

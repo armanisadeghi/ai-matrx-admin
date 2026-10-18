@@ -1,0 +1,3575 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0554",
+  "version": 1,
+  "title": "Community Food Bank Desk",
+  "description": "Donations in, stock on hand, distribution days and households served.",
+  "forWho": "Food banks and neighborhood food pantries",
+  "icon": {
+    "emoji": "🥫"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "nonprofit",
+  "tags": [
+    "food bank",
+    "pantry",
+    "inventory",
+    "distribution"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-community-food-bank-desk",
+    "catalogueId": "SP0554",
+    "useCase": "Benedikt Ngata-Forsyth runs operations for a neighborhood food bank and uses this to see what is running low, what expires soon and how many households each distribution served.",
+    "industry": "nonprofit_community",
+    "vertical": "Community food bank",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Eastbank Neighbors Food Pantry",
+      "describes": "A volunteer-run food pantry serving about 300 households a month with two weekly distribution days and a Friday fresh produce table.",
+      "address": {
+        "line1": "58 Hawthorne Row",
+        "city": "Milwaukee",
+        "region": "WI",
+        "postalCode": "53202",
+        "country": "US"
+      },
+      "phone": "(414) 555-0128",
+      "website": "eastbankpantry.net",
+      "email": "info@eastbankpantry.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-community-food-bank-desk",
+    "tables": [
+      {
+        "token": "stock",
+        "name": "Stock",
+        "labelSingular": "Stock line",
+        "labelPlural": "Stock lines",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "item_name",
+        "describes": "Every kind of food and supply on the shelves, with how much is left and when it expires.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Stock item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "choices": [
+              "Canned vegetables",
+              "Canned protein",
+              "Grains and pasta",
+              "Breakfast",
+              "Produce",
+              "Dairy and eggs",
+              "Frozen",
+              "Baby and hygiene"
+            ],
+            "choiceColors": {
+              "Canned vegetables": "slate",
+              "Canned protein": "blue",
+              "Grains and pasta": "amber",
+              "Breakfast": "violet",
+              "Produce": "teal",
+              "Dairy and eggs": "green",
+              "Frozen": "orange",
+              "Baby and hygiene": "pink"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "level",
+            "label": "Level",
+            "parityType": "status",
+            "choices": [
+              "Well stocked",
+              "Low",
+              "Out",
+              "Discontinued"
+            ],
+            "choiceColors": {
+              "Well stocked": "slate",
+              "Low": "blue",
+              "Out": "amber",
+              "Discontinued": "violet"
+            },
+            "required": true,
+            "default": "Well stocked",
+            "statusGroups": {
+              "Well stocked": "todo",
+              "Low": "in_progress",
+              "Out": "in_progress",
+              "Discontinued": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "Pounds on hand",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "par",
+            "label": "Pounds we want on hand",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "best_by",
+            "label": "Soonest best-by date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shelf",
+            "label": "Shelf",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "received_lb",
+            "label": "Pounds received (all time)",
+            "parityType": "rollup",
+            "via": "donations",
+            "pick": "pounds",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Received"
+            }
+          },
+          {
+            "key": "gap",
+            "label": "Pounds below target",
+            "parityType": "formula",
+            "formula": "MAX(0, {Pounds we want on hand} - {Pounds on hand})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_restocked",
+            "label": "Mark well stocked",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "stock_restocked"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_donation",
+            "label": "Log a donation",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "donation",
+              "template": "New donation",
+              "prefill": {
+                "stock": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New stock line",
+            "values": {
+              "item_name": "New stock line",
+              "level": "Well stocked"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Handling"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Storage rules, rotation and any allergen notes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Usual sources and how often it arrives."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "stock-1",
+            "values": {
+              "item_name": "Canned green beans",
+              "category": "Canned vegetables",
+              "level": "Well stocked",
+              "on_hand": 620,
+              "par": 400,
+              "best_by": "@today+300d",
+              "shelf": "A3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "stock-2",
+            "values": {
+              "item_name": "Canned tuna",
+              "category": "Canned protein",
+              "level": "Low",
+              "on_hand": 85,
+              "par": 300,
+              "best_by": "@today+2d",
+              "shelf": "B1"
+            }
+          },
+          {
+            "key": "stock-3",
+            "values": {
+              "item_name": "Pasta, dry",
+              "category": "Grains and pasta",
+              "level": "Well stocked",
+              "on_hand": 900,
+              "par": 500,
+              "best_by": "@today+260d",
+              "shelf": "C2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "stock-4",
+            "values": {
+              "item_name": "Peanut butter",
+              "category": "Canned protein",
+              "level": "Low",
+              "on_hand": 110,
+              "par": 250,
+              "best_by": "@today+5d",
+              "shelf": "B2"
+            }
+          },
+          {
+            "key": "stock-5",
+            "values": {
+              "item_name": "Oatmeal",
+              "category": "Breakfast",
+              "level": "Out",
+              "on_hand": 0,
+              "par": 200,
+              "best_by": "@today",
+              "shelf": "C4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "stock-6",
+            "values": {
+              "item_name": "Fresh apples",
+              "category": "Produce",
+              "level": "Well stocked",
+              "on_hand": 340,
+              "par": 200,
+              "best_by": "@today+6d",
+              "shelf": "Cooler 1"
+            }
+          },
+          {
+            "key": "stock-7",
+            "values": {
+              "item_name": "Eggs, dozen",
+              "category": "Dairy and eggs",
+              "level": "Low",
+              "on_hand": 40,
+              "par": 150,
+              "best_by": "@today-1d",
+              "shelf": "Cooler 2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "stock-8",
+            "values": {
+              "item_name": "Frozen chicken thighs",
+              "category": "Frozen",
+              "level": "Well stocked",
+              "on_hand": 520,
+              "par": 300,
+              "best_by": "@today+90d",
+              "shelf": "Freezer 1"
+            }
+          },
+          {
+            "key": "stock-9",
+            "values": {
+              "item_name": "Diapers, size 4",
+              "category": "Baby and hygiene",
+              "level": "Low",
+              "on_hand": 30,
+              "par": 120,
+              "best_by": "@today+400d",
+              "shelf": "D1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "stock-10",
+            "values": {
+              "item_name": "Rice, 5 lb bags",
+              "category": "Grains and pasta",
+              "level": "Well stocked",
+              "on_hand": 700,
+              "par": 400,
+              "best_by": "@today+500d",
+              "shelf": "C1"
+            }
+          },
+          {
+            "key": "stock-11",
+            "values": {
+              "item_name": "Canned tomatoes",
+              "category": "Canned vegetables",
+              "level": "Well stocked",
+              "on_hand": 450,
+              "par": 300,
+              "best_by": "@today+220d",
+              "shelf": "A4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "stock-12",
+            "values": {
+              "item_name": "Cereal, family size",
+              "category": "Breakfast",
+              "level": "Low",
+              "on_hand": 95,
+              "par": 250,
+              "best_by": "@today+3d",
+              "shelf": "C3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "donation",
+        "name": "Donations",
+        "labelSingular": "Donation",
+        "labelPlural": "Donations",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "donation_name",
+        "describes": "Food and supplies arriving from grocers, drives, farms and neighbors.",
+        "subject": "thing",
+        "independentOf": {
+          "stock": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "received_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "expected_on",
+            "received_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "donation_name",
+            "label": "Donation",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stock",
+            "label": "Stock line",
+            "parityType": "relation",
+            "relationTarget": "stock",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "choices": [
+              "Grocery store",
+              "Food drive",
+              "Farm",
+              "Wholesale partner",
+              "Neighbor",
+              "Regional food bank"
+            ],
+            "choiceColors": {
+              "Grocery store": "slate",
+              "Food drive": "blue",
+              "Farm": "amber",
+              "Wholesale partner": "violet",
+              "Neighbor": "teal",
+              "Regional food bank": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Expected",
+              "Received",
+              "Turned away"
+            ],
+            "choiceColors": {
+              "Expected": "slate",
+              "Received": "blue",
+              "Turned away": "amber"
+            },
+            "required": true,
+            "default": "Expected",
+            "statusGroups": {
+              "Expected": "todo",
+              "Received": "done",
+              "Turned away": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expected_on",
+            "label": "Expected on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pounds",
+            "label": "Pounds",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "inspected",
+            "label": "Inspected and dated",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_received",
+            "label": "Mark received",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "donation_received"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New donation",
+            "values": {
+              "donation_name": "New donation",
+              "status": "Expected"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Receiving checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Weigh and record pounds"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Check dates and packaging"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sort into stock lines"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Thank the donor"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything damaged, rejected or promised for next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "donation-1",
+            "values": {
+              "donation_name": "Tuesday grocer pickup",
+              "stock": "stock-1",
+              "source": "Grocery store",
+              "status": "Expected",
+              "expected_on": "@today",
+              "pounds": 300,
+              "inspected": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donation-2",
+            "values": {
+              "donation_name": "Apple orchard drop",
+              "stock": "stock-6",
+              "source": "Farm",
+              "status": "Expected",
+              "expected_on": "@today+2d",
+              "pounds": 500,
+              "inspected": false
+            }
+          },
+          {
+            "key": "donation-3",
+            "values": {
+              "donation_name": "School canned-food drive",
+              "stock": "stock-2",
+              "source": "Food drive",
+              "status": "Expected",
+              "expected_on": "@today+4d",
+              "pounds": 260,
+              "inspected": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donation-4",
+            "values": {
+              "donation_name": "Regional food bank pallet, pasta",
+              "stock": "stock-3",
+              "source": "Regional food bank",
+              "status": "Expected",
+              "expected_on": "@today-1d",
+              "pounds": 1200,
+              "inspected": false
+            }
+          },
+          {
+            "key": "donation-5",
+            "values": {
+              "donation_name": "Church peanut butter collection",
+              "stock": "stock-4",
+              "source": "Food drive",
+              "status": "Expected",
+              "expected_on": "@today+6d",
+              "pounds": 180,
+              "inspected": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donation-6",
+            "values": {
+              "donation_name": "Egg farm weekly delivery",
+              "stock": "stock-7",
+              "source": "Farm",
+              "status": "Expected",
+              "expected_on": "@today+1d",
+              "pounds": 120,
+              "inspected": false
+            }
+          },
+          {
+            "key": "donation-7",
+            "values": {
+              "donation_name": "Grocer pickup, last Tuesday",
+              "stock": "stock-1",
+              "source": "Grocery store",
+              "status": "Received",
+              "received_on": "@today-7d",
+              "pounds": 310,
+              "inspected": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donation-8",
+            "values": {
+              "donation_name": "Neighbor canned goods",
+              "stock": "stock-2",
+              "source": "Neighbor",
+              "status": "Received",
+              "received_on": "@today-3d",
+              "pounds": 45,
+              "inspected": true
+            }
+          },
+          {
+            "key": "donation-9",
+            "values": {
+              "donation_name": "Wholesale rice donation",
+              "stock": "stock-10",
+              "source": "Wholesale partner",
+              "status": "Received",
+              "received_on": "@today-12d",
+              "pounds": 800,
+              "inspected": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "donation-10",
+            "values": {
+              "donation_name": "Frozen chicken from partner",
+              "stock": "stock-8",
+              "source": "Wholesale partner",
+              "status": "Received",
+              "received_on": "@today-9d",
+              "pounds": 600,
+              "inspected": true
+            }
+          },
+          {
+            "key": "donation-11",
+            "values": {
+              "donation_name": "Damaged cereal pallet",
+              "stock": "stock-12",
+              "source": "Regional food bank",
+              "status": "Turned away",
+              "received_on": "@today-5d",
+              "pounds": 0,
+              "inspected": true,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "distribution",
+        "name": "Distribution days",
+        "labelSingular": "Distribution day",
+        "labelPlural": "Distribution days",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "dist_name",
+        "describes": "Each day the doors open: where, how many volunteers, how many households and how many pounds went out.",
+        "subject": "thing",
+        "independentOf": {
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "dist_name",
+            "label": "Distribution day",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Open now",
+              "Done",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Open now": "blue",
+              "Done": "amber",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Open now": "in_progress",
+              "Done": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "site",
+            "label": "Site",
+            "parityType": "select",
+            "choices": [
+              "Main hall",
+              "Church lot drive-through",
+              "Senior apartments",
+              "Mobile produce table"
+            ],
+            "choiceColors": {
+              "Main hall": "slate",
+              "Church lot drive-through": "blue",
+              "Senior apartments": "amber",
+              "Mobile produce table": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "dist_at",
+            "label": "Doors open",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "volunteers",
+            "label": "Volunteers scheduled",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "households",
+            "label": "Households served",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pounds_out",
+            "label": "Pounds given out",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "per_house",
+            "label": "Pounds per household",
+            "parityType": "formula",
+            "formula": "IF({Households served} > 0, ROUND({Pounds given out} / {Households served}, 1), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead",
+            "label": "Day lead",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_open",
+            "label": "Open doors",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "distribution_open"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "distribution_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New distribution day",
+            "values": {
+              "dist_name": "New distribution day",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tables and signs"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cooler check"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Line plan"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Greeters briefed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Counts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Households and pounds, entered before volunteers leave."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "distribution-1",
+            "values": {
+              "dist_name": "Tuesday evening distribution",
+              "status": "Open now",
+              "site": "Main hall",
+              "dist_at": "@today 16:30",
+              "volunteers": 14,
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "distribution-2",
+            "values": {
+              "dist_name": "Thursday morning distribution",
+              "status": "Planned",
+              "site": "Main hall",
+              "dist_at": "@today+2d 09:00",
+              "volunteers": 12,
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "distribution-3",
+            "values": {
+              "dist_name": "Friday produce table",
+              "status": "Planned",
+              "site": "Mobile produce table",
+              "dist_at": "@today+3d 12:00",
+              "volunteers": 6,
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "distribution-4",
+            "values": {
+              "dist_name": "Senior apartments delivery",
+              "status": "Planned",
+              "site": "Senior apartments",
+              "dist_at": "@today+5d 10:00",
+              "volunteers": 5,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "distribution-5",
+            "values": {
+              "dist_name": "Saturday drive-through",
+              "status": "Planned",
+              "site": "Church lot drive-through",
+              "dist_at": "@today+4d 10:00",
+              "volunteers": 16,
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "distribution-6",
+            "values": {
+              "dist_name": "Tuesday evening distribution, prior",
+              "status": "Done",
+              "site": "Main hall",
+              "dist_at": "@today-7d 16:30",
+              "volunteers": 13,
+              "households": 124,
+              "pounds_out": 3010,
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "distribution-7",
+            "values": {
+              "dist_name": "Thursday morning distribution, prior",
+              "status": "Done",
+              "site": "Main hall",
+              "dist_at": "@today-5d 09:00",
+              "volunteers": 11,
+              "households": 98,
+              "pounds_out": 2420,
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "distribution-8",
+            "values": {
+              "dist_name": "Friday produce table, prior",
+              "status": "Done",
+              "site": "Mobile produce table",
+              "dist_at": "@today-4d 12:00",
+              "volunteers": 6,
+              "households": 61,
+              "pounds_out": 780,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "distribution-9",
+            "values": {
+              "dist_name": "Weather cancellation",
+              "status": "Cancelled",
+              "site": "Church lot drive-through",
+              "dist_at": "@today-1d 10:00",
+              "volunteers": 0,
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "distribution-10",
+            "values": {
+              "dist_name": "Senior apartments delivery, rescheduled",
+              "status": "Planned",
+              "site": "Senior apartments",
+              "dist_at": "@today-2d 10:00",
+              "volunteers": 4,
+              "lead": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "household",
+        "name": "Households",
+        "labelSingular": "Household",
+        "labelPlural": "Households",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "house_name",
+        "describes": "Registered households with size and visit dates, kept minimal and respectful.",
+        "subject": "thing",
+        "statusImplies": [],
+        "before": [
+          [
+            "last_visit",
+            "next_visit"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "house_name",
+            "label": "Household",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Registered",
+              "Active",
+              "Paused",
+              "Moved"
+            ],
+            "choiceColors": {
+              "Registered": "slate",
+              "Active": "blue",
+              "Paused": "amber",
+              "Moved": "violet"
+            },
+            "required": true,
+            "default": "Registered",
+            "statusGroups": {
+              "Registered": "in_progress",
+              "Active": "in_progress",
+              "Paused": "in_progress",
+              "Moved": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "people",
+            "label": "People",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "zone",
+            "label": "Neighborhood",
+            "parityType": "select",
+            "choices": [
+              "Eastbank",
+              "Riverside",
+              "Hawthorne",
+              "Old Mill",
+              "Outside service area"
+            ],
+            "choiceColors": {
+              "Eastbank": "slate",
+              "Riverside": "blue",
+              "Hawthorne": "amber",
+              "Old Mill": "violet",
+              "Outside service area": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_visit",
+            "label": "Last visit",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_visit",
+            "label": "Next eligible visit",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "needs_delivery",
+            "label": "Needs delivery",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_active",
+            "label": "Mark active",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "household_active"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New household",
+            "values": {
+              "house_name": "New household",
+              "status": "Registered"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Registration"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Household size and any dietary needs the household chose to share."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Only what helps us serve them: pickup help, language, delivery access."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "household-1",
+            "values": {
+              "house_name": "Household 1041",
+              "status": "Active",
+              "people": 4,
+              "zone": "Eastbank",
+              "last_visit": "@today-7d",
+              "next_visit": "@today",
+              "needs_delivery": false,
+              "phone": "(414) 555-0141",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-2",
+            "values": {
+              "house_name": "Household 1042",
+              "status": "Active",
+              "people": 2,
+              "zone": "Riverside",
+              "last_visit": "@today-14d",
+              "next_visit": "@today+2d",
+              "needs_delivery": false,
+              "phone": "(414) 555-0142"
+            }
+          },
+          {
+            "key": "household-3",
+            "values": {
+              "house_name": "Household 1043",
+              "status": "Registered",
+              "people": 5,
+              "zone": "Hawthorne",
+              "next_visit": "@today",
+              "needs_delivery": false,
+              "phone": "(414) 555-0143",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-4",
+            "values": {
+              "house_name": "Household 1044",
+              "status": "Active",
+              "people": 1,
+              "zone": "Old Mill",
+              "last_visit": "@today-3d",
+              "next_visit": "@today+4d",
+              "needs_delivery": true,
+              "phone": "(414) 555-0144"
+            }
+          },
+          {
+            "key": "household-5",
+            "values": {
+              "house_name": "Household 1045",
+              "status": "Active",
+              "people": 3,
+              "zone": "Eastbank",
+              "last_visit": "@today-21d",
+              "next_visit": "@today-1d",
+              "needs_delivery": false,
+              "phone": "(414) 555-0145",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-6",
+            "values": {
+              "house_name": "Household 1046",
+              "status": "Paused",
+              "people": 6,
+              "zone": "Riverside",
+              "last_visit": "@today-60d",
+              "next_visit": "@today+30d",
+              "needs_delivery": false,
+              "phone": "(414) 555-0146"
+            }
+          },
+          {
+            "key": "household-7",
+            "values": {
+              "house_name": "Household 1047",
+              "status": "Registered",
+              "people": 2,
+              "zone": "Hawthorne",
+              "next_visit": "@today+3d",
+              "needs_delivery": true,
+              "phone": "(414) 555-0147",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-8",
+            "values": {
+              "house_name": "Household 1048",
+              "status": "Active",
+              "people": 4,
+              "zone": "Eastbank",
+              "last_visit": "@today-6d",
+              "next_visit": "@today+1d",
+              "needs_delivery": false,
+              "phone": "(414) 555-0148"
+            }
+          },
+          {
+            "key": "household-9",
+            "values": {
+              "house_name": "Household 1049",
+              "status": "Moved",
+              "people": 3,
+              "zone": "Outside service area",
+              "last_visit": "@today-200d",
+              "needs_delivery": false,
+              "phone": "(414) 555-0149",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-10",
+            "values": {
+              "house_name": "Household 1050",
+              "status": "Active",
+              "people": 2,
+              "zone": "Old Mill",
+              "last_visit": "@today-10d",
+              "next_visit": "@today+5d",
+              "needs_delivery": false,
+              "phone": "(414) 555-0150"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each donation belongs to one stock line.",
+        "fromTable": "donation",
+        "fromField": "stock",
+        "toTable": "stock",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "donations"
+      },
+      {
+        "describes": "Each distribution day belongs to one day lead.",
+        "fromTable": "distribution",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "distribution_by_lead"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Benedikt Ngata-Forsyth",
+              "role": "Operations lead",
+              "work_email": "benedikt@eastbankpantry.net",
+              "mobile": "(414) 555-0141",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Adaeze Lindqvist",
+              "role": "Warehouse coordinator",
+              "work_email": "adaeze@eastbankpantry.net",
+              "mobile": "(414) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Corwin Estrada-Hale",
+              "role": "Distribution day lead",
+              "work_email": "corwin@eastbankpantry.net",
+              "mobile": "(414) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Mirela Petrov",
+              "role": "Donor relations",
+              "work_email": "mirela@eastbankpantry.net",
+              "mobile": "(414) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Donation offer",
+        "describes": "Neighbors, stores and drives offer food here.",
+        "audience": "staff",
+        "table": "donation",
+        "fields": [
+          {
+            "fieldKey": "donation_name",
+            "ask": "What are you offering?",
+            "required": true
+          },
+          {
+            "fieldKey": "source",
+            "ask": "Who is offering it?"
+          },
+          {
+            "fieldKey": "expected_on",
+            "ask": "When could you bring it?"
+          },
+          {
+            "fieldKey": "pounds",
+            "ask": "About how many pounds?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thank you. The warehouse coordinator will confirm a time."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "stock_restocked",
+        "table": "stock",
+        "name": "Mark well stocked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "level",
+            "set": "value",
+            "value": "Well stocked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "donation_received",
+        "table": "donation",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "distribution_open",
+        "table": "distribution",
+        "name": "Open doors",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Open now"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "distribution_done",
+        "table": "distribution",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "household_active",
+        "table": "household",
+        "name": "Mark active",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_stock",
+        "name": "All stock lines",
+        "table": "stock",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "stock_board",
+        "name": "By level",
+        "table": "stock",
+        "kind": "kanban",
+        "groupBy": "level"
+      },
+      {
+        "token": "stock_cal",
+        "name": "Calendar",
+        "table": "stock",
+        "kind": "calendar",
+        "dateField": "best_by",
+        "allDay": true
+      },
+      {
+        "token": "stock_over",
+        "name": "Overdue",
+        "table": "stock",
+        "kind": "grid",
+        "within": {
+          "best_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "level": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "stock_week",
+        "name": "This week",
+        "table": "stock",
+        "kind": "grid",
+        "within": {
+          "best_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "level": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "stock_next7",
+        "name": "Next 7 days",
+        "table": "stock",
+        "kind": "grid",
+        "within": {
+          "best_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "level": [
+            "Low",
+            "Out"
+          ]
+        }
+      },
+      {
+        "token": "stock_mine",
+        "name": "My stock lines",
+        "table": "stock",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_donation",
+        "name": "All donations",
+        "table": "donation",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "donation_board",
+        "name": "By status",
+        "table": "donation",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "donation_cal",
+        "name": "Calendar",
+        "table": "donation",
+        "kind": "calendar",
+        "dateField": "expected_on",
+        "allDay": true
+      },
+      {
+        "token": "donation_over",
+        "name": "Overdue",
+        "table": "donation",
+        "kind": "grid",
+        "within": {
+          "expected_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Expected"
+        }
+      },
+      {
+        "token": "donation_week",
+        "name": "This week",
+        "table": "donation",
+        "kind": "grid",
+        "within": {
+          "expected_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Expected"
+        }
+      },
+      {
+        "token": "donation_next7",
+        "name": "Next 7 days",
+        "table": "donation",
+        "kind": "grid",
+        "within": {
+          "expected_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Expected"
+        }
+      },
+      {
+        "token": "donation_mine",
+        "name": "My donations",
+        "table": "donation",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_distribution",
+        "name": "All distribution days",
+        "table": "distribution",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "distribution_board",
+        "name": "By status",
+        "table": "distribution",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "distribution_cal",
+        "name": "Calendar",
+        "table": "distribution",
+        "kind": "calendar",
+        "dateField": "dist_at",
+        "allDay": false
+      },
+      {
+        "token": "distribution_today",
+        "name": "Today",
+        "table": "distribution",
+        "kind": "grid",
+        "within": {
+          "dist_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Open now"
+          ]
+        }
+      },
+      {
+        "token": "distribution_over",
+        "name": "Overdue",
+        "table": "distribution",
+        "kind": "grid",
+        "within": {
+          "dist_at": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Open now"
+          ]
+        }
+      },
+      {
+        "token": "distribution_week",
+        "name": "This week",
+        "table": "distribution",
+        "kind": "grid",
+        "within": {
+          "dist_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Open now"
+          ]
+        }
+      },
+      {
+        "token": "distribution_next7",
+        "name": "Next 7 days",
+        "table": "distribution",
+        "kind": "grid",
+        "within": {
+          "dist_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Open now"
+          ]
+        }
+      },
+      {
+        "token": "distribution_mine",
+        "name": "My distribution days",
+        "table": "distribution",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_household",
+        "name": "All households",
+        "table": "household",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "household_board",
+        "name": "By status",
+        "table": "household",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "household_cal",
+        "name": "Calendar",
+        "table": "household",
+        "kind": "calendar",
+        "dateField": "next_visit",
+        "allDay": true
+      },
+      {
+        "token": "household_over",
+        "name": "Overdue",
+        "table": "household",
+        "kind": "grid",
+        "within": {
+          "next_visit": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Registered",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "household_week",
+        "name": "This week",
+        "table": "household",
+        "kind": "grid",
+        "within": {
+          "next_visit": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Registered",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "household_next7",
+        "name": "Next 7 days",
+        "table": "household",
+        "kind": "grid",
+        "within": {
+          "next_visit": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Registered",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "household_mine",
+        "name": "My households",
+        "table": "household",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Community Food Bank Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "stock",
+          "describes": "Every kind of food and supply on the shelves, with how much is left and when it expires."
+        },
+        {
+          "name": "related_tables",
+          "table": "donation",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many stock lines are running low?",
+        "whyItMatters": "The warehouse coordinator orders and asks donors on Mondays.",
+        "expect": {
+          "table": "stock",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "level": "Low"
+          },
+          "answer": 5,
+          "unit": "stock lines"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open stock lines.",
+        "action": {
+          "kind": "open",
+          "surface": "stock_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "stock_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open donations.",
+        "action": {
+          "kind": "open",
+          "surface": "donation_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "donation_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open distribution days.",
+        "action": {
+          "kind": "open",
+          "surface": "distribution_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "distribution_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "eastbankpantry.net"
+      ],
+      "fictionalStreets": [
+        "Hawthorne Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "community-food-bank-desk",
+      "parent": null,
+      "title": "Community Food Bank Desk",
+      "icon": {
+        "emoji": "🥫"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The pantry's week in one place: what is coming in, what is on the shelves, which distribution days are planned and which households are due. Start with the Dashboard each Monday. Weigh and record every donation the day it arrives, and fill in counts before volunteers leave a distribution day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:receiving-donations"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:distribution-day-runbook"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:food-safety-basics"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every kind of food and supply on the shelves, with how much is left and when it expires."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stock",
+              "view": "stock_board"
+            },
+            "inline": true,
+            "title": "Stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sto-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "level"
+              },
+              {
+                "id": "sto-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "best_by"
+              },
+              {
+                "id": "sto-t",
+                "name": "All stock lines",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sto-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "best_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "level": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "sto-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "best_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "level": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "sto-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "best_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "level": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              },
+              {
+                "id": "sto-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sto-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Donations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Food and supplies arriving from grocers, drives, farms and neighbors."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "donation",
+              "view": "donation_board"
+            },
+            "inline": true,
+            "title": "Donations",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "don-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "don-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expected_on"
+              },
+              {
+                "id": "don-t",
+                "name": "All donations",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "don-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expected_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Expected"
+                }
+              },
+              {
+                "id": "don-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expected_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Expected"
+                }
+              },
+              {
+                "id": "don-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expected_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Expected"
+                }
+              },
+              {
+                "id": "don-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "don-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Distribution days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each day the doors open: where, how many volunteers, how many households and how many pounds went out."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "distribution",
+              "view": "distribution_board"
+            },
+            "inline": true,
+            "title": "Distribution days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dis-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "dis-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "dist_at"
+              },
+              {
+                "id": "dis-t",
+                "name": "All distribution days",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "dis-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "dist_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Open now"
+                  ]
+                }
+              },
+              {
+                "id": "dis-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "dist_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Open now"
+                  ]
+                }
+              },
+              {
+                "id": "dis-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "dist_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Open now"
+                  ]
+                }
+              },
+              {
+                "id": "dis-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "dist_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Open now"
+                  ]
+                }
+              },
+              {
+                "id": "dis-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "dis-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Households"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Registered households with size and visit dates, kept minimal and respectful."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "household",
+              "view": "household_board"
+            },
+            "inline": true,
+            "title": "Households",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "hou-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "hou-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_visit"
+              },
+              {
+                "id": "hou-t",
+                "name": "All households",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "hou-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_visit": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Registered",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "hou-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_visit": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Registered",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "hou-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_visit": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Registered",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "hou-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "hou-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "community-food-bank-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The pantry at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stock",
+                      "view": "all_stock"
+                    },
+                    "inline": true,
+                    "title": "Stock lines by level",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Stock lines by level",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "level",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stock",
+                      "view": "all_stock"
+                    },
+                    "inline": true,
+                    "title": "Pounds on hand by category",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Pounds on hand by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "on_hand"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "distribution",
+                      "view": "all_distribution"
+                    },
+                    "inline": true,
+                    "title": "Households served by site",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Households served by site",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "site",
+                          "op": "sum",
+                          "field": "households"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "donation",
+                      "view": "all_donation"
+                    },
+                    "inline": true,
+                    "title": "Donations by source",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Donations by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stock that needs ordering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stock",
+              "view": "all_stock"
+            },
+            "inline": true,
+            "title": "Stock that needs ordering",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Stock that needs ordering",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "level": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Best-by dates in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stock",
+              "view": "all_stock"
+            },
+            "inline": true,
+            "title": "Best-by dates in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Best-by dates in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "best_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Distribution days this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "distribution",
+              "view": "all_distribution"
+            },
+            "inline": true,
+            "title": "Distribution days this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Distribution days this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "dist_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Open now"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pounds below target"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pounds we want minus pounds on hand, never below zero"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Add it to the order list; call donors for the biggest gaps"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pounds per household"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pounds given out divided by households served"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "If it falls below last month, check stock before the next day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Soonest best-by date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The nearest date among what is on the shelf"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Move it to the front and offer it first"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "receiving-donations",
+      "parent": "community-food-bank-desk",
+      "title": "Receiving donations",
+      "icon": {
+        "emoji": "📦"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every pound that enters the building is weighed, dated and recorded. That one habit keeps shelves honest and donors thanked."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the door"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Weigh the delivery and open the Donations table. Find the expected row or add a new one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check dates, dented cans and cold-chain items. Set aside anything unsafe and write why in the notes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link the donation to the stock line it belongs on, or add a new stock line."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark received. Then update Pounds on hand on the stock line."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Afterwards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thank the donor the same week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rotate older stock to the front of the shelf."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep a tally of anything turned away so you can explain why."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "distribution-day-runbook",
+      "parent": "community-food-bank-desk",
+      "title": "Distribution day runbook",
+      "icon": {
+        "emoji": "🧺"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Distribution day is where everything the team has done meets the neighbors it was done for. The goal is a calm line and a dignified experience."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before doors open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open the distribution row and press Open doors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the cooler temperature and write it down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set up tables from fresh to dry, so cold items go last"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Brief greeters: friendly, no questions about why someone is here"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "While open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check each household in using its number, not its name, where possible."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer choice where you can: a table with options beats a pre-packed box."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep a clear path for people using wheelchairs and strollers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Enter households served and pounds given out"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update stock on hand for the big items"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note what ran out first"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank every volunteer by name"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "food-safety-basics",
+      "parent": "community-food-bank-desk",
+      "title": "Food safety basics",
+      "icon": {
+        "emoji": "🧼"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Safe food is not optional. Follow your local health rules; this page is a working reminder, not a replacement for them."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it cold, keep it clean"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check cooler and freezer temperatures at open and close and write them down."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wash hands before handling food and after handling boxes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never give out food past a date your local rules say must be discarded."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When in doubt"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dented or swollen can"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Set aside and discard; note it on the donation"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thawed frozen food"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Do not refreeze; follow local guidance or discard"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Missing date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask the donor; if unknown, do not distribute"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Allergen question"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Show the label; do not guess"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

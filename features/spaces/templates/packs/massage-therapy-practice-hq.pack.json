@@ -1,0 +1,3043 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0515",
+  "version": 1,
+  "title": "Massage Therapy Practice HQ",
+  "description": "Book sessions by therapist and room, keep session notes, memberships and payments.",
+  "forWho": "Massage therapists and small bodywork practices",
+  "icon": {
+    "emoji": "💆"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "wellness",
+  "tags": [
+    "massage",
+    "sessions",
+    "memberships",
+    "notes"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-massage-therapy-practice-hq",
+    "catalogueId": "SP0515",
+    "useCase": "The owner of Hearthstone Massage Therapy uses this to see what is booked, what is owed and what needs ordering.",
+    "industry": "fitness_beauty_wellness",
+    "vertical": "Massage therapy practice",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Hearthstone Massage Therapy",
+      "describes": "A three-room massage therapy practice with four therapists, monthly memberships, 60 and 90 minute sessions and a steady base of repeat clients.",
+      "address": {
+        "line1": "71 Wicker Lane",
+        "city": "Burlington",
+        "region": "VT",
+        "postalCode": "05401",
+        "country": "US"
+      },
+      "phone": "(802) 555-0192",
+      "website": "hearthstonemassage.net",
+      "email": "info@hearthstonemassage.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-massage-therapy-practice-hq",
+    "tables": [
+      {
+        "token": "plan",
+        "name": "Session types and memberships",
+        "labelSingular": "Session type",
+        "labelPlural": "Session types and memberships",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "ticket",
+        "titleField": "plan_name",
+        "describes": "The sessions you offer and the monthly membership, with prices and time.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "plan_name",
+            "label": "Session type",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Session",
+              "Membership",
+              "Corporate"
+            ],
+            "choiceColors": {
+              "Session": "slate",
+              "Membership": "blue",
+              "Corporate": "amber"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Per visit",
+              "Monthly"
+            ],
+            "choiceColors": {
+              "Per visit": "slate",
+              "Monthly": "blue"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "valid_days",
+            "label": "Valid for (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 730
+              }
+            ]
+          },
+          {
+            "key": "includes",
+            "label": "Includes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "active_n",
+            "label": "Active clients",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Active"
+            }
+          },
+          {
+            "key": "cancelled_n",
+            "label": "Cancelled",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "members",
+            "pick": "client_name",
+            "agg": "count",
+            "filter": {
+              "client_status": "Cancelled"
+            }
+          },
+          {
+            "key": "churn",
+            "label": "Churn (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Active clients} + {Cancelled} > 0, ROUND({Cancelled} / ({Active clients} + {Cancelled}) * 100, 0), 0)"
+          },
+          {
+            "key": "recurring",
+            "label": "Recurring value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Active clients} * {Price (USD)}"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Session type",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is included"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Time, setup and aftercare."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Booking notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Buffer time and room needs."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "plan-1",
+            "values": {
+              "plan_name": "60 minute session",
+              "category": "Session",
+              "price": 95,
+              "billing": "Per visit",
+              "minutes": 60,
+              "valid_days": 1,
+              "includes": "session, per visit"
+            }
+          },
+          {
+            "key": "plan-2",
+            "values": {
+              "plan_name": "90 minute session",
+              "category": "Session",
+              "price": 135,
+              "billing": "Per visit",
+              "minutes": 90,
+              "valid_days": 1,
+              "includes": "session, per visit"
+            }
+          },
+          {
+            "key": "plan-3",
+            "values": {
+              "plan_name": "Monthly membership",
+              "category": "Membership",
+              "price": 85,
+              "billing": "Monthly",
+              "minutes": 60,
+              "valid_days": 30,
+              "includes": "membership, monthly"
+            }
+          },
+          {
+            "key": "plan-4",
+            "values": {
+              "plan_name": "30 minute focus session",
+              "category": "Session",
+              "price": 55,
+              "billing": "Per visit",
+              "minutes": 30,
+              "valid_days": 1,
+              "includes": "session, per visit"
+            }
+          },
+          {
+            "key": "plan-5",
+            "values": {
+              "plan_name": "Prenatal session",
+              "category": "Session",
+              "price": 105,
+              "billing": "Per visit",
+              "minutes": 60,
+              "valid_days": 1,
+              "includes": "side-lying setup with pillows and extra room time"
+            }
+          },
+          {
+            "key": "plan-6",
+            "values": {
+              "plan_name": "Chair massage at events",
+              "category": "Corporate",
+              "price": 70,
+              "billing": "Per visit",
+              "minutes": 30,
+              "valid_days": 1,
+              "includes": "corporate, per visit"
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Clients with their sessions, notes and payments.",
+        "subject": "thing",
+        "independentOf": {
+          "plan": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Member",
+              "Single visit",
+              "Referral",
+              "Corporate"
+            ],
+            "choiceColors": {
+              "Member": "slate",
+              "Single visit": "blue",
+              "Referral": "amber",
+              "Corporate": "violet"
+            }
+          },
+          {
+            "key": "client_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Frozen",
+              "Cancelled",
+              "Lead"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Frozen": "blue",
+              "Cancelled": "red",
+              "Lead": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "plan",
+            "label": "Session type",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "joined_on",
+            "label": "Joined",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visits",
+            "label": "Visits",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "no_shows",
+            "label": "No-shows",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "paid_total",
+            "label": "Paid to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "failed_n",
+            "label": "Failed payments",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "count",
+            "filter": {
+              "status": "Failed"
+            }
+          },
+          {
+            "key": "risk",
+            "label": "Retention check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
+          },
+          {
+            "key": "add_booking_btn",
+            "label": "Book a visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "Visit note",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Client intake",
+            "values": {
+              "client_status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reason for visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the client wants help with, in their words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Comfort"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consent form signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pressure preference noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Areas to avoid noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Told the client to check with a health professional about any condition or concern"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the therapist should know before the first session."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Odette Aldercott",
+              "kind": "Member",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(802) 555-0192",
+              "email": "odette.aldercott@inbox-mail.net",
+              "joined_on": "@today-30d",
+              "area": "Cedar Park"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Rafael Hartigan",
+              "kind": "Single visit",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(802) 555-0129",
+              "email": "rafael.hartigan@inbox-mail.net",
+              "joined_on": "@today-77d",
+              "area": "Lakeview"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Saoirse Okafor",
+              "kind": "Referral",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(802) 555-0166",
+              "email": "saoirse.okafor@inbox-mail.net",
+              "joined_on": "@today-124d",
+              "area": "Foxglove Court"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Ravi Whitlock",
+              "kind": "Corporate",
+              "client_status": "Active",
+              "plan": "plan-4",
+              "phone": "(802) 555-0103",
+              "email": "ravi.whitlock@inbox-mail.net",
+              "joined_on": "@today-171d",
+              "area": "Stonebridge"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Zainab Eriksen",
+              "kind": "Member",
+              "client_status": "Active",
+              "plan": "plan-5",
+              "phone": "(802) 555-0140",
+              "email": "zainab.eriksen@inbox-mail.net",
+              "joined_on": "@today-218d",
+              "area": "Harbor Heights"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Jamal Lowry",
+              "kind": "Single visit",
+              "client_status": "Active",
+              "plan": "plan-6",
+              "phone": "(802) 555-0177",
+              "email": "jamal.lowry@inbox-mail.net",
+              "joined_on": "@today-265d",
+              "area": "Willow Creek"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Liesel Valdez",
+              "kind": "Referral",
+              "client_status": "Active",
+              "plan": "plan-1",
+              "phone": "(802) 555-0114",
+              "email": "liesel.valdez@inbox-mail.net",
+              "joined_on": "@today-312d",
+              "area": "North Ridge"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Okonkwo Dunmore",
+              "kind": "Corporate",
+              "client_status": "Active",
+              "plan": "plan-2",
+              "phone": "(802) 555-0151",
+              "email": "okonkwo.dunmore@inbox-mail.net",
+              "joined_on": "@today-359d",
+              "area": "Sunset Flats"
+            }
+          },
+          {
+            "key": "client-9",
+            "values": {
+              "client_name": "Ingrid Kowalczyk",
+              "kind": "Member",
+              "client_status": "Active",
+              "plan": "plan-3",
+              "phone": "(802) 555-0188",
+              "email": "ingrid.kowalczyk@inbox-mail.net",
+              "joined_on": "@today-406d",
+              "area": "Maple Hollow"
+            }
+          },
+          {
+            "key": "client-10",
+            "values": {
+              "client_name": "Basil Sandoval",
+              "kind": "Single visit",
+              "client_status": "Frozen",
+              "plan": "plan-4",
+              "phone": "(802) 555-0125",
+              "email": "basil.sandoval@inbox-mail.net",
+              "joined_on": "@today-453d",
+              "area": "Eastgate"
+            }
+          },
+          {
+            "key": "client-11",
+            "values": {
+              "client_name": "Mirela Abernathy",
+              "kind": "Referral",
+              "client_status": "Cancelled",
+              "plan": "plan-5",
+              "phone": "(802) 555-0162",
+              "email": "mirela.abernathy@inbox-mail.net",
+              "joined_on": "@today-500d",
+              "area": "Riverbend"
+            }
+          },
+          {
+            "key": "client-12",
+            "values": {
+              "client_name": "Winston Halvorsen",
+              "kind": "Corporate",
+              "client_status": "Cancelled",
+              "plan": "plan-6",
+              "phone": "(802) 555-0199",
+              "email": "winston.halvorsen@inbox-mail.net",
+              "joined_on": "@today-547d",
+              "area": "Old Mill"
+            }
+          },
+          {
+            "key": "client-13",
+            "values": {
+              "client_name": "Nadia Prescott",
+              "kind": "Member",
+              "client_status": "Lead",
+              "plan": "plan-1",
+              "phone": "(802) 555-0136",
+              "email": "nadia.prescott@inbox-mail.net",
+              "joined_on": "@today-594d",
+              "area": "Cedar Park"
+            }
+          },
+          {
+            "key": "client-14",
+            "values": {
+              "client_name": "Emeka Zuberi",
+              "kind": "Single visit",
+              "client_status": "Lead",
+              "plan": "plan-2",
+              "phone": "(802) 555-0173",
+              "email": "emeka.zuberi@inbox-mail.net",
+              "joined_on": "@today-641d",
+              "area": "Lakeview"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Appointments",
+        "labelSingular": "Appointment",
+        "labelPlural": "Appointments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "booking_name",
+        "describes": "Sessions by therapist and room, with notes and attendance.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "plan": "Either record can be created or change status before the other.",
+          "staff": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Appointment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Checked in": "blue",
+              "Completed": "amber",
+              "No-show": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "plan",
+            "label": "Session type",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "staff",
+            "label": "Therapist",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_on",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "visit_type",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Session",
+              "Intake",
+              "Follow-up",
+              "Event"
+            ],
+            "choiceColors": {
+              "Session": "slate",
+              "Intake": "blue",
+              "Follow-up": "amber",
+              "Event": "violet"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "mine",
+            "label": "My session",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_done"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Visit note",
+            "values": {
+              "status": "Booked",
+              "booking_name": "New appointment"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Session notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was worked on, client feedback and pressure used."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Intake reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Room ready"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client confirmed pressure and areas to avoid"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Aftercare shared and next visit suggested."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "bookin-1",
+            "values": {
+              "booking_name": "Prenatal session - Hartigan",
+              "status": "Completed",
+              "client": "client-2",
+              "plan": "plan-5",
+              "staff": "tm-1",
+              "when_on": "@today-12d",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 105
+            }
+          },
+          {
+            "key": "bookin-2",
+            "values": {
+              "booking_name": "60 minute session - Eriksen",
+              "status": "Completed",
+              "client": "client-5",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@today-9d",
+              "visit_type": "Intake",
+              "minutes": 60,
+              "price": 95
+            }
+          },
+          {
+            "key": "bookin-3",
+            "values": {
+              "booking_name": "Follow-up - Dunmore",
+              "status": "Completed",
+              "client": "client-8",
+              "plan": "plan-3",
+              "staff": "tm-3",
+              "when_on": "@today-7d",
+              "visit_type": "Follow-up",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-4",
+            "values": {
+              "booking_name": "Prenatal session - Abernathy",
+              "status": "Completed",
+              "client": "client-11",
+              "plan": "plan-5",
+              "staff": "tm-4",
+              "when_on": "@today-5d",
+              "visit_type": "Event",
+              "minutes": 60,
+              "price": 105
+            }
+          },
+          {
+            "key": "bookin-5",
+            "values": {
+              "booking_name": "60 minute session - Zuberi",
+              "status": "Completed",
+              "client": "client-14",
+              "plan": "plan-1",
+              "staff": "tm-1",
+              "when_on": "@today-3d",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 95
+            }
+          },
+          {
+            "key": "bookin-6",
+            "values": {
+              "booking_name": "Intake - Okafor",
+              "status": "No-show",
+              "client": "client-3",
+              "plan": "plan-3",
+              "staff": "tm-2",
+              "when_on": "@today-4d",
+              "visit_type": "Intake",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-7",
+            "values": {
+              "booking_name": "Prenatal session - Lowry",
+              "status": "Cancelled",
+              "client": "client-6",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today-2d",
+              "visit_type": "Follow-up",
+              "minutes": 60,
+              "price": 105
+            }
+          },
+          {
+            "key": "bookin-8",
+            "values": {
+              "booking_name": "60 minute session - Kowalczyk",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today-1d",
+              "visit_type": "Event",
+              "minutes": 60,
+              "price": 95
+            }
+          },
+          {
+            "key": "bookin-9",
+            "values": {
+              "booking_name": "Session - Halvorsen",
+              "status": "Booked",
+              "client": "client-12",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "when_on": "@today-2d",
+              "visit_type": "Session",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-10",
+            "values": {
+              "booking_name": "Prenatal session - Aldercott",
+              "status": "Checked in",
+              "client": "client-1",
+              "plan": "plan-5",
+              "staff": "tm-2",
+              "when_on": "@mon",
+              "visit_type": "Intake",
+              "minutes": 60,
+              "price": 105,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-11",
+            "values": {
+              "booking_name": "60 minute session - Whitlock",
+              "status": "Booked",
+              "client": "client-4",
+              "plan": "plan-1",
+              "staff": "tm-3",
+              "when_on": "@tue",
+              "visit_type": "Follow-up",
+              "minutes": 60,
+              "price": 95
+            }
+          },
+          {
+            "key": "bookin-12",
+            "values": {
+              "booking_name": "Event - Valdez",
+              "status": "Booked",
+              "client": "client-7",
+              "plan": "plan-3",
+              "staff": "tm-4",
+              "when_on": "@wed",
+              "visit_type": "Event",
+              "minutes": 75,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-13",
+            "values": {
+              "booking_name": "Prenatal session - Sandoval",
+              "status": "Booked",
+              "client": "client-10",
+              "plan": "plan-5",
+              "staff": "tm-1",
+              "when_on": "@thu",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 105
+            }
+          },
+          {
+            "key": "bookin-14",
+            "values": {
+              "booking_name": "60 minute session - Prescott",
+              "status": "Booked",
+              "client": "client-13",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@fri",
+              "visit_type": "Intake",
+              "minutes": 60,
+              "price": 95,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-15",
+            "values": {
+              "booking_name": "Follow-up - Hartigan",
+              "status": "Booked",
+              "client": "client-2",
+              "plan": "plan-3",
+              "staff": "tm-3",
+              "when_on": "@sat",
+              "visit_type": "Follow-up",
+              "minutes": 75,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-16",
+            "values": {
+              "booking_name": "Prenatal session - Eriksen",
+              "status": "Booked",
+              "client": "client-5",
+              "plan": "plan-5",
+              "staff": "tm-4",
+              "when_on": "@sun",
+              "visit_type": "Event",
+              "minutes": 60,
+              "price": 105
+            }
+          },
+          {
+            "key": "bookin-17",
+            "values": {
+              "booking_name": "60 minute session - Dunmore",
+              "status": "Booked",
+              "client": "client-8",
+              "plan": "plan-1",
+              "staff": "tm-1",
+              "when_on": "@mon+1w",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 95
+            }
+          },
+          {
+            "key": "bookin-18",
+            "values": {
+              "booking_name": "Intake - Abernathy",
+              "status": "Booked",
+              "client": "client-11",
+              "plan": "plan-3",
+              "staff": "tm-2",
+              "when_on": "@wed+1w",
+              "visit_type": "Intake",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-19",
+            "values": {
+              "booking_name": "Prenatal session - Zuberi",
+              "status": "Booked",
+              "client": "client-14",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today",
+              "visit_type": "Follow-up",
+              "minutes": 60,
+              "price": 105,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-20",
+            "values": {
+              "booking_name": "60 minute session - Okafor",
+              "status": "Booked",
+              "client": "client-3",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today+2d",
+              "visit_type": "Event",
+              "minutes": 60,
+              "price": 95
+            }
+          },
+          {
+            "key": "bookin-21",
+            "values": {
+              "booking_name": "Session - Lowry",
+              "status": "Booked",
+              "client": "client-6",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "when_on": "@today+4d",
+              "visit_type": "Session",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
+            "key": "bookin-22",
+            "values": {
+              "booking_name": "Prenatal session - Kowalczyk",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-5",
+              "staff": "tm-2",
+              "when_on": "@today+1d",
+              "visit_type": "Intake",
+              "minutes": 60,
+              "price": 105
+            }
+          }
+        ]
+      },
+      {
+        "token": "payment",
+        "name": "Payments",
+        "labelSingular": "Payment",
+        "labelPlural": "Payments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "credit-card",
+        "titleField": "payment_name",
+        "describes": "Charges, failed cards and refunds, tied to each client.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "method"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "payment_name",
+            "label": "Payment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Failed",
+              "Paid",
+              "Refunded"
+            ],
+            "choiceColors": {
+              "Pending": "slate",
+              "Failed": "red",
+              "Paid": "blue",
+              "Refunded": "pink"
+            },
+            "required": true,
+            "default": "Pending",
+            "statusGroups": {
+              "Pending": "todo",
+              "Failed": "in_progress",
+              "Paid": "done",
+              "Refunded": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card on file",
+              "Cash",
+              "Insurance letter",
+              "Gift card"
+            ],
+            "choiceColors": {
+              "Card on file": "slate",
+              "Cash": "blue",
+              "Insurance letter": "amber",
+              "Gift card": "violet"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "payment_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [],
+        "rows": [
+          {
+            "key": "paymen-1",
+            "values": {
+              "payment_name": "PAY-2210",
+              "status": "Paid",
+              "client": "client-3",
+              "amount": 85,
+              "due_on": "@today-30d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-2",
+            "values": {
+              "payment_name": "PAY-2211",
+              "status": "Paid",
+              "client": "client-8",
+              "amount": 135,
+              "due_on": "@today-28d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-3",
+            "values": {
+              "payment_name": "PAY-2212",
+              "status": "Paid",
+              "client": "client-13",
+              "amount": 95,
+              "due_on": "@today-14d",
+              "method": "Insurance letter"
+            }
+          },
+          {
+            "key": "paymen-4",
+            "values": {
+              "payment_name": "PAY-2213",
+              "status": "Paid",
+              "client": "client-4",
+              "amount": 55,
+              "due_on": "@today-10d",
+              "method": "Gift card"
+            }
+          },
+          {
+            "key": "paymen-5",
+            "values": {
+              "payment_name": "PAY-2214",
+              "status": "Failed",
+              "client": "client-9",
+              "amount": 85,
+              "due_on": "@today-3d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-6",
+            "values": {
+              "payment_name": "PAY-2215",
+              "status": "Failed",
+              "client": "client-14",
+              "amount": 135,
+              "due_on": "@today-1d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-7",
+            "values": {
+              "payment_name": "PAY-2216",
+              "status": "Pending",
+              "client": "client-5",
+              "amount": 105,
+              "due_on": "@fri",
+              "method": "Insurance letter"
+            }
+          },
+          {
+            "key": "paymen-8",
+            "values": {
+              "payment_name": "PAY-2217",
+              "status": "Pending",
+              "client": "client-10",
+              "amount": 55,
+              "due_on": "@today+3d",
+              "method": "Gift card"
+            }
+          },
+          {
+            "key": "paymen-9",
+            "values": {
+              "payment_name": "PAY-2218",
+              "status": "Pending",
+              "client": "client-1",
+              "amount": 95,
+              "due_on": "@today+5d",
+              "method": "Card on file"
+            }
+          },
+          {
+            "key": "paymen-10",
+            "values": {
+              "payment_name": "PAY-2219",
+              "status": "Paid",
+              "client": "client-6",
+              "amount": 70,
+              "due_on": "@today-6d",
+              "method": "Cash"
+            }
+          },
+          {
+            "key": "paymen-11",
+            "values": {
+              "payment_name": "PAY-2220",
+              "status": "Refunded",
+              "client": "client-11",
+              "amount": 105,
+              "due_on": "@today-9d",
+              "method": "Insurance letter"
+            }
+          },
+          {
+            "key": "paymen-12",
+            "values": {
+              "payment_name": "PAY-2221",
+              "status": "Pending",
+              "client": "client-2",
+              "amount": 135,
+              "due_on": "@today+6d",
+              "method": "Gift card"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one session type.",
+        "fromTable": "client",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "members"
+      },
+      {
+        "describes": "Each appointment belongs to one client.",
+        "fromTable": "booking",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each appointment belongs to one session type.",
+        "fromTable": "booking",
+        "fromField": "plan",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each appointment belongs to one therapist.",
+        "fromTable": "booking",
+        "fromField": "staff",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings_taken"
+      },
+      {
+        "describes": "Each payment belongs to one client.",
+        "fromTable": "payment",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "payments"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Philomena Strand",
+              "role": "Owner and therapist",
+              "work_email": "philomena@hearthstonemassage.net",
+              "mobile": "(802) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Gareth Pemberton",
+              "role": "Therapist",
+              "work_email": "gareth@hearthstonemassage.net",
+              "mobile": "(802) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Sapna Krishnamurthy",
+              "role": "Therapist",
+              "work_email": "sapna@hearthstonemassage.net",
+              "mobile": "(802) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Odell Ruiz",
+              "role": "Therapist",
+              "work_email": "odell@hearthstonemassage.net",
+              "mobile": "(802) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Linnea Faust",
+              "role": "Front desk",
+              "work_email": "linnea@hearthstonemassage.net",
+              "mobile": "(802) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Client enquiry",
+        "describes": "How someone asks to join or book.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Email address?"
+          },
+          {
+            "fieldKey": "plan",
+            "ask": "What are you interested in?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The enquiry is saved as a new lead."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "booking_done",
+        "table": "booking",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "payment_paid",
+        "table": "payment",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_plan",
+        "name": "All session types and memberships",
+        "table": "plan",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "plan_board",
+        "name": "Session types and memberships board",
+        "table": "plan",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "client_status"
+      },
+      {
+        "token": "all_booking",
+        "name": "All appointments",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Appointments board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Appointments calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "when_on",
+        "allDay": true
+      },
+      {
+        "token": "booking_over",
+        "name": "Overdue",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "Due this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "when_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "booking_mine",
+        "name": "My appointments",
+        "table": "booking",
+        "kind": "grid",
+        "me": [
+          "mine"
+        ]
+      },
+      {
+        "token": "all_payment",
+        "name": "All payments",
+        "table": "payment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "payment_board",
+        "name": "Payments board",
+        "table": "payment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "payment_over",
+        "name": "Overdue",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_week",
+        "name": "Due this week",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      },
+      {
+        "token": "payment_next7",
+        "name": "Next 7 days",
+        "table": "payment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pending",
+            "Failed"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Massage Therapy Practice HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "client",
+          "describes": "Clients with their sessions, notes and payments."
+        },
+        {
+          "name": "related_tables",
+          "table": "plan",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many clients are active right now?",
+        "whyItMatters": "The owner reviews the active count at the start of every month.",
+        "expect": {
+          "table": "client",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "client_status": "Active"
+          },
+          "answer": 9,
+          "unit": "clients"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open session types and memberships.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open appointments.",
+        "action": {
+          "kind": "open",
+          "surface": "booking_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "booking_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "hearthstonemassage.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Wicker Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "massage-therapy-practice-hq",
+      "parent": null,
+      "title": "Massage Therapy Practice HQ",
+      "icon": {
+        "emoji": "💆"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the practice from one page. Clients, session types and payments are linked, every session is an appointment with a therapist, and each therapist sees their own list under Mine. Session notes live on each appointment page."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:intake-and-notes"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:no-shows-and-reminders"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:room-and-laundry"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Session types and memberships"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The sessions you offer and the monthly membership, with prices and time."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "plan_board"
+            },
+            "inline": true,
+            "title": "Session types and memberships",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pla-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pla-t",
+                "name": "All session types and memberships",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pla-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Clients with their sessions, notes and payments."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "client_status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Appointments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Sessions by therapist and room, with notes and attendance."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_on"
+              },
+              {
+                "id": "boo-t",
+                "name": "All appointments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "boo-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Charges, failed cards and refunds, tied to each client."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "payment_board"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pay-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pay-t",
+                "name": "All payments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pay-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              },
+              {
+                "id": "pay-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pending",
+                    "Failed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "pay-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "massage-therapy-practice-hq",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Appointments this week, no-shows and payments."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "ChartBar"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Appointments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c0",
+                        "name": "Appointments by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Appointments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Appointments by kind",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "visit_type",
+                          "op": "count"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "payment",
+                      "view": "all_payment"
+                    },
+                    "inline": true,
+                    "title": "Payments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Payments by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Not yet marked"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l0",
+                "name": "Not yet marked",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "when_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My appointments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l1",
+                "name": "My appointments",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "mine"
+                ]
+              }
+            ],
+            "activeViewId": "view-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Failed payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payment",
+              "view": "all_payment"
+            },
+            "inline": true,
+            "title": "Payments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l2",
+                "name": "Failed payments",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Failed"
+                }
+              }
+            ],
+            "activeViewId": "view-l2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "intake-and-notes",
+      "parent": "massage-therapy-practice-hq",
+      "title": "Intake and session notes",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Good notes make the next session better and protect everyone."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the first session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the intake form with the confirmation."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review answers and flag anything to ask in person."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make sure consent is signed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After each session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write what was worked on and how the client responded."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note the pressure used and any areas avoided."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the aftercare shared."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Notes are private to the practice. Never share them without the client written consent."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "no-shows-and-reminders",
+      "parent": "massage-therapy-practice-hq",
+      "title": "Reminders and no-shows",
+      "icon": {
+        "emoji": "📱"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Reminders cut no-shows more than any policy."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a reminder two days and two hours before."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the appointment No-show if the client does not arrive within 15 minutes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Message the client kindly and offer the next slot."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late cancel policy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Cancel with 24 hours notice at no charge. Inside 24 hours the session is charged at half price the first time."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "room-and-laundry",
+      "parent": "massage-therapy-practice-hq",
+      "title": "Room setup and laundry",
+      "icon": {
+        "emoji": "🧺"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clean rooms and fresh linens are half the service."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Between clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Strip, bag and replace linens."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wipe table and surfaces."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Restock oils and lotions."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reset temperature and music."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Laundry"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Wash on hot with unscented detergent, count linens daily and order more when the count falls below two sets per room."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

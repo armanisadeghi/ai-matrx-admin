@@ -1,0 +1,1 @@
+{ "extends": "./tsconfig.typecheck.json", "include": ["types/**/*.d.ts", "next-env.d.ts"], "files": ["features/board/home/UserBoard.tsx","features/board/tools/useBoardAgentTools.ts","features/board/items/tile-copy.ts","features/board/__tests__/cover-agent-tools.test.ts","features/board/__tests__/tile-chrome.test.ts","features/board/home/usePageLayout.ts"] }

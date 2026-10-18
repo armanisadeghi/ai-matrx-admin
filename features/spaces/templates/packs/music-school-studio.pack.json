@@ -1,0 +1,3562 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0559",
+  "version": 1,
+  "title": "Music School Studio Desk",
+  "description": "Students, teachers, lessons, recitals and rented instruments for a music school.",
+  "forWho": "Music schools, studios and lesson programs",
+  "icon": {
+    "emoji": "🎻"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "music school",
+    "lessons",
+    "recitals",
+    "instrument rentals"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-music-school-studio",
+    "catalogueId": "SP0559",
+    "useCase": "Leontyne Brightwater-Ng directs a community music school and uses this to see which lessons are today, which tuition is overdue and which rental instruments are out.",
+    "industry": "education",
+    "vertical": "Music school",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Harmony Lane Music School",
+      "describes": "A community music school with 12 teachers and about 260 students learning piano, strings, guitar, voice and band instruments.",
+      "address": {
+        "line1": "4 Cantor Row",
+        "city": "Nashville",
+        "region": "TN",
+        "postalCode": "37203",
+        "country": "US"
+      },
+      "phone": "(615) 555-0165",
+      "website": "harmonylanemusic.net",
+      "email": "office@harmonylanemusic.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-music-school-studio",
+    "tables": [
+      {
+        "token": "pupil",
+        "name": "Students",
+        "labelSingular": "Student",
+        "labelPlural": "Students",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "music",
+        "titleField": "pupil_name",
+        "describes": "Everyone studying here, with instrument, teacher, tuition standing and next lesson.",
+        "subject": "thing",
+        "independentOf": {
+          "teacher": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "pupil_name",
+            "label": "Student",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Trial lesson",
+              "Active",
+              "On break",
+              "Left"
+            ],
+            "choiceColors": {
+              "Trial lesson": "slate",
+              "Active": "blue",
+              "On break": "amber",
+              "Left": "violet"
+            },
+            "required": true,
+            "default": "Trial lesson",
+            "statusGroups": {
+              "Trial lesson": "in_progress",
+              "Active": "in_progress",
+              "On break": "in_progress",
+              "Left": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "instrument",
+            "label": "Instrument",
+            "parityType": "select",
+            "choices": [
+              "Piano",
+              "Violin",
+              "Guitar",
+              "Voice",
+              "Drums",
+              "Flute",
+              "Cello"
+            ],
+            "choiceColors": {
+              "Piano": "slate",
+              "Violin": "blue",
+              "Guitar": "amber",
+              "Voice": "violet",
+              "Drums": "teal",
+              "Flute": "green",
+              "Cello": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "level",
+            "label": "Level",
+            "parityType": "select",
+            "choices": [
+              "Beginner",
+              "Early intermediate",
+              "Intermediate",
+              "Advanced"
+            ],
+            "choiceColors": {
+              "Beginner": "slate",
+              "Early intermediate": "blue",
+              "Intermediate": "amber",
+              "Advanced": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "teacher",
+            "label": "Teacher",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guardian",
+            "label": "Guardian or adult contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_lesson",
+            "label": "Next lesson",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owed",
+            "label": "Tuition owed (USD)",
+            "parityType": "rollup",
+            "via": "tuition",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Due",
+                "Overdue"
+              ]
+            }
+          },
+          {
+            "key": "paid_total",
+            "label": "Tuition paid (USD)",
+            "parityType": "rollup",
+            "via": "tuition",
+            "pick": "amount",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "rentals_out",
+            "label": "Instruments on rent",
+            "parityType": "rollup",
+            "via": "rentals",
+            "pick": "rental_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Out"
+            }
+          },
+          {
+            "key": "btn_active",
+            "label": "Mark active",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "pupil_active"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_tuition",
+            "label": "Add tuition due",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "tuition",
+              "template": "New tuition",
+              "prefill": {
+                "pupil": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_rental",
+            "label": "Rent an instrument",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "rentals",
+              "template": "New rental",
+              "prefill": {
+                "pupil": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New student",
+            "values": {
+              "pupil_name": "New student",
+              "status": "Trial lesson"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the student wants from lessons."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Experience"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they have played, for how long and what they can read."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Practice plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Days, time and a place at home."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pupil-1",
+            "values": {
+              "pupil_name": "Ellis M.",
+              "status": "Active",
+              "instrument": "Piano",
+              "level": "Beginner",
+              "teacher": "tm-2",
+              "guardian": "Priya Mehta",
+              "email": "priya.mehta@mailbox.net",
+              "phone": "(615) 555-0131",
+              "next_lesson": "@today+1d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pupil-2",
+            "values": {
+              "pupil_name": "Fiona R.",
+              "status": "Active",
+              "instrument": "Violin",
+              "level": "Intermediate",
+              "teacher": "tm-3",
+              "guardian": "Hector Rios",
+              "email": "hector.rios@mailbox.net",
+              "phone": "(615) 555-0132",
+              "next_lesson": "@today"
+            }
+          },
+          {
+            "key": "pupil-3",
+            "values": {
+              "pupil_name": "Gabriel T.",
+              "status": "Trial lesson",
+              "instrument": "Guitar",
+              "level": "Beginner",
+              "teacher": "tm-4",
+              "guardian": "Ama Tetteh",
+              "email": "ama.tetteh@mailbox.net",
+              "phone": "(615) 555-0133",
+              "next_lesson": "@today+3d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pupil-4",
+            "values": {
+              "pupil_name": "Hattie O.",
+              "status": "Active",
+              "instrument": "Voice",
+              "level": "Advanced",
+              "teacher": "tm-5",
+              "guardian": "Gwen Okonkwo",
+              "email": "gwen.o@mailbox.net",
+              "phone": "(615) 555-0134",
+              "next_lesson": "@today+2d"
+            }
+          },
+          {
+            "key": "pupil-5",
+            "values": {
+              "pupil_name": "Isidro C.",
+              "status": "Active",
+              "instrument": "Guitar",
+              "level": "Early intermediate",
+              "teacher": "tm-4",
+              "guardian": "Marisol Cruz",
+              "email": "marisol.cruz@mailbox.net",
+              "phone": "(615) 555-0135",
+              "next_lesson": "@today-2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pupil-6",
+            "values": {
+              "pupil_name": "Jade L.",
+              "status": "Active",
+              "instrument": "Piano",
+              "level": "Intermediate",
+              "teacher": "tm-2",
+              "guardian": "Wen Li",
+              "email": "wen.li@mailbox.net",
+              "phone": "(615) 555-0136",
+              "next_lesson": "@today+4d"
+            }
+          },
+          {
+            "key": "pupil-7",
+            "values": {
+              "pupil_name": "Kofi A.",
+              "status": "Active",
+              "instrument": "Cello",
+              "level": "Beginner",
+              "teacher": "tm-3",
+              "guardian": "Esi Appiah",
+              "email": "esi.appiah@mailbox.net",
+              "phone": "(615) 555-0137",
+              "next_lesson": "@today+5d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pupil-8",
+            "values": {
+              "pupil_name": "Lorenzo V.",
+              "status": "On break",
+              "instrument": "Drums",
+              "level": "Beginner",
+              "teacher": "tm-4",
+              "guardian": "Silvia Vitale",
+              "email": "silvia.v@mailbox.net",
+              "phone": "(615) 555-0138",
+              "next_lesson": "@today+30d"
+            }
+          },
+          {
+            "key": "pupil-9",
+            "values": {
+              "pupil_name": "Mina H.",
+              "status": "Active",
+              "instrument": "Flute",
+              "level": "Early intermediate",
+              "teacher": "tm-5",
+              "guardian": "Takashi Hara",
+              "email": "takashi.h@mailbox.net",
+              "phone": "(615) 555-0139",
+              "next_lesson": "@today+6d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pupil-10",
+            "values": {
+              "pupil_name": "Nico B.",
+              "status": "Left",
+              "instrument": "Piano",
+              "level": "Intermediate",
+              "teacher": "tm-2",
+              "guardian": "Anja Brandt",
+              "phone": "(615) 555-0140"
+            }
+          }
+        ]
+      },
+      {
+        "token": "lesson",
+        "name": "Lessons",
+        "labelSingular": "Lesson",
+        "labelPlural": "Lessons",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "lesson_name",
+        "describes": "Each weekly lesson on the calendar, with its teacher, room and outcome.",
+        "subject": "thing",
+        "independentOf": {
+          "pupil": "Either record can be created or change status before the other.",
+          "teacher": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "lesson_name",
+            "label": "Lesson",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pupil",
+            "label": "Student",
+            "parityType": "relation",
+            "relationTarget": "pupil",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "teacher",
+            "label": "Teacher",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "select",
+            "choices": [
+              "Studio A",
+              "Studio B",
+              "Studio C",
+              "Recital hall",
+              "Online"
+            ],
+            "choiceColors": {
+              "Studio A": "slate",
+              "Studio B": "blue",
+              "Studio C": "amber",
+              "Recital hall": "violet",
+              "Online": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Scheduled",
+              "Done",
+              "Missed",
+              "Rescheduled"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Done": "blue",
+              "Missed": "amber",
+              "Rescheduled": "violet"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Done": "done",
+              "Missed": "done",
+              "Rescheduled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lesson_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 15
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "lesson_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_missed",
+            "label": "Mark missed",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "lesson_missed"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New lesson",
+            "values": {
+              "lesson_name": "New lesson",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pieces, technique and what to listen for."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Homework"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What to practice, how often and what to bring next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "lesson-1",
+            "values": {
+              "lesson_name": "Fiona, violin",
+              "pupil": "pupil-2",
+              "teacher": "tm-3",
+              "room": "Studio B",
+              "status": "Scheduled",
+              "lesson_at": "@today 16:00",
+              "minutes": 45,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "lesson-2",
+            "values": {
+              "lesson_name": "Ellis, piano",
+              "pupil": "pupil-1",
+              "teacher": "tm-2",
+              "room": "Studio A",
+              "status": "Scheduled",
+              "lesson_at": "@today+1d 15:30",
+              "minutes": 30
+            }
+          },
+          {
+            "key": "lesson-3",
+            "values": {
+              "lesson_name": "Hattie, voice",
+              "pupil": "pupil-4",
+              "teacher": "tm-5",
+              "room": "Studio C",
+              "status": "Scheduled",
+              "lesson_at": "@today+2d 17:00",
+              "minutes": 45,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "lesson-4",
+            "values": {
+              "lesson_name": "Gabriel, trial guitar",
+              "pupil": "pupil-3",
+              "teacher": "tm-4",
+              "room": "Studio B",
+              "status": "Scheduled",
+              "lesson_at": "@today+3d 16:30",
+              "minutes": 30
+            }
+          },
+          {
+            "key": "lesson-5",
+            "values": {
+              "lesson_name": "Jade, piano",
+              "pupil": "pupil-6",
+              "teacher": "tm-2",
+              "room": "Studio A",
+              "status": "Scheduled",
+              "lesson_at": "@today+4d 17:00",
+              "minutes": 45,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "lesson-6",
+            "values": {
+              "lesson_name": "Kofi, cello",
+              "pupil": "pupil-7",
+              "teacher": "tm-3",
+              "room": "Studio B",
+              "status": "Scheduled",
+              "lesson_at": "@today+5d 15:30",
+              "minutes": 30
+            }
+          },
+          {
+            "key": "lesson-7",
+            "values": {
+              "lesson_name": "Mina, flute",
+              "pupil": "pupil-9",
+              "teacher": "tm-5",
+              "room": "Studio C",
+              "status": "Scheduled",
+              "lesson_at": "@today+6d 16:00",
+              "minutes": 30,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "lesson-8",
+            "values": {
+              "lesson_name": "Isidro, guitar",
+              "pupil": "pupil-5",
+              "teacher": "tm-4",
+              "room": "Studio B",
+              "status": "Scheduled",
+              "lesson_at": "@today-2d 17:00",
+              "minutes": 30
+            }
+          },
+          {
+            "key": "lesson-9",
+            "values": {
+              "lesson_name": "Fiona, violin, prior week",
+              "pupil": "pupil-2",
+              "teacher": "tm-3",
+              "room": "Studio B",
+              "status": "Done",
+              "lesson_at": "@today-7d 16:00",
+              "minutes": 45,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "lesson-10",
+            "values": {
+              "lesson_name": "Ellis, piano, prior week",
+              "pupil": "pupil-1",
+              "teacher": "tm-2",
+              "room": "Studio A",
+              "status": "Done",
+              "lesson_at": "@today-6d 15:30",
+              "minutes": 30
+            }
+          },
+          {
+            "key": "lesson-11",
+            "values": {
+              "lesson_name": "Hattie, voice, prior week",
+              "pupil": "pupil-4",
+              "teacher": "tm-5",
+              "room": "Studio C",
+              "status": "Missed",
+              "lesson_at": "@today-5d 17:00",
+              "minutes": 45,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "lesson-12",
+            "values": {
+              "lesson_name": "Jade, piano, prior week",
+              "pupil": "pupil-6",
+              "teacher": "tm-2",
+              "room": "Studio A",
+              "status": "Done",
+              "lesson_at": "@today-3d 17:00",
+              "minutes": 45
+            }
+          }
+        ]
+      },
+      {
+        "token": "tuition",
+        "name": "Tuition",
+        "labelSingular": "Tuition charge",
+        "labelPlural": "Tuition",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "credit-card",
+        "titleField": "charge_name",
+        "describes": "Monthly and term tuition charged to each student.",
+        "subject": "thing",
+        "independentOf": {
+          "pupil": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "due_on",
+            "paid_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "charge_name",
+            "label": "Tuition charge",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pupil",
+            "label": "Student",
+            "parityType": "relation",
+            "relationTarget": "pupil",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Draft",
+              "Due",
+              "Paid",
+              "Overdue",
+              "Waived"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Due": "blue",
+              "Paid": "amber",
+              "Overdue": "red",
+              "Waived": "violet"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Due": "in_progress",
+              "Paid": "done",
+              "Overdue": "done",
+              "Waived": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "choices": [
+              "Card",
+              "Bank transfer",
+              "Check",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Card": "slate",
+              "Bank transfer": "blue",
+              "Check": "amber",
+              "Cash": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_paid",
+            "label": "Mark paid",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "tuition_paid"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_overdue",
+            "label": "Mark overdue",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "tuition_overdue"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New tuition",
+            "values": {
+              "charge_name": "New tuition",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Lessons covered and any discount."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Payment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Method and date received."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "tuition-1",
+            "values": {
+              "charge_name": "Ellis, month of piano",
+              "pupil": "pupil-1",
+              "amount": 160,
+              "status": "Due",
+              "due_on": "@today+3d",
+              "method": "Card",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-2",
+            "values": {
+              "charge_name": "Fiona, month of violin",
+              "pupil": "pupil-2",
+              "amount": 190,
+              "status": "Due",
+              "due_on": "@today",
+              "method": "Bank transfer"
+            }
+          },
+          {
+            "key": "tuition-3",
+            "values": {
+              "charge_name": "Hattie, month of voice",
+              "pupil": "pupil-4",
+              "amount": 200,
+              "status": "Due",
+              "due_on": "@today+5d",
+              "method": "Card",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-4",
+            "values": {
+              "charge_name": "Isidro, month of guitar",
+              "pupil": "pupil-5",
+              "amount": 140,
+              "status": "Overdue",
+              "due_on": "@today-9d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "tuition-5",
+            "values": {
+              "charge_name": "Jade, month of piano",
+              "pupil": "pupil-6",
+              "amount": 190,
+              "status": "Due",
+              "due_on": "@today+2d",
+              "method": "Card",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-6",
+            "values": {
+              "charge_name": "Kofi, month of cello",
+              "pupil": "pupil-7",
+              "amount": 150,
+              "status": "Draft",
+              "due_on": "@today+20d"
+            }
+          },
+          {
+            "key": "tuition-7",
+            "values": {
+              "charge_name": "Mina, month of flute",
+              "pupil": "pupil-9",
+              "amount": 130,
+              "status": "Due",
+              "due_on": "@today-3d",
+              "method": "Card",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-8",
+            "values": {
+              "charge_name": "Fiona, last month",
+              "pupil": "pupil-2",
+              "amount": 190,
+              "status": "Paid",
+              "due_on": "@today-30d",
+              "method": "Bank transfer",
+              "paid_on": "@today-29d"
+            }
+          },
+          {
+            "key": "tuition-9",
+            "values": {
+              "charge_name": "Ellis, last month",
+              "pupil": "pupil-1",
+              "amount": 160,
+              "status": "Paid",
+              "due_on": "@today-28d",
+              "method": "Card",
+              "paid_on": "@today-27d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-10",
+            "values": {
+              "charge_name": "Isidro, last month",
+              "pupil": "pupil-5",
+              "amount": 140,
+              "status": "Paid",
+              "due_on": "@today-31d",
+              "method": "Check",
+              "paid_on": "@today-30d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "rentals",
+        "name": "Instrument rentals",
+        "labelSingular": "Rental",
+        "labelPlural": "Instrument rentals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "guitar",
+        "titleField": "rental_name",
+        "describes": "School instruments on loan, with who has them and when they come back.",
+        "subject": "thing",
+        "independentOf": {
+          "pupil": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "out_on",
+            "return_by"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "rental_name",
+            "label": "Instrument",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pupil",
+            "label": "Student",
+            "parityType": "relation",
+            "relationTarget": "pupil",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Violin 3/4",
+              "Violin 1/2",
+              "Cello 1/2",
+              "Acoustic guitar",
+              "Flute",
+              "Keyboard",
+              "Trumpet"
+            ],
+            "choiceColors": {
+              "Violin 3/4": "slate",
+              "Violin 1/2": "blue",
+              "Cello 1/2": "amber",
+              "Acoustic guitar": "violet",
+              "Flute": "teal",
+              "Keyboard": "green",
+              "Trumpet": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Available",
+              "Out",
+              "In repair",
+              "Retired"
+            ],
+            "choiceColors": {
+              "Available": "slate",
+              "Out": "blue",
+              "In repair": "amber",
+              "Retired": "violet"
+            },
+            "required": true,
+            "default": "Available",
+            "statusGroups": {
+              "Available": "todo",
+              "Out": "in_progress",
+              "In repair": "in_progress",
+              "Retired": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "monthly",
+            "label": "Monthly fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "out_on",
+            "label": "Out on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "return_by",
+            "label": "Return by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "serial",
+            "label": "Serial or tag",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_returned",
+            "label": "Mark returned",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "rentals_returned"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New rental",
+            "values": {
+              "rental_name": "New rental",
+              "status": "Available"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Condition"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Marks, repairs and accessories in the case."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agreement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who signed, deposit and insurance."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "rentals-1",
+            "values": {
+              "rental_name": "Violin 3/4 tag V12",
+              "pupil": "pupil-2",
+              "kind": "Violin 3/4",
+              "status": "Out",
+              "monthly": 25,
+              "out_on": "@today-120d",
+              "return_by": "@today+5d",
+              "serial": "V12",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "rentals-2",
+            "values": {
+              "rental_name": "Cello 1/2 tag C04",
+              "pupil": "pupil-7",
+              "kind": "Cello 1/2",
+              "status": "Out",
+              "monthly": 30,
+              "out_on": "@today-40d",
+              "return_by": "@today+80d",
+              "serial": "C04"
+            }
+          },
+          {
+            "key": "rentals-3",
+            "values": {
+              "rental_name": "Flute tag F07",
+              "pupil": "pupil-9",
+              "kind": "Flute",
+              "status": "Out",
+              "monthly": 20,
+              "out_on": "@today-60d",
+              "return_by": "@today",
+              "serial": "F07",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "rentals-4",
+            "values": {
+              "rental_name": "Acoustic guitar tag G15",
+              "pupil": "pupil-3",
+              "kind": "Acoustic guitar",
+              "status": "Out",
+              "monthly": 18,
+              "out_on": "@today-2d",
+              "return_by": "@today+3d",
+              "serial": "G15"
+            }
+          },
+          {
+            "key": "rentals-5",
+            "values": {
+              "rental_name": "Violin 1/2 tag V03",
+              "kind": "Violin 1/2",
+              "status": "Available",
+              "monthly": 22,
+              "serial": "V03",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "rentals-6",
+            "values": {
+              "rental_name": "Keyboard tag K02",
+              "kind": "Keyboard",
+              "status": "Available",
+              "monthly": 15,
+              "serial": "K02"
+            }
+          },
+          {
+            "key": "rentals-7",
+            "values": {
+              "rental_name": "Trumpet tag T01",
+              "kind": "Trumpet",
+              "status": "In repair",
+              "monthly": 20,
+              "serial": "T01",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "rentals-8",
+            "values": {
+              "rental_name": "Acoustic guitar tag G09",
+              "pupil": "pupil-5",
+              "kind": "Acoustic guitar",
+              "status": "Out",
+              "monthly": 18,
+              "out_on": "@today-200d",
+              "return_by": "@today-3d",
+              "serial": "G09"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each student belongs to one teacher.",
+        "fromTable": "pupil",
+        "fromField": "teacher",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "pupil_by_teacher"
+      },
+      {
+        "describes": "Each lesson belongs to one student.",
+        "fromTable": "lesson",
+        "fromField": "pupil",
+        "toTable": "pupil",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "lessons"
+      },
+      {
+        "describes": "Each lesson belongs to one teacher.",
+        "fromTable": "lesson",
+        "fromField": "teacher",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "lesson_by_teacher"
+      },
+      {
+        "describes": "Each tuition charge belongs to one student.",
+        "fromTable": "tuition",
+        "fromField": "pupil",
+        "toTable": "pupil",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tuition"
+      },
+      {
+        "describes": "Each rental belongs to one student.",
+        "fromTable": "rentals",
+        "fromField": "pupil",
+        "toTable": "pupil",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "rentals"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Leontyne Brightwater-Ng",
+              "role": "Director",
+              "work_email": "leontyne@harmonylanemusic.net",
+              "mobile": "(615) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Anders Holmgren",
+              "role": "Piano teacher",
+              "work_email": "anders@harmonylanemusic.net",
+              "mobile": "(615) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Temitope Balogun",
+              "role": "Violin and viola teacher",
+              "work_email": "temitope@harmonylanemusic.net",
+              "mobile": "(615) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Callum Reyes-Ainsley",
+              "role": "Guitar teacher",
+              "work_email": "callum@harmonylanemusic.net",
+              "mobile": "(615) 555-0144",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Philippa Odom",
+              "role": "Voice teacher",
+              "work_email": "philippa@harmonylanemusic.net",
+              "mobile": "(615) 555-0145",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Giorgos Pappas",
+              "role": "Front desk",
+              "work_email": "giorgos@harmonylanemusic.net",
+              "mobile": "(615) 555-0146",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Trial lesson request",
+        "describes": "Families request a first lesson here.",
+        "audience": "staff",
+        "table": "pupil",
+        "fields": [
+          {
+            "fieldKey": "pupil_name",
+            "ask": "What is the student's first name and last initial?",
+            "required": true
+          },
+          {
+            "fieldKey": "instrument",
+            "ask": "Which instrument?",
+            "required": true
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          },
+          {
+            "fieldKey": "level",
+            "ask": "What level are they?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The front desk will call to book a trial lesson."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "pupil_active",
+        "table": "pupil",
+        "name": "Mark active",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lesson_done",
+        "table": "lesson",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lesson_missed",
+        "table": "lesson",
+        "name": "Mark missed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Missed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "tuition_paid",
+        "table": "tuition",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "tuition_overdue",
+        "table": "tuition",
+        "name": "Mark overdue",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Overdue"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "rentals_returned",
+        "table": "rentals",
+        "name": "Mark returned",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Available"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_pupil",
+        "name": "All students",
+        "table": "pupil",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "pupil_board",
+        "name": "By status",
+        "table": "pupil",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "pupil_cal",
+        "name": "Calendar",
+        "table": "pupil",
+        "kind": "calendar",
+        "dateField": "next_lesson",
+        "allDay": true
+      },
+      {
+        "token": "pupil_over",
+        "name": "Overdue",
+        "table": "pupil",
+        "kind": "grid",
+        "within": {
+          "next_lesson": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Trial lesson",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "pupil_week",
+        "name": "This week",
+        "table": "pupil",
+        "kind": "grid",
+        "within": {
+          "next_lesson": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Trial lesson",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "pupil_next7",
+        "name": "Next 7 days",
+        "table": "pupil",
+        "kind": "grid",
+        "within": {
+          "next_lesson": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Trial lesson",
+            "Active"
+          ]
+        }
+      },
+      {
+        "token": "pupil_mine",
+        "name": "My students",
+        "table": "pupil",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_lesson",
+        "name": "All lessons",
+        "table": "lesson",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "lesson_board",
+        "name": "By status",
+        "table": "lesson",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "lesson_cal",
+        "name": "Calendar",
+        "table": "lesson",
+        "kind": "calendar",
+        "dateField": "lesson_at",
+        "allDay": false
+      },
+      {
+        "token": "lesson_today",
+        "name": "Today",
+        "table": "lesson",
+        "kind": "grid",
+        "within": {
+          "lesson_at": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "lesson_over",
+        "name": "Overdue",
+        "table": "lesson",
+        "kind": "grid",
+        "within": {
+          "lesson_at": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "lesson_week",
+        "name": "This week",
+        "table": "lesson",
+        "kind": "grid",
+        "within": {
+          "lesson_at": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "lesson_next7",
+        "name": "Next 7 days",
+        "table": "lesson",
+        "kind": "grid",
+        "within": {
+          "lesson_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "lesson_mine",
+        "name": "My lessons",
+        "table": "lesson",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_tuition",
+        "name": "All tuition",
+        "table": "tuition",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "tuition_board",
+        "name": "By status",
+        "table": "tuition",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "tuition_cal",
+        "name": "Calendar",
+        "table": "tuition",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "tuition_over",
+        "name": "Overdue",
+        "table": "tuition",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Due"
+        }
+      },
+      {
+        "token": "tuition_week",
+        "name": "This week",
+        "table": "tuition",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Due"
+        }
+      },
+      {
+        "token": "tuition_next7",
+        "name": "Next 7 days",
+        "table": "tuition",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Due"
+        }
+      },
+      {
+        "token": "tuition_mine",
+        "name": "My tuition",
+        "table": "tuition",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_rentals",
+        "name": "All instrument rentals",
+        "table": "rentals",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "rentals_board",
+        "name": "By status",
+        "table": "rentals",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "rentals_cal",
+        "name": "Calendar",
+        "table": "rentals",
+        "kind": "calendar",
+        "dateField": "return_by",
+        "allDay": true
+      },
+      {
+        "token": "rentals_over",
+        "name": "Overdue",
+        "table": "rentals",
+        "kind": "grid",
+        "within": {
+          "return_by": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Out"
+        }
+      },
+      {
+        "token": "rentals_week",
+        "name": "This week",
+        "table": "rentals",
+        "kind": "grid",
+        "within": {
+          "return_by": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Out"
+        }
+      },
+      {
+        "token": "rentals_next7",
+        "name": "Next 7 days",
+        "table": "rentals",
+        "kind": "grid",
+        "within": {
+          "return_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Out"
+        }
+      },
+      {
+        "token": "rentals_mine",
+        "name": "My instrument rentals",
+        "table": "rentals",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Music School Studio Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "tuition",
+          "describes": "Monthly and term tuition charged to each student."
+        },
+        {
+          "name": "related_tables",
+          "table": "pupil",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many tuition charges are overdue?",
+        "whyItMatters": "The front desk sends reminders each Monday.",
+        "expect": {
+          "table": "tuition",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Overdue"
+          },
+          "answer": 1,
+          "unit": "charges"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open students.",
+        "action": {
+          "kind": "open",
+          "surface": "pupil_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "pupil_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open lessons.",
+        "action": {
+          "kind": "open",
+          "surface": "lesson_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lesson_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open tuition.",
+        "action": {
+          "kind": "open",
+          "surface": "tuition_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "tuition_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "harmonylanemusic.net"
+      ],
+      "fictionalStreets": [
+        "Cantor Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "music-school-studio",
+      "parent": null,
+      "title": "Music School Studio Desk",
+      "icon": {
+        "emoji": "🎻"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Lessons, tuition and instrument rentals for the whole school. Start with the Dashboard each Monday. Mark each lesson done or missed the same day, send tuition reminders on time and check the rentals due back this week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:recital-planning"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:tuition-and-rental-policy"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:teacher-handbook"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Students"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone studying here, with instrument, teacher, tuition standing and next lesson."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pupil",
+              "view": "pupil_board"
+            },
+            "inline": true,
+            "title": "Students",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pup-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_lesson"
+              },
+              {
+                "id": "pup-t",
+                "name": "All students",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pup-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_lesson": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Trial lesson",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "pup-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_lesson": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Trial lesson",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "pup-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_lesson": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Trial lesson",
+                    "Active"
+                  ]
+                }
+              },
+              {
+                "id": "pup-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pup-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lessons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each weekly lesson on the calendar, with its teacher, room and outcome."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lesson",
+              "view": "lesson_board"
+            },
+            "inline": true,
+            "title": "Lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "les-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "les-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "lesson_at"
+              },
+              {
+                "id": "les-t",
+                "name": "All lessons",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "les-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "lesson_at": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "les-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "lesson_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "les-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "lesson_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "les-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "lesson_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "les-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "les-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tuition"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Monthly and term tuition charged to each student."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tuition",
+              "view": "tuition_board"
+            },
+            "inline": true,
+            "title": "Tuition",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tui-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tui-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tui-t",
+                "name": "All tuition",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tui-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Due"
+                }
+              },
+              {
+                "id": "tui-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Due"
+                }
+              },
+              {
+                "id": "tui-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Due"
+                }
+              },
+              {
+                "id": "tui-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tui-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Instrument rentals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "School instruments on loan, with who has them and when they come back."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rentals",
+              "view": "rentals_board"
+            },
+            "inline": true,
+            "title": "Instrument rentals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ren-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ren-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "return_by"
+              },
+              {
+                "id": "ren-t",
+                "name": "All instrument rentals",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ren-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "return_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Out"
+                }
+              },
+              {
+                "id": "ren-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "return_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Out"
+                }
+              },
+              {
+                "id": "ren-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "return_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Out"
+                }
+              },
+              {
+                "id": "ren-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ren-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "music-school-studio",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The school at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "pupil",
+                      "view": "all_pupil"
+                    },
+                    "inline": true,
+                    "title": "Students by instrument",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Students by instrument",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "instrument",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lesson",
+                      "view": "all_lesson"
+                    },
+                    "inline": true,
+                    "title": "Lessons by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Lessons by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "tuition",
+                      "view": "all_tuition"
+                    },
+                    "inline": true,
+                    "title": "Tuition by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Tuition by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "rentals",
+                      "view": "all_rentals"
+                    },
+                    "inline": true,
+                    "title": "Rentals by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Rentals by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tuition overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tuition",
+              "view": "all_tuition"
+            },
+            "inline": true,
+            "title": "Tuition overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Tuition overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lessons this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lesson",
+              "view": "all_lesson"
+            },
+            "inline": true,
+            "title": "Lessons this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Lessons this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "lesson_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rentals due back soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rentals",
+              "view": "all_rentals"
+            },
+            "inline": true,
+            "title": "Rentals due back soon",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Rentals due back soon",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "return_by": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "filters": {
+                  "status": "Out"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tuition owed (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sum of that student's charges marked Due or Overdue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send a kind reminder at 3 days past due; call at 10"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tuition paid (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sum of charges marked Paid"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with last term when planning teacher hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Instruments on rent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rentals for the student still marked Out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check the return date at every term end"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "recital-planning",
+      "parent": "music-school-studio",
+      "title": "Planning a recital",
+      "icon": {
+        "emoji": "🎼"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A recital is a student's proudest hour. Plan it backward from the date so no one is rushed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Eight weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Book the hall and a piano tuner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick the date and send a save-the-date to families"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask teachers to choose the pieces"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Four weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Collect program names and piece titles"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Assign accompanists and rehearsal times"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send the arrival and dress instructions"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week of"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Print programs"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Run a short rehearsal in the hall"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Plan applause and flowers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank every teacher and volunteer afterwards"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "tuition-and-rental-policy",
+      "parent": "music-school-studio",
+      "title": "Tuition and rental policy",
+      "icon": {
+        "emoji": "📄"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clear policies make awkward conversations short. Share this with every new family."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tuition"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tuition is billed monthly and due on the first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Missed lessons are not credited unless the teacher cancels."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Two overdue months pause lessons until the balance is cleared."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rentals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rule"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Detail"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fee"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A monthly fee shown on the rental row"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Care"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep the instrument in its case; report damage at once"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Return"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On the return-by date, in the same condition"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lost or damaged"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Repair or replacement cost is agreed with the director"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "teacher-handbook",
+      "parent": "music-school-studio",
+      "title": "Teacher handbook",
+      "icon": {
+        "emoji": "🎹"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Good lessons are repeatable. The same rhythm each week helps students practice at home."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each lesson"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the last homework and listen to the pieces."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Teach one new idea and have the student play it back."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the homework down before the student leaves."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the lesson done or missed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each term"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write a short progress note for each family."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Suggest a performance goal."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Report equipment problems to the front desk."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

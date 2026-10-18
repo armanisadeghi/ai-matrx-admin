@@ -1,0 +1,3620 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0552",
+  "version": 1,
+  "title": "Grant Pipeline and Reporting Desk",
+  "description": "Track funders, applications, awards and the reports each grant owes.",
+  "forWho": "Nonprofit grant writers and development directors",
+  "icon": {
+    "emoji": "📑"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "nonprofit",
+  "tags": [
+    "grants",
+    "funders",
+    "reports",
+    "deadlines"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-grant-pipeline-desk",
+    "catalogueId": "SP0552",
+    "useCase": "Lowell Ashworth-Kimura writes grants for a regional arts nonprofit and uses this to see which applications are due soon, which awards owe reports and how much is funded against the year's target.",
+    "industry": "nonprofit_community",
+    "vertical": "Grant management",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Riverbend Arts Collaborative",
+      "describes": "A regional arts nonprofit running studio programs, school residencies and a summer festival on a mix of foundation, government and corporate grants.",
+      "address": {
+        "line1": "77 Tamarack Street",
+        "city": "Minneapolis",
+        "region": "MN",
+        "postalCode": "55401",
+        "country": "US"
+      },
+      "phone": "(612) 555-0184",
+      "website": "riverbendarts.net",
+      "email": "grants@riverbendarts.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-grant-pipeline-desk",
+    "tables": [
+      {
+        "token": "funder",
+        "name": "Funders",
+        "labelSingular": "Funder",
+        "labelPlural": "Funders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "landmark",
+        "titleField": "funder_name",
+        "describes": "Every foundation, agency and company you have funded by, or want to, with what they have given.",
+        "subject": "thing",
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "funder_name",
+            "label": "Funder",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Family foundation",
+              "Community foundation",
+              "Government agency",
+              "Corporate giving",
+              "Individual donor"
+            ],
+            "choiceColors": {
+              "Family foundation": "slate",
+              "Community foundation": "blue",
+              "Government agency": "amber",
+              "Corporate giving": "violet",
+              "Individual donor": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "relationship",
+            "label": "Relationship",
+            "parityType": "status",
+            "choices": [
+              "Researching",
+              "Warm",
+              "Funder",
+              "Paused"
+            ],
+            "choiceColors": {
+              "Researching": "slate",
+              "Warm": "blue",
+              "Funder": "amber",
+              "Paused": "violet"
+            },
+            "required": true,
+            "default": "Researching",
+            "statusGroups": {
+              "Researching": "todo",
+              "Warm": "in_progress",
+              "Funder": "in_progress",
+              "Paused": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_check_in",
+            "label": "Next check-in",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Relationship owner",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "grants_count",
+            "label": "Grants (not declined)",
+            "parityType": "rollup",
+            "via": "grants",
+            "pick": "grant_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Drafting",
+                "Submitted",
+                "Awarded"
+              ]
+            }
+          },
+          {
+            "key": "awarded_total",
+            "label": "Awarded (USD)",
+            "parityType": "rollup",
+            "via": "grants",
+            "pick": "awarded",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Awarded"
+            }
+          },
+          {
+            "key": "asked_total",
+            "label": "Asked, still open (USD)",
+            "parityType": "rollup",
+            "via": "grants",
+            "pick": "ask",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Drafting",
+                "Submitted"
+              ]
+            }
+          },
+          {
+            "key": "add_grant",
+            "label": "Start an application",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "grant",
+              "template": "New grant",
+              "prefill": {
+                "funder": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_touch",
+            "label": "Log a conversation",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "touch",
+              "template": "New conversation",
+              "prefill": {
+                "funder": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New funder",
+            "values": {
+              "funder_name": "New funder",
+              "relationship": "Researching"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Giving priorities"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they fund, the size of typical grants and what they have said no to."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Application rules"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Cycles, portal, page limits and who reads the proposals."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "People"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Program officers and trustees, and how we know them."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "funder-1",
+            "values": {
+              "funder_name": "Halvorsen Family Foundation",
+              "kind": "Family foundation",
+              "relationship": "Funder",
+              "email": "grants@halvorsenfdn.net",
+              "next_check_in": "@today+9d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "funder-2",
+            "values": {
+              "funder_name": "Great Lakes Community Foundation",
+              "kind": "Community foundation",
+              "relationship": "Funder",
+              "email": "programs@greatlakescf.net",
+              "next_check_in": "@today+30d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "funder-3",
+            "values": {
+              "funder_name": "State Arts Board",
+              "kind": "Government agency",
+              "relationship": "Warm",
+              "email": "grants@statearts.net",
+              "next_check_in": "@today",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "funder-4",
+            "values": {
+              "funder_name": "Tallgrass Bank Community Fund",
+              "kind": "Corporate giving",
+              "relationship": "Warm",
+              "email": "community@tallgrassbank.net",
+              "next_check_in": "@today+4d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "funder-5",
+            "values": {
+              "funder_name": "Meridian Learning Trust",
+              "kind": "Family foundation",
+              "relationship": "Researching",
+              "email": "info@meridianlearning.net",
+              "next_check_in": "@today-3d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "funder-6",
+            "values": {
+              "funder_name": "Okafor-Strand Fund",
+              "kind": "Family foundation",
+              "relationship": "Researching",
+              "email": "office@okaforstrand.net",
+              "next_check_in": "@today+6d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "funder-7",
+            "values": {
+              "funder_name": "Northern Plains Cultural Alliance",
+              "kind": "Community foundation",
+              "relationship": "Funder",
+              "email": "grants@npculture.net",
+              "next_check_in": "@today+45d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "funder-8",
+            "values": {
+              "funder_name": "City Parks and Culture Office",
+              "kind": "Government agency",
+              "relationship": "Funder",
+              "email": "culture@cityparksoffice.net",
+              "next_check_in": "@today+14d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "funder-9",
+            "values": {
+              "funder_name": "Birchwood Industries Giving",
+              "kind": "Corporate giving",
+              "relationship": "Paused",
+              "email": "giving@birchwoodind.net",
+              "next_check_in": "@today+90d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "grant",
+        "name": "Grants",
+        "labelSingular": "Grant",
+        "labelPlural": "Grants",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-signature",
+        "titleField": "grant_name",
+        "describes": "Each application from first idea to award or decline, with what was asked and what was won.",
+        "subject": "thing",
+        "independentOf": {
+          "funder": "Either record can be created or change status before the other.",
+          "writer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "deadline",
+            "decision_on"
+          ],
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "grant_name",
+            "label": "Grant",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "funder",
+            "label": "Funder",
+            "parityType": "relation",
+            "relationTarget": "funder",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "program",
+            "label": "Program",
+            "parityType": "select",
+            "choices": [
+              "Studio classes",
+              "School residencies",
+              "Summer festival",
+              "General operating",
+              "Equipment"
+            ],
+            "choiceColors": {
+              "Studio classes": "slate",
+              "School residencies": "blue",
+              "Summer festival": "amber",
+              "General operating": "violet",
+              "Equipment": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Researching",
+              "Drafting",
+              "Submitted",
+              "Awarded",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Researching": "slate",
+              "Drafting": "blue",
+              "Submitted": "amber",
+              "Awarded": "violet",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Researching",
+            "statusGroups": {
+              "Researching": "in_progress",
+              "Drafting": "in_progress",
+              "Submitted": "in_progress",
+              "Awarded": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "deadline",
+            "label": "Application due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "decision_on",
+            "label": "Decision expected",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ask",
+            "label": "Amount asked (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "awarded",
+            "label": "Amount awarded (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "starts_on",
+            "label": "Grant period starts",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ends_on",
+            "label": "Grant period ends",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "writer",
+            "label": "Writer",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reports_open",
+            "label": "Reports still owed",
+            "parityType": "rollup",
+            "via": "reports",
+            "pick": "report_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Not started",
+                "Drafting"
+              ]
+            }
+          },
+          {
+            "key": "btn_submitted",
+            "label": "Mark submitted",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "grant_submitted"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_awarded",
+            "label": "Mark awarded",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "grant_awarded"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_declined",
+            "label": "Mark declined",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "grant_declined"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_report",
+            "label": "Add a funder report",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "report",
+              "template": "New report",
+              "prefill": {
+                "grant": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New grant",
+            "values": {
+              "grant_name": "New grant",
+              "status": "Researching"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Need and fit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The need this money meets and why this funder is the right one."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Budget notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the grant pays for and the match."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Application checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Letter of inquiry"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Narrative"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Budget"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Attachments"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Board list"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Final read"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "grant-1",
+            "values": {
+              "grant_name": "Studio classes sustaining grant",
+              "funder": "funder-1",
+              "program": "Studio classes",
+              "status": "Awarded",
+              "decision_on": "@today-260d",
+              "ask": 30000,
+              "awarded": 28000,
+              "starts_on": "@today-200d",
+              "ends_on": "@today+165d",
+              "writer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "grant-2",
+            "values": {
+              "grant_name": "Residency expansion request",
+              "funder": "funder-2",
+              "program": "School residencies",
+              "status": "Submitted",
+              "deadline": "@today-20d",
+              "decision_on": "@today+25d",
+              "ask": 45000,
+              "writer": "tm-1"
+            }
+          },
+          {
+            "key": "grant-3",
+            "values": {
+              "grant_name": "Summer festival sponsorship",
+              "funder": "funder-4",
+              "program": "Summer festival",
+              "status": "Drafting",
+              "deadline": "@today+5d",
+              "decision_on": "@today+60d",
+              "ask": 12000,
+              "writer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "grant-4",
+            "values": {
+              "grant_name": "Arts access project grant",
+              "funder": "funder-3",
+              "program": "School residencies",
+              "status": "Drafting",
+              "deadline": "@today",
+              "decision_on": "@today+90d",
+              "ask": 60000,
+              "writer": "tm-2"
+            }
+          },
+          {
+            "key": "grant-5",
+            "values": {
+              "grant_name": "Kiln and equipment upgrade",
+              "funder": "funder-5",
+              "program": "Equipment",
+              "status": "Researching",
+              "deadline": "@today+6d",
+              "decision_on": "@today+120d",
+              "ask": 18000,
+              "writer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "grant-6",
+            "values": {
+              "grant_name": "General operating, year two",
+              "funder": "funder-7",
+              "program": "General operating",
+              "status": "Awarded",
+              "decision_on": "@today-90d",
+              "ask": 50000,
+              "awarded": 50000,
+              "starts_on": "@today-60d",
+              "ends_on": "@today+305d",
+              "writer": "tm-1"
+            }
+          },
+          {
+            "key": "grant-7",
+            "values": {
+              "grant_name": "Festival permit and safety grant",
+              "funder": "funder-8",
+              "program": "Summer festival",
+              "status": "Awarded",
+              "decision_on": "@today-45d",
+              "ask": 9000,
+              "awarded": 8500,
+              "starts_on": "@today-20d",
+              "ends_on": "@today+160d",
+              "writer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "grant-8",
+            "values": {
+              "grant_name": "Teaching artist training",
+              "funder": "funder-6",
+              "program": "School residencies",
+              "status": "Researching",
+              "deadline": "@today-2d",
+              "decision_on": "@today+150d",
+              "ask": 15000,
+              "writer": "tm-2"
+            }
+          },
+          {
+            "key": "grant-9",
+            "values": {
+              "grant_name": "Studio rent relief",
+              "funder": "funder-2",
+              "program": "General operating",
+              "status": "Declined",
+              "decision_on": "@today-120d",
+              "ask": 25000,
+              "writer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "grant-10",
+            "values": {
+              "grant_name": "Youth showcase underwriting",
+              "funder": "funder-4",
+              "program": "Summer festival",
+              "status": "Submitted",
+              "deadline": "@today-10d",
+              "decision_on": "@today+14d",
+              "ask": 8000,
+              "writer": "tm-1"
+            }
+          },
+          {
+            "key": "grant-11",
+            "values": {
+              "grant_name": "Elder arts partnership",
+              "funder": "funder-1",
+              "program": "Studio classes",
+              "status": "Drafting",
+              "deadline": "@today+3d",
+              "decision_on": "@today+75d",
+              "ask": 22000,
+              "writer": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "report",
+        "name": "Funder reports",
+        "labelSingular": "Funder report",
+        "labelPlural": "Funder reports",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "report_name",
+        "describes": "The narrative, financial and final reports each awarded grant owes its funder.",
+        "subject": "thing",
+        "independentOf": {
+          "grant": "Either record can be created or change status before the other.",
+          "author": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "datePairs": [
+          {
+            "earlier": "grant.starts_on",
+            "later": "due_on"
+          }
+        ],
+        "fields": [
+          {
+            "key": "report_name",
+            "label": "Funder report",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "grant",
+            "label": "Grant",
+            "parityType": "relation",
+            "relationTarget": "grant",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Interim narrative",
+              "Financial report",
+              "Final report",
+              "Site visit"
+            ],
+            "choiceColors": {
+              "Interim narrative": "slate",
+              "Financial report": "blue",
+              "Final report": "amber",
+              "Site visit": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Not started",
+              "Drafting",
+              "Submitted",
+              "Accepted"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "Drafting": "blue",
+              "Submitted": "amber",
+              "Accepted": "violet"
+            },
+            "required": true,
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "in_progress",
+              "Drafting": "in_progress",
+              "Submitted": "done",
+              "Accepted": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_submitted",
+            "label": "Mark submitted",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "report_submitted"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New report",
+            "values": {
+              "report_name": "New report",
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the funder asked for"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Copy the exact questions from the grant agreement."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Numbers needed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Attendance and participant counts"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Spend against budget"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Outcome measures"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Stories and photos"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two short stories and permission status for each photo."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "report-1",
+            "values": {
+              "report_name": "Six-month narrative, studio classes",
+              "grant": "grant-1",
+              "kind": "Interim narrative",
+              "status": "Drafting",
+              "due_on": "@today+4d",
+              "author": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "report-2",
+            "values": {
+              "report_name": "Financial report, studio classes",
+              "grant": "grant-1",
+              "kind": "Financial report",
+              "status": "Not started",
+              "due_on": "@today+20d",
+              "author": "tm-3"
+            }
+          },
+          {
+            "key": "report-3",
+            "values": {
+              "report_name": "Operating grant interim report",
+              "grant": "grant-6",
+              "kind": "Interim narrative",
+              "status": "Not started",
+              "due_on": "@today+90d",
+              "author": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "report-4",
+            "values": {
+              "report_name": "Permit grant spend report",
+              "grant": "grant-7",
+              "kind": "Financial report",
+              "status": "Not started",
+              "due_on": "@today",
+              "author": "tm-3"
+            }
+          },
+          {
+            "key": "report-5",
+            "values": {
+              "report_name": "Operating grant site visit",
+              "grant": "grant-6",
+              "kind": "Site visit",
+              "status": "Not started",
+              "due_on": "@today-5d",
+              "author": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "report-6",
+            "values": {
+              "report_name": "Festival permit final report",
+              "grant": "grant-7",
+              "kind": "Final report",
+              "status": "Not started",
+              "due_on": "@today+170d",
+              "author": "tm-2"
+            }
+          },
+          {
+            "key": "report-7",
+            "values": {
+              "report_name": "Studio classes first-quarter note",
+              "grant": "grant-1",
+              "kind": "Interim narrative",
+              "status": "Accepted",
+              "due_on": "@today-40d",
+              "author": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "report-8",
+            "values": {
+              "report_name": "Operating grant first financials",
+              "grant": "grant-6",
+              "kind": "Financial report",
+              "status": "Submitted",
+              "due_on": "@today-12d",
+              "author": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "touch",
+        "name": "Conversations",
+        "labelSingular": "Conversation",
+        "labelPlural": "Conversations",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "message-circle",
+        "titleField": "touch_name",
+        "describes": "Calls, meetings and emails with funders, so the next person knows what was said.",
+        "subject": "thing",
+        "independentOf": {
+          "funder": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "touch_name",
+            "label": "Conversation",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "funder",
+            "label": "Funder",
+            "parityType": "relation",
+            "relationTarget": "funder",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "choices": [
+              "Call",
+              "Meeting",
+              "Email",
+              "Site visit",
+              "Event"
+            ],
+            "choiceColors": {
+              "Call": "slate",
+              "Meeting": "blue",
+              "Email": "amber",
+              "Site visit": "violet",
+              "Event": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "outcome",
+            "label": "Outcome",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Held",
+              "Follow-up needed"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Held": "blue",
+              "Follow-up needed": "amber"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Held": "done",
+              "Follow-up needed": "in_progress"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "held_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_held",
+            "label": "Mark held",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "touch_held"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New conversation",
+            "values": {
+              "touch_name": "New conversation",
+              "outcome": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agenda"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What we want to learn and what we want to ask for."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they said"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Their words, as close as you can remember them."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "touch-1",
+            "values": {
+              "touch_name": "Intro call with Meridian",
+              "funder": "funder-5",
+              "channel": "Call",
+              "outcome": "Follow-up needed",
+              "held_on": "@today-3d",
+              "notes": "Interested in teaching artist training. Asked for a two page concept note.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "touch-2",
+            "values": {
+              "touch_name": "Check-in with the State Arts Board",
+              "funder": "funder-3",
+              "channel": "Call",
+              "outcome": "Planned",
+              "held_on": "@today",
+              "notes": "Confirm the new portal opens next month."
+            }
+          },
+          {
+            "key": "touch-3",
+            "values": {
+              "touch_name": "Coffee with Tallgrass community lead",
+              "funder": "funder-4",
+              "channel": "Meeting",
+              "outcome": "Planned",
+              "held_on": "@today+2d",
+              "notes": "Bring festival attendance numbers.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "touch-4",
+            "values": {
+              "touch_name": "Halvorsen thank-you visit",
+              "funder": "funder-1",
+              "channel": "Site visit",
+              "outcome": "Planned",
+              "held_on": "@today+5d",
+              "notes": "Show the new studio floor."
+            }
+          },
+          {
+            "key": "touch-5",
+            "values": {
+              "touch_name": "Okafor-Strand intro email",
+              "funder": "funder-6",
+              "channel": "Email",
+              "outcome": "Planned",
+              "held_on": "@today+4d",
+              "notes": "Short note and a link to the annual report.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "touch-6",
+            "values": {
+              "touch_name": "City office budget briefing",
+              "funder": "funder-8",
+              "channel": "Meeting",
+              "outcome": "Held",
+              "held_on": "@today-14d",
+              "notes": "They expect flat funding next year."
+            }
+          },
+          {
+            "key": "touch-7",
+            "values": {
+              "touch_name": "Halvorsen thank-you call",
+              "funder": "funder-1",
+              "channel": "Call",
+              "outcome": "Held",
+              "held_on": "@today-30d",
+              "notes": "Pleased with enrollment numbers.",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "touch-8",
+            "values": {
+              "touch_name": "Great Lakes workshop",
+              "funder": "funder-2",
+              "channel": "Event",
+              "outcome": "Held",
+              "held_on": "@today-50d",
+              "notes": "Learned the new cycle opens in spring."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each funder belongs to one relationship owner.",
+        "fromTable": "funder",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "funder_by_owner"
+      },
+      {
+        "describes": "Each grant belongs to one funder.",
+        "fromTable": "grant",
+        "fromField": "funder",
+        "toTable": "funder",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "grants"
+      },
+      {
+        "describes": "Each grant belongs to one writer.",
+        "fromTable": "grant",
+        "fromField": "writer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "grant_by_writer"
+      },
+      {
+        "describes": "Each funder report belongs to one grant.",
+        "fromTable": "report",
+        "fromField": "grant",
+        "toTable": "grant",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "reports"
+      },
+      {
+        "describes": "Each funder report belongs to one author.",
+        "fromTable": "report",
+        "fromField": "author",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "report_by_author"
+      },
+      {
+        "describes": "Each conversation belongs to one funder.",
+        "fromTable": "touch",
+        "fromField": "funder",
+        "toTable": "funder",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "touches"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Lowell Ashworth-Kimura",
+              "role": "Grants manager",
+              "work_email": "lowell@riverbendarts.net",
+              "mobile": "(612) 555-0141",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Fatima Zielinski",
+              "role": "Program director",
+              "work_email": "fatima@riverbendarts.net",
+              "mobile": "(612) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Everett Soto-Lindgren",
+              "role": "Finance manager",
+              "work_email": "everett@riverbendarts.net",
+              "mobile": "(612) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Anneliese Boateng",
+              "role": "Executive director",
+              "work_email": "anneliese@riverbendarts.net",
+              "mobile": "(612) 555-0144",
+              "start_date": "@today-8y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Funder lead",
+        "describes": "Anyone on staff who hears of a possible funder can add it here.",
+        "audience": "staff",
+        "table": "funder",
+        "fields": [
+          {
+            "fieldKey": "funder_name",
+            "ask": "Who is the funder?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of funder is it?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Is there a contact email?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. The grants manager will research it."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "grant_submitted",
+        "table": "grant",
+        "name": "Mark submitted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Submitted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "grant_awarded",
+        "table": "grant",
+        "name": "Mark awarded",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Awarded"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "grant_declined",
+        "table": "grant",
+        "name": "Mark declined",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Declined"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "report_submitted",
+        "table": "report",
+        "name": "Mark submitted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Submitted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "touch_held",
+        "table": "touch",
+        "name": "Mark held",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "outcome",
+            "set": "value",
+            "value": "Held"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_funder",
+        "name": "All funders",
+        "table": "funder",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "funder_board",
+        "name": "By relationship",
+        "table": "funder",
+        "kind": "kanban",
+        "groupBy": "relationship"
+      },
+      {
+        "token": "funder_cal",
+        "name": "Calendar",
+        "table": "funder",
+        "kind": "calendar",
+        "dateField": "next_check_in",
+        "allDay": true
+      },
+      {
+        "token": "funder_over",
+        "name": "Overdue",
+        "table": "funder",
+        "kind": "grid",
+        "within": {
+          "next_check_in": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "relationship": [
+            "Researching",
+            "Warm"
+          ]
+        }
+      },
+      {
+        "token": "funder_week",
+        "name": "This week",
+        "table": "funder",
+        "kind": "grid",
+        "within": {
+          "next_check_in": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "relationship": [
+            "Researching",
+            "Warm"
+          ]
+        }
+      },
+      {
+        "token": "funder_next7",
+        "name": "Next 7 days",
+        "table": "funder",
+        "kind": "grid",
+        "within": {
+          "next_check_in": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "relationship": [
+            "Researching",
+            "Warm"
+          ]
+        }
+      },
+      {
+        "token": "funder_mine",
+        "name": "My funders",
+        "table": "funder",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_grant",
+        "name": "All grants",
+        "table": "grant",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "grant_board",
+        "name": "By status",
+        "table": "grant",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "grant_cal",
+        "name": "Calendar",
+        "table": "grant",
+        "kind": "calendar",
+        "dateField": "deadline",
+        "allDay": true
+      },
+      {
+        "token": "grant_over",
+        "name": "Overdue",
+        "table": "grant",
+        "kind": "grid",
+        "within": {
+          "deadline": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Researching",
+            "Drafting"
+          ]
+        }
+      },
+      {
+        "token": "grant_week",
+        "name": "This week",
+        "table": "grant",
+        "kind": "grid",
+        "within": {
+          "deadline": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Researching",
+            "Drafting"
+          ]
+        }
+      },
+      {
+        "token": "grant_next7",
+        "name": "Next 7 days",
+        "table": "grant",
+        "kind": "grid",
+        "within": {
+          "deadline": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Researching",
+            "Drafting"
+          ]
+        }
+      },
+      {
+        "token": "grant_mine",
+        "name": "My grants",
+        "table": "grant",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_report",
+        "name": "All funder reports",
+        "table": "report",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "report_board",
+        "name": "By status",
+        "table": "report",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "report_cal",
+        "name": "Calendar",
+        "table": "report",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "report_over",
+        "name": "Overdue",
+        "table": "report",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting"
+          ]
+        }
+      },
+      {
+        "token": "report_week",
+        "name": "This week",
+        "table": "report",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting"
+          ]
+        }
+      },
+      {
+        "token": "report_next7",
+        "name": "Next 7 days",
+        "table": "report",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting"
+          ]
+        }
+      },
+      {
+        "token": "report_mine",
+        "name": "My funder reports",
+        "table": "report",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_touch",
+        "name": "All conversations",
+        "table": "touch",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "touch_board",
+        "name": "By outcome",
+        "table": "touch",
+        "kind": "kanban",
+        "groupBy": "outcome"
+      },
+      {
+        "token": "touch_cal",
+        "name": "Calendar",
+        "table": "touch",
+        "kind": "calendar",
+        "dateField": "held_on",
+        "allDay": true
+      },
+      {
+        "token": "touch_over",
+        "name": "Overdue",
+        "table": "touch",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "outcome": [
+            "Planned",
+            "Follow-up needed"
+          ]
+        }
+      },
+      {
+        "token": "touch_week",
+        "name": "This week",
+        "table": "touch",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "outcome": [
+            "Planned",
+            "Follow-up needed"
+          ]
+        }
+      },
+      {
+        "token": "touch_next7",
+        "name": "Next 7 days",
+        "table": "touch",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "outcome": [
+            "Planned",
+            "Follow-up needed"
+          ]
+        }
+      },
+      {
+        "token": "touch_mine",
+        "name": "My conversations",
+        "table": "touch",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Grant Pipeline and Reporting Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "grant",
+          "describes": "Each application from first idea to award or decline, with what was asked and what was won."
+        },
+        {
+          "name": "related_tables",
+          "table": "funder",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many applications are being drafted right now?",
+        "whyItMatters": "The grants manager plans the week around them.",
+        "expect": {
+          "table": "grant",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Drafting"
+          },
+          "answer": 3,
+          "unit": "applications"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open funders.",
+        "action": {
+          "kind": "open",
+          "surface": "funder_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "funder_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open grants.",
+        "action": {
+          "kind": "open",
+          "surface": "grant_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "grant_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open funder reports.",
+        "action": {
+          "kind": "open",
+          "surface": "report_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "report_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "riverbendarts.net"
+      ],
+      "fictionalStreets": [
+        "Tamarack Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "grant-pipeline-desk",
+      "parent": null,
+      "title": "Grant Pipeline and Reporting Desk",
+      "icon": {
+        "emoji": "📑"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan every application, keep every deadline and never miss a report. Start with the Dashboard each Monday. Work the Overdue and Mine views, then check what is due in the next 7 days. When a grant is awarded, add its reports straight away so the dates are never lost."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:application-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:reporting-calendar"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:funder-research"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Funders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every foundation, agency and company you have funded by, or want to, with what they have given."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "funder",
+              "view": "funder_board"
+            },
+            "inline": true,
+            "title": "Funders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "fun-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "relationship"
+              },
+              {
+                "id": "fun-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_check_in"
+              },
+              {
+                "id": "fun-t",
+                "name": "All funders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "fun-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_check_in": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "relationship": [
+                    "Researching",
+                    "Warm"
+                  ]
+                }
+              },
+              {
+                "id": "fun-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_check_in": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "relationship": [
+                    "Researching",
+                    "Warm"
+                  ]
+                }
+              },
+              {
+                "id": "fun-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_check_in": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "relationship": [
+                    "Researching",
+                    "Warm"
+                  ]
+                }
+              },
+              {
+                "id": "fun-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "fun-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Grants"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each application from first idea to award or decline, with what was asked and what was won."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "grant",
+              "view": "grant_board"
+            },
+            "inline": true,
+            "title": "Grants",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "gra-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "gra-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "deadline"
+              },
+              {
+                "id": "gra-t",
+                "name": "All grants",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "gra-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "deadline": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Researching",
+                    "Drafting"
+                  ]
+                }
+              },
+              {
+                "id": "gra-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "deadline": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Researching",
+                    "Drafting"
+                  ]
+                }
+              },
+              {
+                "id": "gra-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "deadline": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Researching",
+                    "Drafting"
+                  ]
+                }
+              },
+              {
+                "id": "gra-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "gra-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Funder reports"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The narrative, financial and final reports each awarded grant owes its funder."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "report",
+              "view": "report_board"
+            },
+            "inline": true,
+            "title": "Funder reports",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rep-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rep-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "rep-t",
+                "name": "All funder reports",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rep-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting"
+                  ]
+                }
+              },
+              {
+                "id": "rep-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting"
+                  ]
+                }
+              },
+              {
+                "id": "rep-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting"
+                  ]
+                }
+              },
+              {
+                "id": "rep-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "rep-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Conversations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Calls, meetings and emails with funders, so the next person knows what was said."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "touch",
+              "view": "touch_board"
+            },
+            "inline": true,
+            "title": "Conversations",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tou-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "outcome"
+              },
+              {
+                "id": "tou-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "held_on"
+              },
+              {
+                "id": "tou-t",
+                "name": "All conversations",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tou-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "held_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "outcome": [
+                    "Planned",
+                    "Follow-up needed"
+                  ]
+                }
+              },
+              {
+                "id": "tou-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "held_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "outcome": [
+                    "Planned",
+                    "Follow-up needed"
+                  ]
+                }
+              },
+              {
+                "id": "tou-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "held_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "outcome": [
+                    "Planned",
+                    "Follow-up needed"
+                  ]
+                }
+              },
+              {
+                "id": "tou-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tou-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "grant-pipeline-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The grants year at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "grant",
+                      "view": "all_grant"
+                    },
+                    "inline": true,
+                    "title": "Grants by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Grants by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "grant",
+                      "view": "all_grant"
+                    },
+                    "inline": true,
+                    "title": "Amount asked by program (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Amount asked by program (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "program",
+                          "op": "sum",
+                          "field": "ask"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "grant",
+                      "view": "all_grant"
+                    },
+                    "inline": true,
+                    "title": "Amount awarded by program (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Amount awarded by program (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "program",
+                          "op": "sum",
+                          "field": "awarded"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "report",
+                      "view": "all_report"
+                    },
+                    "inline": true,
+                    "title": "Funder reports by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Funder reports by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Applications due in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "grant",
+              "view": "all_grant"
+            },
+            "inline": true,
+            "title": "Applications due in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Applications due in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "deadline": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Researching",
+                    "Drafting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reports overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "report",
+              "view": "all_report"
+            },
+            "inline": true,
+            "title": "Reports overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Reports overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check-ins this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "funder",
+              "view": "all_funder"
+            },
+            "inline": true,
+            "title": "Check-ins this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Check-ins this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "next_check_in": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Awarded (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sum of awarded amounts on that funder's grants marked Awarded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with the year's target on the first of each month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reports still owed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reports for the grant not yet submitted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Add every report when the award letter arrives"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Asked, still open (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Amounts asked on grants still being drafted or submitted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use it to forecast the year, but count only awards as money"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "application-checklist",
+      "parent": "grant-pipeline-desk",
+      "title": "Application checklist",
+      "icon": {
+        "emoji": "📝"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Funders reject careless applications faster than weak ideas. This checklist keeps the basics from sinking a good proposal."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before writing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read the guidelines twice and note page limits"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm eligibility and the geographic area"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call the program officer if anything is unclear"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Put the due date and two internal deadlines on the calendar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "State the need with one number a stranger would remember"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Describe what will change and how you will know"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Match the budget lines to the narrative"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask a colleague outside the program to read it cold"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before submitting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Attach every document asked for, with the requested file names"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the portal limit on characters and file size"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Submit one day early"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Press Mark submitted and add the decision date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "reporting-calendar",
+      "parent": "grant-pipeline-desk",
+      "title": "After the award: reporting",
+      "icon": {
+        "emoji": "📆"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A grant is only finished when the final report is accepted. The funder remembers late reports at renewal time."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day the award arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark awarded and enter the amount and the grant period dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the agreement and list every report with its due date in the Reports table."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the program director what the money must be spent on, in plain words."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each reporting period"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect numbers monthly so the report is a summary, not a research project."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep two stories and two photos with permission on file."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the draft to finance two weeks before the due date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If something changes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a program changes or money cannot be spent as planned, email the program officer before the change, not after. Note the answer on the grant row."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "funder-research",
+      "parent": "grant-pipeline-desk",
+      "title": "Researching a funder",
+      "icon": {
+        "emoji": "🔎"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The best use of a grant writer's time is a short list of funders who already care about your work."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to look for"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Question"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where to find it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What do they fund and what have they said no to?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Their guidelines and recent award list"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "How big is a typical grant?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Annual report or tax filing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Who decides and when?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Program page and the deadline calendar"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Who do we already know there?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Board, volunteers, past funders"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to record"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add the funder to the Funders table as Researching."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log the first conversation in Conversations."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the funder to Warm only after a real conversation."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

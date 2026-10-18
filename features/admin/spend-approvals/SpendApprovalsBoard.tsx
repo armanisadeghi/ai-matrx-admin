@@ -35,6 +35,7 @@ import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import { recordToast, toast } from "@/lib/toast";
 import {
   APPROVAL_STATUS_LABEL,
+  COVERED_LABEL,
   SUBJECT_KIND_LABEL,
   costTone,
   decideSpendApproval,
@@ -45,6 +46,8 @@ import {
   startedByLabel,
   fetchSpendApprovalHistory,
   firstRunHref,
+  isCovered,
+  isWaiting,
   subjectHref,
   approvalSubjectHref,
   approvalRecordHref,
@@ -66,10 +69,11 @@ import { useSpendApprovalsData } from "./useSpendApprovalsData";
 import { ApprovalEditBody } from "./ApprovalEditBody";
 /** The board's table id — and so its URL namespace (`table.<id>.*`). */
 export const spendApprovalsTableId = (seat: ApprovalSeat) => `spend-approvals-${seat}`;
-type StatusFilter = ApprovalStatus | "all";
+type StatusFilter = ApprovalStatus | "covered" | "all";
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "waiting", label: "Waiting" },
+  { value: "covered", label: "Covered" },
   { value: "approved", label: "Approved" },
   { value: "temporary", label: "Temporary" },
   { value: "rejected", label: "Rejected" },
@@ -362,7 +366,7 @@ export function SpendApprovalsBoard({
   // embedded board keeps it local: two boards never share one parameter).
   const [urlStatus, setUrlStatus] = useUrlState(
     `table.${spendApprovalsTableId(seat)}.status`,
-    enumUrlCodec<StatusFilter>(["all", "waiting", "approved", "temporary", "rejected"], "all"),
+    enumUrlCodec<StatusFilter>(["all", "waiting", "covered", "approved", "temporary", "rejected"], "all"),
   );
   const [localStatus, setLocalStatus] = useState<StatusFilter>("all");
   const status = subject ? localStatus : urlStatus;
@@ -376,7 +380,7 @@ export function SpendApprovalsBoard({
   const activeRowId = activeSubject
     ? (rows.find((r) => r.subject_kind === activeSubject.kind && r.subject_id === activeSubject.id)?.id ?? null)
     : null;
-  const visible = own.filter((r) => status === "all" || r.status === status);
+  const visible = own.filter((r) => status === "all" || (status === "waiting" ? isWaiting(r) : status === "covered" ? isCovered(r) : r.status === status));
   useEffect(() => {
     if (onRows && !loading) onRows(own);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- own is derived from rows + subject
@@ -525,16 +529,17 @@ export function SpendApprovalsBoard({
     {
       id: "status",
       header: "Approval status",
-      accessorFn: (r) => r.status,
+      accessorFn: (r) => (isCovered(r) ? "covered" : r.status),
       filter: "select",
       filterOptions: [
         { value: "waiting", label: "Waiting" },
+        { value: "covered", label: "Covered" },
         { value: "approved", label: "Approved" },
         { value: "temporary", label: "Temporary" },
         { value: "rejected", label: "Rejected" },
       ],
       kpi: [
-        { id: "waiting", op: "count", label: "Waiting", countWhere: (r) => r.status === "waiting", tone: (n) => (n > 0 ? "warning" : undefined) },
+        { id: "waiting", op: "count", label: "Waiting", countWhere: (r) => isWaiting(r), tone: (n) => (n > 0 ? "warning" : undefined) },
         { id: "rejected", op: "count", label: "Rejected", countWhere: (r) => r.status === "rejected" },
       ],
       width: 250,
@@ -542,7 +547,12 @@ export function SpendApprovalsBoard({
         const tone = r.status === "temporary" && knobs ? expiryTone(r.expires_at, knobs.expiryWarnDays) : null;
         return (
           <div className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-            {r.can_decide ? (
+            {isCovered(r) ? (
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs" title="The agent's own approval already lets this run; nothing is waiting here.">
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-success" />
+                {COVERED_LABEL}
+              </span>
+            ) : r.can_decide ? (
               <ApprovalStatusSelect
                 status={r.status}
                 name={r.subject_name ?? r.subject_id}
@@ -592,7 +602,7 @@ export function SpendApprovalsBoard({
     ...usdColumns("est_monthly_cost", "Est./month", (r) => r.est_monthly_cost, 110, {
       tone: (r) => rowTone(monthlyTone(r.est_monthly_cost)),
       kpi: [
-        { id: "waiting_monthly", op: "sum", label: "Waiting est./month", where: (r) => r.status === "waiting", tone: (v) => rowTone(monthlyTone(v)) },
+        { id: "waiting_monthly", op: "sum", label: "Waiting est./month", where: (r) => isWaiting(r), tone: (v) => rowTone(monthlyTone(v)) },
         { id: "approved_monthly", op: "sum", label: "Approved est./month", where: (r) => r.status === "approved" || r.status === "temporary" },
       ],
     }),

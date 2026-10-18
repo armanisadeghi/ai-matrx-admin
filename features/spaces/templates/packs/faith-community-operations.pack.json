@@ -1,0 +1,3688 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0553",
+  "version": 1,
+  "title": "Faith Community Operations Hub",
+  "description": "Members, services, rooms, care requests and volunteers for a congregation.",
+  "forWho": "Churches, temples, mosques and other faith communities",
+  "icon": {
+    "emoji": "🕊️"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "nonprofit",
+  "tags": [
+    "congregation",
+    "events",
+    "rooms",
+    "care",
+    "members"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-faith-community-operations",
+    "catalogueId": "SP0553",
+    "useCase": "Rosalind Achterberg-Mensah is the administrator of a mid-size congregation and uses this to see which rooms are booked, which care visits are due and who joined this season.",
+    "industry": "nonprofit_community",
+    "vertical": "Faith community operations",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Willowmere Community Fellowship",
+      "describes": "A congregation of about 220 households with weekly services, a youth group, a food pantry night and a hall rented to neighbors.",
+      "address": {
+        "line1": "310 Kestrel Avenue",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0152",
+      "website": "willowmerefellowship.net",
+      "email": "office@willowmerefellowship.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-faith-community-operations",
+    "tables": [
+      {
+        "token": "household",
+        "name": "Households",
+        "labelSingular": "Household",
+        "labelPlural": "Households",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "home",
+        "titleField": "household_name",
+        "describes": "Each household in the community, from first visit to long-time member.",
+        "subject": "thing",
+        "independentOf": {
+          "shepherd": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "joined_on",
+            "follow_up_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "household_name",
+            "label": "Household",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Visitor",
+              "Exploring",
+              "Member",
+              "Away"
+            ],
+            "choiceColors": {
+              "Visitor": "slate",
+              "Exploring": "blue",
+              "Member": "amber",
+              "Away": "violet"
+            },
+            "required": true,
+            "default": "Visitor",
+            "statusGroups": {
+              "Visitor": "in_progress",
+              "Exploring": "in_progress",
+              "Member": "in_progress",
+              "Away": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "people",
+            "label": "People in household",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "joined_on",
+            "label": "First visit",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "follow_up_on",
+            "label": "Next follow-up",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shepherd",
+            "label": "Contact person",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "care_open",
+            "label": "Open care requests",
+            "parityType": "rollup",
+            "via": "care",
+            "pick": "care_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Requested",
+                "Scheduled"
+              ]
+            }
+          },
+          {
+            "key": "care_total",
+            "label": "Care visits made",
+            "parityType": "rollup",
+            "via": "care",
+            "pick": "care_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "btn_member",
+            "label": "Mark member",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "household_member"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_care",
+            "label": "Add a care request",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "care",
+              "template": "New care request",
+              "prefill": {
+                "household": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New household",
+            "values": {
+              "household_name": "New household",
+              "status": "Visitor"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How they found us"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who invited them or how they heard."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Interests"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Groups, music, service or children's programs they asked about."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Welcome checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Welcome note sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Introduced to a host family"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Added to the newsletter"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invited to a small group"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "household-1",
+            "values": {
+              "household_name": "The Okonkwo-Hartley family",
+              "status": "Member",
+              "email": "okonkwo.hartley@mailbox.net",
+              "phone": "(503) 555-0131",
+              "people": 4,
+              "joined_on": "@today-1500d",
+              "follow_up_on": "@today+20d",
+              "shepherd": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-2",
+            "values": {
+              "household_name": "Thomasina Reyes",
+              "status": "Member",
+              "email": "thomasina.r@mailbox.net",
+              "phone": "(503) 555-0132",
+              "people": 1,
+              "joined_on": "@today-3000d",
+              "follow_up_on": "@today+5d",
+              "shepherd": "tm-2"
+            }
+          },
+          {
+            "key": "household-3",
+            "values": {
+              "household_name": "The Lindahl-Basu family",
+              "status": "Exploring",
+              "email": "lindahl.basu@mailbox.net",
+              "phone": "(503) 555-0133",
+              "people": 3,
+              "joined_on": "@today-45d",
+              "follow_up_on": "@today",
+              "shepherd": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-4",
+            "values": {
+              "household_name": "Gus and Pilar Ferreira",
+              "status": "Member",
+              "email": "ferreira.gp@mailbox.net",
+              "phone": "(503) 555-0134",
+              "people": 2,
+              "joined_on": "@today-900d",
+              "follow_up_on": "@today+30d",
+              "shepherd": "tm-2"
+            }
+          },
+          {
+            "key": "household-5",
+            "values": {
+              "household_name": "Wei Zhang-Pettigrew",
+              "status": "Visitor",
+              "email": "wei.zp@mailbox.net",
+              "phone": "(503) 555-0135",
+              "people": 1,
+              "joined_on": "@today-6d",
+              "follow_up_on": "@today+3d",
+              "shepherd": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-6",
+            "values": {
+              "household_name": "The Abdi family",
+              "status": "Exploring",
+              "email": "abdi.family@mailbox.net",
+              "phone": "(503) 555-0136",
+              "people": 5,
+              "joined_on": "@today-20d",
+              "follow_up_on": "@today-2d",
+              "shepherd": "tm-1"
+            }
+          },
+          {
+            "key": "household-7",
+            "values": {
+              "household_name": "Mortimer Sandoval-Quigley",
+              "status": "Member",
+              "email": "mort.sq@mailbox.net",
+              "phone": "(503) 555-0137",
+              "people": 1,
+              "joined_on": "@today-4000d",
+              "follow_up_on": "@today+9d",
+              "shepherd": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-8",
+            "values": {
+              "household_name": "The Vasquez-Holm family",
+              "status": "Away",
+              "email": "vasquez.holm@mailbox.net",
+              "phone": "(503) 555-0138",
+              "people": 4,
+              "joined_on": "@today-700d",
+              "follow_up_on": "@today+60d",
+              "shepherd": "tm-1"
+            }
+          },
+          {
+            "key": "household-9",
+            "values": {
+              "household_name": "Perpetua Nwachukwu",
+              "status": "Visitor",
+              "email": "perpetua.n@mailbox.net",
+              "phone": "(503) 555-0139",
+              "people": 2,
+              "joined_on": "@today-2d",
+              "follow_up_on": "@today+6d",
+              "shepherd": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "household-10",
+            "values": {
+              "household_name": "The Kowalczyk-Mbeki family",
+              "status": "Member",
+              "email": "kowalczyk.mbeki@mailbox.net",
+              "phone": "(503) 555-0140",
+              "people": 3,
+              "joined_on": "@today-1100d",
+              "follow_up_on": "@today+14d",
+              "shepherd": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "event",
+        "name": "Events",
+        "labelSingular": "Event",
+        "labelPlural": "Events",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar",
+        "titleField": "event_name",
+        "describes": "Services, classes, rentals and gatherings, each booked into a room.",
+        "subject": "thing",
+        "independentOf": {
+          "room": "Either record can be created or change status before the other.",
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "Event",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "relation",
+            "relationTarget": "room",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Service",
+              "Class",
+              "Youth group",
+              "Community meal",
+              "Rental",
+              "Funeral or wedding",
+              "Meeting"
+            ],
+            "choiceColors": {
+              "Service": "slate",
+              "Class": "blue",
+              "Youth group": "amber",
+              "Community meal": "violet",
+              "Rental": "teal",
+              "Funeral or wedding": "green",
+              "Meeting": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Planned",
+              "Confirmed",
+              "Done",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Confirmed": "blue",
+              "Done": "amber",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "in_progress",
+              "Confirmed": "in_progress",
+              "Done": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "starts_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expected",
+            "label": "Expected attendance",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead",
+            "label": "Event lead",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "helpers",
+            "label": "Volunteer roles filled",
+            "parityType": "rollup",
+            "via": "roles",
+            "pick": "role_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Filled"
+            }
+          },
+          {
+            "key": "helpers_open",
+            "label": "Volunteer roles open",
+            "parityType": "rollup",
+            "via": "roles",
+            "pick": "role_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Open"
+            }
+          },
+          {
+            "key": "fits",
+            "label": "Room check",
+            "parityType": "formula",
+            "formula": "IF({Expected attendance} > 0, \"Check capacity\", \"No count yet\")",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_confirm",
+            "label": "Confirm",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "event_confirm"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "event_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_role",
+            "label": "Add a volunteer role",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "role",
+              "template": "New role",
+              "prefill": {
+                "event": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New event",
+            "values": {
+              "event_name": "New event",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What happens, in order, with times."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup and clean-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Room set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sound check"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Greeters in place"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Room reset"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Kitchen clean"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "event-1",
+            "values": {
+              "event_name": "Sunday gathering",
+              "room": "room-1",
+              "kind": "Service",
+              "status": "Confirmed",
+              "starts_at": "@today+3d 10:00",
+              "expected": 180,
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-2",
+            "values": {
+              "event_name": "Youth group night",
+              "room": "room-4",
+              "kind": "Youth group",
+              "status": "Confirmed",
+              "starts_at": "@today+2d 18:30",
+              "expected": 22,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "event-3",
+            "values": {
+              "event_name": "Pantry night",
+              "room": "room-2",
+              "kind": "Community meal",
+              "status": "Confirmed",
+              "starts_at": "@today 17:00",
+              "expected": 90,
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-4",
+            "values": {
+              "event_name": "Neighborhood association meeting",
+              "room": "room-2",
+              "kind": "Rental",
+              "status": "Planned",
+              "starts_at": "@today+5d 19:00",
+              "expected": 40,
+              "lead": "tm-4"
+            }
+          },
+          {
+            "key": "event-5",
+            "values": {
+              "event_name": "Choir rehearsal",
+              "room": "room-1",
+              "kind": "Class",
+              "status": "Confirmed",
+              "starts_at": "@today+1d 19:00",
+              "expected": 24,
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-6",
+            "values": {
+              "event_name": "Memorial gathering for a longtime member",
+              "room": "room-2",
+              "kind": "Funeral or wedding",
+              "status": "Planned",
+              "starts_at": "@today+6d 14:00",
+              "expected": 110,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "event-7",
+            "values": {
+              "event_name": "Children's story circle",
+              "room": "room-3",
+              "kind": "Class",
+              "status": "Confirmed",
+              "starts_at": "@today+4d 10:30",
+              "expected": 12,
+              "lead": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-8",
+            "values": {
+              "event_name": "Sunday gathering, last week",
+              "room": "room-1",
+              "kind": "Service",
+              "status": "Done",
+              "starts_at": "@today-4d 10:00",
+              "expected": 175,
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "event-9",
+            "values": {
+              "event_name": "Quilting circle",
+              "room": "room-6",
+              "kind": "Meeting",
+              "status": "Planned",
+              "starts_at": "@today-1d 13:00",
+              "expected": 14,
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-10",
+            "values": {
+              "event_name": "Winter fair set-up",
+              "room": "room-2",
+              "kind": "Community meal",
+              "status": "Cancelled",
+              "starts_at": "@today-9d 09:00",
+              "expected": 30,
+              "lead": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "room",
+        "name": "Rooms",
+        "labelSingular": "Room",
+        "labelPlural": "Rooms",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "door-open",
+        "titleField": "room_name",
+        "describes": "Every space the community uses or rents out, with its size and how many events are booked.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "room_name",
+            "label": "Room",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Sanctuary",
+              "Hall",
+              "Classroom",
+              "Kitchen",
+              "Outdoor space"
+            ],
+            "choiceColors": {
+              "Sanctuary": "slate",
+              "Hall": "blue",
+              "Classroom": "amber",
+              "Kitchen": "violet",
+              "Outdoor space": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "capacity",
+            "label": "Capacity (people)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rental_rate",
+            "label": "Rental rate per event (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "booked_count",
+            "label": "Upcoming or open bookings",
+            "parityType": "rollup",
+            "via": "events",
+            "pick": "event_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Planned",
+                "Confirmed"
+              ]
+            }
+          },
+          {
+            "key": "all_bookings",
+            "label": "All bookings",
+            "parityType": "rollup",
+            "via": "events",
+            "pick": "event_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New room",
+            "values": {
+              "room_name": "New room"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Tables, chairs, sound system and who has the keys."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "House rules"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Food, candles, noise limits and clean-up."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "room-1",
+            "values": {
+              "room_name": "Main sanctuary",
+              "kind": "Sanctuary",
+              "capacity": 260,
+              "rental_rate": 350
+            }
+          },
+          {
+            "key": "room-2",
+            "values": {
+              "room_name": "Fellowship hall",
+              "kind": "Hall",
+              "capacity": 120,
+              "rental_rate": 200
+            }
+          },
+          {
+            "key": "room-3",
+            "values": {
+              "room_name": "Room 1, children's classroom",
+              "kind": "Classroom",
+              "capacity": 25,
+              "rental_rate": 60
+            }
+          },
+          {
+            "key": "room-4",
+            "values": {
+              "room_name": "Room 2, youth room",
+              "kind": "Classroom",
+              "capacity": 35,
+              "rental_rate": 60
+            }
+          },
+          {
+            "key": "room-5",
+            "values": {
+              "room_name": "Kitchen",
+              "kind": "Kitchen",
+              "capacity": 12,
+              "rental_rate": 100
+            }
+          },
+          {
+            "key": "room-6",
+            "values": {
+              "room_name": "Garden courtyard",
+              "kind": "Outdoor space",
+              "capacity": 80,
+              "rental_rate": 150
+            }
+          }
+        ]
+      },
+      {
+        "token": "role",
+        "name": "Volunteer roles",
+        "labelSingular": "Volunteer role",
+        "labelPlural": "Volunteer roles",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "role_name",
+        "describes": "The jobs each event needs filled, like greeter, sound, nursery or kitchen.",
+        "subject": "thing",
+        "independentOf": {
+          "event": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "role_name",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "event",
+            "label": "Event",
+            "parityType": "relation",
+            "relationTarget": "event",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "select",
+            "choices": [
+              "Greeting",
+              "Sound and video",
+              "Nursery",
+              "Kitchen",
+              "Setup",
+              "Music"
+            ],
+            "choiceColors": {
+              "Greeting": "slate",
+              "Sound and video": "blue",
+              "Nursery": "amber",
+              "Kitchen": "violet",
+              "Setup": "teal",
+              "Music": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Open",
+              "Filled",
+              "Not needed"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Filled": "blue",
+              "Not needed": "amber"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "todo",
+              "Filled": "done",
+              "Not needed": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "role_day",
+            "label": "Needed on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "who",
+            "label": "Who is doing it",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_filled",
+            "label": "Mark filled",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "role_filled"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New role",
+            "values": {
+              "role_name": "New role",
+              "status": "Open"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the job involves"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Arrival time, tasks and who to ask for help."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "role-1",
+            "values": {
+              "role_name": "Sunday greeters",
+              "event": "event-1",
+              "area": "Greeting",
+              "status": "Filled",
+              "role_day": "@today+3d",
+              "who": "Marguerite O. and Tomas",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "role-2",
+            "values": {
+              "role_name": "Sunday nursery",
+              "event": "event-1",
+              "area": "Nursery",
+              "status": "Open",
+              "role_day": "@today+3d"
+            }
+          },
+          {
+            "key": "role-3",
+            "values": {
+              "role_name": "Pantry kitchen team",
+              "event": "event-3",
+              "area": "Kitchen",
+              "status": "Open",
+              "role_day": "@today",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "role-4",
+            "values": {
+              "role_name": "Pantry setup",
+              "event": "event-3",
+              "area": "Setup",
+              "status": "Filled",
+              "role_day": "@today",
+              "who": "Gus and Pilar"
+            }
+          },
+          {
+            "key": "role-5",
+            "values": {
+              "role_name": "Choir piano",
+              "event": "event-5",
+              "area": "Music",
+              "status": "Filled",
+              "role_day": "@today+1d",
+              "who": "Marit",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "role-6",
+            "values": {
+              "role_name": "Youth group snacks",
+              "event": "event-2",
+              "area": "Kitchen",
+              "status": "Open",
+              "role_day": "@today+2d"
+            }
+          },
+          {
+            "key": "role-7",
+            "values": {
+              "role_name": "Memorial gathering hosts",
+              "event": "event-6",
+              "area": "Greeting",
+              "status": "Open",
+              "role_day": "@today+6d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "role-8",
+            "values": {
+              "role_name": "Sunday sound and video",
+              "event": "event-1",
+              "area": "Sound and video",
+              "status": "Filled",
+              "role_day": "@today+3d",
+              "who": "Mortimer"
+            }
+          },
+          {
+            "key": "role-9",
+            "values": {
+              "role_name": "Story circle helper",
+              "event": "event-7",
+              "area": "Nursery",
+              "status": "Open",
+              "role_day": "@today-1d",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "care",
+        "name": "Care requests",
+        "labelSingular": "Care request",
+        "labelPlural": "Care requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "heart",
+        "titleField": "care_name",
+        "describes": "Visits, meals, rides and calls people ask for or others notice are needed.",
+        "subject": "thing",
+        "independentOf": {
+          "household": "Either record can be created or change status before the other.",
+          "assigned": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "care_name",
+            "label": "Request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "household",
+            "label": "Household",
+            "parityType": "relation",
+            "relationTarget": "household",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Visit",
+              "Meal",
+              "Ride",
+              "Phone call",
+              "Hospital visit",
+              "Practical help"
+            ],
+            "choiceColors": {
+              "Visit": "slate",
+              "Meal": "blue",
+              "Ride": "amber",
+              "Phone call": "violet",
+              "Hospital visit": "teal",
+              "Practical help": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Requested",
+              "Scheduled",
+              "Done",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Scheduled": "blue",
+              "Done": "amber",
+              "Declined": "red"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "todo",
+              "Scheduled": "in_progress",
+              "Done": "done",
+              "Declined": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visit_by",
+            "label": "Visit by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "assigned",
+            "label": "Care volunteer",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_scheduled",
+            "label": "Mark scheduled",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "care_scheduled"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "care_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New care request",
+            "values": {
+              "care_name": "New care request",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is needed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "In their words, with permission to share what is written here."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes after the visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was said, and anything for the next person."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "care-1",
+            "values": {
+              "care_name": "Weekly call to Thomasina",
+              "household": "household-2",
+              "kind": "Phone call",
+              "status": "Scheduled",
+              "visit_by": "@today",
+              "assigned": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "care-2",
+            "values": {
+              "care_name": "Meal train after knee surgery",
+              "household": "household-4",
+              "kind": "Meal",
+              "status": "Requested",
+              "visit_by": "@today+2d",
+              "assigned": "tm-2"
+            }
+          },
+          {
+            "key": "care-3",
+            "values": {
+              "care_name": "Ride to Tuesday appointments",
+              "household": "household-7",
+              "kind": "Ride",
+              "status": "Scheduled",
+              "visit_by": "@today+1d",
+              "assigned": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "care-4",
+            "values": {
+              "care_name": "Visit new family",
+              "household": "household-3",
+              "kind": "Visit",
+              "status": "Requested",
+              "visit_by": "@today-2d",
+              "assigned": "tm-1"
+            }
+          },
+          {
+            "key": "care-5",
+            "values": {
+              "care_name": "Help moving boxes",
+              "household": "household-1",
+              "kind": "Practical help",
+              "status": "Requested",
+              "visit_by": "@today+5d",
+              "assigned": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "care-6",
+            "values": {
+              "care_name": "Hospital visit",
+              "household": "household-10",
+              "kind": "Hospital visit",
+              "status": "Scheduled",
+              "visit_by": "@today+3d",
+              "assigned": "tm-2"
+            }
+          },
+          {
+            "key": "care-7",
+            "values": {
+              "care_name": "Welcome visit, Wei",
+              "household": "household-5",
+              "kind": "Visit",
+              "status": "Requested",
+              "visit_by": "@today+4d",
+              "assigned": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "care-8",
+            "values": {
+              "care_name": "Meal after new baby",
+              "household": "household-10",
+              "kind": "Meal",
+              "status": "Done",
+              "visit_by": "@today-20d",
+              "assigned": "tm-2"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each household belongs to one contact person.",
+        "fromTable": "household",
+        "fromField": "shepherd",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "household_by_shepherd"
+      },
+      {
+        "describes": "Each event belongs to one room.",
+        "fromTable": "event",
+        "fromField": "room",
+        "toTable": "room",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "events"
+      },
+      {
+        "describes": "Each event belongs to one event lead.",
+        "fromTable": "event",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "event_by_lead"
+      },
+      {
+        "describes": "Each volunteer role belongs to one event.",
+        "fromTable": "role",
+        "fromField": "event",
+        "toTable": "event",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "roles"
+      },
+      {
+        "describes": "Each care request belongs to one household.",
+        "fromTable": "care",
+        "fromField": "household",
+        "toTable": "household",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "care"
+      },
+      {
+        "describes": "Each care request belongs to one care volunteer.",
+        "fromTable": "care",
+        "fromField": "assigned",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "care_by_assigned"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Rosalind Achterberg-Mensah",
+              "role": "Administrator",
+              "work_email": "rosalind@willowmerefellowship.net",
+              "mobile": "(503) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Cassius Obi-Lindqvist",
+              "role": "Care coordinator",
+              "work_email": "cassius@willowmerefellowship.net",
+              "mobile": "(503) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Marit Delgado",
+              "role": "Music and worship lead",
+              "work_email": "marit@willowmerefellowship.net",
+              "mobile": "(503) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Yosef Barnard-Tran",
+              "role": "Facilities steward",
+              "work_email": "yosef@willowmerefellowship.net",
+              "mobile": "(503) 555-0144",
+              "start_date": "@today-5y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Visitor card",
+        "describes": "Fill in once a visitor says hello.",
+        "audience": "staff",
+        "table": "household",
+        "fields": [
+          {
+            "fieldKey": "household_name",
+            "ask": "What is your name or family name?",
+            "required": true
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?"
+          },
+          {
+            "fieldKey": "people",
+            "ask": "How many people are in your household?"
+          },
+          {
+            "fieldKey": "joined_on",
+            "ask": "What date did you visit?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Welcome. Someone will be in touch this week."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "household_member",
+        "table": "household",
+        "name": "Mark member",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Member"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "event_confirm",
+        "table": "event",
+        "name": "Confirm",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "event_done",
+        "table": "event",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "role_filled",
+        "table": "role",
+        "name": "Mark filled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Filled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "care_scheduled",
+        "table": "care",
+        "name": "Mark scheduled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Scheduled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "care_done",
+        "table": "care",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_household",
+        "name": "All households",
+        "table": "household",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "household_board",
+        "name": "By status",
+        "table": "household",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "household_cal",
+        "name": "Calendar",
+        "table": "household",
+        "kind": "calendar",
+        "dateField": "follow_up_on",
+        "allDay": true
+      },
+      {
+        "token": "household_over",
+        "name": "Overdue",
+        "table": "household",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Visitor",
+            "Exploring"
+          ]
+        }
+      },
+      {
+        "token": "household_week",
+        "name": "This week",
+        "table": "household",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Visitor",
+            "Exploring"
+          ]
+        }
+      },
+      {
+        "token": "household_next7",
+        "name": "Next 7 days",
+        "table": "household",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Visitor",
+            "Exploring"
+          ]
+        }
+      },
+      {
+        "token": "household_mine",
+        "name": "My households",
+        "table": "household",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_event",
+        "name": "All events",
+        "table": "event",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "event_board",
+        "name": "By status",
+        "table": "event",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "event_cal",
+        "name": "Calendar",
+        "table": "event",
+        "kind": "calendar",
+        "dateField": "starts_at",
+        "allDay": false
+      },
+      {
+        "token": "event_today",
+        "name": "Today",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "event_over",
+        "name": "Overdue",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "event_week",
+        "name": "This week",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "event_next7",
+        "name": "Next 7 days",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "event_mine",
+        "name": "My events",
+        "table": "event",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_room",
+        "name": "All rooms",
+        "table": "room",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "room_board",
+        "name": "By kind",
+        "table": "room",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_role",
+        "name": "All volunteer roles",
+        "table": "role",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "role_board",
+        "name": "By status",
+        "table": "role",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "role_cal",
+        "name": "Calendar",
+        "table": "role",
+        "kind": "calendar",
+        "dateField": "role_day",
+        "allDay": true
+      },
+      {
+        "token": "role_over",
+        "name": "Overdue",
+        "table": "role",
+        "kind": "grid",
+        "within": {
+          "role_day": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "role_week",
+        "name": "This week",
+        "table": "role",
+        "kind": "grid",
+        "within": {
+          "role_day": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "role_next7",
+        "name": "Next 7 days",
+        "table": "role",
+        "kind": "grid",
+        "within": {
+          "role_day": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "role_mine",
+        "name": "My volunteer roles",
+        "table": "role",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_care",
+        "name": "All care requests",
+        "table": "care",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "care_board",
+        "name": "By status",
+        "table": "care",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "care_cal",
+        "name": "Calendar",
+        "table": "care",
+        "kind": "calendar",
+        "dateField": "visit_by",
+        "allDay": true
+      },
+      {
+        "token": "care_over",
+        "name": "Overdue",
+        "table": "care",
+        "kind": "grid",
+        "within": {
+          "visit_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "care_week",
+        "name": "This week",
+        "table": "care",
+        "kind": "grid",
+        "within": {
+          "visit_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "care_next7",
+        "name": "Next 7 days",
+        "table": "care",
+        "kind": "grid",
+        "within": {
+          "visit_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "care_mine",
+        "name": "My care requests",
+        "table": "care",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Faith Community Operations Hub assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "event",
+          "describes": "Services, classes, rentals and gatherings, each booked into a room."
+        },
+        {
+          "name": "related_tables",
+          "table": "household",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many events are confirmed?",
+        "whyItMatters": "The administrator prepares rooms each Thursday.",
+        "expect": {
+          "table": "event",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Confirmed"
+          },
+          "answer": 5,
+          "unit": "events"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open households.",
+        "action": {
+          "kind": "open",
+          "surface": "household_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "household_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open events.",
+        "action": {
+          "kind": "open",
+          "surface": "event_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "event_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open rooms.",
+        "action": {
+          "kind": "open",
+          "surface": "room_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "room_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "willowmerefellowship.net"
+      ],
+      "fictionalStreets": [
+        "Kestrel Avenue"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "faith-community-operations",
+      "parent": null,
+      "title": "Faith Community Operations Hub",
+      "icon": {
+        "emoji": "🕊️"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The week of a congregation in one place: who has joined, which rooms are booked, who is serving and who needs care. Start with the Dashboard each Thursday. Keep personal notes brief and kind, and only record what the person has agreed to share."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:booking-a-room"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:welcoming-visitors"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pastoral-care-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Households"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each household in the community, from first visit to long-time member."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "household",
+              "view": "household_board"
+            },
+            "inline": true,
+            "title": "Households",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "hou-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "hou-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "follow_up_on"
+              },
+              {
+                "id": "hou-t",
+                "name": "All households",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "hou-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Visitor",
+                    "Exploring"
+                  ]
+                }
+              },
+              {
+                "id": "hou-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Visitor",
+                    "Exploring"
+                  ]
+                }
+              },
+              {
+                "id": "hou-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Visitor",
+                    "Exploring"
+                  ]
+                }
+              },
+              {
+                "id": "hou-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "hou-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Services, classes, rentals and gatherings, each booked into a room."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "event_board"
+            },
+            "inline": true,
+            "title": "Events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "eve-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "eve-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_at"
+              },
+              {
+                "id": "eve-t",
+                "name": "All events",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "eve-td",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "starts_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "eve-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "starts_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "eve-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "eve-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "eve-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "eve-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rooms"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every space the community uses or rents out, with its size and how many events are booked."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "room",
+              "view": "room_board"
+            },
+            "inline": true,
+            "title": "Rooms",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "roo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "roo-t",
+                "name": "All rooms",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "roo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Volunteer roles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The jobs each event needs filled, like greeter, sound, nursery or kitchen."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "role",
+              "view": "role_board"
+            },
+            "inline": true,
+            "title": "Volunteer roles",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rol-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rol-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "role_day"
+              },
+              {
+                "id": "rol-t",
+                "name": "All volunteer roles",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rol-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "role_day": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "rol-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "role_day": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "rol-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "role_day": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "rol-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "rol-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Care requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Visits, meals, rides and calls people ask for or others notice are needed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "care",
+              "view": "care_board"
+            },
+            "inline": true,
+            "title": "Care requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "car-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "car-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "visit_by"
+              },
+              {
+                "id": "car-t",
+                "name": "All care requests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "car-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "visit_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "car-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "visit_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "car-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "visit_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "car-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "car-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "faith-community-operations",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The community at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "household",
+                      "view": "all_household"
+                    },
+                    "inline": true,
+                    "title": "Households by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Households by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "event",
+                      "view": "all_event"
+                    },
+                    "inline": true,
+                    "title": "Events by kind",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Events by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "care",
+                      "view": "all_care"
+                    },
+                    "inline": true,
+                    "title": "Care requests by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Care requests by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "room",
+                      "view": "all_room"
+                    },
+                    "inline": true,
+                    "title": "Capacity by room",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Capacity by room",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "room_name",
+                          "op": "sum",
+                          "field": "capacity"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "all_event"
+            },
+            "inline": true,
+            "title": "Events this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Events this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Care visits overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "care",
+              "view": "all_care"
+            },
+            "inline": true,
+            "title": "Care visits overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Care visits overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "visit_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Volunteer roles still open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "role",
+              "view": "all_role"
+            },
+            "inline": true,
+            "title": "Volunteer roles still open",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Volunteer roles still open",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Open"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Volunteer roles open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Roles linked to the event that are still marked Open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fill every open role three days ahead; ask by name, not by group message"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Upcoming or open bookings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Events in a room marked Planned or Confirmed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check for two events at the same hour before confirming"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Open care requests"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Requests for the household not yet done"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The care coordinator reviews these each Monday"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "booking-a-room",
+      "parent": "faith-community-operations",
+      "title": "Booking a room",
+      "icon": {
+        "emoji": "🚪"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A room is booked only when it is on the Events table with a start time. Hallway promises are how double bookings happen."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the Rooms table for capacity and the Events calendar for the same hour."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add an Event, link the room and set the start time and expected attendance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For a rental, send the house rules and agree the rate before pressing Confirm."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add volunteer roles for setup, hosting and clean-up."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules of the house"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Leave the kitchen cleaner than you found it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Candles, open flames and amplified sound need the facilities steward's approval."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keys go back to the office the same day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "welcoming-visitors",
+      "parent": "faith-community-operations",
+      "title": "Welcoming visitors",
+      "icon": {
+        "emoji": "🌿"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A first visit is a question: is there a place for me here? The follow-up answers it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a Household row from the visitor card within two days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a short, personal note from the contact person."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Invite them to one small thing, not everything."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check in by phone once without asking for anything."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Introduce them to a host family or small group."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When they say they are ready, press Mark member."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pastoral-care-routine",
+      "parent": "faith-community-operations",
+      "title": "Care routine",
+      "icon": {
+        "emoji": "🤲"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Care works when it is steady, private and shared across a team so one volunteer is never carrying it all."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Taking a request"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write what the person asked for in their own words, with their permission."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick a volunteer who is a good fit and press Mark scheduled."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the visit, add two lines of notes and press Mark done."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Share health details only with the people directly caring for them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never put sensitive details in an event or role row."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask each person how they would like to be contacted."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

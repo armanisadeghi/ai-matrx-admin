@@ -444,6 +444,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_owned_resources_cache: {
+        Row: {
+          body: Json
+          computed_at: string
+          computed_by: string | null
+          shard: number
+          shards: number
+          user_id: string
+        }
+        Insert: {
+          body: Json
+          computed_at?: string
+          computed_by?: string | null
+          shard: number
+          shards: number
+          user_id: string
+        }
+        Update: {
+          body?: Json
+          computed_at?: string
+          computed_by?: string | null
+          shard?: number
+          shards?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -588,6 +615,23 @@ export type Database = {
         }
         Returns: string
       }
+      search_people: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          admin_level: string
+          avatar_url: string
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          is_anonymous: boolean
+          last_sign_in_at: string
+          name: string
+          organizations: string[]
+          phone: string
+          rank: number
+        }[]
+      }
       set_top_tier_model_access: {
         Args: { p_enabled: boolean; p_note?: string; p_user: string }
         Returns: Json
@@ -696,6 +740,15 @@ export type Database = {
       user_overview: { Args: { p_user: string }; Returns: Json }
       user_owned_resources: {
         Args: { p_budget_ms?: number; p_user: string }
+        Returns: Json
+      }
+      user_owned_resources_cached: {
+        Args: {
+          p_refresh?: boolean
+          p_shard: number
+          p_shards: number
+          p_user: string
+        }
         Returns: Json
       }
       user_owned_resources_shard: {
@@ -4172,6 +4225,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           speed_rating: number | null
           successor_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -4213,6 +4268,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           speed_rating?: number | null
           successor_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -4254,6 +4311,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           speed_rating?: number | null
           successor_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -11029,6 +11088,8 @@ export type Database = {
           scope: string
           scope_user_id: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -11053,6 +11114,8 @@ export type Database = {
           scope?: string
           scope_user_id?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -11077,6 +11140,8 @@ export type Database = {
           scope?: string
           scope_user_id?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -11589,6 +11654,10 @@ export type Database = {
         Returns: Database["billing"]["Enums"]["tier"]
       }
       _run_approval_can_decide: { Args: { p_org: string }; Returns: boolean }
+      _run_approval_covered_by: {
+        Args: { p_agent: string; p_id: string }
+        Returns: string
+      }
       _run_approval_threshold: { Args: { p_org: string }; Returns: number }
       _signup_free_months: { Args: { p_user: string }; Returns: undefined }
       _social_handle: { Args: { p: string }; Returns: string }
@@ -12267,6 +12336,9 @@ export type Database = {
           avg_cost_since: number
           blocked_runs: number
           can_decide: boolean
+          covered_by_id: string
+          covered_by_status: string
+          covered_by_subject_kind: string
           created_at: string
           decided_at: string
           decided_by: string
@@ -25636,6 +25708,8 @@ export type Database = {
           quiet_hours_end: string
           quiet_hours_start: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           timezone: string | null
           updated_at: string
           updated_by: string | null
@@ -25664,6 +25738,8 @@ export type Database = {
           quiet_hours_end?: string
           quiet_hours_start?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           timezone?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -25692,6 +25768,8 @@ export type Database = {
           quiet_hours_end?: string
           quiet_hours_start?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           timezone?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -25791,6 +25869,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -25814,6 +25894,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -25837,6 +25919,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -25860,6 +25944,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           user_id: string
@@ -25881,6 +25967,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_id: string
@@ -25902,6 +25990,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_id?: string
@@ -37109,6 +37199,8 @@ export type Database = {
           table_id: string
           template_id: string
           template_version: number
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -37133,6 +37225,8 @@ export type Database = {
           table_id: string
           template_id: string
           template_version: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -37157,6 +37251,8 @@ export type Database = {
           table_id?: string
           template_id?: string
           template_version?: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -37740,6 +37836,8 @@ export type Database = {
           record_id: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -37766,6 +37864,8 @@ export type Database = {
           record_id: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -37792,6 +37892,8 @@ export type Database = {
           record_id?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38171,6 +38273,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38192,6 +38296,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38213,6 +38319,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38270,6 +38378,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38291,6 +38401,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38312,6 +38424,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38336,6 +38450,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38357,6 +38473,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38378,6 +38496,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38402,6 +38522,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38423,6 +38545,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38444,6 +38568,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38468,6 +38594,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38489,6 +38617,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38510,6 +38640,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38534,6 +38666,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38555,6 +38689,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38576,6 +38712,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38600,6 +38738,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38621,6 +38761,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38642,6 +38784,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38666,6 +38810,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38687,6 +38833,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38708,6 +38856,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38732,6 +38882,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38753,6 +38905,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38774,6 +38928,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38798,6 +38954,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38819,6 +38977,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38840,6 +39000,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38864,6 +39026,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38885,6 +39049,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38906,6 +39072,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38930,6 +39098,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -38951,6 +39121,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38972,6 +39144,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -38996,6 +39170,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -39017,6 +39193,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39038,6 +39216,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39062,6 +39242,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -39083,6 +39265,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39104,6 +39288,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39128,6 +39314,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -39149,6 +39337,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39170,6 +39360,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39194,6 +39386,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -39215,6 +39409,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39236,6 +39432,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39260,6 +39458,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -39281,6 +39481,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -39302,6 +39504,8 @@ export type Database = {
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           table_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -42296,6 +42500,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -43877,6 +44083,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -44231,6 +44439,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -47152,6 +47362,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -47246,6 +47458,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -47956,6 +48170,8 @@ export type Database = {
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           table_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -51871,6 +52087,8 @@ export type Database = {
           source_kind: string | null
           source_title: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           time_limit_seconds: number | null
           title: string
           topic: string | null
@@ -51901,6 +52119,8 @@ export type Database = {
           source_kind?: string | null
           source_title?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           time_limit_seconds?: number | null
           title: string
           topic?: string | null
@@ -51931,6 +52151,8 @@ export type Database = {
           source_kind?: string | null
           source_title?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           time_limit_seconds?: number | null
           title?: string
           topic?: string | null
@@ -52466,6 +52688,8 @@ export type Database = {
           published_to_web_by: string | null
           search_engine_indexed: boolean | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           topic: string | null
           updated_at: string
           updated_by: string | null
@@ -52490,6 +52714,8 @@ export type Database = {
           published_to_web_by?: string | null
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           topic?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -52514,6 +52740,8 @@ export type Database = {
           published_to_web_by?: string | null
           search_engine_indexed?: boolean | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           topic?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -52796,6 +53024,8 @@ export type Database = {
           revoked_at: string | null
           status: string
           student_user_id: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           verification_ref: string | null
@@ -52817,6 +53047,8 @@ export type Database = {
           revoked_at?: string | null
           status?: string
           student_user_id: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           verification_ref?: string | null
@@ -52838,6 +53070,8 @@ export type Database = {
           revoked_at?: string | null
           status?: string
           student_user_id?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           verification_ref?: string | null
@@ -53683,6 +53917,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           start_date: string
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -53713,6 +53949,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           start_date: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title: string
           updated_at?: string
           updated_by?: string | null
@@ -53743,6 +53981,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           start_date?: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -54116,6 +54356,8 @@ export type Database = {
           source_set_id: string | null
           started_at: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -54142,6 +54384,8 @@ export type Database = {
           source_set_id?: string | null
           started_at?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -54168,6 +54412,8 @@ export type Database = {
           source_set_id?: string | null
           started_at?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -54601,6 +54847,8 @@ export type Database = {
           source_set_id: string | null
           started_at: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -57344,6 +57592,8 @@ export type Database = {
           rate_limit_general_per_min: number | null
           rate_limit_uploads_per_min: number | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           tier_key: string
           updated_at: string
           updated_by: string | null
@@ -57376,6 +57626,8 @@ export type Database = {
           rate_limit_general_per_min?: number | null
           rate_limit_uploads_per_min?: number | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tier_key: string
           updated_at?: string
           updated_by?: string | null
@@ -57408,6 +57660,8 @@ export type Database = {
           rate_limit_general_per_min?: number | null
           rate_limit_uploads_per_min?: number | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tier_key?: string
           updated_at?: string
           updated_by?: string | null
@@ -57798,6 +58052,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           size_bytes: number | null
           storage_uri: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -57837,6 +58093,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           size_bytes?: number | null
           storage_uri: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -57876,6 +58134,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           size_bytes?: number | null
           storage_uri?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -58815,6 +59075,8 @@ export type Database = {
           resource_types: string[] | null
           secret: string
           target_url: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -58837,6 +59099,8 @@ export type Database = {
           resource_types?: string[] | null
           secret: string
           target_url: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -58859,6 +59123,8 @@ export type Database = {
           resource_types?: string[] | null
           secret?: string
           target_url?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -59064,6 +59330,8 @@ export type Database = {
           resource_types: string[] | null
           secret: string
           target_url: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -64210,6 +64478,8 @@ export type Database = {
           source_category_id: string | null
           source_detail: string | null
           talent_pool_opt_in: boolean
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -64256,6 +64526,8 @@ export type Database = {
           source_category_id?: string | null
           source_detail?: string | null
           talent_pool_opt_in?: boolean
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -64302,6 +64574,8 @@ export type Database = {
           source_category_id?: string | null
           source_detail?: string | null
           talent_pool_opt_in?: boolean
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -66993,6 +67267,8 @@ export type Database = {
           record_class_key: string
           retention_trigger_at: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -67036,6 +67312,8 @@ export type Database = {
           record_class_key?: string
           retention_trigger_at?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -67079,6 +67357,8 @@ export type Database = {
           record_class_key?: string
           retention_trigger_at?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -67295,6 +67575,8 @@ export type Database = {
           published_to_web_by: string | null
           settings: Json
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -67327,6 +67609,8 @@ export type Database = {
           published_to_web_by?: string | null
           settings?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -67359,6 +67643,8 @@ export type Database = {
           published_to_web_by?: string | null
           settings?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -67397,6 +67683,8 @@ export type Database = {
           spell_number: number
           status: string
           termination_date: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -67431,6 +67719,8 @@ export type Database = {
           spell_number?: number
           status?: string
           termination_date?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -67465,6 +67755,8 @@ export type Database = {
           spell_number?: number
           status?: string
           termination_date?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -68057,6 +68349,8 @@ export type Database = {
           start_on: string | null
           status: string
           target_value: number | null
+          test_expires_at: string | null
+          test_run_id: string | null
           title: string
           unit: string | null
           updated_at: string
@@ -68082,6 +68376,8 @@ export type Database = {
           start_on?: string | null
           status?: string
           target_value?: number | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title: string
           unit?: string | null
           updated_at?: string
@@ -68107,6 +68403,8 @@ export type Database = {
           start_on?: string | null
           status?: string
           target_value?: number | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string
           unit?: string | null
           updated_at?: string
@@ -68343,6 +68641,8 @@ export type Database = {
           state: string
           supplement_a: Json
           supplement_b: Json
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -68385,6 +68685,8 @@ export type Database = {
           state?: string
           supplement_a?: Json
           supplement_b?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -68427,6 +68729,8 @@ export type Database = {
           state?: string
           supplement_a?: Json
           supplement_b?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -69723,6 +70027,8 @@ export type Database = {
           require_photo: boolean
           settings: Json
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           trust_state: string
           updated_at: string
           updated_by: string | null
@@ -69755,6 +70061,8 @@ export type Database = {
           require_photo?: boolean
           settings?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           trust_state?: string
           updated_at?: string
           updated_by?: string | null
@@ -69787,6 +70095,8 @@ export type Database = {
           require_photo?: boolean
           settings?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           trust_state?: string
           updated_at?: string
           updated_by?: string | null
@@ -69841,6 +70151,8 @@ export type Database = {
           photo_file_id: string | null
           punch_count: number
           started_at: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           user_agent: string | null
@@ -69870,6 +70182,8 @@ export type Database = {
           photo_file_id?: string | null
           punch_count?: number
           started_at?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_agent?: string | null
@@ -69899,6 +70213,8 @@ export type Database = {
           photo_file_id?: string | null
           punch_count?: number
           started_at?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_agent?: string | null
@@ -70061,6 +70377,8 @@ export type Database = {
           schedule_impact: Json
           starts_on: string
           state: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -70106,6 +70424,8 @@ export type Database = {
           schedule_impact?: Json
           starts_on: string
           state?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -70151,6 +70471,8 @@ export type Database = {
           schedule_impact?: Json
           starts_on?: string
           state?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -70842,6 +71164,8 @@ export type Database = {
           scope_description: string
           scope_selector: Json
           state: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -70869,6 +71193,8 @@ export type Database = {
           scope_description: string
           scope_selector?: Json
           state?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -70896,6 +71222,8 @@ export type Database = {
           scope_description?: string
           scope_selector?: Json
           state?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -71327,6 +71655,8 @@ export type Database = {
           start_on_changed_from: string | null
           state: string
           supersedes_offer_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           variable_pay: Json
@@ -71377,6 +71707,8 @@ export type Database = {
           start_on_changed_from?: string | null
           state?: string
           supersedes_offer_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           variable_pay?: Json
@@ -71427,6 +71759,8 @@ export type Database = {
           start_on_changed_from?: string | null
           state?: string
           supersedes_offer_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           variable_pay?: Json
@@ -74035,6 +74369,8 @@ export type Database = {
           scope_detail: Json
           state: string
           statutory_basis: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           verification_method: string | null
@@ -74070,6 +74406,8 @@ export type Database = {
           scope_detail?: Json
           state?: string
           statutory_basis?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           verification_method?: string | null
@@ -74105,6 +74443,8 @@ export type Database = {
           scope_detail?: Json
           state?: string
           statutory_basis?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           verification_method?: string | null
@@ -74929,6 +75269,8 @@ export type Database = {
           shared_at: string | null
           shared_by: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -74963,6 +75305,8 @@ export type Database = {
           shared_at?: string | null
           shared_by?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -74997,6 +75341,8 @@ export type Database = {
           shared_at?: string | null
           shared_by?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75075,6 +75421,8 @@ export type Database = {
           status: string
           template_id: string | null
           template_snapshot: Json | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -75099,6 +75447,8 @@ export type Database = {
           status?: string
           template_id?: string | null
           template_snapshot?: Json | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75123,6 +75473,8 @@ export type Database = {
           status?: string
           template_id?: string | null
           template_snapshot?: Json | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75152,6 +75504,8 @@ export type Database = {
           peer_user_id: string | null
           review_id: string
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -75170,6 +75524,8 @@ export type Database = {
           peer_user_id?: string | null
           review_id: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75188,6 +75544,8 @@ export type Database = {
           peer_user_id?: string | null
           review_id?: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75231,6 +75589,8 @@ export type Database = {
           role: string
           status: string
           submitted_at: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -75249,6 +75609,8 @@ export type Database = {
           role: string
           status?: string
           submitted_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75267,6 +75629,8 @@ export type Database = {
           role?: string
           status?: string
           submitted_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75294,6 +75658,8 @@ export type Database = {
           organization_id: string
           rating_scale: Json
           sections: Json
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -75310,6 +75676,8 @@ export type Database = {
           organization_id: string
           rating_scale?: Json
           sections?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75326,6 +75694,8 @@ export type Database = {
           organization_id?: string
           rating_scale?: Json
           sections?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75468,6 +75838,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           source_template_id: string | null
           state: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -75507,6 +75879,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_template_id?: string | null
           state?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75546,6 +75920,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_template_id?: string | null
           state?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -75829,6 +76205,8 @@ export type Database = {
           scope_id: string | null
           sensitivity_ceiling: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           title: string | null
           updated_at: string
           updated_by: string | null
@@ -75860,6 +76238,8 @@ export type Database = {
           scope_id?: string | null
           sensitivity_ceiling?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -75891,6 +76271,8 @@ export type Database = {
           scope_id?: string | null
           sensitivity_ceiling?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -76238,6 +76620,8 @@ export type Database = {
           retention_trigger_at: string | null
           separation_category: string
           termination_date: string
+          test_expires_at: string | null
+          test_run_id: string | null
           unemployment_response: Json
           updated_at: string
           updated_by: string | null
@@ -76276,6 +76660,8 @@ export type Database = {
           retention_trigger_at?: string | null
           separation_category: string
           termination_date: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           unemployment_response?: Json
           updated_at?: string
           updated_by?: string | null
@@ -76314,6 +76700,8 @@ export type Database = {
           retention_trigger_at?: string | null
           separation_category?: string
           termination_date?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           unemployment_response?: Json
           updated_at?: string
           updated_by?: string | null
@@ -77498,6 +77886,8 @@ export type Database = {
           signed_document_file_id: string | null
           supersedes_id: string | null
           tax_year: number
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -77539,6 +77929,8 @@ export type Database = {
           signed_document_file_id?: string | null
           supersedes_id?: string | null
           tax_year: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -77580,6 +77972,8 @@ export type Database = {
           signed_document_file_id?: string | null
           supersedes_id?: string | null
           tax_year?: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -81603,6 +81997,8 @@ export type Database = {
           status: string
           template_id: string | null
           template_snapshot: Json | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -82237,6 +82633,8 @@ export type Database = {
           spell_number: number
           status: string
           termination_date: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -84370,6 +84768,8 @@ export type Database = {
           service_user_id: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -84396,6 +84796,8 @@ export type Database = {
           service_user_id: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -84422,6 +84824,8 @@ export type Database = {
           service_user_id?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -84982,6 +85386,8 @@ export type Database = {
           organization_id: string
           role: string
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           user_id: string
@@ -85000,6 +85406,8 @@ export type Database = {
           organization_id: string
           role?: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_id: string
@@ -85018,6 +85426,8 @@ export type Database = {
           organization_id?: string
           role?: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_id?: string
@@ -85484,6 +85894,8 @@ export type Database = {
           name: string
           settings: Json | null
           slug: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string | null
           updated_by: string | null
           website: string | null
@@ -85504,6 +85916,8 @@ export type Database = {
           name: string
           settings?: Json | null
           slug: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
           website?: string | null
@@ -85524,6 +85938,8 @@ export type Database = {
           name?: string
           settings?: Json | null
           slug?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
           website?: string | null
@@ -86022,6 +86438,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -86042,6 +86460,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -86062,6 +86482,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -89199,6 +89621,8 @@ export type Database = {
           rows_updated: number
           started_at: string
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           triggered_by: string | null
           updated_at: string
           updated_by: string | null
@@ -89222,6 +89646,8 @@ export type Database = {
           rows_updated?: number
           started_at?: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           triggered_by?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -89245,6 +89671,8 @@ export type Database = {
           rows_updated?: number
           started_at?: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           triggered_by?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -89931,6 +90359,8 @@ export type Database = {
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           subject_user_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -89958,6 +90388,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           subject_user_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -89985,6 +90417,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           subject_user_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -90376,6 +90810,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id: string | null
           taxonomy_node_slug: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           typed_input_complete: boolean
           updated_at: string
           updated_by: string | null
@@ -90423,6 +90859,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id?: string | null
           taxonomy_node_slug?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           typed_input_complete?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -90470,6 +90908,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id?: string | null
           taxonomy_node_slug?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           typed_input_complete?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -90775,6 +91215,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -90798,6 +91240,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -90821,6 +91265,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -90937,6 +91383,8 @@ export type Database = {
           scope_key: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           summary: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -90963,6 +91411,8 @@ export type Database = {
           scope_key: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           summary?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -90989,6 +91439,8 @@ export type Database = {
           scope_key?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           summary?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -91035,6 +91487,8 @@ export type Database = {
           scan_id: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           symbol: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -91078,6 +91532,8 @@ export type Database = {
           scan_id?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           symbol?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -91121,6 +91577,8 @@ export type Database = {
           scan_id?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           symbol?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -91186,6 +91644,8 @@ export type Database = {
           scanner_version: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           started_at: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           unchanged_from_revision: string | null
           updated_at: string
           updated_by: string | null
@@ -91221,6 +91681,8 @@ export type Database = {
           scanner_version: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           started_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           unchanged_from_revision?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -91256,6 +91718,8 @@ export type Database = {
           scanner_version?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           started_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           unchanged_from_revision?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -91285,6 +91749,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           tier: string
           updated_at: string
           updated_by: string | null
@@ -91310,6 +91776,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tier: string
           updated_at?: string
           updated_by?: string | null
@@ -91335,6 +91803,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tier?: string
           updated_at?: string
           updated_by?: string | null
@@ -92392,6 +92862,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           values: Json
@@ -92410,6 +92882,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           values?: Json
@@ -92428,6 +92902,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           values?: Json
@@ -92833,6 +93309,8 @@ export type Database = {
           subscriber_count: number | null
           sync_error: string | null
           sync_status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           thumbnail_url: string | null
           updated_at: string
           updated_by: string | null
@@ -92869,6 +93347,8 @@ export type Database = {
           subscriber_count?: number | null
           sync_error?: string | null
           sync_status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           thumbnail_url?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -92905,6 +93385,8 @@ export type Database = {
           subscriber_count?: number | null
           sync_error?: string | null
           sync_status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           thumbnail_url?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -93710,6 +94192,8 @@ export type Database = {
           skipped_reason: string | null
           started_at: string
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           verdict: string | null
@@ -93746,6 +94230,8 @@ export type Database = {
           skipped_reason?: string | null
           started_at: string
           status: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           verdict?: string | null
@@ -93782,6 +94268,8 @@ export type Database = {
           skipped_reason?: string | null
           started_at?: string
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           verdict?: string | null
@@ -94249,6 +94737,8 @@ export type Database = {
           stats_since: string | null
           stddev_exec_time_ms: number | null
           taken_at: string
+          test_expires_at: string | null
+          test_run_id: string | null
           toplevel: boolean
           total_exec_time_ms: number
           updated_at: string
@@ -94281,6 +94771,8 @@ export type Database = {
           stats_since?: string | null
           stddev_exec_time_ms?: number | null
           taken_at?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           toplevel?: boolean
           total_exec_time_ms: number
           updated_at?: string
@@ -94313,6 +94805,8 @@ export type Database = {
           stats_since?: string | null
           stddev_exec_time_ms?: number | null
           taken_at?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           toplevel?: boolean
           total_exec_time_ms?: number
           updated_at?: string
@@ -94372,6 +94866,8 @@ export type Database = {
           source_feature: string
           stable_id: string | null
           surface: string
+          test_expires_at: string | null
+          test_run_id: string | null
           timeout_seconds: number | null
           updated_at: string
           updated_by: string | null
@@ -94426,6 +94922,8 @@ export type Database = {
           source_feature: string
           stable_id?: string | null
           surface: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           timeout_seconds?: number | null
           updated_at?: string
           updated_by?: string | null
@@ -94480,6 +94978,8 @@ export type Database = {
           source_feature?: string
           stable_id?: string | null
           surface?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           timeout_seconds?: number | null
           updated_at?: string
           updated_by?: string | null
@@ -94958,6 +95458,8 @@ export type Database = {
           response: Json
           saved_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -94985,6 +95487,8 @@ export type Database = {
           response: Json
           saved_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -95012,6 +95516,8 @@ export type Database = {
           response?: Json
           saved_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -96471,6 +96977,8 @@ export type Database = {
           status: string
           subject_user_id: string
           supersedes_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           token_hash: string
           tool_call_id: string | null
           updated_at: string
@@ -96507,6 +97015,8 @@ export type Database = {
           status?: string
           subject_user_id: string
           supersedes_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           token_hash: string
           tool_call_id?: string | null
           updated_at?: string
@@ -96543,6 +97053,8 @@ export type Database = {
           status?: string
           subject_user_id?: string
           supersedes_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           token_hash?: string
           tool_call_id?: string | null
           updated_at?: string
@@ -97503,6 +98015,8 @@ export type Database = {
           source_type: string
           target_id: string
           target_type: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string | null
           updated_by_system: string | null
           updated_by_tier: string | null
@@ -97528,6 +98042,8 @@ export type Database = {
           source_type: string
           target_id: string
           target_type: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string | null
           updated_by_system?: string | null
           updated_by_tier?: string | null
@@ -97553,6 +98069,8 @@ export type Database = {
           source_type?: string
           target_id?: string
           target_type?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string | null
           updated_by_system?: string | null
           updated_by_tier?: string | null
@@ -122780,6 +123298,8 @@ export type Database = {
           settings: Json
           short_code: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           visibility: Database["platform"]["Enums"]["visibility"]
@@ -122803,6 +123323,8 @@ export type Database = {
           settings?: Json
           short_code?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           visibility?: Database["platform"]["Enums"]["visibility"]
@@ -122826,6 +123348,8 @@ export type Database = {
           settings?: Json
           short_code?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           visibility?: Database["platform"]["Enums"]["visibility"]
@@ -127666,6 +128190,8 @@ export type Database = {
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           stream_id: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -127686,6 +128212,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           stream_id: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -127706,6 +128234,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           stream_id?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -129326,6 +129856,8 @@ export type Database = {
           rung_trail: Json
           scraped_at: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           title: string | null
           updated_at: string
           updated_by: string | null
@@ -129367,6 +129899,8 @@ export type Database = {
           rung_trail?: Json
           scraped_at?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -129408,6 +129942,8 @@ export type Database = {
           rung_trail?: Json
           scraped_at?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -131604,6 +132140,8 @@ export type Database = {
           started_at: string | null
           status: string
           target_ref: string
+          test_expires_at: string | null
+          test_run_id: string | null
           trigger: string
           updated_at: string
           updated_by: string | null
@@ -131650,6 +132188,8 @@ export type Database = {
           started_at?: string | null
           status?: string
           target_ref: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           trigger?: string
           updated_at?: string
           updated_by?: string | null
@@ -131696,6 +132236,8 @@ export type Database = {
           started_at?: string | null
           status?: string
           target_ref?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           trigger?: string
           updated_at?: string
           updated_by?: string | null
@@ -133174,6 +133716,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           site_id: string | null
           source: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -133200,6 +133744,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           site_id?: string | null
           source?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -133226,6 +133772,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           site_id?: string | null
           source?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -133667,6 +134215,8 @@ export type Database = {
           scope_site_id: string | null
           scope_tier: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           topic_id: string
           updated_at: string
           updated_by: string | null
@@ -133692,6 +134242,8 @@ export type Database = {
           scope_site_id?: string | null
           scope_tier?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           topic_id: string
           updated_at?: string
           updated_by?: string | null
@@ -133717,6 +134269,8 @@ export type Database = {
           scope_site_id?: string | null
           scope_tier?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           topic_id?: string
           updated_at?: string
           updated_by?: string | null
@@ -141797,6 +142351,8 @@ export type Database = {
           spend_range: Json | null
           started_at: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -141836,6 +142392,8 @@ export type Database = {
           spend_range?: Json | null
           started_at?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -141875,6 +142433,8 @@ export type Database = {
           spend_range?: Json | null
           started_at?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -142042,6 +142602,8 @@ export type Database = {
           starts_on: string
           status: string
           target_value: number
+          test_expires_at: string | null
+          test_run_id: string | null
           tracked_account_id: string | null
           updated_at: string
           updated_by: string | null
@@ -142071,6 +142633,8 @@ export type Database = {
           starts_on: string
           status?: string
           target_value: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tracked_account_id?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -142100,6 +142664,8 @@ export type Database = {
           starts_on?: string
           status?: string
           target_value?: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tracked_account_id?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -142227,6 +142793,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           status: string
           status_changed_at: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           thumbnail_file_id: string | null
           thumbnail_url: string | null
           title: string | null
@@ -142267,6 +142835,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
           status_changed_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           thumbnail_file_id?: string | null
           thumbnail_url?: string | null
           title?: string | null
@@ -142307,6 +142877,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
           status_changed_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           thumbnail_file_id?: string | null
           thumbnail_url?: string | null
           title?: string | null
@@ -142355,6 +142927,8 @@ export type Database = {
           status: string
           style_tags: string[]
           summary: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           transcript_language: string | null
           updated_at: string
           updated_by: string | null
@@ -142388,6 +142962,8 @@ export type Database = {
           status?: string
           style_tags?: string[]
           summary?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           transcript_language?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -142421,6 +142997,8 @@ export type Database = {
           status?: string
           style_tags?: string[]
           summary?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           transcript_language?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -142822,6 +143400,8 @@ export type Database = {
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -142849,6 +143429,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title: string
           updated_at?: string
           updated_by?: string | null
@@ -142876,6 +143458,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -142917,6 +143501,8 @@ export type Database = {
           raw_payload: Json
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           total_likes: number | null
           updated_at: string
           updated_by: string | null
@@ -142954,6 +143540,8 @@ export type Database = {
           raw_payload?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           total_likes?: number | null
           updated_at?: string
           updated_by?: string | null
@@ -142991,6 +143579,8 @@ export type Database = {
           raw_payload?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           total_likes?: number | null
           updated_at?: string
           updated_by?: string | null
@@ -143016,6 +143606,8 @@ export type Database = {
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           sort: number
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -143037,6 +143629,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           sort?: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -143058,6 +143652,8 @@ export type Database = {
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           sort?: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -143085,6 +143681,8 @@ export type Database = {
           role: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -143109,6 +143707,8 @@ export type Database = {
           role: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -143133,6 +143733,8 @@ export type Database = {
           role?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -143716,6 +144318,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -143737,6 +144341,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -143758,6 +144364,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -144549,6 +145157,8 @@ export type Database = {
           side_effect_class: string | null
           source_kind: string
           tags: string[] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           tier: string | null
           tool_group: string
           updated_at: string
@@ -144588,6 +145198,8 @@ export type Database = {
           side_effect_class?: string | null
           source_kind?: string
           tags?: string[] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tier?: string | null
           tool_group?: string
           updated_at?: string
@@ -144627,6 +145239,8 @@ export type Database = {
           side_effect_class?: string | null
           source_kind?: string
           tags?: string[] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           tier?: string | null
           tool_group?: string
           updated_at?: string
@@ -146834,6 +147448,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"]
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -146854,6 +147470,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"]
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -146874,6 +147492,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"]
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -147816,6 +148436,8 @@ export type Database = {
           surface_name: string
           synced_by: string | null
           synced_from: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           updates_value: string | null
@@ -147851,6 +148473,8 @@ export type Database = {
           surface_name: string
           synced_by?: string | null
           synced_from?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           updates_value?: string | null
@@ -147886,6 +148510,8 @@ export type Database = {
           surface_name?: string
           synced_by?: string | null
           synced_from?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           updates_value?: string | null
@@ -148990,6 +149616,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           status: string
           step_completed: number
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           use_case: string
@@ -149023,6 +149651,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
           step_completed?: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           use_case: string
@@ -149056,6 +149686,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
           step_completed?: number
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           use_case?: string
@@ -150900,6 +151532,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           slug: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -150934,6 +151568,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           slug?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -150968,6 +151604,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           slug?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -151079,6 +151717,8 @@ export type Database = {
           relation_key: string
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           source: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           url: string | null
@@ -151104,6 +151744,8 @@ export type Database = {
           relation_key?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           url?: string | null
@@ -151129,6 +151771,8 @@ export type Database = {
           relation_key?: string
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           url?: string | null
@@ -151271,6 +151915,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           sort: number
           summary: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -151298,6 +151944,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           sort?: number
           summary?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -151325,6 +151973,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           sort?: number
           summary?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -153979,6 +154629,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           slug: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -154015,6 +154667,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           slug?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -154051,6 +154705,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           slug?: string | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -154882,6 +155538,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           source_fact_id: string | null
           source_item_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           url: string | null
@@ -154911,6 +155569,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_fact_id?: string | null
           source_item_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           url?: string | null
@@ -154940,6 +155600,8 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_fact_id?: string | null
           source_item_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           url?: string | null
@@ -155100,6 +155762,8 @@ export type Database = {
           sync_status: string
           sync_status_reason: string | null
           synced_at: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -155129,6 +155793,8 @@ export type Database = {
           sync_status?: string
           sync_status_reason?: string | null
           synced_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -155158,6 +155824,8 @@ export type Database = {
           sync_status?: string
           sync_status_reason?: string | null
           synced_at?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
@@ -155613,6 +156281,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           slug: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -155717,6 +156387,8 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           slug: string | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           updated_at: string
           updated_by: string | null
           version: number
@@ -156079,6 +156751,8 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -156101,6 +156775,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -156123,6 +156799,8 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -157214,6 +157892,8 @@ export type Database = {
           shared_inputs: Json
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           status: string
+          test_expires_at: string | null
+          test_run_id: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -157243,6 +157923,8 @@ export type Database = {
           shared_inputs?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -157272,6 +157954,8 @@ export type Database = {
           shared_inputs?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null

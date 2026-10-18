@@ -29,11 +29,13 @@ import { HeldRunsList } from "./SubjectApprovalsPanel";
 import { useSpendApprovalsData } from "./useSpendApprovalsData";
 import {
   APPROVAL_STATUS_LABEL,
+  COVERED_LABEL,
   SPEND_APPROVALS_ADMIN_PATH,
   SUBJECT_KIND_LABEL,
   approvalRecordHref,
   approvalSubjectHref,
   firstRunHref,
+  isCovered,
   mandateKeyHref,
   orgSpendApprovalsPath,
   rowMatchesSubject,
@@ -112,7 +114,7 @@ export function ApprovalRecordView({
           { label: "Spend approvals", href: listHref },
         ]}
         record={{ name }}
-        {...(r ? { status: { label: APPROVAL_STATUS_LABEL[r.status], tone: STATUS_TONE[r.status] } } : {})}
+        {...(r ? { status: isCovered(r) ? { label: COVERED_LABEL, tone: "success" as const } : { label: APPROVAL_STATUS_LABEL[r.status], tone: STATUS_TONE[r.status] } } : {})}
         actions={actions}
       />
     );

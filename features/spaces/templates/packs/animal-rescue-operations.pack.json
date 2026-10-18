@@ -1,0 +1,3272 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0555",
+  "version": 1,
+  "title": "Animal Rescue Operations Desk",
+  "description": "Animals, fosters, adoption applications and vet care from intake to home.",
+  "forWho": "Animal rescues, humane societies and foster networks",
+  "icon": {
+    "emoji": "🐾"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "nonprofit",
+  "tags": [
+    "animal rescue",
+    "fosters",
+    "adoptions",
+    "vet care"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-animal-rescue-operations",
+    "catalogueId": "SP0555",
+    "useCase": "Thaddeus Okoro-Lindgren coordinates a foster-based dog and cat rescue and uses this to see who needs a vet visit, which fosters have room and which adoption applications are waiting.",
+    "industry": "nonprofit_community",
+    "vertical": "Animal rescue",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Second Chance Paws Rescue",
+      "describes": "A foster-based rescue placing about 300 dogs and cats a year, with no building and a network of 45 foster homes.",
+      "address": {
+        "line1": "12 Juniper Hollow",
+        "city": "Denver",
+        "region": "CO",
+        "postalCode": "80211",
+        "country": "US"
+      },
+      "phone": "(720) 555-0136",
+      "website": "secondchancepaws.net",
+      "email": "adopt@secondchancepaws.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-animal-rescue-operations",
+    "tables": [
+      {
+        "token": "animals",
+        "name": "Animals",
+        "labelSingular": "Animal",
+        "labelPlural": "Animals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "paw-print",
+        "titleField": "animal_name",
+        "describes": "Every animal in our care, from intake to a home, with where they are and what they need next.",
+        "subject": "thing",
+        "independentOf": {
+          "foster": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "intake_on",
+            "next_checkup"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "animal_name",
+            "label": "Animal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "species",
+            "label": "Species",
+            "parityType": "select",
+            "choices": [
+              "Dog",
+              "Cat",
+              "Rabbit"
+            ],
+            "choiceColors": {
+              "Dog": "slate",
+              "Cat": "blue",
+              "Rabbit": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "breed",
+            "label": "Breed or look",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Intake",
+              "In foster",
+              "Ready for adoption",
+              "Adoption pending",
+              "Adopted",
+              "Transferred"
+            ],
+            "choiceColors": {
+              "Intake": "slate",
+              "In foster": "blue",
+              "Ready for adoption": "amber",
+              "Adoption pending": "violet",
+              "Adopted": "teal",
+              "Transferred": "green"
+            },
+            "required": true,
+            "default": "Intake",
+            "statusGroups": {
+              "Intake": "in_progress",
+              "In foster": "in_progress",
+              "Ready for adoption": "in_progress",
+              "Adoption pending": "in_progress",
+              "Adopted": "done",
+              "Transferred": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "intake_on",
+            "label": "Intake date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_checkup",
+            "label": "Next vet visit",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "foster",
+            "label": "Foster home",
+            "parityType": "relation",
+            "relationTarget": "foster",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "age_months",
+            "label": "Age (months)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "vet_cost",
+            "label": "Vet cost so far (USD)",
+            "parityType": "rollup",
+            "via": "vet_visits",
+            "pick": "cost",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "vet_open",
+            "label": "Vet visits scheduled",
+            "parityType": "rollup",
+            "via": "vet_visits",
+            "pick": "visit_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "applications_open",
+            "label": "Applications in review",
+            "parityType": "rollup",
+            "via": "applications",
+            "pick": "applicant_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": [
+                "Received",
+                "In review",
+                "Approved"
+              ]
+            }
+          },
+          {
+            "key": "btn_ready",
+            "label": "Mark ready for adoption",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "animals_ready"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_pending",
+            "label": "Mark adoption pending",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "animals_pending"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_adopted",
+            "label": "Mark adopted",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "animals_adopted"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_vet",
+            "label": "Schedule a vet visit",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "vet_visits",
+              "template": "New vet visit",
+              "prefill": {
+                "animal": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_app",
+            "label": "Add an application",
+            "parityType": "button",
+            "button": {
+              "do": "add_row",
+              "table": "applications",
+              "template": "New application",
+              "prefill": {
+                "animal": "@row"
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New animal",
+            "values": {
+              "animal_name": "New animal",
+              "status": "Intake"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Story"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where we found them and what we know."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Behavior notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Good with kids, dogs, cats? Fears, favorite things."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Intake checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Scan for a chip"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos taken"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vet visit booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Foster placed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "animals-1",
+            "values": {
+              "animal_name": "Biscuit",
+              "species": "Dog",
+              "breed": "Terrier mix",
+              "status": "In foster",
+              "intake_on": "@today-30d",
+              "next_checkup": "@today+2d",
+              "foster": "foster-1",
+              "age_months": 18,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "animals-2",
+            "values": {
+              "animal_name": "Juniper",
+              "species": "Cat",
+              "breed": "Gray tabby",
+              "status": "Ready for adoption",
+              "intake_on": "@today-60d",
+              "next_checkup": "@today+6d",
+              "foster": "foster-3",
+              "age_months": 36
+            }
+          },
+          {
+            "key": "animals-3",
+            "values": {
+              "animal_name": "Waffles",
+              "species": "Dog",
+              "breed": "Hound mix",
+              "status": "Intake",
+              "intake_on": "@today-1d",
+              "next_checkup": "@today",
+              "age_months": 8,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "animals-4",
+            "values": {
+              "animal_name": "Clementine",
+              "species": "Cat",
+              "breed": "Calico",
+              "status": "In foster",
+              "intake_on": "@today-14d",
+              "next_checkup": "@today-1d",
+              "foster": "foster-2",
+              "age_months": 5
+            }
+          },
+          {
+            "key": "animals-5",
+            "values": {
+              "animal_name": "Moose",
+              "species": "Dog",
+              "breed": "Shepherd mix",
+              "status": "Ready for adoption",
+              "intake_on": "@today-90d",
+              "next_checkup": "@today+4d",
+              "foster": "foster-4",
+              "age_months": 48,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "animals-6",
+            "values": {
+              "animal_name": "Pip",
+              "species": "Rabbit",
+              "breed": "Dutch",
+              "status": "In foster",
+              "intake_on": "@today-20d",
+              "next_checkup": "@today+3d",
+              "foster": "foster-2",
+              "age_months": 12
+            }
+          },
+          {
+            "key": "animals-7",
+            "values": {
+              "animal_name": "Dolores",
+              "species": "Dog",
+              "breed": "Beagle mix",
+              "status": "Adoption pending",
+              "intake_on": "@today-45d",
+              "foster": "foster-7",
+              "age_months": 60,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "animals-8",
+            "values": {
+              "animal_name": "Sprout",
+              "species": "Cat",
+              "breed": "Black shorthair",
+              "status": "In foster",
+              "intake_on": "@today-10d",
+              "next_checkup": "@today",
+              "foster": "foster-1",
+              "age_months": 3
+            }
+          },
+          {
+            "key": "animals-9",
+            "values": {
+              "animal_name": "Tank",
+              "species": "Dog",
+              "breed": "Mastiff mix",
+              "status": "Ready for adoption",
+              "intake_on": "@today-120d",
+              "next_checkup": "@today+5d",
+              "foster": "foster-7",
+              "age_months": 84,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "animals-10",
+            "values": {
+              "animal_name": "Marigold",
+              "species": "Cat",
+              "breed": "Orange tabby",
+              "status": "Adopted",
+              "intake_on": "@today-150d",
+              "foster": "foster-3",
+              "age_months": 24
+            }
+          },
+          {
+            "key": "animals-11",
+            "values": {
+              "animal_name": "Ziggy",
+              "species": "Dog",
+              "breed": "Corgi mix",
+              "status": "Transferred",
+              "intake_on": "@today-80d",
+              "age_months": 30,
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "foster",
+        "name": "Foster homes",
+        "labelSingular": "Foster home",
+        "labelPlural": "Foster homes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "house-heart",
+        "titleField": "foster_name",
+        "describes": "Every approved foster home, what animals it can take and how many it has now.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "foster_name",
+            "label": "Foster home",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Available",
+              "Full",
+              "On pause",
+              "Applicant"
+            ],
+            "choiceColors": {
+              "Available": "slate",
+              "Full": "blue",
+              "On pause": "amber",
+              "Applicant": "violet"
+            },
+            "required": true,
+            "default": "Available",
+            "statusGroups": {
+              "Available": "todo",
+              "Full": "in_progress",
+              "On pause": "in_progress",
+              "Applicant": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "takes",
+            "label": "Can take",
+            "parityType": "select",
+            "choices": [
+              "Dogs",
+              "Cats",
+              "Puppies and kittens",
+              "Dogs and cats",
+              "Medical cases"
+            ],
+            "choiceColors": {
+              "Dogs": "slate",
+              "Cats": "blue",
+              "Puppies and kittens": "amber",
+              "Dogs and cats": "violet",
+              "Medical cases": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "capacity",
+            "label": "Animals at once",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "current",
+            "label": "Animals with them now",
+            "parityType": "rollup",
+            "via": "animals",
+            "pick": "animal_name",
+            "agg": "count",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "filter": {
+              "status": "In foster"
+            }
+          },
+          {
+            "key": "room",
+            "label": "Room left",
+            "parityType": "formula",
+            "formula": "MAX(0, {Animals at once} - {Animals with them now})",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New foster home",
+            "values": {
+              "foster_name": "New foster home",
+              "status": "Applicant"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Home check"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Fence, other pets, children and ages, and anything to be aware of."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Experience"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Animals they have fostered or owned."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "foster-1",
+            "values": {
+              "foster_name": "Calloway house",
+              "status": "Available",
+              "takes": "Dogs and cats",
+              "capacity": 3,
+              "email": "calloway@mailbox.net",
+              "phone": "(720) 555-0161",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "foster-2",
+            "values": {
+              "foster_name": "Nwosu-Bennett family",
+              "status": "Available",
+              "takes": "Puppies and kittens",
+              "capacity": 4,
+              "email": "nwosu.bennett@mailbox.net",
+              "phone": "(720) 555-0162"
+            }
+          },
+          {
+            "key": "foster-3",
+            "values": {
+              "foster_name": "Mirabel Quinn",
+              "status": "Full",
+              "takes": "Cats",
+              "capacity": 2,
+              "email": "mirabel.q@mailbox.net",
+              "phone": "(720) 555-0163",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "foster-4",
+            "values": {
+              "foster_name": "The Aldana household",
+              "status": "Available",
+              "takes": "Dogs",
+              "capacity": 2,
+              "email": "aldana@mailbox.net",
+              "phone": "(720) 555-0164"
+            }
+          },
+          {
+            "key": "foster-5",
+            "values": {
+              "foster_name": "Soren Eklund",
+              "status": "On pause",
+              "takes": "Medical cases",
+              "capacity": 1,
+              "email": "soren.e@mailbox.net",
+              "phone": "(720) 555-0165",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "foster-6",
+            "values": {
+              "foster_name": "Priyanka Deshmukh",
+              "status": "Applicant",
+              "takes": "Dogs and cats",
+              "capacity": 2,
+              "email": "priyanka.d@mailbox.net",
+              "phone": "(720) 555-0166"
+            }
+          },
+          {
+            "key": "foster-7",
+            "values": {
+              "foster_name": "Hollingsworth farm",
+              "status": "Available",
+              "takes": "Dogs",
+              "capacity": 5,
+              "email": "hollingsworth@mailbox.net",
+              "phone": "(720) 555-0167",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "vet_visits",
+        "name": "Vet visits",
+        "labelSingular": "Vet visit",
+        "labelPlural": "Vet visits",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "stethoscope",
+        "titleField": "visit_name",
+        "describes": "Vaccines, spay and neuter, checkups and treatment, with what each cost.",
+        "subject": "thing",
+        "independentOf": {
+          "animal": "Either record can be created or change status before the other.",
+          "driver": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "visit_name",
+            "label": "Vet visit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "animal",
+            "label": "Animal",
+            "parityType": "relation",
+            "relationTarget": "animals",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Intake exam",
+              "Vaccines",
+              "Spay or neuter",
+              "Treatment",
+              "Dental",
+              "Recheck"
+            ],
+            "choiceColors": {
+              "Intake exam": "slate",
+              "Vaccines": "blue",
+              "Spay or neuter": "amber",
+              "Treatment": "violet",
+              "Dental": "teal",
+              "Recheck": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Scheduled",
+              "Done",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Done": "blue",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Done": "done",
+              "Cancelled": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visit_on",
+            "label": "Visit date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cost",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "driver",
+            "label": "Driver",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "vet_visits_done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New vet visit",
+            "values": {
+              "visit_name": "New vet visit",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reason for visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Symptoms or the service needed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Results"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the vet found and any medicine to give at home."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "vet_visits-1",
+            "values": {
+              "visit_name": "Waffles intake exam",
+              "animal": "animals-3",
+              "kind": "Intake exam",
+              "status": "Scheduled",
+              "visit_on": "@today",
+              "cost": 85,
+              "driver": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "vet_visits-2",
+            "values": {
+              "visit_name": "Biscuit neuter",
+              "animal": "animals-1",
+              "kind": "Spay or neuter",
+              "status": "Scheduled",
+              "visit_on": "@today+2d",
+              "cost": 190,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "vet_visits-3",
+            "values": {
+              "visit_name": "Moose dental check",
+              "animal": "animals-5",
+              "kind": "Dental",
+              "status": "Scheduled",
+              "visit_on": "@today+4d",
+              "cost": 140,
+              "driver": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "vet_visits-4",
+            "values": {
+              "visit_name": "Pip vaccines",
+              "animal": "animals-6",
+              "kind": "Vaccines",
+              "status": "Scheduled",
+              "visit_on": "@today+3d",
+              "cost": 45,
+              "driver": "tm-1"
+            }
+          },
+          {
+            "key": "vet_visits-5",
+            "values": {
+              "visit_name": "Sprout intake exam",
+              "animal": "animals-8",
+              "kind": "Intake exam",
+              "status": "Scheduled",
+              "visit_on": "@today",
+              "cost": 75,
+              "driver": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "vet_visits-6",
+            "values": {
+              "visit_name": "Clementine recheck",
+              "animal": "animals-4",
+              "kind": "Recheck",
+              "status": "Scheduled",
+              "visit_on": "@today-1d",
+              "cost": 60,
+              "driver": "tm-2"
+            }
+          },
+          {
+            "key": "vet_visits-7",
+            "values": {
+              "visit_name": "Juniper vaccines",
+              "animal": "animals-2",
+              "kind": "Vaccines",
+              "status": "Done",
+              "visit_on": "@today-55d",
+              "cost": 65,
+              "driver": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "vet_visits-8",
+            "values": {
+              "visit_name": "Biscuit intake exam",
+              "animal": "animals-1",
+              "kind": "Intake exam",
+              "status": "Done",
+              "visit_on": "@today-30d",
+              "cost": 85,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "vet_visits-9",
+            "values": {
+              "visit_name": "Moose treatment for skin",
+              "animal": "animals-5",
+              "kind": "Treatment",
+              "status": "Done",
+              "visit_on": "@today-70d",
+              "cost": 210,
+              "driver": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "vet_visits-10",
+            "values": {
+              "visit_name": "Tank spay or neuter booking",
+              "animal": "animals-9",
+              "kind": "Spay or neuter",
+              "status": "Cancelled",
+              "visit_on": "@today-100d",
+              "cost": 0,
+              "driver": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "applications",
+        "name": "Adoption applications",
+        "labelSingular": "Adoption application",
+        "labelPlural": "Adoption applications",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "applicant_name",
+        "describes": "People who want to adopt, with where their application stands.",
+        "subject": "thing",
+        "independentOf": {
+          "animal": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "received_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "applicant_name",
+            "label": "Applicant",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "animal",
+            "label": "Animal",
+            "parityType": "relation",
+            "relationTarget": "animals",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Received",
+              "In review",
+              "Approved",
+              "Declined",
+              "Adopted"
+            ],
+            "choiceColors": {
+              "Received": "slate",
+              "In review": "blue",
+              "Approved": "amber",
+              "Declined": "red",
+              "Adopted": "violet"
+            },
+            "required": true,
+            "default": "Received",
+            "statusGroups": {
+              "Received": "in_progress",
+              "In review": "in_progress",
+              "Approved": "in_progress",
+              "Declined": "done",
+              "Adopted": "done"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "received_on",
+            "label": "Applied on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "home",
+            "label": "Home",
+            "parityType": "select",
+            "choices": [
+              "House with yard",
+              "House, no yard",
+              "Apartment",
+              "Farm or acreage"
+            ],
+            "choiceColors": {
+              "House with yard": "slate",
+              "House, no yard": "blue",
+              "Apartment": "amber",
+              "Farm or acreage": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reference_checked",
+            "label": "References checked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_approve",
+            "label": "Mark approved",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "applications_approve"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_decline",
+            "label": "Mark declined",
+            "parityType": "button",
+            "button": {
+              "do": "run_action",
+              "action": "applications_decline"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New application",
+            "values": {
+              "applicant_name": "New application",
+              "status": "Received"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Household, other pets, schedule and experience."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Application read"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "References called"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Landlord permission seen (renters)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Meet and greet set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Contract signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "applications-1",
+            "values": {
+              "applicant_name": "Annika Svensson",
+              "animal": "animals-5",
+              "status": "In review",
+              "received_on": "@today-2d",
+              "email": "annika.s@mailbox.net",
+              "phone": "(720) 555-0171",
+              "home": "House with yard",
+              "reference_checked": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "applications-2",
+            "values": {
+              "applicant_name": "Lucius and Mae Hartigan",
+              "animal": "animals-2",
+              "status": "Received",
+              "received_on": "@today",
+              "email": "hartigan@mailbox.net",
+              "phone": "(720) 555-0172",
+              "home": "Apartment",
+              "reference_checked": false
+            }
+          },
+          {
+            "key": "applications-3",
+            "values": {
+              "applicant_name": "Baraka Mwangi",
+              "animal": "animals-9",
+              "status": "In review",
+              "received_on": "@today-5d",
+              "email": "baraka.m@mailbox.net",
+              "phone": "(720) 555-0173",
+              "home": "Farm or acreage",
+              "reference_checked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "applications-4",
+            "values": {
+              "applicant_name": "Cecilia Voss-Ito",
+              "animal": "animals-7",
+              "status": "Approved",
+              "received_on": "@today-9d",
+              "email": "cecilia.vi@mailbox.net",
+              "phone": "(720) 555-0174",
+              "home": "House with yard",
+              "reference_checked": true
+            }
+          },
+          {
+            "key": "applications-5",
+            "values": {
+              "applicant_name": "Dominic Pellegrini",
+              "animal": "animals-5",
+              "status": "Declined",
+              "received_on": "@today-14d",
+              "email": "dominic.p@mailbox.net",
+              "phone": "(720) 555-0175",
+              "home": "Apartment",
+              "reference_checked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "applications-6",
+            "values": {
+              "applicant_name": "Helga Ostrowski",
+              "animal": "animals-2",
+              "status": "Received",
+              "received_on": "@today-1d",
+              "email": "helga.o@mailbox.net",
+              "phone": "(720) 555-0176",
+              "home": "House, no yard",
+              "reference_checked": false
+            }
+          },
+          {
+            "key": "applications-7",
+            "values": {
+              "applicant_name": "Ibrahim Karimi-Reyes",
+              "animal": "animals-10",
+              "status": "Adopted",
+              "received_on": "@today-140d",
+              "email": "ibrahim.kr@mailbox.net",
+              "phone": "(720) 555-0177",
+              "home": "House with yard",
+              "reference_checked": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "applications-8",
+            "values": {
+              "applicant_name": "Juno Castellane",
+              "animal": "animals-1",
+              "status": "Received",
+              "received_on": "@today-3d",
+              "email": "juno.c@mailbox.net",
+              "phone": "(720) 555-0178",
+              "home": "House with yard",
+              "reference_checked": false
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each animal belongs to one foster home.",
+        "fromTable": "animals",
+        "fromField": "foster",
+        "toTable": "foster",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "animals"
+      },
+      {
+        "describes": "Each vet visit belongs to one animal.",
+        "fromTable": "vet_visits",
+        "fromField": "animal",
+        "toTable": "animals",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "vet_visits"
+      },
+      {
+        "describes": "Each vet visit belongs to one driver.",
+        "fromTable": "vet_visits",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "vet_by_driver"
+      },
+      {
+        "describes": "Each adoption application belongs to one animal.",
+        "fromTable": "applications",
+        "fromField": "animal",
+        "toTable": "animals",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "applications"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Thaddeus Okoro-Lindgren",
+              "role": "Rescue coordinator",
+              "work_email": "thaddeus@secondchancepaws.net",
+              "mobile": "(720) 555-0141",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Perpetua Hollis-Varga",
+              "role": "Foster manager",
+              "work_email": "perpetua@secondchancepaws.net",
+              "mobile": "(720) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Ravi Subramaniam",
+              "role": "Adoption counselor",
+              "work_email": "ravi@secondchancepaws.net",
+              "mobile": "(720) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Greta Johansson",
+              "role": "Medical volunteer",
+              "work_email": "greta@secondchancepaws.net",
+              "mobile": "(720) 555-0144",
+              "start_date": "@today-5y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "intake",
+        "name": "Adoption application",
+        "describes": "Anyone who wants to adopt fills this in.",
+        "audience": "staff",
+        "table": "applications",
+        "fields": [
+          {
+            "fieldKey": "applicant_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "animal",
+            "ask": "Which animal are you interested in?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What email can we reach you on?",
+            "required": true
+          },
+          {
+            "fieldKey": "home",
+            "ask": "What kind of home do you have?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thank you. An adoption counselor will reply within three working days."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "animals_ready",
+        "table": "animals",
+        "name": "Mark ready for adoption",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready for adoption"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "animals_pending",
+        "table": "animals",
+        "name": "Mark adoption pending",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Adoption pending"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "animals_adopted",
+        "table": "animals",
+        "name": "Mark adopted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Adopted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "vet_visits_done",
+        "table": "vet_visits",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "applications_approve",
+        "table": "applications",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "applications_decline",
+        "table": "applications",
+        "name": "Mark declined",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Declined"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_animals",
+        "name": "All animals",
+        "table": "animals",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "animals_board",
+        "name": "By status",
+        "table": "animals",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "animals_cal",
+        "name": "Calendar",
+        "table": "animals",
+        "kind": "calendar",
+        "dateField": "next_checkup",
+        "allDay": true
+      },
+      {
+        "token": "animals_over",
+        "name": "Overdue",
+        "table": "animals",
+        "kind": "grid",
+        "within": {
+          "next_checkup": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Intake",
+            "In foster",
+            "Ready for adoption"
+          ]
+        }
+      },
+      {
+        "token": "animals_week",
+        "name": "This week",
+        "table": "animals",
+        "kind": "grid",
+        "within": {
+          "next_checkup": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Intake",
+            "In foster",
+            "Ready for adoption"
+          ]
+        }
+      },
+      {
+        "token": "animals_next7",
+        "name": "Next 7 days",
+        "table": "animals",
+        "kind": "grid",
+        "within": {
+          "next_checkup": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Intake",
+            "In foster",
+            "Ready for adoption"
+          ]
+        }
+      },
+      {
+        "token": "animals_mine",
+        "name": "My animals",
+        "table": "animals",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_foster",
+        "name": "All foster homes",
+        "table": "foster",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "foster_board",
+        "name": "By status",
+        "table": "foster",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "foster_mine",
+        "name": "My foster homes",
+        "table": "foster",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_vet_visits",
+        "name": "All vet visits",
+        "table": "vet_visits",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "vet_visits_board",
+        "name": "By status",
+        "table": "vet_visits",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "vet_visits_cal",
+        "name": "Calendar",
+        "table": "vet_visits",
+        "kind": "calendar",
+        "dateField": "visit_on",
+        "allDay": true
+      },
+      {
+        "token": "vet_visits_over",
+        "name": "Overdue",
+        "table": "vet_visits",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "vet_visits_week",
+        "name": "This week",
+        "table": "vet_visits",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "vet_visits_next7",
+        "name": "Next 7 days",
+        "table": "vet_visits",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "vet_visits_mine",
+        "name": "My vet visits",
+        "table": "vet_visits",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_applications",
+        "name": "All adoption applications",
+        "table": "applications",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "applications_board",
+        "name": "By status",
+        "table": "applications",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "applications_mine",
+        "name": "My adoption applications",
+        "table": "applications",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Animal Rescue Operations Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "animals",
+          "describes": "Every animal in our care, from intake to a home, with where they are and what they need next."
+        },
+        {
+          "name": "related_tables",
+          "table": "foster",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many animals are ready for adoption?",
+        "whyItMatters": "The adoption counselor posts them every Friday.",
+        "expect": {
+          "table": "animals",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Ready for adoption"
+          },
+          "answer": 3,
+          "unit": "animals"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open animals.",
+        "action": {
+          "kind": "open",
+          "surface": "animals_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "animals_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open foster homes.",
+        "action": {
+          "kind": "open",
+          "surface": "foster_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "foster_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open vet visits.",
+        "action": {
+          "kind": "open",
+          "surface": "vet_visits_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "vet_visits_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "secondchancepaws.net"
+      ],
+      "fictionalStreets": [
+        "Juniper Hollow"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "animal-rescue-operations",
+      "parent": null,
+      "title": "Animal Rescue Operations Desk",
+      "icon": {
+        "emoji": "🐾"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every animal's journey from intake to a home, plus the fosters, vet care and adopters who make it possible. Start with the Dashboard each morning. Update an animal's status the moment it changes, and book the next vet visit before the foster leaves the clinic."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:intake-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:adoption-process"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:foster-care-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Animals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every animal in our care, from intake to a home, with where they are and what they need next."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "animals",
+              "view": "animals_board"
+            },
+            "inline": true,
+            "title": "Animals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ani-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ani-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_checkup"
+              },
+              {
+                "id": "ani-t",
+                "name": "All animals",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ani-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_checkup": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "In foster",
+                    "Ready for adoption"
+                  ]
+                }
+              },
+              {
+                "id": "ani-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_checkup": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "In foster",
+                    "Ready for adoption"
+                  ]
+                }
+              },
+              {
+                "id": "ani-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_checkup": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "In foster",
+                    "Ready for adoption"
+                  ]
+                }
+              },
+              {
+                "id": "ani-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ani-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Foster homes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every approved foster home, what animals it can take and how many it has now."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "foster",
+              "view": "foster_board"
+            },
+            "inline": true,
+            "title": "Foster homes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "fos-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "fos-t",
+                "name": "All foster homes",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "fos-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "fos-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vet visits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Vaccines, spay and neuter, checkups and treatment, with what each cost."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vet_visits",
+              "view": "vet_visits_board"
+            },
+            "inline": true,
+            "title": "Vet visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vet-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vet-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "visit_on"
+              },
+              {
+                "id": "vet-t",
+                "name": "All vet visits",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "vet-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "visit_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "vet-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "visit_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "vet-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "visit_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "vet-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "vet-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Adoption applications"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "People who want to adopt, with where their application stands."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "applications",
+              "view": "applications_board"
+            },
+            "inline": true,
+            "title": "Adoption applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "app-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "app-t",
+                "name": "All adoption applications",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "app-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "app-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "animal-rescue-operations",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The rescue at a glance. Charts read the live tables."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "animals",
+                      "view": "all_animals"
+                    },
+                    "inline": true,
+                    "title": "Animals by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Animals by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "animals",
+                      "view": "all_animals"
+                    },
+                    "inline": true,
+                    "title": "Animals by species",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Animals by species",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "species",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "vet_visits",
+                      "view": "all_vet_visits"
+                    },
+                    "inline": true,
+                    "title": "Vet spend by kind (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Vet spend by kind (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "cost"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "applications",
+                      "view": "all_applications"
+                    },
+                    "inline": true,
+                    "title": "Applications by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Applications by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vet visits overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vet_visits",
+              "view": "all_vet_visits"
+            },
+            "inline": true,
+            "title": "Vet visits overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Vet visits overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "visit_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vet visits due this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "animals",
+              "view": "all_animals"
+            },
+            "inline": true,
+            "title": "Vet visits due this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Vet visits due this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "next_checkup": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "In foster",
+                    "Ready for adoption"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Applications waiting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "applications",
+              "view": "all_applications"
+            },
+            "inline": true,
+            "title": "Applications waiting",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Applications waiting",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Received",
+                    "In review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vet cost so far"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sum of the cost of finished visits for that animal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with the animal's adoption fee when setting fees"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Room left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Animals at once minus animals with them now"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call fosters with room before posting an urgent plea"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Applications in review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Applications received, in review or approved for that animal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two or more means schedule meet-and-greets together"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "intake-routine",
+      "parent": "animal-rescue-operations",
+      "title": "Intake routine",
+      "icon": {
+        "emoji": "🚐"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first 48 hours decide a lot for an animal. Do the same steps for every animal, in the same order."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Scan for a microchip and note the result"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Take clear photos from the front and side"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Add the animal on the Animals table with its intake date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Book the intake vet exam"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Place with a foster that has room and the right setup"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Within a week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write a short, honest behavior note after the first days in foster."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update the weight and any medicine given."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move to Ready for adoption only after vet clearance and a photo update."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "adoption-process",
+      "parent": "animal-rescue-operations",
+      "title": "Adoption process",
+      "icon": {
+        "emoji": "🏡"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good adoption is a good match, not a fast one. The process is there to protect the animal and the adopter."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the application and call two references."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the home type and any rental permission."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set up a meet-and-greet, including other dogs in the home when relevant."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark approved, then complete the contract and fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Mark adopted on the animal and call the adopter after one week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If the answer is no"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Explain kindly and offer another animal that fits better. Never say it is because of who they are; say what the animal needs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "foster-care-guide",
+      "parent": "animal-rescue-operations",
+      "title": "Foster care guide",
+      "icon": {
+        "emoji": "💞"
+      },
+      "settings": {
+        "fullWidth": false
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Fosters are the rescue. Make their work easier and they will stay for years."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Welcome basics"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give every foster a one-page guide: feeding, medicine, who to call and what counts as an emergency."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask them to send a photo and note each week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call within a day of every new placement."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Support"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Need"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What we provide"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Food and supplies"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pick-up on Saturdays from the supply shelf"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vet care"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Visits booked and paid by the rescue"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A break"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Respite from another foster for up to a week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A hard day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A call to the foster manager any hour for emergencies"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

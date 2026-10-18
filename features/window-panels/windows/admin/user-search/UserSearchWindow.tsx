@@ -6,12 +6,11 @@ import { WindowPanel } from "@ai-matrx/summon/window";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Button } from "@/components/ui/button";
+import { SearchField } from "@ai-matrx/design-system/controls";
+import { createClient } from "@/utils/supabase/client";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
-import {
-  AdminUserSearchResponseSchema,
-  type UserSearchCandidate,
-} from "@/features/user-search/types";
-import { loadAdminRoster } from "@/features/admin/users/adminRoster";
+import type { UserSearchCandidate } from "@/features/user-search/types";
+import type { Database } from "@/types/database.types";
 import { emitUserSearchEvent } from "@/features/user-search/callbacks";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -27,20 +26,23 @@ export interface UserSearchWindowProps {
   excludeUserIds: string[];
 }
 
-function mapAdminUser(
-  row: (typeof AdminUserSearchResponseSchema)["_output"]["users"][number],
-): UserSearchCandidate {
+type PersonHit = Database["admin"]["Functions"]["search_people"]["Returns"][number];
+
+/** How many people one directory search returns (admin.search_people caps at 50). */
+const DIRECTORY_LIMIT = 50;
+
+function mapPersonHit(row: PersonHit): UserSearchCandidate {
   return {
     id: row.id,
-    email: row.email,
-    displayName: row.display_name ?? row.full_name,
-    avatarUrl: row.avatar_url,
-    phone: row.phone,
-    adminLevel: row.admin_level,
-    organizations: row.organizations.map((organization) => organization.name),
+    email: row.email ?? null,
+    displayName: row.display_name ?? row.name ?? null,
+    avatarUrl: row.avatar_url ?? null,
+    phone: row.phone ?? null,
+    adminLevel: row.admin_level ?? null,
+    organizations: row.organizations ?? [],
     source: "Account directory",
-    createdAt: row.created_at,
-    lastSignInAt: row.last_sign_in_at,
+    createdAt: row.created_at ?? null,
+    lastSignInAt: row.last_sign_in_at ?? null,
   };
 }
 
@@ -65,39 +67,40 @@ function UserSearchWindowInner({
   excludeUserIds,
 }: UserSearchWindowProps) {
   const [rows, setRows] = useState<UserSearchCandidate[]>(candidates);
-  const [loading, setLoading] = useState(directory === "admin");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState(initialQuery);
+  const query = search.trim();
 
+  // The admin directory is searched IN the database (admin.search_people, users one-roof S10): each
+  // pause in typing asks for the few people who match — never the whole roster.
   useEffect(() => {
-    if (directory !== "admin") return;
+    if (directory !== "admin" || !query) return;
     let cancelled = false;
-    // THE shared admin roster (one read per tab, features/admin/users/adminRoster.ts).
-    loadAdminRoster()
-      .then((payload) => {
-        const parsed = AdminUserSearchResponseSchema.safeParse(payload);
-        if (!parsed.success) {
-          throw new Error("The user directory returned an invalid response");
-        }
-        if (!cancelled) setRows(parsed.data.users.map(mapAdminUser));
-      })
-      .catch((reason: unknown) => {
-        if (!cancelled) {
-          setError(
-            reason instanceof Error ? reason.message : "Failed to load users",
-          );
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const timer = setTimeout(() => {
+      setLoading(true);
+      setError(null);
+      createClient()
+        .schema("admin")
+        .rpc("search_people", { p_query: query, p_limit: DIRECTORY_LIMIT })
+        .then(({ data, error: rpcError }) => {
+          if (cancelled) return;
+          if (rpcError) setError(rpcError.message);
+          else setRows((data ?? []).map(mapPersonHit));
+          setLoading(false);
+        });
+    }, 200);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
-  }, [directory]);
+  }, [directory, query]);
+
+  const serverSearch = directory === "admin";
+  const shownRows = serverSearch && !query ? [] : rows;
 
   const excluded = new Set(excludeUserIds);
-  const visibleRows = rows.filter((row) => !excluded.has(row.id));
+  const visibleRows = shownRows.filter((row) => !excluded.has(row.id));
 
   const columns: MatrxColumnDef<UserSearchCandidate>[] = [
     {
@@ -240,13 +243,28 @@ function UserSearchWindowInner({
           isLoading={loading}
           pageSize={25}
           pageSizeOptions={[10, 25, 50, 100]}
-          toolbar={{
-            search: true,
-            searchPlaceholder:
-              "Search name, email, phone, organization, or ID…",
-            searchValue: search,
-            onSearchChange: setSearch,
-          }}
+          toolbar={
+            serverSearch
+              ? {
+                  search: false,
+                  customSearch: (
+                    <SearchField
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search name, email, or ID…"
+                      aria-label="Search people"
+                      className="min-w-[220px] sm:w-80"
+                    />
+                  ),
+                }
+              : {
+                  search: true,
+                  searchPlaceholder:
+                    "Search name, email, phone, organization, or ID…",
+                  searchValue: search,
+                  onSearchChange: setSearch,
+                }
+          }
           // read-gate-exempt: error swaps this for the failed-read state and the message above names the failure once
           emptyState={{
             icon: loading ? (
@@ -257,13 +275,17 @@ function UserSearchWindowInner({
             title: error
               ? "The user directory could not be read"
               : loading
-                ? "Loading users"
-                : "No matching users",
+                ? "Searching"
+                : serverSearch && !query
+                  ? "Search people"
+                  : "No matching users",
             description: error
               ? "The read failed; see the message above."
               : loading
-                ? "Reading the available user directory."
-                : "Change the search or clear column filters.",
+                ? "Reading the user directory."
+                : serverSearch && !query
+                  ? "Type a name, email, or ID."
+                  : "Change the search or clear column filters.",
           }}
           onRowOpen={select}
 

@@ -15,17 +15,11 @@ import type { ItemTypeConfig } from "@/features/item-presentation/registry";
 
 import { refineCandidateDetail, refineCandidateRunDetail } from "./detail";
 
-const ACCENT = {
-  text: "text-teal-600 dark:text-teal-400",
-  bg: "bg-teal-500/10",
-  ring: "ring-teal-500/20",
-};
 
 export const MANDATE_CANDIDATE_RUN_ITEM_TYPE: ItemTypeConfig = {
   type: "mandate_candidate_run",
   label: "Candidate run",
   icon: GitCompareArrows,
-  accent: ACCENT,
   refineDetail: refineCandidateRunDetail,
 };
 
@@ -33,6 +27,5 @@ export const MANDATE_CANDIDATE_ITEM_TYPE: ItemTypeConfig = {
   type: "mandate_candidate",
   label: "Mandate candidate",
   icon: ListChecks,
-  accent: ACCENT,
   refineDetail: refineCandidateDetail,
 };
