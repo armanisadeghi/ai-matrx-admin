@@ -64,6 +64,8 @@ export interface BoardFrame {
   note?: string;
   /** A colour of the board palette; absent = the neutral frame. */
   color?: ShapeColor;
+  /** The chapter's icon (a Lucide name) a template or agent set; absent = read from what it holds. */
+  icon?: string;
 }
 
 /** A connection drawn between two tiles (a pipeline hand-off, a "see also"). */
@@ -422,7 +424,7 @@ export class BoardStore<T extends BoardTileBase> {
 
   /**
    * Re-lay the board WITHOUT an undo step (page layout's continuous arrangement, and the switch
-   * between layouts): tiles and shapes move, frames move and take the given size. Past and future
+   * between layouts): tiles and shapes move, frames and tiles take the given size (a shape keeps its own). Past and future
    * are untouched, so ⌘Z still takes back the person's own last change (the layout re-runs after).
    */
   reflow = (moves: readonly { id: string; x: number; y: number; w?: number; h?: number }[]): void => {
@@ -433,7 +435,7 @@ export class BoardStore<T extends BoardTileBase> {
     const byId = { ...s.byId };
     for (const [id, m] of at) {
       const t = byId[id];
-      if (t) byId[id] = { ...t, rect: { ...t.rect, x: m.x, y: m.y } };
+      if (t) byId[id] = { ...t, rect: { x: m.x, y: m.y, w: m.w ?? t.rect.w, h: m.h ?? t.rect.h } };
     }
     const frames = s.frames.map((f) => {
       const m = at.get(f.id);

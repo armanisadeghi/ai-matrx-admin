@@ -28,22 +28,26 @@ import type { BoardStore } from "../board/useBoard";
 import type { BoardTileBase } from "../board/board-store";
 
 /** World px above a chapter kept in view when jumping to it (its title sits there). */
-export const PAGE_LABEL_ROOM = 56;
+export const PAGE_LABEL_ROOM = 16;
 
 /** Quiet time after a change before the page re-flows. */
 const REFLOW_MS = 120;
+
+/** A tile's name when its host keeps one (page layout hides a frame label a tile already shows). */
+const tileTitle = (t: BoardTileBase): string | undefined =>
+  "title" in t && typeof t.title === "string" ? t.title : undefined;
 
 export function pageScene<T extends BoardTileBase>(board: BoardStore<T>) {
   const now = board.read();
   return {
     tiles: [
-      ...now.tiles.map((t) => ({ id: t.id, rect: t.rect })),
+      ...now.tiles.map((t) => ({ id: t.id, rect: t.rect, title: tileTitle(t) })),
       ...board
         .getShapes()
         .filter((sh) => !isConnector(sh.kind))
         .map((sh) => ({ id: sh.id, rect: boundsOfPoints(sh.points) })),
     ],
-    frames: now.frames.map((f) => ({ id: f.id, rect: f.rect })),
+    frames: now.frames.map((f) => ({ id: f.id, rect: f.rect, title: f.title })),
   };
 }
 

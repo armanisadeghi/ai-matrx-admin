@@ -24,9 +24,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Database, DownloadCloud, LayoutList, Rows3, Table2 } from "lucide-react";
 import { Peek, RecordsMount, SectionCard, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { recordsDataSource, rowName } from "@ai-matrx/records-ui/helpers";
-import { useRecords, useTable } from "@ai-matrx/records/react";
+import { useFields, useRecords, useTable } from "@ai-matrx/records/react";
 
-import { Button } from "@/components/ui/button";
 import { readOf } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -43,7 +42,7 @@ import { DATA_TABLES_SURFACE } from "@/features/unified-data/grid-agent-context/
 
 import type { DataHomeTableRow } from "@/features/unified-data/hub/doors";
 import type { NodeSource } from "../board/document";
-import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
+import type { BoardItemType, ItemBodyProps, PickerProps, TileMenuAction, TileMenuContext } from "./types";
 import { titleToAdopt } from "./feature-items.logic";
 import { RecordList } from "./feature-items";
 import { tablesToPick } from "@/features/unified-data/hub/tablePicking";
@@ -51,7 +50,8 @@ import { dataHomeTables, findTables } from "./record-finders";
 import { GetDataBody } from "../data-fetch/GetDataBody";
 import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
 import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
-import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "./table-tile";
+import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, tableLookHint } from "./table-tile";
+import { useTileAutoHeight } from "../components/BoardTile";
 
 
 function tableSource(id: string | null): NodeSource {
@@ -201,25 +201,35 @@ function AdoptTableName({ tableId, source, title, onSource }: { tableId: string 
   return null;
 }
 
-/** One quiet switch between the table page and the section card, at the tile's top right. */
-function TableLayoutSwitch({ source, onSource }: Pick<ItemBodyProps, "source" | "onSource">) {
-  const layout = tableLayoutOf(source);
-  const next = layout === "section" ? "table" : "section";
-  const Icon = next === "section" ? LayoutList : Table2;
-  return (
-    <div className="flex justify-end">
-      <Button
-        type="button"
-        variant="quiet"
-        className="gap-1.5 text-xs"
-        data-board-table-layout={layout}
-        onClick={() => onSource(withTableLayout(source, next))}
-      >
-        <Icon className="h-3.5 w-3.5" />
-        {next === "section" ? "Show as section" : "Show as table"}
-      </Button>
-    </div>
-  );
+/**
+ * The tile remembers its table's LOOK (`meta.look`: the first plug-in look a column wears — a colour pair,
+ * a type style, a spacing measure…), so the outline can give the chapter its own icon without reading
+ * the table itself. Written only when it changes, outside the undo stack (like the adopted name).
+ */
+function AdoptTableLook({ tableId, source, onSource }: { tableId: string } & Pick<ItemBodyProps, "source" | "onSource">) {
+  const fields = useFields(tableId);
+  const hint = fields.data ? tableLookHint(fields.data) : undefined;
+  const kept = source.kind === "entity" ? source.meta?.look : undefined;
+  useEffect(() => {
+    if (hint === undefined || source.kind !== "entity" || (kept ?? null) === hint) return;
+    const rest = Object.fromEntries(Object.entries(source.meta ?? {}).filter(([k]) => k !== "look"));
+    onSource({ ...source, meta: hint === null ? rest : { ...rest, look: hint } });
+  }, [hint, kept, source, onSource]);
+  return null;
+}
+
+/** The table tile's own "…" entries: switch between the table page and the section card. */
+export function tableMenuActions({ source, onSource }: TileMenuContext): TileMenuAction[] {
+  if (!tableIdOf(source)) return [];
+  const next = tableLayoutOf(source) === "section" ? "table" : "section";
+  return [
+    {
+      key: "layout",
+      label: next === "section" ? "Show as section" : "Show as table",
+      icon: next === "section" ? LayoutList : Table2,
+      onSelect: () => onSource(withTableLayout(source, next)),
+    },
+  ];
 }
 
 export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBodyProps & { id: string }) {
@@ -227,15 +237,25 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
   // A table made by "Get data" (anywhere) says where its rows came from, with Refresh and Get more.
   const fetched = (source.kind === "entity" ? readDataFetchMeta(source.meta)?.fetched : undefined) ?? null;
   const section = tableLayoutOf(source) === "section";
+  // Page layout: the section card IS the tile (no padding, no inner scroll); the tile takes its height.
+  const auto = useTileAutoHeight() && section;
   return (
-    <div className={mount.mountsTheTable ? "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1" : "h-full min-h-0 overflow-y-auto p-4"}>
+    <div
+      className={
+        auto
+          ? "flex flex-col gap-2"
+          : mount.mountsTheTable
+            ? "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1"
+            : "h-full min-h-0 overflow-y-auto p-4"
+      }
+    >
       <UnifiedTableBody
         mount={mount}
         before={
           <>
             <AdoptTableName tableId={id} source={source} title={title} onSource={onSource} />
             <FetchedSourceBar tileId={tileId} tableId={id} source={source} fetched={fetched} onSource={onSource} />
-            <TableLayoutSwitch source={source} onSource={onSource} />
+            <AdoptTableLook tableId={id} source={source} onSource={onSource} />
           </>
         }
         {...(section ? { content: <SectionCard tableId={id} /> } : {})}
@@ -353,6 +373,10 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     // The Get data tile is the source picker until its table exists: one click opens it.
     opensOnClick: (s) => s.kind === "entity" && !tableIdOf(s) && Boolean(readDataFetchMeta(s.meta)),
     Body: TableItemBody,
+    menuActions: tableMenuActions,
+    // A section card carries its own title (its h2) and lays out at its natural height.
+    namesItself: (s) => Boolean(tableIdOf(s)) && tableLayoutOf(s) === "section",
+    autoHeight: (s) => Boolean(tableIdOf(s)) && tableLayoutOf(s) === "section",
     // Wakes with its grid, scroll, selection and open cell intact: the gates keep their answers
     // (lib/kept-answer), so a wake never drops to "Opening the table…" (lane REMOUNT-SAFETY).
     sleeps: true,

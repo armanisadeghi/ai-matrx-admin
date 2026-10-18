@@ -94,6 +94,8 @@ export interface BoardGroup {
   note?: string;
   /** The frame's colour (a key of the board palette); absent = the neutral frame. */
   color?: ShapeColor;
+  /** The chapter's icon, a Lucide name ("Palette"), set by a template or an agent; absent = read from what it holds. */
+  icon?: string;
 }
 
 export interface BoardEdge {
@@ -145,6 +147,7 @@ export function parseBoardDocument(raw: {
         title: n.title,
         note: typeof n.note === "string" ? n.note : undefined,
         ...(typeof n.color === "string" && (SHAPE_COLORS as readonly string[]).includes(n.color) ? { color: n.color as ShapeColor } : {}),
+        ...(typeof n.icon === "string" && n.icon.trim() ? { icon: n.icon.trim() } : {}),
       });
       continue;
     }
@@ -202,7 +205,7 @@ export function serializeBoardDocument(rawDoc: BoardDocument) {
   return {
     camera: doc.camera,
     nodes: [
-      ...doc.groups.map((g) => ({ id: g.id, rect: g.rect, title: g.title, note: g.note, ...(g.color ? { color: g.color } : {}), group: true })),
+      ...doc.groups.map((g) => ({ id: g.id, rect: g.rect, title: g.title, note: g.note, ...(g.color ? { color: g.color } : {}), ...(g.icon ? { icon: g.icon } : {}), group: true })),
       ...doc.shapes.map((sh) => ({ ...serializeShape(sh), shape: true })),
       ...doc.nodes,
     ],

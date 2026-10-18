@@ -25,7 +25,7 @@
 
 import { Activity, createContext, type ReactNode, Suspense, useContext, useSyncExternalStore, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Maximize2, Minimize2, type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AfterFirstPaint, TileSkeleton } from "./AfterFirstPaint";
 import type { Rect } from "../engine/camera";
@@ -70,6 +70,20 @@ import { type StatusFrom, type TileStatus, useTileStatus } from "../streams/useS
 import type { BoardAccent } from "../items/types";
 import { ConnectHandles, type ConnectPoint } from "./ConnectHandles";
 import { OverviewCard, StatusChip } from "./TileFace";
+import { TileMenu, type TileMenuProps } from "./TileMenu";
+import { FULL_CHROME, type TileChrome, autoHeightChange } from "../engine/tile-chrome";
+
+/**
+ * The tile lays out at its content's height (page layout, `BoardItemType.autoHeight`): a body reads
+ * this and drops its `h-full` / inner-scroll wrapper, so the page scrolls and nothing inside does.
+ */
+const TileAutoHeightContext = createContext(false);
+export function useTileAutoHeight(): boolean {
+  return useContext(TileAutoHeightContext);
+}
+
+/** Quiet time before a measured height is written (a body settling over a few frames writes once). */
+const AUTO_HEIGHT_MS = 80;
 
 const IDLE_STATUS: StatusFrom = { kind: "static", value: { status: "idle", progress: null } };
 
@@ -93,7 +107,7 @@ export interface BoardTileProps {
   id: string;
   rect: Rect;
   title: string;
-  /** Small line under the title (kind, source, model…). */
+  /** What the tile is (kind, source, model…), named in its "…" menu when there is no `typeLabel`. */
   subtitle?: string;
   icon?: LucideIcon;
   /** The item type's colour (its far-zoom card). Default `slate`. */
@@ -117,6 +131,12 @@ export interface BoardTileProps {
   titleSlot?: ReactNode;
   /** Header actions (screen-sized buttons live in world space too). */
   actions?: ReactNode;
+  /** The tile's ONE "…" menu (what it is, Comment, Open, the type's own entries); Full screen is always in it. */
+  menu?: Omit<TileMenuProps, "title" | "focused" | "onFullScreen" | "floating" | "typeLabel">;
+  /** What the tile shows around its content (`engine/tile-chrome.ts`); default the full chrome. */
+  chrome?: TileChrome;
+  /** An auto-height tile measured a new content height (world px): the host writes it. */
+  onAutoHeight?: (id: string, h: number) => void;
   /** Moves the tile, in world px. Header drag calls it; omit to pin the tile. */
   onMove?: (id: string, x: number, y: number) => void;
   /** Resizes the tile to a world rect; the eight handles call it. REQUIRED so
@@ -187,6 +207,9 @@ export function BoardTile({
   statusFrom = IDLE_STATUS,
   titleSlot,
   actions,
+  menu,
+  chrome = FULL_CHROME,
+  onAutoHeight,
   onMove,
   onResize,
   onThrow,
@@ -498,17 +521,78 @@ export function BoardTile({
   const culled = tier === "offscreen";
   const overview = tier === "overview";
 
+  // Auto height: the card lays out at its content's height and the tile follows it. Only a real
+  // change of a real measurement is written (a hidden or skipped body measures 0), debounced, so a
+  // write never feeds another measure.
+  const autoHeight = chrome.autoHeight && !focused && !overview;
+  const onAutoHeightRef = useRef(onAutoHeight);
+  useEffect(() => {
+    onAutoHeightRef.current = onAutoHeight;
+  });
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!autoHeight || !card || typeof ResizeObserver === "undefined") return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const write = () => {
+      timer = null;
+      const next = autoHeightChange(rectRef.current.h, card.offsetHeight);
+      if (next !== null) onAutoHeightRef.current?.(id, next);
+    };
+    const ro = new ResizeObserver(() => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(write, AUTO_HEIGHT_MS);
+    });
+    ro.observe(card);
+    return () => {
+      ro.disconnect();
+      if (timer) clearTimeout(timer);
+    };
+  }, [autoHeight, id]);
+
+  const tileMenu = (
+    <TileMenu
+      title={title}
+      typeLabel={typeLabel ?? subtitle}
+      href={menu?.href}
+      comment={menu?.comment}
+      actions={menu?.actions}
+      focused={focused}
+      floating={chrome.headerless && !focused}
+      onFullScreen={() => (focused ? store.unfocus() : store.focus(id))}
+    />
+  );
+  const headerless = chrome.headerless && !focused && !overview;
+  const bare = chrome.bare && !focused && !overview;
+
   const card = (
     <div
       ref={cardRef}
       data-board-card={id}
       data-board-title={title}
       style={overview && !focused ? FACE_RADIUS : undefined}
+      data-board-chrome={bare ? "bare" : headerless ? "headerless" : "full"}
       className={cn(
-        "relative flex h-full w-full flex-col overflow-hidden overscroll-contain rounded-xl border bg-card",
-        focused ? "border-border shadow-2xl" : selected ? "border-primary" : "border-border",
+        "relative flex w-full flex-col",
+        autoHeight ? "h-auto" : "h-full",
+        bare
+          ? "rounded-xl"
+          : cn(
+              "overflow-hidden overscroll-contain rounded-xl border bg-card",
+              focused ? "border-border shadow-2xl" : selected ? "border-primary" : "border-border",
+            ),
       )}
     >
+      {headerless && (
+        <div
+          className={cn(
+            "absolute right-2 top-2 z-10 transition-opacity focus-within:opacity-100 group-hover/tile:opacity-100 [@media(hover:none)]:opacity-100",
+            selected || (menu?.comment?.count ?? 0) > 0 ? "opacity-100" : "opacity-0",
+          )}
+        >
+          {tileMenu}
+        </div>
+      )}
+      {!headerless && (
       <div
         ref={headerRef}
         className={cn(
@@ -522,11 +606,6 @@ export function BoardTile({
           {titleSlot ?? <p className="truncate text-sm font-medium text-foreground">{title}</p>}
         </div>
         {!overview && <TileStatus id={id} variant="header" animate={tier === "read"} renderStatus={renderStatus} />}
-        {subtitle && (
-          <span className="hidden shrink-0 truncate text-[11px] text-muted-foreground sm:inline">
-            {subtitle}
-          </span>
-        )}
         {interacting && !focused && (
           <button
             type="button"
@@ -538,22 +617,15 @@ export function BoardTile({
           </button>
         )}
         {actions}
-        <button
-          type="button"
-          title={focused ? "Back to board (Esc)" : "Focus (Enter)"}
-          aria-label={focused ? "Back to board" : "Focus"}
-          onClick={() => (focused ? store.unfocus() : store.focus(id))}
-          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-        >
-          {focused ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-        </button>
+        {tileMenu}
       </div>
-      <div className="relative min-h-0 flex-1" aria-hidden={overview}>
+      )}
+      <div className={autoHeight ? "relative" : "relative min-h-0 flex-1"} aria-hidden={overview}>
         {/* At overview the body stays mounted (a stream keeps its place) but
             is skipped for style, layout and paint. */}
         <div
           data-board-body
-          className={cn("h-full", interacting ? "select-text" : "select-none")}
+          className={cn(!autoHeight && "h-full", interacting ? "select-text" : "select-none")}
           // The board root is `touch-action: none` (its own pan/pinch); a
           // finger on a tile body scrolls the content natively instead.
           style={{ contentVisibility: overview ? "hidden" : "visible", touchAction: "pan-x pan-y" }}
@@ -589,7 +661,9 @@ export function BoardTile({
                       here the nearest one is the whole board's, which React hides (display: none) and reveals —
                       every tile reflowing at once. */}
                   <Suspense fallback={<TileSkeleton typeLabel={typeLabel ?? ""} />}>
-                    <AfterFirstPaint placeholder={<TileSkeleton typeLabel={typeLabel ?? ""} />}>{children(tier)}</AfterFirstPaint>
+                    <TileAutoHeightContext.Provider value={autoHeight}>
+                      <AfterFirstPaint placeholder={<TileSkeleton typeLabel={typeLabel ?? ""} />}>{children(tier)}</AfterFirstPaint>
+                    </TileAutoHeightContext.Provider>
                   </Suspense>
                 </ErrorBoundaryWithCapture>
               </TileNavigationBoundary>
@@ -650,7 +724,9 @@ export function BoardTile({
             ? "shadow-xl ring-2 ring-primary"
             : selected
               ? "shadow-lg ring-2 ring-primary/30"
-              : "shadow-sm",
+              : bare
+                ? ""
+                : "shadow-sm",
       )}
       style={{
         left: rect.x,
@@ -661,7 +737,8 @@ export function BoardTile({
         // by its place in the order (`useTileLift`), so Send to back / Bring to front show at once.
         zIndex: lift,
         ...(overview && !focused ? FACE_RADIUS : null),
-        contentVisibility: culled && !focused ? "hidden" : "visible",
+        // An auto-height tile is never culled: it must measure while off screen, or the page would shift as it scrolls.
+        contentVisibility: culled && !focused && !chrome.autoHeight ? "hidden" : "visible",
       }}
     >
       {card}

@@ -73,6 +73,9 @@ import type { BoardItemType, PlacedItem } from "../items/types";
 import { findBoardRecords, resolveAddEntry } from "./board-records";
 import { BOARD_ADD_ITEMS_MAX } from "./board-tools";
 import { searchItemsAsPerson } from "./search-items";
+import { commentsService } from "@/features/scopes/service/commentsService";
+import { partKeyOf } from "@ai-matrx/associations";
+import { BOARD_TOKEN } from "../persistence/boardsService";
 
 export interface AddTileInput {
   kind: BoardTileKindInput;
@@ -187,6 +190,20 @@ export interface BoardToolHost<T extends BoardTileBase & { title: string }> {
   ) => ({ id: string; already: boolean } | null)[];
   /** Layout and pages of a saved board; absent = `board_set_layout` / `board_add_page` are refused. */
   pages?: BoardPagesHost;
+  /** The saved board's comment threads; absent = `board_comments` / `board_comment` are refused. */
+  comments?: BoardCommentsHost;
+}
+
+/**
+ * Where a saved board's comments live (`UserBoard`): the board's own thread, and per tile the thread
+ * its comment door opens — a record tile's own thread, else the board's thread anchored to the tile.
+ */
+export interface BoardCommentsHost {
+  boardId: string;
+  /** The organization a comment is filed in (the board's own). */
+  organizationId: string | null;
+  /** The tile's thread; null = it has none yet (a draft record). */
+  threadOf: (tileId: string) => { token: string; id: string; part?: { key: string; label: string } } | null;
 }
 
 /**
@@ -380,6 +397,64 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     } catch (e) {
       return fail(e instanceof Error ? e.message : "The page could not be made. Try again.");
     }
+  };
+
+  /** The thread a comment tool acts on: a tile's (its door's) or the board's own. */
+  const threadFor = (comments: BoardCommentsHost, tileId: string | undefined) => {
+    if (!tileId) return { thread: { token: BOARD_TOKEN, id: comments.boardId } as { token: string; id: string; part?: { key: string; label: string } } };
+    if (!find(tileId)) return { error: missing(tileId) };
+    const thread = comments.threadOf(tileId);
+    if (!thread) return { error: fail(`Tile ${tileId} has nothing to comment on yet (its record is not made).`) };
+    return { thread };
+  };
+
+  const commentsTool = async (input: unknown) => {
+    const comments = host.comments;
+    if (!comments) return fail("This board keeps no comments (only saved boards do).");
+    const tileId = str(record(input).tile_id);
+    const at = threadFor(comments, tileId);
+    if ("error" in at) return at.error;
+    const res = await commentsService.listForEntity(at.thread.token, at.thread.id);
+    if (!res.ok) return fail(`The comments could not be read: ${res.error.message}`);
+    const part = at.thread.part?.key;
+    const rows = res.data.comments.filter((c) => !part || partKeyOf(c) === part);
+    return {
+      ok: true,
+      thread: tileId ? { tile_id: tileId } : { board: true },
+      comments: rows.map((c) => {
+        const key = partKeyOf(c);
+        return {
+          id: c.id,
+          author: c.authorAgent?.name ?? c.author.displayName ?? c.author.email ?? "Someone",
+          by_agent: c.authorAgent !== null,
+          body: c.body,
+          created_at: c.createdAt,
+          reply_to: c.parentId,
+          ...(tileId ? {} : { tile_id: key?.startsWith("tile:") ? key.slice(5) : null }),
+        };
+      }),
+    };
+  };
+
+  const commentTool = async (input: unknown) => {
+    const comments = host.comments;
+    if (!comments) return fail("This board keeps no comments (only saved boards do).");
+    const a = record(input);
+    const text = typeof a.text === "string" ? a.text.trim() : "";
+    if (!text) return fail("`text` is required.");
+    const at = threadFor(comments, str(a.tile_id));
+    if ("error" in at) return at.error;
+    const part = at.thread.part;
+    const res = await commentsService.add({
+      entityType: at.thread.token,
+      entityId: at.thread.id,
+      body: text,
+      parentId: str(a.reply_to) ?? null,
+      orgId: comments.organizationId,
+      ...(part ? { anchor: { __kind: "part_anchor", part_key: part.key, label: part.label } } : {}),
+    });
+    if (!res.ok) return fail(`The comment was not posted: ${res.error.message}`);
+    return { ok: true, comment_id: res.data.id };
   };
 
   const add = (input: unknown) => {
@@ -1095,5 +1170,7 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     board_undo: undo,
     board_set_layout: setLayoutTool,
     board_add_page: addPageTool,
+    board_comments: commentsTool,
+    board_comment: commentTool,
   });
 }

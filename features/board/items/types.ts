@@ -188,6 +188,28 @@ export function entityComments(token: EntityTypeToken) {
     source.kind === "entity" && source.id ? { token, id: source.id } : null;
 }
 
+/**
+ * THE TILE'S ONE MENU ("…"): every tile, every layout, carries exactly one menu button. The board
+ * fills it (what the tile is, Comment, Open, Full screen); a type adds its OWN entries through
+ * `menuActions` (the table's "Show as section"). An entry is a plain action, never a component, so
+ * the menu stays one list and an entry is testable without rendering.
+ */
+export interface TileMenuContext {
+  tileId: string;
+  source: NodeSource;
+  title: string;
+  onSource: (next: NodeSource, title?: string) => void;
+}
+
+export interface TileMenuAction {
+  /** Stable within the type (tests and `data-board-menu-action` read it). */
+  key: string;
+  /** A verb phrase, ≤3 words ("Show as section"). */
+  label: string;
+  icon?: LucideIcon;
+  onSelect: () => void;
+}
+
 export interface BoardItemType {
   /** Registry key. For entity sources it equals `source.entity`. */
   key: string;
@@ -262,6 +284,20 @@ export interface BoardItemType {
    * a tile names its content once. Default: the plain title.
    */
   TitleField?: ComponentType<TitleFieldProps>;
+  /** The type's own entries in the tile's "…" menu (see `TileMenuContext`). */
+  menuActions?: (ctx: TileMenuContext) => readonly TileMenuAction[];
+  /**
+   * The body draws its OWN titled card for this source (a table drawn as a section card: its h2 is the
+   * name). In page layout such a tile shows no header bar and no tile frame: the body is the card, and
+   * the "…" menu floats at its top right.
+   */
+  namesItself?: (source: NodeSource) => boolean;
+  /**
+   * The body lays out at its content's natural height for this source (no `h-full`, no inner scroll
+   * when `useTileAutoHeight()` is true). In page layout such a tile grows and shrinks to its content
+   * and the page scrolls; on the canvas it keeps its size.
+   */
+  autoHeight?: (source: NodeSource) => boolean;
   /** The body reads `tier` (pauses media, paces streams). Others get a constant,
    * so a zoom across a tier boundary never re-renders their content. */
   usesTier?: boolean;

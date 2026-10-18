@@ -53,9 +53,16 @@ interface BoardFrameViewProps {
   onResize?: (id: string, rect: Rect) => void;
   /** Renames the frame (double-click its title); absent = the title is the host's. */
   onRename?: (id: string, title: string) => void;
+  /**
+   * Page layout: the frame is a chapter in a column of cards — no dashed box or tint unless selected,
+   * and its label is a small tag INSIDE its top (`PAGE_LABEL_H`), never above it.
+   */
+  page?: boolean;
+  /** A tile inside already shows this name (`framesNamedByTile`): the label hides (never a name twice). */
+  labelHidden?: boolean;
 }
 
-export function BoardFrameView({ id, rect, title, note, color, onResize, onRename }: BoardFrameViewProps) {
+export function BoardFrameView({ id, rect, title, note, color, onResize, onRename, page = false, labelHidden = false }: BoardFrameViewProps) {
   const store = useBoardCameraStore();
   // The selection toolbar's Rename (and a double-click on the title) set the frame as the one being edited.
   const renaming = useEditingTile() === id;
@@ -148,15 +155,15 @@ export function BoardFrameView({ id, rect, title, note, color, onResize, onRenam
       data-board-frame={id}
       data-board-title={title}
       className={cn(
-        "pointer-events-none absolute max-w-none rounded-2xl border border-dashed bg-background/40",
-        selected ? "border-primary" : color ? "" : "border-border/80",
+        "pointer-events-none absolute max-w-none rounded-2xl border border-dashed",
+        page ? (selected ? "border-primary" : "border-transparent") : cn("bg-background/40", selected ? "border-primary" : color ? "" : "border-border/80"),
       )}
       style={{
         left: rect.x,
         top: rect.y,
         width: rect.w,
         height: rect.h,
-        ...(color ? { background: shapeColorCss(color, 0.08), ...(selected ? null : { borderColor: shapeColorCss(color, 0.7) }) } : null),
+        ...(color && !page ? { background: shapeColorCss(color, 0.08), ...(selected ? null : { borderColor: shapeColorCss(color, 0.7) }) } : null),
       }}
     >
       {(["n", "s", "w", "e"] as const).map((edge) => (
@@ -170,6 +177,7 @@ export function BoardFrameView({ id, rect, title, note, color, onResize, onRenam
           style={{ ...border[edge], zIndex: selected ? 1 : undefined }}
         />
       ))}
+      {(!labelHidden || renaming) && (
       <div
         data-board-frame-strip
         onPointerDown={(e) => press(e, true)}
@@ -179,7 +187,10 @@ export function BoardFrameView({ id, rect, title, note, color, onResize, onRenam
           e.stopPropagation();
           setRenaming(true);
         }}
-        className="pointer-events-auto absolute bottom-full left-0 flex max-w-none cursor-grab touch-none items-center gap-2 pb-1 active:cursor-grabbing"
+        className={cn(
+          "pointer-events-auto absolute flex max-w-none cursor-grab touch-none items-center gap-2 active:cursor-grabbing",
+          page ? "left-3 top-2 h-5" : "bottom-full left-0 pb-1",
+        )}
         // Titles read above everything a frame holds, the drawings layer (z 6) and a selected tile (z 7) included.
         style={{ zIndex: 8 }}
         title={`Drag to move ${title} with its tiles · click to fly there`}
@@ -206,12 +217,12 @@ export function BoardFrameView({ id, rect, title, note, color, onResize, onRenam
               }
             }}
             className="min-w-0 rounded-md border border-primary bg-background px-1 font-medium text-foreground outline-none"
-            style={{ fontSize: FRAME_LABEL_PX, width: `${Math.max(title.length, 6) + 2}ch` }}
+            style={{ fontSize: page ? 12 : FRAME_LABEL_PX, width: `${Math.max(title.length, 6) + 2}ch` }}
           />
         ) : (
           <span
             className={cn("whitespace-nowrap font-medium", selected ? "text-foreground" : "text-muted-foreground")}
-            style={{ fontSize: FRAME_LABEL_PX }}
+            style={{ fontSize: page ? 12 : FRAME_LABEL_PX }}
             title={onRename ? "Double-click to rename" : undefined}
           >
             {title}
@@ -220,12 +231,13 @@ export function BoardFrameView({ id, rect, title, note, color, onResize, onRenam
         {note && (
           <span
             className="truncate text-muted-foreground"
-            style={{ fontSize: FRAME_NOTE_PX }}
+            style={{ fontSize: page ? 11 : FRAME_NOTE_PX }}
           >
             {note}
           </span>
         )}
       </div>
+      )}
       {onResize && sole && (
         <div className="pointer-events-auto">
           <ResizeHandles id={id} rect={rect} selected onResize={onResize} />
