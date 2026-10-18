@@ -226,6 +226,35 @@ up holding the file's marker and the resource's marker, in the note and nowhere 
 providers, dozens of tools and the state between them. The same playbook shape with the reply as the
 sink.
 
+## 3b. Judgment playbooks — when the question is whether an agent UNDERSTANDS
+
+A playbook of §3 proves the plumbing: the variables arrive, the tools fire, the write lands. A
+**judgment playbook** proves the agent sees what a seasoned expert would see. Arman, 2026-10-18:
+building a templated agent (guidance filled by variables) is a blind spot of the model that writes it,
+and the agents under test are the same model, so they share its blind spots
+([his words](/projects/brand-discovery/VISION.md) § The blind spot).
+
+- **The truth comes from the owner, never from you.** Each scenario starts from something the owner
+  (or a real expert, or the business itself) has said is true and that a capable model would miss:
+  the free drop-off that brings people in but makes no money; "who do you serve?" answered "everyone"
+  when the real question is "who will you spend ad money to win?". A truth you thought of yourself is
+  probably one the agent will think of too. Cite the owner's words for every scenario.
+- **Written before the agent is built or changed**, by a fresh agent given only the agent's one job, its
+  inputs and its output shape. Never its instructions, examples or samples.
+- **Set the agent up to fail.** Feed the real data of a real business where the obvious answer is
+  the wrong one, so that the pass is reachable only through the insight. The sealed check names what
+  must appear in the agent's own words (the flag raised, the question asked, the placement made) and
+  what must not (the confident wrong answer).
+- **No leak.** The agent's instructions, variable help text, examples and build samples must not carry
+  the scenario's business, its tell-tale words, or its answer. Before a run, scan the definition for
+  them; a leak voids the scenario until the leak is removed through the agent builder. A pass that a
+  leak could explain proves nothing.
+- **Held out.** For every scenario used while building, keep one more on a different business, of the
+  same kind, that nobody tuned against. Only a pass there counts as the agent having learned the skill.
+- **Cost is a check.** Record each run's cost, tokens and tool calls. A run that costs much more than
+  the job deserves, makes tool calls for data that could have been in its context, or uses a large model
+  for a small mechanical step is a definition defect, graded FAIL like a wrong answer.
+
 ## 4. The runner
 
 - A **fresh agent** with no part in the change, on **Claude Haiku 5.5** (`quick` lane, `model: haiku`) by
