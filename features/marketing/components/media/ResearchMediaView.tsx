@@ -51,7 +51,7 @@ import {
   fileIdToMediaRef,
   urlToMediaRef,
 } from "@/features/files/redux/converters";
-import type { ResearchImageRow } from "@/features/marketing/data/media-library";
+import type { ResearchBrandScope, ResearchImageRow } from "@/features/marketing/data/media-library";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -87,7 +87,7 @@ export function ResearchMediaView({
   /** Hand this image to the Generate view as a creative brief. */
   onUseAsBrief: (image: ResearchImageRow) => void;
 }) {
-  const images = useResearchImagePages(organizationId);
+
   const createAsset = useCreateBrandAsset();
   const [topicFilter, setTopicFilter] = useState("all");
   const [originFilter, setOriginFilter] = useState<"all" | "own" | "external">(
@@ -99,6 +99,16 @@ export function ResearchMediaView({
   const [categoryFilter, setCategoryFilter] = useState<string>(CATEGORY_ALL);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const brands = useBrandOptions(organizationId);
+  // The Brand filter runs in the query (every image, not just the loaded page); None waits for the brand list.
+  const brandScope: ResearchBrandScope | null =
+    brandFilter === BRAND_ALL
+      ? { kind: "all" }
+      : brandFilter === BRAND_NONE
+        ? brands.data
+          ? { kind: "none", brandIds: brands.data.map((b) => b.id) }
+          : null
+        : { kind: "brand", brandId: brandFilter };
+  const images = useResearchImagePages(organizationId, brandScope);
   const categories = useCategories({
     dimension: CATEGORY_DIMENSIONS.brandImage,
   });
@@ -142,11 +152,7 @@ export function ResearchMediaView({
     return byId;
   }, [categories.categories]);
 
-  const brandsOf = (row: ResearchImageRow): string[] => {
-    const fromTopic = row.topicId ? (links?.topicBrands[row.topicId] ?? []) : [];
-    const direct = links?.imageBrands[row.id] ?? [];
-    return [...new Set([...fromTopic, ...direct])];
-  };
+
   const categoriesOf = (row: ResearchImageRow): string[] =>
     links?.imageCategories[row.id] ?? [];
 
@@ -171,11 +177,6 @@ export function ResearchMediaView({
 
   const filtered = useMemo(() => {
     let items = rows;
-    if (brandFilter === BRAND_NONE) {
-      items = items.filter((row) => brandsOf(row).length === 0);
-    } else if (brandFilter !== BRAND_ALL) {
-      items = items.filter((row) => brandsOf(row).includes(brandFilter));
-    }
     if (categoryFilter === CATEGORY_NONE) {
       items = items.filter((row) => categoriesOf(row).length === 0);
     } else if (categoryFilter !== CATEGORY_ALL) {

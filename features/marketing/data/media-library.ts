@@ -84,13 +84,40 @@ export interface ResearchImagePage {
   offset: number;
 }
 
+/**
+ * Which research images a page shows by brand link: one brand (images whose topic, or the image
+ * itself, is linked to it), none (linked to no brand in `brandIds`), or all. Applied in the query,
+ * so counts and paging cover every image, not only the loaded page.
+ */
+export type ResearchBrandScope =
+  | { kind: "all" }
+  | { kind: "brand"; brandId: string }
+  | { kind: "none"; brandIds: string[] };
+
+async function brandLinkedResearch(brandIds: string[]): Promise<{ topicIds: string[]; imageIds: string[] }> {
+  if (brandIds.length === 0) return { topicIds: [], imageIds: [] };
+  const { edges } = edgesOrThrow(await associationsService.listForTargets("web_brand", brandIds));
+  const of = (type: string) => [...new Set(edges.filter((e) => e.sourceType === type).map((e) => e.sourceId))];
+  return { topicIds: of("research_topic"), imageIds: of("research_media") };
+}
+
 export async function fetchResearchImagesPage(
   organizationId: string,
   offset: number,
   signal?: AbortSignal,
+  scope: ResearchBrandScope = { kind: "all" },
 ): Promise<ResearchImagePage> {
   await requireAuthenticatedSupabaseSession(supabase);
-  const query = supabase
+  const linked =
+    scope.kind === "brand"
+      ? await brandLinkedResearch([scope.brandId])
+      : scope.kind === "none"
+        ? await brandLinkedResearch(scope.brandIds)
+        : null;
+  if (scope.kind === "brand" && linked && linked.topicIds.length === 0 && linked.imageIds.length === 0) {
+    return { rows: [], total: 0, offset };
+  }
+  let query = supabase
     .schema("research")
     .from("rs_media")
     .select(
@@ -102,8 +129,19 @@ export async function fetchResearchImagesPage(
     .not("url", "is", null)
     .or("is_relevant.is.null,is_relevant.eq.true")
     .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .range(offset, offset + RESEARCH_IMAGE_PAGE_SIZE - 1);
+    .order("id", { ascending: false });
+  if (scope.kind === "brand" && linked) {
+    const either = [
+      linked.topicIds.length ? `topic_id.in.(${linked.topicIds.join(",")})` : null,
+      linked.imageIds.length ? `id.in.(${linked.imageIds.join(",")})` : null,
+    ].filter(Boolean);
+    query = query.or(either.join(","));
+  } else if (scope.kind === "none" && linked) {
+    // NULL topic_id is "no brand" too: a bare NOT IN would drop those rows.
+    if (linked.topicIds.length) query = query.or(`topic_id.is.null,topic_id.not.in.(${linked.topicIds.join(",")})`);
+    if (linked.imageIds.length) query = query.not("id", "in", `(${linked.imageIds.join(",")})`);
+  }
+  query = query.range(offset, offset + RESEARCH_IMAGE_PAGE_SIZE - 1);
   const response = signal ? await query.abortSignal(signal) : await query;
   if (response.error) throw response.error;
   const rows = (response.data ?? []) as unknown as ResearchMediaJoinedRow[];

@@ -125,6 +125,7 @@ import {
   fetchResearchImages,
   fetchResearchImagesPage,
   RESEARCH_IMAGE_PAGE_SIZE,
+  type ResearchBrandScope,
   saveSiteMediaStandards,
   tagResearchImages,
   unlinkResearchImagesFromBrand,
@@ -757,20 +758,24 @@ export function useResearchImages(organizationId: string | null) {
  * Research images read a page at a time: the first page on mount, more only
  * when the person asks (Load more). `total` is the exact organization count.
  */
-export function useResearchImagePages(organizationId: string | null) {
+export function useResearchImagePages(
+  organizationId: string | null,
+  scope: ResearchBrandScope | null = { kind: "all" },
+) {
   return useInfiniteQuery({
     queryKey: [
       ...marketingKeys.researchImages(organizationId ?? "none"),
       "pages",
+      scope,
     ] as const,
     queryFn: ({ signal, pageParam }) =>
-      fetchResearchImagesPage(organizationId ?? "", pageParam, signal),
+      fetchResearchImagesPage(organizationId ?? "", pageParam, signal, scope ?? { kind: "all" }),
     initialPageParam: 0,
     getNextPageParam: (last) => {
       const next = last.offset + RESEARCH_IMAGE_PAGE_SIZE;
       return next < last.total ? next : undefined;
     },
-    enabled: Boolean(organizationId),
+    enabled: Boolean(organizationId) && scope !== null,
     staleTime: 120_000,
   });
 }
@@ -803,9 +808,13 @@ export function useTagResearchImages() {
   return useMutation({
     mutationFn: tagResearchImages,
     onSettled: (_data, _error, input) =>
-      queryClient.invalidateQueries({
-        queryKey: marketingKeys.researchImageOrganization(input.organizationId),
-      }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: marketingKeys.researchImageOrganization(input.organizationId),
+        }),
+        // A brand link moves images in or out of the Brand filter's pages.
+        queryClient.invalidateQueries({ queryKey: marketingKeys.researchImages(input.organizationId) }),
+      ]),
   });
 }
 
@@ -818,9 +827,13 @@ export function useUntagResearchImages() {
       organizationId: string;
     }) => untagResearchImages(input),
     onSettled: (_data, _error, input) =>
-      queryClient.invalidateQueries({
-        queryKey: marketingKeys.researchImageOrganization(input.organizationId),
-      }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: marketingKeys.researchImageOrganization(input.organizationId),
+        }),
+        // A brand link moves images in or out of the Brand filter's pages.
+        queryClient.invalidateQueries({ queryKey: marketingKeys.researchImages(input.organizationId) }),
+      ]),
   });
 }
 
@@ -833,9 +846,13 @@ export function useUnlinkResearchImagesFromBrand() {
       organizationId: string;
     }) => unlinkResearchImagesFromBrand(input),
     onSettled: (_data, _error, input) =>
-      queryClient.invalidateQueries({
-        queryKey: marketingKeys.researchImageOrganization(input.organizationId),
-      }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: marketingKeys.researchImageOrganization(input.organizationId),
+        }),
+        // A brand link moves images in or out of the Brand filter's pages.
+        queryClient.invalidateQueries({ queryKey: marketingKeys.researchImages(input.organizationId) }),
+      ]),
   });
 }
 
