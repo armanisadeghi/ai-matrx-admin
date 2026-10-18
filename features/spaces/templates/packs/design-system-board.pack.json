@@ -612,6 +612,162 @@
             }
           }
         ]
+      },
+      {
+        "token": "component",
+        "name": "Components",
+        "labelSingular": "Component",
+        "labelPlural": "Components",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "component",
+        "titleField": "name",
+        "describes": "Each component family, drawn as it looks in light and dark, with where to use it.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "group",
+            "label": "Group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Actions",
+              "Inputs",
+              "Containers",
+              "Status",
+              "Selection",
+              "Disclosure"
+            ],
+            "choiceColors": {
+              "Actions": "blue",
+              "Inputs": "teal",
+              "Containers": "slate",
+              "Status": "amber",
+              "Selection": "violet",
+              "Disclosure": "gray"
+            }
+          },
+          {
+            "key": "sample",
+            "label": "Sample",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "html_sample"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cmp-01",
+            "values": {
+              "name": "Button",
+              "group": "Actions",
+              "sample": "<style>.r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.b{font:inherit;font-size:13px;font-weight:500;line-height:1;height:32px;padding:0 14px;border-radius:var(--radius);border:1px solid transparent;cursor:pointer}.p{background:var(--primary);color:var(--primary-foreground)}.p.h{filter:brightness(1.08)}.p.f{box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.p:disabled{opacity:.5;cursor:not-allowed}</style><div class=\"r\"><button class=\"b p\">Save</button><button class=\"b p h\">Hover</button><button class=\"b p f\">Focus</button><button class=\"b p\" disabled>Disabled</button></div>",
+              "usage_note": "The one main action of a screen. Never two primary buttons side by side."
+            }
+          },
+          {
+            "key": "cmp-02",
+            "values": {
+              "name": "Button variants",
+              "group": "Actions",
+              "sample": "<style>.r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.b{font:inherit;font-size:13px;font-weight:500;line-height:1;height:32px;padding:0 14px;border-radius:var(--radius);border:1px solid transparent;cursor:pointer}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--muted-foreground)}.d{background:var(--destructive);color:var(--destructive-foreground)}</style><div class=\"r\"><button class=\"b s\">Secondary</button><button class=\"b o\">Outline</button><button class=\"b q\">Quiet</button><button class=\"b d\">Delete</button></div>",
+              "usage_note": "Outline and quiet for everything else; danger only for what cannot be undone."
+            }
+          },
+          {
+            "key": "cmp-03",
+            "values": {
+              "name": "Text field",
+              "group": "Inputs",
+              "sample": "<style>.f{display:grid;gap:6px;max-width:320px}.l{font-size:12px;font-weight:500;color:var(--foreground)}.i{font:inherit;font-size:14px;height:34px;padding:0 10px;border-radius:var(--radius);border:1px solid var(--input);background:var(--background);color:var(--foreground)}.i:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 25%,transparent)}.h{font-size:12px;color:var(--muted-foreground)}.e .i{border-color:var(--destructive)}.e .h{color:var(--destructive)}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}</style><div class=\"g\"><label class=\"f\"><span class=\"l\">Email</span><input class=\"i\" placeholder=\"name@company.com\"><span class=\"h\">We send the receipt here.</span></label><label class=\"f e\"><span class=\"l\">Phone</span><input class=\"i\" value=\"555-01\"><span class=\"h\">Enter all ten digits.</span></label></div>",
+              "usage_note": "Label above, hint below, the error in place of the hint."
+            }
+          },
+          {
+            "key": "cmp-04",
+            "values": {
+              "name": "Select and search",
+              "group": "Inputs",
+              "sample": "<style>.g{display:flex;flex-wrap:wrap;gap:12px}.i{font:inherit;font-size:14px;height:34px;padding:0 10px;min-width:200px;border-radius:var(--radius);border:1px solid var(--input);background:var(--background);color:var(--foreground)}.s{padding-left:30px;background-image:radial-gradient(circle at 13px 16px,transparent 4px,var(--muted-foreground) 4.5px,transparent 6px)}</style><div class=\"g\"><select class=\"i\"><option>Weekly</option><option>Monthly</option></select><input class=\"i s\" placeholder=\"Search people\"></div>",
+              "usage_note": "A select for a short fixed list; search when the list is long."
+            }
+          },
+          {
+            "key": "cmp-05",
+            "values": {
+              "name": "Card",
+              "group": "Containers",
+              "sample": "<style>.c{max-width:360px;padding:16px;border-radius:calc(var(--radius) * 1.5);border:1px solid var(--border);background:var(--card);color:var(--card-foreground);box-shadow:0 1px 2px #0f172a14}.t{margin:0 0 4px;font-size:15px;font-weight:600}.m{margin:0 0 12px;font-size:13px;color:var(--muted-foreground)}.a{display:flex;gap:8px}.b{font:inherit;font-size:13px;height:30px;padding:0 12px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--foreground)}.b.p{background:var(--primary);color:var(--primary-foreground);border-color:transparent}</style><div class=\"c\"><h3 class=\"t\">Quarterly report</h3><p class=\"m\">Updated 2 hours ago by Dana</p><div class=\"a\"><button class=\"b p\">Open</button><button class=\"b\">Share</button></div></div>",
+              "usage_note": "One subject per card: a title, one line of detail, at most two actions."
+            }
+          },
+          {
+            "key": "cmp-06",
+            "values": {
+              "name": "Badge",
+              "group": "Status",
+              "sample": "<style>.r{display:flex;flex-wrap:wrap;gap:8px}.x{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--foreground);background:var(--muted)}.x i{width:6px;height:6px;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--primary);color:var(--primary-foreground);border-color:transparent}</style><div class=\"r\"><span class=\"x\">Draft</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>Live</span><span class=\"x wa\"><i></i>Waiting</span><span class=\"x er\"><i></i>Failed</span></div>",
+              "usage_note": "A state in one or two words. Colour adds meaning; the word carries it."
+            }
+          },
+          {
+            "key": "cmp-07",
+            "values": {
+              "name": "Toggle list",
+              "group": "Selection",
+              "sample": "<style>.l{display:grid;max-width:420px;border:1px solid var(--border);border-radius:calc(var(--radius) * 1.5);background:var(--card)}.o{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;font-size:14px;color:var(--card-foreground)}.o+.o{border-top:1px solid var(--border)}.o small{display:block;font-size:12px;color:var(--muted-foreground)}.t{appearance:none;flex:none;width:34px;height:20px;border-radius:999px;background:var(--input);position:relative;cursor:pointer;margin:0}.t::after{content:\"\";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--background);box-shadow:0 1px 2px #0f172a33;transition:transform .15s}.t:checked{background:var(--primary)}.t:checked::after{transform:translateX(14px)}.t:disabled{opacity:.5}</style><div class=\"l\"><label class=\"o\"><span>Email alerts<small>When a task is assigned to you</small></span><input type=\"checkbox\" class=\"t\" checked></label><label class=\"o\"><span>Weekly digest<small>Every Monday morning</small></span><input type=\"checkbox\" class=\"t\"></label><label class=\"o\"><span>Text messages<small>Needs a verified phone</small></span><input type=\"checkbox\" class=\"t\" disabled></label></div>",
+              "usage_note": "A switch takes effect at once; use a checkbox when a Save button follows."
+            }
+          },
+          {
+            "key": "cmp-08",
+            "values": {
+              "name": "Checkbox and radio",
+              "group": "Selection",
+              "sample": "<style>.g{display:flex;flex-wrap:wrap;gap:24px;font-size:14px;color:var(--foreground)}.c{display:grid;gap:8px}label{display:flex;align-items:center;gap:8px}input{accent-color:var(--primary);width:16px;height:16px;margin:0}</style><div class=\"g\"><div class=\"c\"><label><input type=\"checkbox\" checked>Invoices</label><label><input type=\"checkbox\">Receipts</label></div><div class=\"c\"><label><input type=\"radio\" name=\"p\" checked>Monthly</label><label><input type=\"radio\" name=\"p\">Yearly</label></div></div>",
+              "usage_note": "Checkboxes pick any number; radios pick exactly one of a few."
+            }
+          },
+          {
+            "key": "cmp-09",
+            "values": {
+              "name": "Collapsible list",
+              "group": "Disclosure",
+              "sample": "<style>.d{max-width:480px;border:1px solid var(--border);border-radius:calc(var(--radius) * 1.5);background:var(--card);color:var(--card-foreground)}details+details{border-top:1px solid var(--border)}summary{list-style:none;cursor:pointer;padding:10px 14px;font-size:14px;font-weight:500;display:flex;justify-content:space-between}summary::-webkit-details-marker{display:none}summary::after{content:\"+\";color:var(--muted-foreground)}details[open] summary::after{content:\"\\2212\"}p{margin:0;padding:0 14px 12px;font-size:13px;color:var(--muted-foreground)}</style><div class=\"d\"><details open><summary>What is included</summary><p>Every table, view and page in the template.</p></details><details><summary>Who can see it</summary><p>Everyone in your organization.</p></details><details><summary>Can I undo it</summary><p>Yes, from the history of each item.</p></details></div>",
+              "usage_note": "Hide detail people rarely need; the first answer can start open."
+            }
+          },
+          {
+            "key": "cmp-10",
+            "values": {
+              "name": "Tabs",
+              "group": "Disclosure",
+              "sample": "<style>.t{display:flex;gap:4px;border-bottom:1px solid var(--border)}.t span{padding:8px 12px;font-size:13px;color:var(--muted-foreground);border-bottom:2px solid transparent;margin-bottom:-1px}.t .on{color:var(--foreground);font-weight:500;border-color:var(--primary)}</style><div class=\"t\"><span class=\"on\">Overview</span><span>Activity</span><span>Settings</span></div>",
+              "usage_note": "Sections of one thing. Never for steps that must happen in order."
+            }
+          }
+        ]
       }
     ],
     "relationships": [],
@@ -868,12 +1024,13 @@
         "title": "Components",
         "tiles": [
           {
-            "kind": "note",
+            "kind": "table",
             "title": "Components",
-            "text": "Components\n\nList each component you use, with a link to its design and its code, and who looks after it.\n\n- Button: primary, quiet, outline, danger.\n- Field: label above, hint below, error in place.\n- Dialog: one question, two answers.\n",
+            "table": "component",
+            "layout": "section",
             "size": {
               "w": 1020,
-              "h": 360
+              "h": 1400
             }
           }
         ]

@@ -680,7 +680,8 @@ export const ProTextarea = React.forwardRef<
       if (internalRef.current !== formatElement)
         setFormatElement(internalRef.current);
     });
-    useTextareaFormatting(formatElement, formattingOn, { uploadImage });
+    // No "Converted to Markdown" chip over the prompt box (Arman, 2026-10-17); `pasteNotice` needs the next rich-content publish, ignored before.
+    useTextareaFormatting(formatElement, formattingOn, { uploadImage, pasteNotice: false } as Parameters<typeof useTextareaFormatting>[2]);
 
     // ── "…" menu popover ───────────────────────────────────────────────────
     // ONE Popover anchored at the "…" button. Its content swaps between the

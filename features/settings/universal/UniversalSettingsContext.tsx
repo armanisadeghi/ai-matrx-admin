@@ -600,7 +600,9 @@ export function UniversalSettingsProvider({
   } | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    // The taxonomy registry is readable only by a signed-in person (a visitor's read is a 401), and a
+    // visitor has no settings to file under it: no person, no read.
+    if (!enabled || !userId) return;
     let cancelled = false;
     const taxonomyRequestKey = `${requestKey}|${generation}`;
     void fetchTaxonomyIndex()
@@ -617,7 +619,7 @@ export function UniversalSettingsProvider({
         }
       });
     return () => { cancelled = true; };
-  }, [enabled, requestKey, generation]);
+  }, [enabled, userId, requestKey, generation]);
 
   useEffect(() => {
     if (!enabled || editingContext === "system" || !organizationId || !userId) return;

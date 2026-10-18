@@ -21,7 +21,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
-  Building2,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -75,6 +74,8 @@ import {
   ASKING_FOR_ORGANIZATION,
   WAITING_FOR_ORGANIZATION,
 } from "@ai-matrx/agents/sources/runtime";
+import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
+import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { retryActiveOrganization } from "@/lib/organizations/retryActiveOrganization";
 import type { SourceCardModel } from "@ai-matrx/agents/sources/runtime";
 import type { UseSourceSetResult } from "../useSourceSet";
@@ -129,6 +130,7 @@ export function SourceCard({
   onChooseFileAgain?: (file: UploadedFile) => void;
 }) {
   const [open, setOpen] = useState<"form" | "parts" | null>(null);
+  const { organizationState } = useOrganizationRequired();
   const Icon = sourceKindIcon(card.draft);
   const ref = card.draft.ref;
   const entry = card.manifest;
@@ -213,35 +215,21 @@ export function SourceCard({
       {card.status === "resolving" || card.status === "pending" ? (
         <p className="flex items-center gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          {card.draft.notes?.includes(ASKING_FOR_ORGANIZATION) ? "Waiting for you to choose an organization…" : addingWords(card.draft.kind)}
+          {card.draft.notes?.includes(ASKING_FOR_ORGANIZATION) ? "Waiting for your organization…" : addingWords(card.draft.kind)}
         </p>
       ) : null}
 
-      {card.status === "error" ? (
+      {card.status === "error" && !waitingForOrganization ? (
         <p
           role="alert"
           className={cn(
             "flex items-start gap-2 border-t border-border px-3 py-2 text-xs",
-            waitingForOrganization ? "text-warning" : "text-destructive",
+            "text-destructive",
           )}
         >
-          {waitingForOrganization ? (
-            <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          ) : (
-            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          )}
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span className="min-w-0 flex-1">{card.error ?? "This could not be added. Remove it and try again."}</span>
-          {waitingForOrganization ? (
-            <Button
-              icon={<Building2 />}
-              type="button"
-              variant="outline"
-              className="shrink-0"
-              onClick={() => void chooseOrganization()}
-            >
-              Try again
-            </Button>
-          ) : resumableInput(card.draft) && onTryAgain ? (
+          {resumableInput(card.draft) && onTryAgain ? (
             <Button
               icon={<RotateCcw />}
               type="button"
@@ -252,9 +240,7 @@ export function SourceCard({
               Try again
             </Button>
           ) : null}
-          {waitingForOrganization ? null : (
-            <ErrorAlchemyMenu error={card.error ?? "This could not be added."} operation={`Add ${card.draft.label}`} />
-          )}
+          <ErrorAlchemyMenu error={card.error ?? "This could not be added."} operation={`Add ${card.draft.label}`} />
         </p>
       ) : null}
 
@@ -275,20 +261,16 @@ export function SourceCard({
         />
       ) : null}
 
-      {heldForOrganization ? (
-        <p role="status" className="flex items-start gap-2 border-t border-border px-3 py-2 text-xs text-warning">
-          <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <span className="min-w-0 flex-1">{WAITING_FOR_ORGANIZATION}</span>
-          <Button
-            icon={<Building2 />}
-            type="button"
-            variant="outline"
-            className="shrink-0"
-            onClick={() => void chooseOrganization()}
-          >
-            Try again
-          </Button>
-        </p>
+      {heldForOrganization || waitingForOrganization ? (
+        <div className="border-t border-border">
+          <OrganizationContextNotice
+            compact
+            state={organizationState === "ready" ? "resolving" : organizationState}
+            what="This source"
+            description="It continues by itself once you have one."
+            onRetry={() => void chooseOrganization()}
+          />
+        </div>
       ) : null}
 
       {card.draft.notes?.some((n) => n !== ASKING_FOR_ORGANIZATION) ? (

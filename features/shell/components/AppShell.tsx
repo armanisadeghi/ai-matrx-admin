@@ -15,6 +15,7 @@ import "@/styles/shell.css";
 import "@/features/shell/components/header/variants/header-variants.css";
 import { Providers } from "@/app/Providers";
 import Sidebar from "@/features/shell/components/sidebar/Sidebar";
+import { PrepaintScript } from "@/components/ssr/PrepaintScript";
 import Header from "@/features/shell/components/header/Header";
 import ShellUserBlock from "@/features/shell/components/user-block/ShellUserBlock";
 import MobileDock from "@/features/shell/components/dock/MobileDock";
@@ -130,12 +131,7 @@ export default async function AppShell({
             defaultChecked={toggleChecked}
           />
           {foldDomainPanelBeforePaint ? (
-            <script
-              dangerouslySetInnerHTML={{
-                __html:
-                  '(function(){try{if(matchMedia("(min-width:1024px) and (max-width:1599px)").matches){var e=document.getElementById("shell-sidebar-toggle");if(e)e.checked=false}}catch(_){}})()',
-              }}
-            />
+            <PrepaintScript html='(function(){try{if(matchMedia("(min-width:1024px) and (max-width:1599px)").matches){var e=document.getElementById("shell-sidebar-toggle");if(e)e.checked=false}}catch(_){}})()' />
           ) : null}
           <input type="checkbox" id="shell-mobile-menu" aria-hidden="true" />
           <input type="checkbox" id="shell-user-menu" aria-hidden="true" />

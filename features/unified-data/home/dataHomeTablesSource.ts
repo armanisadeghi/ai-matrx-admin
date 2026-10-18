@@ -18,6 +18,8 @@ import { createClient } from "@/utils/supabase/client";
 import * as doors from "@/features/unified-data/hub/doors";
 import { buildDataHomeRows, type DataHomeRow } from "./dataHomeRows";
 import { scoreRow } from "./dataHomeSearch";
+import { readOrgPublicUrls } from "@/lib/custom-domains/public-url-reader";
+import { HUB_CAPABILITIES } from "@/features/unified-data/hub/capabilities";
 
 export const DATA_HOME_TABLES_FRESH_MS = 60_000;
 
@@ -43,7 +45,7 @@ async function readAll(userId: string | null): Promise<DataHomeRow[]> {
     actor: userId ? { actor: "user", user_id: userId } : { actor: "user" },
     organizationId: null,
   });
-  const built = await buildDataHomeRows({ client, dataSource, answer: answered.data });
+  const built = await buildDataHomeRows({ client, dataSource, answer: answered.data }, HUB_CAPABILITIES, readOrgPublicUrls);
   return built.rows;
 }
 

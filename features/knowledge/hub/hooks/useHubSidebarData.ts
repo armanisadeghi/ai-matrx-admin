@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { getUserOrganizations } from "@/features/organizations/service";
+import { IN_MY_ORGANIZATIONS_ARM } from "@/features/organizations/service/inMyOrganizations";
 import { listAssociationCandidates } from "@/features/scopes/service/associationCandidates";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import type { EntityTypeToken } from "@ai-matrx/associations";
@@ -227,11 +227,12 @@ function toHubView(row: SurfaceView, userId: string, pins: Set<string>): HubSave
 }
 
 async function readSavedViews(userId: string): Promise<HubSavedView[]> {
-  const orgs = await getUserOrganizations();
   const systemOrgId = await resolveSystemOrgId().catch(() => null);
-  const orgIds = [...new Set([...orgs.map((o) => o.id), ...(systemOrgId ? [systemOrgId] : [])])];
   const [rows, pins] = await Promise.all([
-    listSurfaceViews(HUB_SAVED_VIEW_SURFACE, { userId, organizationIds: orgIds }).catch((err: unknown) => {
+    listSurfaceViews(HUB_SAVED_VIEW_SURFACE, {
+      userId,
+      alsoOrganizationIds: systemOrgId ? [systemOrgId] : [],
+    }).catch((err: unknown) => {
       throw new Error(message(err, "your saved views"));
     }),
     readPinnedViewIds(),
@@ -264,17 +265,15 @@ async function readFavorites(): Promise<HubFavorite[]> {
  * declared scope: the ones I made or that live in my organizations.
  */
 async function readLibraries(userId: string): Promise<HubContainerRow[]> {
-  const orgIds = (await getUserOrganizations()).map((o) => o.id);
-  let q = supabase
+  const q = supabase
     .schema("media")
     .from("source_library")
     .select("id,name")
     .is("deleted_at", null)
     .order("name")
-    .limit(200);
-  q = orgIds.length
-    ? q.or(`created_by.eq.${userId},organization_id.in.(${orgIds.join(",")})`)
-    : q.eq("created_by", userId);
+    .limit(200)
+    // Mine, or in ANY of my organizations — asked on the server, never a first-page id list.
+    .or(`created_by.eq.${userId},${IN_MY_ORGANIZATIONS_ARM}`);
   const { data, error } = await q;
   if (error) throw new Error(message(error, "your libraries"));
   return ((data ?? []) as { id: string; name: string | null }[]).map((r) => ({

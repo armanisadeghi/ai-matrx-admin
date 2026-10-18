@@ -19,7 +19,7 @@ import type { SpaceBlock, SpaceDoc, SpaceId, SpaceSummary } from "../contract";
 import { between, byPosition } from "../store/position";
 import { createDatabaseSpacesStore } from "../store-db/create-store";
 import { createLiveSpacesStore, type LiveSpacesStore } from "./live-store";
-import { hasSignedInSession, isRefusal, onSignedIn, type LoadAccess } from "./load-access";
+import { hasSignedInSession, isRefusal, onSignedIn, readWhenSignedIn, type LoadAccess } from "./load-access";
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
 import { installTemplateTables, makeTemplatePages, packRunJournal, readSpaceTemplate, readStarterTemplate } from "../templates/use-pack";
@@ -208,9 +208,16 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
       const reveal = [...new Set([currentPageId(), readStored(LAST_SPACE_KEY), ...readList(FAVORITES_KEY), ...readList(RECENT_KEY)].filter((v): v is string => Boolean(v)))];
       const startedAt = performance.now();
       if (trashWanted.current) void trashRead.current();
-      void store.sidebar({ expand, reveal }).then(
-        (list) => {
+      void readWhenSignedIn(() => store.sidebar({ expand, reveal })).then(
+        (result) => {
           if (!live) return;
+          if (result.kind === "signed-out") {
+            setAccess("signed-out");
+            setLoadError(null);
+            setReady(true);
+            return;
+          }
+          const list = result.value;
           if (!loadedOnce) console.info(`[spaces] sidebar tree read: ${list.length} pages in ${Math.round(performance.now() - startedAt)} ms`);
           loadedOnce = true;
           retriedFailure = false;

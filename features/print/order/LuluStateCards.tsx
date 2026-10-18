@@ -9,10 +9,11 @@
  * on screen in preview mode so the constraint UI is still inspectable.
  */
 
-import { Building2, KeyRound, RefreshCcw, TriangleAlert } from "lucide-react";
+import { KeyRound, RefreshCcw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
-import { OrganizationPickerButton } from "@/features/organizations/components/OrganizationPickerPopover";
+import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
+import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 interface AwaitingCredentialsProps {
   detail: string;
@@ -100,31 +101,20 @@ export function UpstreamErrorCard({
 }
 
 /**
- * Signed in, but no active organization — the header's own "Choose org"
- * control (`ShellOrgSwitcher`) is the persistent nudge; this card is
- * the same picker dropped in-place so the fix is one click, not a scavenger
- * hunt, and never a red "error" card with a Retry that would fail the same
- * way again.
+ * Signed in, but no active organization. Never a prompt to choose one: the
+ * platform's notice says the person belongs to none (one "Create an
+ * organization" door) or that the read failed (with Retry).
  */
 export function NeedsOrganizationCard() {
+  const { organizationState } = useOrganizationRequired();
   return (
-    <div className="rounded-lg border border-border bg-muted/40 p-4">
-      <div className="flex items-start gap-3">
-        <Building2 className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-        <div className="min-w-0 flex-1 space-y-2">
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">
-              Choose an organization to see live pricing
-            </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Pricing is calculated per organization. Pick one and the
-              calculator picks up automatically.
-            </p>
-          </div>
-          <OrganizationPickerButton />
-        </div>
-      </div>
-    </div>
+    <OrganizationContextNotice
+      compact
+      state={organizationState}
+      what="Live pricing"
+      description="Pricing is calculated per organization."
+      className="rounded-lg border border-border bg-muted/40"
+    />
   );
 }
 

@@ -17,10 +17,6 @@ const setOrganization = (payload: { id: string | null }) => ({
 });
 import { ScrapeOrganizationPrompt } from "../ScrapeOrganizationPrompt";
 
-jest.mock("@/features/organizations/components/OrganizationPickerPopover", () => ({
-  OrganizationPickerButton: () => <button type="button">Choose organization</button>,
-}));
-
 function storeWith(organizationId: string | null) {
   const store = configureStore({ reducer: { appContext: appContextReducer } });
   store.dispatch(setOrganization({ id: organizationId }));
@@ -49,15 +45,15 @@ afterEach(() => {
 });
 
 describe("ScrapeOrganizationPrompt", () => {
-  it("shows plain words and the picker, never the transport sentence or a stack", () => {
+  it("never asks to choose: one quiet Create door, no transport sentence or stack", () => {
     render(
       <Provider store={storeWith(null)}>
         <ScrapeOrganizationPrompt onPicked={() => {}} />
       </Provider>,
     );
     const text = container.textContent ?? "";
-    expect(text).toContain("Choose an organization to read this page");
-    expect(container.querySelector("button")?.textContent).toBe("Choose organization");
+    expect(text).not.toMatch(/choose|pick|select an organization/i);
+    expect(container.querySelector("a[href='/organizations']")?.textContent).toBe("Create an organization");
     expect(text).not.toMatch(/before sending this request|Diagnostics JSON|stack|useScraperApi/i);
   });
 

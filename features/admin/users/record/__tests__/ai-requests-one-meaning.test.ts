@@ -39,4 +39,10 @@ describe("AI requests has one label and one definition", () => {
     const sql = latestDefinition("admin.user_overview");
     expect(sql).toMatch(/sum\(h\.requests\)[\s\S]*from runtime\._ai_usage_hourly h/i);
   });
+
+  it("the Acquisition table does not call spine run counts 'Requests'", () => {
+    const src = read("features/admin/users/components/UserAcquisitionTableClient.tsx");
+    expect(src).toContain("header: AGENT_RUNS_LABEL");
+    expect(src).not.toMatch(/header:\s*"Requests"/);
+  });
 });

@@ -16,6 +16,9 @@ import CommandBarHotkey from "@/features/knowledge/command-bar/CommandBarHotkey"
 // Over-the-organization-cap reminder: renders nothing, raises one toast per
 // browser session while the person is over their cap.
 import { OrganizationCapReminder } from "@/features/organizations/limits/OrganizationCapReminder";
+// Sign-up welcome's found search, in the background: renders nothing, reads only the session on idle, and loads the
+// search itself only for an account with something to do (start, watch, or new information).
+import { FoundSearchIsland } from "@/features/marketing/smart-add/welcome/FoundSearchIsland";
 
 
 export default function DeferredIslands() {
@@ -23,6 +26,7 @@ export default function DeferredIslands() {
     <>
       <CommandBarHotkey />
       <OrganizationCapReminder />
+      <FoundSearchIsland />
     </>
   );
 }

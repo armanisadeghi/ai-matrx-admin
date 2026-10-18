@@ -9,7 +9,24 @@ const HIT_TTL_MS = 60_000;
 const MISS_TTL_MS = 10_000;
 const LOOKUP_TIMEOUT_MS = 2_500;
 
+/** Bounded: arbitrary Host headers must never grow this instance's memory. Oldest entry leaves first. */
+const MAX_ENTRIES = 2_000;
 const cache = new Map<string, { at: number; value: ResolvedDomain | null }>();
+
+function remember(host: string, entry: { at: number; value: ResolvedDomain | null }): void {
+  cache.delete(host);
+  cache.set(host, entry);
+  while (cache.size > MAX_ENTRIES) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
+/** For tests: how many hosts this instance remembers. */
+export function cachedHostCount(): number {
+  return cache.size;
+}
 
 export class DomainLookupUnavailable extends Error {}
 
@@ -33,8 +50,9 @@ export async function lookupDomain(host: string): Promise<ResolvedDomain | null>
     throw new DomainLookupUnavailable(`org_domain_resolve answered ${response.status}`);
   }
   const value = (await response.json()) as ResolvedDomain | null;
-  cache.set(host, { at: now, value: value && value.organization_id ? value : null });
-  return cache.get(host)!.value;
+  const entry = { at: now, value: value && value.organization_id ? value : null };
+  remember(host, entry);
+  return entry.value;
 }
 
 /** Drops one host from this instance's cache (after add/check/remove); other instances follow within 60 s. */

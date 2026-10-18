@@ -104,12 +104,12 @@ describe("theme boot never flips and never double-posts", () => {
     Object.defineProperty(window, "matchMedia", { configurable: true, writable: true, value: originalMatchMedia });
   });
 
-  async function boot(device: "light" | "dark", saved: ThemeMode) {
+  async function boot(device: "light" | "dark", saved: ThemeMode, opts: { cookie?: boolean } = {}) {
     resetThemeChoiceKnownForTests();
     installDevice(device === "dark");
     // What the server cookie + SyncBootScript already painted for this person.
     const painted = resolve(saved, deviceDark);
-    document.cookie = `theme=${painted}`;
+    if (opts.cookie !== false) document.cookie = `theme=${painted}`;
     document.documentElement.classList.toggle("dark", painted === "dark");
     document.documentElement.setAttribute("data-theme", saved === "system" ? painted : saved);
     let last = document.documentElement.classList.contains("dark");
@@ -157,6 +157,13 @@ describe("theme boot never flips and never double-posts", () => {
       expect(document.documentElement.classList.contains("dark")).toBe(painted === "dark");
     },
   );
+
+  // First visit: no cookie yet, SyncBootScript painted the device colour, nobody changed anything.
+  it.each(devices)("device %s, first visit (no cookie), system: no set-theme call", async (device) => {
+    await boot(device, "system", { cookie: false });
+    expect(flips).toBe(0);
+    expect(posts).toEqual([]);
+  });
 
   it("a real device colour change while on the page (system) updates live, one post", async () => {
     await boot("light", "system");

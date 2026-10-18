@@ -14,6 +14,7 @@ import type { CatalogVoice } from "@/features/audio/service/engines";
 import type { TableViewSnapshot } from "@ai-matrx/design-system/data-table";
 import { definePolicy } from "@/lib/sync/policies/define";
 import { PREFERENCES_ROW_COLUMNS, savePreferencePatch } from "./preferencePatch";
+import { noteOwnPreferencesWrite, PREFERENCES_REVALIDATE_AFTER_ABSENCE_MS } from "./preferencesLive";
 import {
   REHYDRATE_ACTION_TYPE,
   type RehydrateAction,
@@ -2094,11 +2095,14 @@ export const userPreferencesPolicy = definePolicy<UserPreferencesState>({
   // with the server the moment it boots and whenever the person comes back
   // to it — never showing a stale cache for a minute, never saving on one.
   persistAfterLoad: (state) => state._meta.unsavedAfterLoad === true,
-  staleAfter: 60_000, // background refresh after 1 min idle
+  // No timer: preferences update only on change. A change anywhere arrives live
+  // (`PreferencesLiveSync`, mounted in RealtimeHost), and a tab left away for
+  // `revalidateOnFocusAfterMs` re-reads once when it becomes visible again.
   remote: {
     debounceMs: 250, // prefs edits are noisy (typing, slider drags)
     revalidateOnBoot: true,
     revalidateOnFocus: true,
+    revalidateOnFocusAfterMs: PREFERENCES_REVALIDATE_AFTER_ABSENCE_MS,
     // The record as the server held it at the last load — BEFORE any held
     // edits were replayed onto it, so those edits read as changes and are
     // saved. No record loaded yet (the server said "none") = the defaults.
@@ -2146,7 +2150,7 @@ export const userPreferencesPolicy = definePolicy<UserPreferencesState>({
       // The row changed (or may have): the next shared read of it asks the database again.
       const { forgetAccountPreferencesRow } = await import("@/lib/account/accountPreferencesRow");
       try {
-        await savePreferencePatch({
+        const outcome = await savePreferencePatch({
           base,
           body,
           modules: PREFERENCE_MODULE_KEYS,
@@ -2165,6 +2169,8 @@ export const userPreferencesPolicy = definePolicy<UserPreferencesState>({
               .abortSignal(signal)
               .maybeSingle(),
         });
+        // Its realtime echo is this tab's own: drop it, never re-read for it.
+        if (outcome.status === "saved") noteOwnPreferencesWrite(outcome.version);
       } finally {
         forgetAccountPreferencesRow();
       }

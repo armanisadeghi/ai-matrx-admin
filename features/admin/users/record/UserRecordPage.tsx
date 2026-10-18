@@ -147,6 +147,9 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
       case "onboarded":
         void actions.toggleOnboarding(subject);
         return;
+      case "verify_email":
+        actions.verifyEmail(subject);
+        return;
       case "close":
         void actions.setAccountClosed(subject, true);
         return;

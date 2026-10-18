@@ -24,6 +24,8 @@ export interface UsageWindow {
  * row count (runtime.global_request) is agent runs and calls, a different number, never labelled this.
  */
 export const AI_REQUESTS_LABEL = "AI requests";
+/** The Acquisition table counts runtime.global_request rows (every agent run), a different fact from AI requests. */
+export const AGENT_RUNS_LABEL = "Agent runs";
 
 export interface UserOverview {
   identity: {
@@ -146,5 +148,6 @@ export function actionSubjectOf(o: UserOverview): UserActionSubject {
     mcp_full_access: o.identity.permissions.includes(MCP_FULL_ACCESS_PERMISSION),
     top_tier_models: o.identity.permissions.includes(TOP_TIER_MODELS_PERMISSION),
     onboarding_completed: o.identity.onboarding_completed,
+    email_confirmed: Boolean(o.identity.email_confirmed_at),
   };
 }

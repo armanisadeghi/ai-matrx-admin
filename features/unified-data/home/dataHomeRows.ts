@@ -26,6 +26,7 @@ import type { ArchivedEverywhereRow, ArchivedFormEverywhereRow, ArchivedPortalEv
 import { isPublicVisibility, type ScopeFacts } from "@/features/unified-data/hub/dataHomeScope";
 import type { DataHomeCustomFieldsRow } from "@/features/unified-data/hub/doors";
 import { plainKindWord } from "./dataHomeKindWords";
+import { applyPublicUrls, publicTargetId } from "@/lib/custom-domains/public-url";
 
 /** Which lane put a row in front of the person — one word, the strongest reason first. */
 export type DataHomeAccess = "mine" | "team" | "org" | "shared" | "public" | "system";
@@ -311,6 +312,8 @@ export async function buildDataHomeRows(
     answer: DataHomeAnswer;
   },
   capabilities: readonly HubCapability[] = HUB_CAPABILITIES,
+  /** Live custom-domain share addresses (lib/custom-domains/public-url-reader.ts); omitted in tests. */
+  readPublicUrls?: (organizationIds: string[]) => Promise<Record<string, string>>,
 ): Promise<DataHomeBuild> {
   const { answer } = input;
   const tables = new Map(answer.tables.map((t) => [t.table_id, t]));
@@ -358,7 +361,12 @@ export async function buildDataHomeRows(
         });
     }),
   );
-  return { rows: answered.flat().map((item) => toRow(item, tables, item.fromTablesListing)), refusals };
+  const rows = answered.flat().map((item) => toRow(item, tables, item.fromTablesListing));
+  if (!readPublicUrls) return { rows, refusals };
+  const shared = rows.filter((row) => publicTargetId(row.publicHref) && row.organizationId);
+  if (shared.length === 0) return { rows, refusals };
+  const urls = await readPublicUrls(shared.map((row) => row.organizationId as string));
+  return { rows: applyPublicUrls(rows, urls), refusals };
 }
 
 /** A pick list's own page (`/pick-lists/<id>`, the canonical deep link); a list shared in keeps its organization. */

@@ -1,0 +1,59 @@
+// Types for the new app frame. Host-agnostic: no Redux, no app imports.
+import type { LucideIcon } from "lucide-react";
+import type { ChipHue } from "@ai-matrx/design-system/controls";
+
+export type ProductFamily = "build" | "know-make" | "business" | "yours";
+
+export interface FrameMenuItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  /** A count shown at the row's end (meta). */
+  count?: number;
+}
+
+export interface FrameMenuSection {
+  id: string;
+  /** Group heading; the first section usually has none. */
+  label?: string;
+  items: readonly FrameMenuItem[];
+}
+
+export interface FrameProduct {
+  id: string;
+  name: string;
+  family: ProductFamily;
+  icon: LucideIcon;
+  /** The tile hue — one of the design-system chip hues, never a class. */
+  color: ChipHue;
+  homeHref: string;
+  /** The product's OWN sidebar menu — nothing from other products. */
+  menu: readonly FrameMenuSection[];
+}
+
+/** body layouts; the header, tabs row and footer never change between them. */
+export type FrameVariant = "record" | "list" | "workspace" | "light";
+
+/** desktop = sidebar + sheet + footer; phone = drawer + compressed header, no footer. */
+export type FrameForm = "desktop" | "phone";
+
+export interface FrameCrumb {
+  id: string;
+  label: string;
+  onSelect?: () => void;
+}
+
+export interface FrameAction {
+  id: string;
+  label: string;
+  icon?: LucideIcon;
+  onSelect: () => void;
+  /** Rendered after a separator, in the destructive ink. */
+  destructive?: boolean;
+}
+
+export interface FrameTab {
+  value: string;
+  label: string;
+  count?: number;
+}

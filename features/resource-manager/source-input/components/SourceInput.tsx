@@ -647,8 +647,8 @@ function TileArea({
  * The web page door. The link goes straight to the intake (`addWebPage`) —
  * the SAME ask → hold → continue path as every other door: a card exists from
  * the moment the link is given (its link kept, so a reload re-reads it), with
- * no organization it waits ("Choose organization") and continues by itself
- * once one is set, and the page is added once read — no preview step
+ * no organization it waits (the quiet "Create an organization" door) and
+ * continues by itself once one is set, and the page is added once read — no preview step
  * (verify-5 #3, #7). Parts and the version are chosen on the card.
  */
 function WebPageRead({

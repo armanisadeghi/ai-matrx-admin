@@ -123,6 +123,7 @@ import {
   matchSavedWebDecisions,
   matchSavedWebMarks,
   webDecisionCounts,
+  webDecisionSummary,
   WebDecisionSaver,
   type WebSaveStatus,
 } from "../webDecisions";
@@ -251,6 +252,32 @@ describe("Enrich web decisions reach the brand", () => {
     }
     // The enrich summary counts every one.
     expect(webDecisionCounts(Object.values(choices), KINDS).total).toBe(40);
+  });
+
+  it("the Apply summary states the true saved total, not only this visit's pages", () => {
+    const visit = [{ kind: "ours", sentiment: null }, { kind: "ours", sentiment: null }] as WebChoice[];
+    const saved = [
+      ...Array.from({ length: 21 }, () => ({ relationKey: "ours", mark: null })),
+      { relationKey: "", mark: "later" as const },
+      { relationKey: "", mark: "ignored" as const },
+    ];
+    const s = webDecisionSummary(visit, saved, KINDS);
+    expect(s.total).toBe(23);
+    expect(s.thisVisit).toBe(2);
+    expect(s.tail).toBe("saved on this brand, 2 answered this visit");
+    expect(s.parts).toEqual([{ label: "Ours", count: 21 }, { label: "Ask me later", count: 1 }, { label: "Ignored", count: 1 }]);
+    // Until the saved rows are read, the visit's own count is shown and says so.
+    expect(webDecisionSummary(visit, null, KINDS)).toMatchObject({ total: 2, tail: "decided this visit" });
+  });
+
+  it("only Ask me later / Ignore decisions still count: the summary row shows them", () => {
+    const onlyMarks = webDecisionSummary([], null, KINDS, 3);
+    expect(onlyMarks.total).toBe(3);
+    const saved = [{ relationKey: "", mark: "later" as const }, { relationKey: "", mark: "later" as const }, { relationKey: "", mark: "ignored" as const }];
+    const s = webDecisionSummary([], saved, KINDS, 3);
+    expect(s.total).toBe(3);
+    expect(s.thisVisit).toBe(3);
+    expect(s.parts).toEqual([{ label: "Ask me later", count: 2 }, { label: "Ignored", count: 1 }]);
   });
 
   it("a save that fails is reported and retried on flush, never swallowed", async () => {

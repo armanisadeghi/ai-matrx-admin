@@ -88,13 +88,23 @@ export function createPersistencePort(store: StoreLike): OverlayPersistencePort 
         userId: () => selectUserId(store.getState() as RootState),
       }),
     ));
+  // Overlay state is saved PER PERSON. A signed-out visitor has no person, so nothing is stored
+  // for them and nothing is read: no adapter chunk, no request, and no error (the data adapter
+  // throws "no signed-in person" by design, which used to file a red client error on every
+  // signed-out page load). Guard: __tests__/a-signed-out-visitor-reads-no-saved-overlay-state.test.ts
+  const signedIn = () => Boolean(selectUserId(store.getState() as RootState));
   return {
     perPerson: true,
-    load: async (key) => (await real()).load(key),
-    save: async (key, value, options) => (await real()).save(key, value, options),
-    remove: async (key) => (await real()).remove(key),
-    list: async (prefix) => (await real()).list(prefix),
-    loadAll: async () => (await real()).loadAll(),
+    load: async (key) => (signedIn() ? (await real()).load(key) : null),
+    save: async (key, value, options) => {
+      if (!signedIn()) return { version: 0 };
+      return (await real()).save(key, value, options);
+    },
+    remove: async (key) => {
+      if (signedIn()) await (await real()).remove(key);
+    },
+    list: async (prefix) => (signedIn() ? (await real()).list(prefix) : []),
+    loadAll: async () => (signedIn() ? (await real()).loadAll() : new Map()),
   };
 }
 

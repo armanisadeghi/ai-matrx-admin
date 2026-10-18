@@ -6,7 +6,7 @@
 // Accounts, Email, Usage limits, Organizations, the user-search window, knob overrides and the ⌘K
 // people jump all need it; each used to fetch it on its own, so walking three admin pages cost three
 // full roster reads. They all read it HERE: one in-flight promise shared by every caller, kept for
-// the tab's life. A failed read is never kept (the next caller asks again).
+// ADMIN_ROSTER_MAX_AGE_MS (then the next reader refetches). A failed read is never kept (the next caller asks again).
 //
 // FRESHNESS. A screen that changed an account calls `invalidateAdminRoster()` (the next reader
 // refetches), or `loadAdminRoster({ refresh: true })` when it wants the new roster now (Accounts'
@@ -19,7 +19,11 @@ export interface AdminRosterPayload {
   [key: string]: unknown;
 }
 
+/** How long a read roster is shared before the next reader asks the server again. */
+export const ADMIN_ROSTER_MAX_AGE_MS = 60_000;
+
 let inflight: Promise<AdminRosterPayload> | null = null;
+let startedAt = 0;
 let generation = 0;
 
 async function readRoster(): Promise<AdminRosterPayload> {
@@ -43,10 +47,11 @@ async function readRoster(): Promise<AdminRosterPayload> {
 /** The roster — shared by every caller in this tab. `refresh` drops what is held and reads again. */
 export function loadAdminRoster(options: { refresh?: boolean } = {}): Promise<AdminRosterPayload> {
   if (options.refresh) invalidateAdminRoster();
-  if (inflight) return inflight;
+  if (inflight && Date.now() - startedAt < ADMIN_ROSTER_MAX_AGE_MS) return inflight;
   const mine = ++generation;
   const pending = readRoster();
   inflight = pending;
+  startedAt = Date.now();
   pending.catch(() => {
     // Never keep a failure: the next reader asks the server again.
     if (generation === mine) inflight = null;

@@ -13,8 +13,10 @@
 import { packBoards, type PackBoard, type PackBoardPage, type PackBoardTile, type ResolvedTable } from "@/lib/spaces-blocks/template-pack";
 
 import type { BoardDocument, BoardGroup, BoardNode, NodeSource } from "../board/document";
-import { PAGE_COLUMN_W, PAGE_FRAME_PAD, PAGE_FRAME_TOP, PAGE_MIN_FRAME_H, PAGE_SECTION_GAP, PAGE_TILE_GAP } from "../engine/page-layout";
+import { PAGE_COLUMN_W, PAGE_FRAME_PAD, PAGE_FRAME_TOP, PAGE_MIN_FRAME_H, PAGE_SECTION_GAP, PAGE_TILE_GAP, planPageLayout } from "../engine/page-layout";
 import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "../items/table-tile";
+// The cover's entity word (kept with its item, cover-items.tsx); a literal import would pull the tile body here.
+const COVER_ENTITY = "cover";
 
 /** One board to make: its key and title, its layout, and its document. */
 export interface PlannedBoard {
@@ -37,6 +39,8 @@ function tileSource(tile: PackBoardTile, tables: Record<string, ResolvedTable>):
       return { kind: "entity", entity: "note", id: null, meta: { seed: tile.text?.startsWith(tile.title) ? tile.text : `${tile.title}\n\n${tile.text ?? ""}` } };
     case "writeUp":
       return { kind: "text", markdown: tile.text ?? "" };
+    case "cover":
+      return { kind: "entity", entity: COVER_ENTITY, id: null, meta: { hero: tile.hero ?? "", markdown: tile.text ?? "" } };
   }
 }
 
@@ -65,7 +69,14 @@ export function packBoardDocument(board: PackBoardPage, tables: Record<string, R
     groups.push({ id: newId(), rect: { x: 0, y, w: PAGE_COLUMN_W, h }, title: chapter.title, ...(chapter.note ? { note: chapter.note } : {}) });
     y += h + PAGE_SECTION_GAP;
   }
-  return { camera: { x: 0, y: 0, z: 1 }, nodes, groups, edges: [], shapes: [] };
+  // Then exactly page layout's own arrangement (labels, a chapter's one tile at full width), so it opens settled.
+  const plan = planPageLayout({ tiles: nodes, frames: groups });
+  const at = new Map(plan.moves.map((m) => [m.id, m]));
+  const place = <R extends { id: string; rect: { x: number; y: number; w: number; h: number } }>(r: R): R => {
+    const m = at.get(r.id);
+    return m ? { ...r, rect: { x: m.x, y: m.y, w: m.w ?? r.rect.w, h: m.h ?? r.rect.h } } : r;
+  };
+  return { camera: { x: 0, y: 0, z: 1 }, nodes: nodes.map(place), groups: groups.map(place), edges: [], shapes: [] };
 }
 
 /** Every board the pack makes, top board first, each with its tiles pointed at the made tables. */

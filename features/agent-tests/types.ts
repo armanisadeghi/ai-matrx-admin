@@ -26,11 +26,24 @@ export type OutcomeStatus =
   | "refused_by_validation"
   | "error";
 
+/** The fact judge's decision as stored on the result's outcome (server `_with_judge`). */
+export interface OutcomeJudgeView {
+  verdict: string | null;
+  /** True when the judge's agreement with people is below the bar: its word decides nothing. */
+  advisory: boolean;
+  advisoryReason: string | null;
+  /** False when the judge's own request lacked an expected fact (`judge_unfed`). */
+  fedOk: boolean | null;
+  model: string | null;
+  missingFacts: string[];
+}
+
 export interface OutcomeView {
   status: OutcomeStatus | string;
   message: string | null;
   errorCode: string | null;
   httpStatus: number | null;
+  judge: OutcomeJudgeView | null;
 }
 
 /** One check's outcome on one result. */

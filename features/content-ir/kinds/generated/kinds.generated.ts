@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1601 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1604 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "63b59e5687b1";
+export const KIND_REGISTRY_FINGERPRINT = "9be462776692";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -3038,6 +3038,25 @@ export interface DaysToSell {
 }
 
 /**
+ * One change: what it touches, why the run fell short, and the one fix.
+ *  *
+ *  * From kind `agent_debrief`.
+ */
+export interface DebriefProposal {
+  fix: string;
+  find?: string;
+  cause: string;
+  model?: string | null;
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  target: "instructions" | "inputs" | "tools" | "output" | "model";
+  replace?: string;
+}
+
+/**
  * Who authored a decision.
  *  *
  *  * From kind `human_answer`.
@@ -4904,7 +4923,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 125 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 126 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
 
@@ -7188,6 +7207,13 @@ export interface Patch {
   __kind?: string;
   surface?: string | null;
   agent_id?: string | null;
+  messages?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[] | null;
   model_id?: string | null;
   settings?: {
     /**
@@ -12120,6 +12146,20 @@ export interface AgentBuildResult {
 }
 
 /**
+ * What went wrong in an agent's run, in its own words, and the changes that would fix it.
+ *  *
+ *  * Kind `agent_debrief` (registry v1).
+ */
+export interface AgentDebrief {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_debrief";
+  proposals: DebriefProposal[];
+  went_wrong?: string[];
+}
+
+/**
  * A complete agent, exactly as a model may author it.
  *
  * Applied through ``directive_v1_action_create_agent_definition`` it becomes a
@@ -13112,7 +13152,7 @@ export interface AgentFactoryProofStepOffer {
 }
 
 /**
- * Kind `agent_factory.system_plan.offer` (registry v2).
+ * Kind `agent_factory.system_plan.offer` (registry v3).
  */
 export interface AgentFactorySystemPlanOffer {
   /**
@@ -15025,7 +15065,7 @@ export interface AgentTaskList {
 /**
  * One test case under one setup and repeat, ready to run.
  *  *
- *  * Kind `agent_test_case_ref` (registry v1).
+ *  * Kind `agent_test_case_ref` (registry v2).
  */
 export interface AgentTestCaseRef {
   door?: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity" | null;
@@ -15043,7 +15083,7 @@ export interface AgentTestCaseRef {
 /**
  * Everything a test case accumulates as it moves through the agent_test Steps.
  *  *
- *  * Kind `agent_test_case_state` (registry v1).
+ *  * Kind `agent_test_case_state` (registry v2).
  */
 export interface AgentTestCaseState {
   ref: AgentTestCaseRef;
@@ -15091,6 +15131,33 @@ export interface AgentTestRunRef {
    */
   __kind?: "agent_test_run_ref";
   run_id: string;
+}
+
+/**
+ * A settled test run as the next Step reads it: status, verdict counts, pass rate, spend.
+ *  *
+ *  * Kind `agent_test_run_summary` (registry v1).
+ */
+export interface AgentTestRunSummary {
+  link?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_test_run_summary";
+  counts?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: number | string | undefined;
+  };
+  failed?: number;
+  passed?: number;
+  run_id: string;
+  status: string;
+  settled: boolean;
+  pass_rate?: number | null;
+  spent_cents?: string | null;
 }
 
 /**
@@ -16787,7 +16854,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v19).
+ * Kind `brand_intake.identity_match.offer` (registry v20).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -16870,6 +16937,18 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   typed_email?: string;
   /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  web_faq_raw?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
    * Every raw web result an identify round read, from every search engine, in rank order.
    */
   web_results?: {
@@ -16883,7 +16962,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  web_faq_raw?: {
+  web_hashtags?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -16931,6 +17010,18 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
+  web_locations?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
   youtube_email?: {
     items?: ProviderSectionRow[];
     /**
@@ -16944,18 +17035,6 @@ export interface BrandIntakeIdentityMatchOffer {
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
   youtube_links?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_hashtags?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17027,18 +17106,6 @@ export interface BrandIntakeIdentityMatchOffer {
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
   youtube_joined?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_locations?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17130,6 +17197,48 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
+  web_faq_answers?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  web_infobox_raw?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  web_name_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
   youtube_country?: {
     items?: ProviderSectionRow[];
     /**
@@ -17216,6 +17325,36 @@ export interface BrandIntakeIdentityMatchOffer {
     __kind?: "web_page_list";
   };
   /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  web_local_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  web_result_dates?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
@@ -17238,48 +17377,6 @@ export interface BrandIntakeIdentityMatchOffer {
      */
     __kind?: "provider_section_list";
     section?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_faq_answers?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_infobox_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One search's whole provider response, exactly as the engine returned it.
-   */
-  web_name_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
   };
   candidate_engines?: string[];
   /**
@@ -17313,21 +17410,9 @@ export interface BrandIntakeIdentityMatchOffer {
     footer_text?: string | null;
   };
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  youtube_links_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  web_local_search?: {
+  web_domain_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -17346,7 +17431,19 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  web_result_dates?: {
+  web_infobox_facts?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  youtube_links_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17438,28 +17535,10 @@ export interface BrandIntakeIdentityMatchOffer {
     __kind?: "web_page_list";
   };
   /**
-   * One search's whole provider response, exactly as the engine returned it.
-   */
-  web_domain_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
-  /**
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  web_infobox_facts?: {
+  web_logo_originals?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17544,10 +17623,36 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  web_name_search_faq?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  web_logo_originals?: {
+  web_people_mentions?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  web_site_long_names?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17677,60 +17782,6 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  web_name_search_faq?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_people_mentions?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_site_long_names?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * The link on the account's profile, from the raw provider JSON; absent when not looked up.
-   */
-  candidate_link_in_bio?: string;
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  linkedin_recent_posts?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
   web_local_search_faq?: {
     data?: unknown;
     block: string;
@@ -17772,6 +17823,62 @@ export interface BrandIntakeIdentityMatchOffer {
      */
     __kind?: "search_result_block";
     engine: string;
+  };
+  /**
+   * The link on the account's profile, from the raw provider JSON; absent when not looked up.
+   */
+  candidate_link_in_bio?: string;
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  linkedin_recent_posts?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  web_domain_search_faq?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  web_local_search_news?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  web_organizations_raw?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
   };
   /**
    * The account's display name from the social lookup's raw provider JSON; absent when the account was not looked up this round.
@@ -17847,76 +17954,6 @@ export interface BrandIntakeIdentityMatchOffer {
      * The registered kind this payload is an instance of.
      */
     __kind?: "social_profile_answer_list";
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  web_domain_search_faq?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  web_local_search_news?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_organizations_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One search's whole provider response, exactly as the engine returned it.
-   */
-  google_name_news_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  linkedin_key_people_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
   };
   /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
@@ -18031,10 +18068,28 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_name_news_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  google_related_questions?: {
+  linkedin_key_people_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -18127,6 +18182,60 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  google_related_questions?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  web_domain_search_videos?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  web_local_search_infobox?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  web_local_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
    * One search's whole provider response, exactly as the engine returned it.
    */
   google_name_images_search?: {
@@ -18182,21 +18291,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  web_domain_search_videos?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  web_local_search_infobox?: {
+  web_domain_search_infobox?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18210,7 +18305,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  web_local_search_results?: {
+  web_domain_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18219,6 +18314,32 @@ export interface BrandIntakeIdentityMatchOffer {
     __kind?: "search_result_list";
     engine: string;
     endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  web_name_search_locations?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  web_organization_contacts?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
   };
   /**
    * One section of the provider answers available at a point, one row per source, each row naming its source.
@@ -18315,7 +18436,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  web_domain_search_infobox?: {
+  web_local_search_locations?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18324,46 +18445,6 @@ export interface BrandIntakeIdentityMatchOffer {
      */
     __kind?: "search_result_block";
     engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  web_domain_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  web_name_search_locations?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  web_organization_contacts?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
   };
   /**
    * One search's result list in rank order: the provider's full objects (raw form) or only the
@@ -18378,58 +18459,6 @@ export interface BrandIntakeIdentityMatchOffer {
     __kind?: "search_result_list";
     engine: string;
     endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  web_local_search_locations?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  google_ai_overview_available?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_domain_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  google_related_questions_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
   };
   /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
@@ -18488,18 +18517,42 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  google_name_search_answer_box?: {
-    data?: unknown;
-    block: string;
+  google_ai_overview_available?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_domain_search_results?: {
+    items?: SearchResultRow[];
     query?: string;
     /**
      * The registered kind this payload is an instance of.
      */
-    __kind?: "search_result_block";
+    __kind?: "search_result_list";
     engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One section of the provider answers available at a point, one row per source, each row naming its source.
+   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   */
+  google_related_questions_raw?: {
+    items?: ProviderSectionRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "provider_section_list";
+    section?: string;
   };
   /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
@@ -18556,6 +18609,48 @@ export interface BrandIntakeIdentityMatchOffer {
      */
     __kind?: "search_result_block";
     engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_search_answer_box?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  web_domain_search_discussions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  web_domain_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
   };
   /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
@@ -18626,10 +18721,24 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  web_name_images_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  web_domain_search_discussions?: {
+  web_name_reviews_search_videos?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18643,7 +18752,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  web_domain_search_results_raw?: {
+  web_name_videos_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18724,24 +18833,10 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  web_name_images_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  web_name_reviews_search_videos?: {
+  web_name_reviews_search_infobox?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18755,7 +18850,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  web_name_videos_search_results?: {
+  web_name_reviews_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18822,24 +18917,10 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  web_name_reviews_search_infobox?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  web_name_reviews_search_results?: {
+  web_name_news_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18892,18 +18973,18 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  web_name_news_search_results_raw?: {
-    items?: SearchResultRow[];
+  web_name_reviews_search_locations?: {
+    data?: unknown;
+    block: string;
     query?: string;
     /**
      * The registered kind this payload is an instance of.
      */
-    __kind?: "search_result_list";
+    __kind?: "search_result_block";
     engine: string;
-    endpoint?: string;
   };
   /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
@@ -18948,18 +19029,32 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
    */
-  web_name_reviews_search_locations?: {
-    data?: unknown;
-    block: string;
+  web_name_images_search_results_raw?: {
+    items?: SearchResultRow[];
     query?: string;
     /**
      * The registered kind this payload is an instance of.
      */
-    __kind?: "search_result_block";
+    __kind?: "search_result_list";
     engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  web_name_videos_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
   };
   /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
@@ -18990,24 +19085,24 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  web_name_images_search_results_raw?: {
-    items?: SearchResultRow[];
+  web_name_reviews_search_discussions?: {
+    data?: unknown;
+    block: string;
     query?: string;
     /**
      * The registered kind this payload is an instance of.
      */
-    __kind?: "search_result_list";
+    __kind?: "search_result_block";
     engine: string;
-    endpoint?: string;
   };
   /**
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  web_name_videos_search_results_raw?: {
+  web_name_reviews_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -19044,34 +19139,6 @@ export interface BrandIntakeIdentityMatchOffer {
      */
     __kind?: "search_result_block";
     engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  web_name_reviews_search_discussions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  web_name_reviews_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
   };
   /**
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
@@ -25173,6 +25240,26 @@ export interface DataActionResult {
   result?: JsonValue | null;
   operation?: string | null;
   operations?: (Record<string, unknown>)[] | null;
+}
+
+/**
+ * Records collected from one website, one object per record; shown as a table.
+ *  *
+ *  * Kind `data_records` (registry v1).
+ */
+export interface DataRecords {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "data_records";
+  records?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  failed_inputs?: number | null;
 }
 
 /**
@@ -45946,7 +46033,7 @@ export interface ResearchScrapeCondensationOffer {
 }
 
 /**
- * Kind `research.source_read_candidate.offer` (registry v5).
+ * Kind `research.source_read_candidate.offer` (registry v8).
  */
 export interface ResearchSourceReadCandidateOffer {
   /**
@@ -45994,6 +46081,14 @@ export interface ResearchSourceReadCandidateOffer {
    */
   source_type: string;
   /**
+   * Total likes. Absent when the creator hides them.
+   */
+  video_likes?: number;
+  /**
+   * Total YouTube views. Present on 98% of video candidates.
+   */
+  video_views?: number;
+  /**
    * The first 3,000 characters of the fetched page text, when a capture succeeded. Present for 7.5% of sources (1,170 of 15,527).
    */
   content_head?: string;
@@ -46018,6 +46113,10 @@ export interface ResearchSourceReadCandidateOffer {
    */
   snippet_block?: string;
   /**
+   * The YouTube channel that published the video, verbatim. Videos only.
+   */
+  video_channel?: string;
+  /**
    * Additional provider snippets (avg ~3.6 entries), only captured for results at or above search position 50. Present for 74% of sources.
    */
   extra_snippets?: string[];
@@ -46029,6 +46128,10 @@ export interface ResearchSourceReadCandidateOffer {
    * Titles of up to 50 other candidates in the same batch, so authority and redundancy can be judged RELATIVELY instead of by domain reputation alone.
    */
   sibling_titles?: string[];
+  /**
+   * Total comments. Absent when comments are off.
+   */
+  video_comments?: number;
   /**
    * The batch ranker's 0-100 domain-led authority prior. Present on 90% of sources. A prior from a different question, not this answer.
    */
@@ -46042,6 +46145,10 @@ export interface ResearchSourceReadCandidateOffer {
    */
   redundancy_group?: string;
   /**
+   * The deterministic 0-100 video ranking (research/video_ranking.py): search evidence relative to the topic's other videos, reach, engagement, channel size, freshness, length fit. Offered to disagree with, never to copy.
+   */
+  video_rank_score?: number;
+  /**
    * The topic's composed intent brief — the actual question being researched. Declared on 2 of 53 topics today; absent means the topic name and description ARE the question.
    */
   research_question?: string;
@@ -46054,13 +46161,41 @@ export interface ResearchSourceReadCandidateOffer {
    */
   topic_description?: string;
   /**
+   * The full YouTube description (avg 1,299 chars; present on 87% of videos) — richer than the search snippet.
+   */
+  video_description?: string;
+  /**
    * Length of the fetched text, 0 when the capture failed. A capture row exists for every failed fetch with length 0 — presence of a row is NOT presence of text.
    */
   content_char_count?: number;
   /**
+   * Whether captions exist. Known for 5 of 3,255 videos (0.15%); absent means UNKNOWN, never no.
+   */
+  video_has_captions?: boolean;
+  /**
+   * ISO-8601 upload time from YouTube — the video's real date, unlike page_age.
+   */
+  video_published_at?: string;
+  /**
+   * (likes + comments) / views as a fraction, 0.02 = 2%. Videos with views only.
+   */
+  video_engagement_rate?: number;
+  /**
    * How recent this topic needs its evidence to be. When the topic never declared a need, this falls back to the platform's default and is not a real statement of need — a currency judgement made against an undeclared need must answer unknown.
    */
   topic_freshness_weight?: string;
+  /**
+   * Length in seconds. Under 60 is usually a Short.
+   */
+  video_duration_seconds?: number;
+  /**
+   * The channel's subscriber count. Present on 98% of video candidates.
+   */
+  video_channel_subscribers?: number;
+  /**
+   * The first 600 characters of the YouTube description, for budget-bound decisions.
+   */
+  video_description_excerpt?: string;
 }
 
 /**
@@ -47179,7 +47314,7 @@ export interface RulebookToolResult {
 }
 
 /**
- * Kind `run_log_entry` (registry v4).
+ * Kind `run_log_entry` (registry v5).
  */
 export interface RunLogEntry {
   label?: string;
@@ -47189,9 +47324,21 @@ export interface RunLogEntry {
   __kind?: "run_log_entry";
   message?: string;
   entry_id?: string | null;
+  /**
+   * The workflow.review_issue this flag was grouped into.
+   */
+  issue_id?: string | null;
   recorded?: boolean;
   severity?: string;
+  /**
+   * new = first time this issue happened; reopened = it came back after being marked fixed; repeat = it happens again.
+   */
+  issue_event?: string | null;
   occurred_at?: string | null;
+  /**
+   * True when this record is a review flag on the workflow.
+   */
+  needs_review?: boolean;
   not_recorded_reason?: string | null;
 }
 
@@ -62445,6 +62592,7 @@ export type GeneratedKindSlug =
   | "agent_apps.metadata_request.offer"
   | "agent_assignment_batch_result"
   | "agent_build_result"
+  | "agent_debrief"
   | "agent_definition"
   | "agent_factory.build_job.offer"
   | "agent_factory.build_request.offer"
@@ -62537,6 +62685,7 @@ export type GeneratedKindSlug =
   | "agent_test_case_state"
   | "agent_test_notice"
   | "agent_test_run_ref"
+  | "agent_test_run_summary"
   | "aggregate_group"
   | "aggregate_result"
   | "ai.translation_cell_draft.offer"
@@ -62776,6 +62925,7 @@ export type GeneratedKindSlug =
   | "data.formula_box.offer"
   | "data.table_row_action.offer"
   | "data_action_result"
+  | "data_records"
   | "data_table"
   | "data_tool_result"
   | "database_design"
@@ -64049,6 +64199,7 @@ export interface KindPayloadBySlug {
   "agent_apps.metadata_request.offer": AgentAppsMetadataRequestOffer;
   "agent_assignment_batch_result": AgentAssignmentBatchResult;
   "agent_build_result": AgentBuildResult;
+  "agent_debrief": AgentDebrief;
   "agent_definition": AgentDefinition;
   "agent_factory.build_job.offer": AgentFactoryBuildJobOffer;
   "agent_factory.build_request.offer": AgentFactoryBuildRequestOffer;
@@ -64141,6 +64292,7 @@ export interface KindPayloadBySlug {
   "agent_test_case_state": AgentTestCaseState;
   "agent_test_notice": AgentTestNotice;
   "agent_test_run_ref": AgentTestRunRef;
+  "agent_test_run_summary": AgentTestRunSummary;
   "aggregate_group": AggregateGroup;
   "aggregate_result": AggregateResult;
   "ai.translation_cell_draft.offer": AiTranslationCellDraftOffer;
@@ -64380,6 +64532,7 @@ export interface KindPayloadBySlug {
   "data.formula_box.offer": DataFormulaBoxOffer;
   "data.table_row_action.offer": DataTableRowActionOffer;
   "data_action_result": DataActionResult;
+  "data_records": DataRecords;
   "data_table": DataTable;
   "data_tool_result": DataToolResult;
   "database_design": DatabaseDesign;
@@ -65657,6 +65810,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_apps.metadata_request.offer",
   "agent_assignment_batch_result",
   "agent_build_result",
+  "agent_debrief",
   "agent_definition",
   "agent_factory.build_job.offer",
   "agent_factory.build_request.offer",
@@ -65749,6 +65903,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_test_case_state",
   "agent_test_notice",
   "agent_test_run_ref",
+  "agent_test_run_summary",
   "aggregate_group",
   "aggregate_result",
   "ai.translation_cell_draft.offer",
@@ -65988,6 +66143,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "data.formula_box.offer",
   "data.table_row_action.offer",
   "data_action_result",
+  "data_records",
   "data_table",
   "data_tool_result",
   "database_design",

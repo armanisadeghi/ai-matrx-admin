@@ -13,11 +13,11 @@
 // This wraps the host's own loading UI: unless the host says it is BLOCKED on
 // the workspace, or while the organization is ready or still resolving, the children (the spinner or skeleton) render unchanged —
 // that wait is real. When boot settled with no workspace (or the read failed,
-// or the person is signed out), the SAME area shows the one honest notice:
-// the host's own sentence plus the canonical workspace picker behind one
-// button (`OrganizationContextNotice` → `OrganizationPickerPopover`). Picking one
-// selects it; the mandate cache drops on the switch, the host re-resolves and
-// loads. Nothing is ever chosen for the person.
+// or the person is signed out), the SAME area shows the one honest notice
+// (`OrganizationContextNotice`): the host's own sentence plus ONE quiet
+// "Create an organization" door for a person who belongs to none, or "could not
+// check" with Retry. It never asks the person to choose one (STATE rules
+// 11-14); once an organization exists the host re-resolves and loads.
 //
 // USAGE (in place of the host's spinner — no new rows):
 //   <WorkspaceGate blocked={assistant.blockedOnWorkspace} sentence="This thread needs a workspace to open.">

@@ -221,6 +221,7 @@ export { userTableWindowOverlay } from "./userTableWindow.definition";
 export { voicePadOverlay } from "./voicePad.definition";
 export { voicePadAdvancedOverlay } from "./voicePadAdvanced.definition";
 export { waitingRunsWindowOverlay } from "./waitingRunsWindow.definition";
+export { welcomeFoundWindowOverlay } from "./welcomeFoundWindow.definition";
 export { workInboxWindowOverlay } from "./workInboxWindow.definition";
 export { workflowRunWindowOverlay } from "./workflowRunWindow.definition";
 export { workingDocumentWindowOverlay } from "./workingDocumentWindow.definition";

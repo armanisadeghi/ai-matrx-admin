@@ -5,6 +5,7 @@ import { KIND_KEY } from "@ai-matrx/content-ir";
 import { parseTableViewSnapshot, type TableViewSnapshot } from "@ai-matrx/design-system/data-table";
 import { supabase } from "@/utils/supabase/client";
 import type { Database } from "@/types/database.types";
+import { IN_MY_ORGANIZATIONS_ARM } from "@/features/organizations/service/inMyOrganizations";
 
 /** Host persistence only. The package owns the view definition and controls. */
 export interface TableViewActor {
@@ -153,13 +154,15 @@ function doorError(error: unknown, fallback: string): Error {
 
 /**
  * Every live view of one surface the caller can read, in the declared scope:
- * made by me, OR in one of `organizationIds` (RLS then admits only the shared
- * ones). Capped at 500 — a surface with more views than that is a defect in
+ * made by me, OR in ANY of my organizations (asked on the server —
+ * `in_my_organizations`, never a first-page id list), OR in one of
+ * `alsoOrganizationIds` (e.g. the system organization's presets). RLS then admits
+ * only the shared ones. Capped at 500 — a surface with more views than that is a defect in
  * its own right, and the cap is announced by the caller, never hidden.
  */
 export async function listSurfaceViews(
   surfaceKey: string,
-  scope: { userId: string; organizationIds: string[] },
+  scope: { userId: string; alsoOrganizationIds?: readonly string[] },
   signal?: AbortSignal,
 ): Promise<SurfaceView[]> {
   let q = supabase.schema("platform").from("saved_view")
@@ -167,9 +170,12 @@ export async function listSurfaceViews(
     .eq("surface_key", surfaceKey).is("deleted_at", null)
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("name", { ascending: true }).order("id").limit(500);
-  q = scope.organizationIds.length
-    ? q.or(`created_by.eq.${scope.userId},organization_id.in.(${scope.organizationIds.join(",")})`)
-    : q.eq("created_by", scope.userId);
+  const also = scope.alsoOrganizationIds ?? [];
+  q = q.or([
+    `created_by.eq.${scope.userId}`,
+    IN_MY_ORGANIZATIONS_ARM,
+    ...(also.length ? [`organization_id.in.(${also.join(",")})`] : []),
+  ].join(","));
   if (signal) q = q.abortSignal(signal);
   const { data, error } = await q;
   if (error) throw doorError(error, "Could not read saved views.");

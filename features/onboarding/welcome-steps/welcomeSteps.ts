@@ -1,8 +1,10 @@
 /**
  * The sign-up welcome as ONE calm sequence (Arman, 2026-10-17): one heading on screen at a time.
  *
- *   identity  — Smart Add's door (the name ask, or "here's what we found" when the login already gives a
- *               name: it is never asked what the login answers). New accounts only.
+ *   identity  — Smart Add's door ("here's what we found"). NEVER on the way in (Arman, 2026-10-17: "They souldn't
+ *               sit around wiating for this ... If you have the info, you show them something. If you don't, then you
+ *               do it in the background"): it is a step only when asked for (`/welcome?found=1`); a new account
+ *               starts on the age question / Meet Matrx, and the search runs in the background.
  *   age       — the age question (over / under 18, then the minor split), once, only if the account has not declared.
  *               It was a site-wide popup on top of whatever page was open (FirstSignInAgeGateMount); on /welcome it is
  *               this step instead. A nudge, not a wall (edu_coppa_gate allows an undeclared signed-in account), so
@@ -26,9 +28,14 @@ export function meetMatrxSeen(user: MetadataCarrier): boolean {
   return user?.user_metadata?.[MEET_MATRX_SEEN_KEY] === true;
 }
 
-/** The step a visit starts on. A new account starts with who they are; anyone who has met Matrx goes straight to the tiles. */
-export function firstStep(opts: { newUser: boolean; meetSeen: boolean }): WelcomeStep {
-  if (opts.newUser) return "identity";
+/**
+ * The step a visit starts on. Nothing waits on the "here's what we found" search: identity only when explicitly asked
+ * for. A new account starts on the age step (it moves on by itself when nothing is owed); anyone who has met Matrx goes
+ * straight to the tiles.
+ */
+export function firstStep(opts: { newUser: boolean; meetSeen: boolean; foundAsked?: boolean }): WelcomeStep {
+  if (opts.foundAsked) return "identity";
+  if (opts.newUser) return "age";
   return opts.meetSeen ? "start" : "meet";
 }
 

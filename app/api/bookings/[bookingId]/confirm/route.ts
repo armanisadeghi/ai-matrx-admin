@@ -19,6 +19,7 @@ import { NextResponse } from "next/server";
 import { bucketFor, confirmBooking, publicBooking, recordSmsConsent } from "@/features/booking/service";
 import { checkoutIfAsked } from "@/features/payments/server";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
+import { pathOnRequestHost } from "@/lib/custom-domains/request-host";
 
 export const dynamic = "force-dynamic";
 
@@ -122,7 +123,7 @@ export async function POST(
           subjectId: bookingId,
           recordId: outcome.record_id,
           origin: new URL(request.url).origin,
-          back: `/b/${bookingId}`,
+          back: await pathOnRequestHost(request, `/b/${bookingId}`),
         }).catch((thrown: unknown) => ({ refused: thrown instanceof Error ? thrown.message : "Payment could not be started." }))
       : null;
     return NextResponse.json(

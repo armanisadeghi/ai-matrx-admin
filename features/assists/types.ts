@@ -103,6 +103,10 @@ export type AssistAction =
       /** Declared-variable values seeded onto the fresh conversation — the
        *  structured-content channel (THE USER-INPUT LAW). */
       variableValues?: Record<string, string>;
+      /** The chip's held values for the mandate's provision, sent on the run's
+       *  first turn through the host-values channel
+       *  (features/mandates/host-values). Needs `mandateKey`. */
+      hostValues?: { provision: string; values: Record<string, unknown> };
     }
   | {
       /**
@@ -713,6 +717,7 @@ export function narrowAction(value: Json): AssistAction | null {
         obj.variableValues && typeof obj.variableValues === "object"
           ? (obj.variableValues as Record<string, string>)
           : undefined,
+      hostValues: parseHostValues(obj.hostValues),
     };
   }
   if (
@@ -916,4 +921,15 @@ export function toAssist(row: AssistRow): Assist | null {
 export function readAutoApplyAt(row: AssistRow): string | null {
   const value = row.auto_apply_at;
   return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function parseHostValues(
+  raw: unknown,
+): { provision: string; values: Record<string, unknown> } | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const { provision, values } = raw as { provision?: unknown; values?: unknown };
+  if (typeof provision !== "string" || !values || typeof values !== "object" || Array.isArray(values)) {
+    return undefined;
+  }
+  return { provision, values: values as Record<string, unknown> };
 }

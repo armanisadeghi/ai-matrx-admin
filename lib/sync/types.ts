@@ -224,9 +224,15 @@ export interface PolicyConfig<TState = unknown> {
          * Refresh when the tab comes back (visible / focused), at most once per
          * `REVALIDATE_ON_FOCUS_MIN_GAP_MS`, on top of the `staleAfter` timer —
          * so a tab left open while the record changed elsewhere shows the new
-         * values the moment the person returns to it. Needs `staleAfter`.
+         * values the moment the person returns to it.
          */
         revalidateOnFocus?: boolean;
+        /**
+         * With `revalidateOnFocus`: the tab must have gone this long without a refresh before coming back
+         * triggers one (default `REVALIDATE_ON_FOCUS_MIN_GAP_MS`, 5 s). A slice kept current by a live
+         * channel sets it long (a few minutes to an hour) and needs no `staleAfter` timer at all.
+         */
+        revalidateOnFocusAfterMs?: number;
         /**
          * The body the SERVER holds as of the load that just landed (called
          * after every REHYDRATE / load outcome). The write scheduler diffs each

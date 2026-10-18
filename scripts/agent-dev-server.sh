@@ -163,6 +163,15 @@ RECYCLED_PREFIX="RECYCLED: "
 MAX_LOG_GB="${MATRX_PREVIEW_MAX_LOG_GB:-2}"
 LOG_TAIL_KB="${MATRX_PREVIEW_LOG_TAIL_KB:-2048}"
 
+# Stale holds, orphaned browsers, the machine-memory reading (rules + evidence in the file's header).
+# shellcheck source=scripts/agent-harness/stale-sessions.sh
+source "$REPO_ROOT/scripts/agent-harness/stale-sessions.sh"
+# The watchdog's revision: preview:status flags a monitor older than this (pnpm preview:monitor-repair).
+#   2 (2026-10-17): writes the machine-memory reading every tick, prunes dead/idle holds and closes
+#                   orphaned Playwright browsers every 30 s.
+MONITOR_REV=2
+MONITOR_FILE="$BASE.monitor"
+
 log() { printf '[preview] %s\n' "$1"; }
 fail() { printf '[preview] ERROR: %s\n' "$1" >&2; exit 1; }
 alive() { [[ "${1:-}" =~ ^[0-9]+$ ]] && kill -0 "$1" 2>/dev/null; }
@@ -432,13 +441,21 @@ active_holds() { # prints "<label> <minutes-left>" per live hold
 held() { [[ -n "$(active_holds)" ]]; }
 
 cmd_hold() {
-  local minutes="${1:-45}" f
+  local minutes="${1:-45}" f owner owner_note=""
   [[ "$minutes" =~ ^[0-9]+$ ]] || fail "hold takes whole minutes (got '$minutes')"
   (( minutes <= HOLD_MAX_MIN )) || minutes="$HOLD_MAX_MIN"
   mkdir -p "$HOLDS_DIR"
+  prune_holds
   f="$(hold_file)"
-  printf '%s %s\n' "$(( $(date +%s) + minutes * 60 ))" "$SESSION_RAW" >"$f"
-  log "held for $minutes min by $SESSION_LABEL: no idle stop, no recycle, no takeover until then (release: pnpm preview:release)"
+  # The hold names the process it belongs to; it ends when that process does (stale-sessions.sh rule 1).
+  owner="$(hold_owner)"
+  if [[ -n "$owner" ]]; then
+    printf '%s %s owner=%s owner_start=%s\n' "$(( $(date +%s) + minutes * 60 ))" "$SESSION_RAW" "$owner" "$(proc_start "$owner")" >"$f"
+    owner_note=", or sooner when pid $owner ($(basename "$(ps -o comm= -p "$owner" 2>/dev/null)")) exits"
+  else
+    printf '%s %s\n' "$(( $(date +%s) + minutes * 60 ))" "$SESSION_RAW" >"$f"
+  fi
+  log "held for $minutes min by $SESSION_LABEL${owner_note}: no idle stop, no recycle, no takeover until then (release: pnpm preview:release)"
 }
 
 cmd_release() {
@@ -738,6 +755,8 @@ cmd_start() {
   report_previous_failure
   # The other mode was asked for: switch an idle server, refuse a busy one.
   switch_mode_if_idle
+  # A hold whose runner is gone (or whose host went quiet) must not block the takeover below.
+  prune_holds
   # OLD NEVER BLOCKS NEW: an abandoned or dead-but-alive preview is stopped here
   # (loudly) instead of refusing or being reused; a busy one is reused below.
   retire_stale_preview || true
@@ -1223,9 +1242,17 @@ cmd_monitor() {
   [[ -f "$USED" ]] || date +%s >"$USED"
 
   local is_held was_used
+  printf '%s %s %s\n' "$$" "$MONITOR_REV" "$expected_pid" >"$MONITOR_FILE"
   while alive "$expected_pid"; do
     note_requests
     read -r mem_kb mem_source <<<"$(real_memory_kb "$expected_pid")"
+    # The machine's memory, for the walk cap's burst slots (utils/supabase/walkCap.ts judgeMemory).
+    write_memory_snapshot "$mem_kb"
+    # Every 30 s: holds whose runner is gone or whose host went quiet, and orphaned browsers.
+    if (( tick % 15 == 0 )); then
+      prune_holds
+      sweep_orphan_browsers >/dev/null
+    fi
     is_held=0; held && is_held=1
     was_used=0; [[ -f "$TOUCHED" ]] && was_used=1
     reason="$(preview_stop_reason "$mem_kb" "$(idle_seconds)" "$mem_source" "$is_held" "$was_used")"
@@ -1287,8 +1314,60 @@ cmd_status() {
   cmd_status_one
 }
 
+# The machine, the walks and the cleanups, for preview:status (rules: scripts/agent-harness/stale-sessions.sh).
+status_capacity() {
+  local preview_kb="${1:-}" avail total pressure swap word age
+  write_memory_snapshot "$preview_kb"
+  avail="$(memory_value available_gb)"; total="$(memory_value total_gb)"
+  pressure="$(memory_value pressure)"; swap="$(memory_value swap_used_gb)"
+  case "$pressure" in 1) word=normal ;; 2) word=WARNING ;; 4) word=CRITICAL ;; *) word=unknown ;; esac
+  log "machine: ${avail:-?} GB free of ${total:-?} GB, memory pressure $word, swap ${swap:-?} GB used"
+  if [[ -f "$WALKS_JSON" ]]; then
+    age=$(( $(date +%s) - $(mtime "$WALKS_JSON") ))
+    /usr/bin/python3 - "$WALKS_JSON" "$age" <<'PY' 2>/dev/null || log "walks: (could not read $WALKS_JSON)"
+import json, sys
+w = json.load(open(sys.argv[1])); age = int(sys.argv[2])
+act = w.get("active", []); cap = w.get("cap"); burst = w.get("burstCap"); mem = w.get("memory", {})
+extra = sum(1 for a in act if a.get("tier") == "burst")
+head = f"walks: {len(act)} signed in against the live database (normal cap {cap}"
+head += f", up to {burst} while memory is spare" if burst and burst != cap else ""
+head += f"; {extra} in extra slots)" if extra else ")"
+print(f"[preview] {head}; {w.get('paused', 0)} paused; as of {age}s ago")
+if burst and burst != cap:
+    state = mem.get("state"); why = mem.get("why", "")
+    print(f"[preview]   extra slots {'OPEN' if state == 'headroom' else 'CLOSING' if state == 'shed' else 'closed'}: {why}")
+def ago(s):
+    return f"{s}s" if s < 60 else f"{s // 60}m"
+for a in sorted(act, key=lambda a: a.get("lastRequestSec", 0)):
+    tags = [a.get("tier", "base")] + (["held"] if a.get("held") else [])
+    print(f"[preview]   {a['host']} ({', '.join(tags)}) last page {ago(a.get('lastPageSec', 0))} ago, last request {ago(a.get('lastRequestSec', 0))} ago")
+PY
+  else
+    log "walks: none published yet (the walk cap writes $WALKS_JSON on its first signed-in request)"
+  fi
+  local mon_pid mon_rev mon_for
+  read -r mon_pid mon_rev mon_for <<<"$(head -1 "$MONITOR_FILE" 2>/dev/null)"
+  if alive "$mon_pid" && [[ "$mon_rev" == "$MONITOR_REV" ]]; then
+    log "watchdog: pid $mon_pid (rev $mon_rev) — memory every 2 s; dead/idle holds and orphaned browsers every 30 s"
+  else
+    log "watchdog: an OLDER watchdog (or none) runs this server, so no memory reading and no stale cleanup — run: pnpm preview:monitor-repair"
+  fi
+  local orphans
+  orphans="$(sweep_orphan_browsers --dry-run 2>/dev/null)"
+  [[ -z "$orphans" ]] || log "stale browsers the watchdog will close: $(printf '%s' "$orphans" | tr '\n' ';')"
+  if [[ -f "$CLEANUP_LOG" ]]; then
+    local since n
+    since="$(date -v-24H '+%Y-%m-%dT%H:%M:%S' 2>/dev/null || date -d '-24 hours' '+%Y-%m-%dT%H:%M:%S' 2>/dev/null)"
+    n="$(awk -v s="$since" 'substr($1, 1, 19) >= s' "$CLEANUP_LOG" | wc -l | tr -d ' ')"
+    log "cleanups in the last 24 h: $n (log: $CLEANUP_LOG); latest:"
+    tail -n 3 "$CLEANUP_LOG" | sed 's/^/[preview]   /'
+  fi
+  return 0
+}
+
 cmd_status_one() {
   clear_stale_state
+  prune_holds
   if [[ -f "$META" ]]; then
     local pid port owner mem_kb mem_source idle
     pid="$(meta_value PID)"; port="$(meta_value PORT)"; owner="$(meta_value ROOT)"
@@ -1301,6 +1380,7 @@ cmd_status_one() {
     local holds
     holds="$(active_holds | awk '{ printf "%s%s (%s min left)", (NR > 1 ? ", " : ""), $1, $2 }')"
     log "holds: ${holds:-none}   ready: $([[ -f "$READY" ]] && echo yes || echo "no (still compiling or warming)")   used since start: $([[ -f "$TOUCHED" ]] && echo yes || echo no)"
+    status_capacity "$mem_kb"
     if [[ "$owner" == "$REPO_ROOT" ]]; then
       announce_session_url "$port"
       log "this server hot-reloads edits in THIS checkout; you do not need another server"
@@ -1339,6 +1419,40 @@ cmd_status_one() {
   else
     log "no managed preview is running (start: pnpm preview:start )"
   fi
+}
+
+# preview:sweep [--dry-run] — run the stale cleanup now (the watchdog runs it every 30 s).
+cmd_sweep() {
+  mkdir -p "$STATE_DIR"
+  prune_holds
+  local out
+  out="$(sweep_orphan_browsers "$@")"
+  if [[ -n "$out" ]]; then
+    printf '%s\n' "$out" | sed "s/^/[preview] $([[ "${1:-}" == --dry-run ]] && echo 'would close' || echo closed) /"
+  else
+    log "no orphaned Playwright browsers"
+  fi
+  log "holds now: $(active_holds | awk '{ printf "%s%s (%s min left)", (NR > 1 ? ", " : ""), $1, $2 }')"
+}
+
+# preview:monitor-repair — replace the running server's watchdog with this revision, never touching the
+# server itself (a watchdog started before rev 2 writes no memory reading and cleans nothing up).
+cmd_monitor_repair() {
+  [[ -f "$META" ]] || fail "no managed preview is running"
+  local pid old
+  pid="$(meta_value PID)"
+  alive "$pid" || fail "the lease names pid $pid, which is not running"
+  for old in $(pgrep -f "agent-dev-server.sh monitor $pid\$" 2>/dev/null); do
+    [[ "$old" == "$$" ]] && continue
+    kill -TERM "$old" 2>/dev/null && cleanup_note "replaced the watchdog pid $old of preview pid $pid with rev $MONITOR_REV (the server kept running)"
+  done
+  /usr/bin/python3 - "$REPO_ROOT" "$REPO_ROOT/scripts/agent-dev-server.sh" "$pid" <<'PY'
+import subprocess, sys
+root, script, pid = sys.argv[1:]
+subprocess.Popen([script, "monitor", pid], cwd=root, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                 stderr=subprocess.DEVNULL, start_new_session=True)
+PY
+  log "watchdog rev $MONITOR_REV now watches preview pid $pid (the server was not restarted)"
 }
 
 cmd_stop() {
@@ -1401,6 +1515,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     hold) cmd_hold "${POSITIONAL[0]:-45}" ;;
     release) cmd_release ;;
     monitor) cmd_monitor "${POSITIONAL[0]:-}" ;;
-    *) echo "usage: $0 {start|stop|status|hold <min>|release}" >&2; exit 2 ;;
+    monitor-repair) cmd_monitor_repair ;;
+    sweep) cmd_sweep "${POSITIONAL[@]}" ;;
+    *) echo "usage: $0 {start|stop|status|hold <min>|release|sweep [--dry-run]|monitor-repair}" >&2; exit 2 ;;
   esac
 fi

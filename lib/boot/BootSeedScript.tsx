@@ -5,6 +5,8 @@
 
 import "server-only";
 
+import { PrepaintScript } from "@/components/ssr/PrepaintScript";
+
 // Built from char codes, never written into a regex literal: a raw line separator in source ends
 // the line and breaks the whole server chunk.
 const LINE_SEPARATOR = String.fromCharCode(0x2028);
@@ -24,5 +26,8 @@ function scriptJson(value: unknown): string {
 export async function BootSeedScript({ name, seed }: { name: string; seed: Promise<unknown> }) {
   const value = await seed.catch(() => null);
   if (value == null) return null;
-  return <script dangerouslySetInnerHTML={{ __html: `self[${JSON.stringify(name)}]=${scriptJson(value)};` }} />;
+  // Through PrepaintScript: React client-renders this Suspense boundary at times (an update reaches
+  // it before it hydrates), and a client-created <script> never runs and logs React's "Encountered a
+  // script tag" on every page. Server HTML and hydration draw it; a client-only render draws nothing.
+  return <PrepaintScript html={`self[${JSON.stringify(name)}]=${scriptJson(value)};`} />;
 }

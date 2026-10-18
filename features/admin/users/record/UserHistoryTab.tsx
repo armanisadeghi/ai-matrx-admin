@@ -42,6 +42,11 @@ function reasonOf(...bags: (Json | null | undefined)[]): string {
   return "";
 }
 
+/** metadata.operation names what a generic "update" row did (e.g. email_verified). */
+function operationOf(metadata: Json | null | undefined): string | null {
+  return isJsonObject(metadata) && typeof metadata.operation === "string" ? metadata.operation : null;
+}
+
 function actionWords(action: string): string {
   return action.replace(/[._]/g, " ");
 }
@@ -75,7 +80,7 @@ export async function listUserAdminHistory(userId: string, limit = 500): Promise
       id: `p:${r.id}`,
       at: r.created_at,
       source: "Platform" as const,
-      action: actionWords(r.action),
+      action: actionWords(operationOf(r.metadata) ?? r.action),
       actor_id: r.actor_user_id,
       actor: "",
       reason: reasonOf(r.metadata, r.after),
@@ -109,17 +114,39 @@ function changedKeys(before: Json | null, after: Json | null): string[] {
   return [...new Set([...Object.keys(b), ...Object.keys(a)])].filter((k) => JSON.stringify(b[k]) !== JSON.stringify(a[k]));
 }
 
+function shortValue(value: Json | undefined): string {
+  if (value === undefined || value === null) return "none";
+  const text = typeof value === "string" ? value : JSON.stringify(value);
+  return text.length > 40 ? `${text.slice(0, 40)}…` : text;
+}
+
+/** "field: old → new" for each changed key (readable words, no JSON). */
+export function changeLines(before: Json | null, after: Json | null): string[] {
+  const b = isJsonObject(before) ? before : {};
+  const a = isJsonObject(after) ? after : {};
+  return changedKeys(before, after).map(
+    (k) => `${k.replace(/_/g, " ")}: ${shortValue(b[k] as Json | undefined)} → ${shortValue(a[k] as Json | undefined)}`,
+  );
+}
+
 function DiffCell({ row }: { row: HistoryRow }) {
   if (row.before === null && row.after === null) return <span className="text-muted-foreground">—</span>;
-  const keys = changedKeys(row.before, row.after);
+  const lines = changeLines(row.before, row.after);
   return (
     <details className="type-secondary">
       <summary data-clickable="" className="truncate">
-        {keys.length ? keys.slice(0, 4).join(", ") + (keys.length > 4 ? ` +${keys.length - 4}` : "") : "details"}
+        {lines.length ? lines[0] + (lines.length > 1 ? ` +${lines.length - 1} more` : "") : "details"}
       </summary>
-      <div className="mt-1 grid gap-1 font-mono type-meta">
-        {row.before !== null ? <pre className="whitespace-pre-wrap break-all">before {JSON.stringify(row.before, null, 1)}</pre> : null}
-        <pre className="whitespace-pre-wrap break-all">after {JSON.stringify(row.after, null, 1)}</pre>
+      <div className="mt-1 grid gap-1">
+        {lines.slice(1).map((line) => (
+          <span key={line} className="break-all">
+            {line}
+          </span>
+        ))}
+        <div className="grid gap-1 font-mono type-meta text-muted-foreground">
+          {row.before !== null ? <pre className="whitespace-pre-wrap break-all">before {JSON.stringify(row.before, null, 1)}</pre> : null}
+          <pre className="whitespace-pre-wrap break-all">after {JSON.stringify(row.after, null, 1)}</pre>
+        </div>
       </div>
     </details>
   );

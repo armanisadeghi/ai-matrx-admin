@@ -36,6 +36,7 @@ import type {
   OutcomeView,
   CheckResultView,
   JudgeVerdictView,
+  OutcomeJudgeView,
   RunOptions,
   TestCaseView,
   TestResultView,
@@ -177,6 +178,21 @@ function parseOutcome(raw: unknown): OutcomeView | null {
     message: str(raw.message) || null,
     errorCode: str(raw.error_code) || null,
     httpStatus: num(raw.http_status),
+    judge: parseOutcomeJudge(raw.judge),
+  };
+}
+
+function parseOutcomeJudge(raw: unknown): OutcomeJudgeView | null {
+  if (!isJsonObject(raw)) return null;
+  return {
+    verdict: str(raw.verdict) || null,
+    advisory: raw.advisory === true,
+    advisoryReason: str(raw.advisory_reason) || null,
+    fedOk: typeof raw.fed_ok === "boolean" ? raw.fed_ok : null,
+    model: str(raw.model) || null,
+    missingFacts: Array.isArray(raw.missing_facts)
+      ? raw.missing_facts.map((f) => String(f))
+      : [],
   };
 }
 

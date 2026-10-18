@@ -403,6 +403,34 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
     mode: "draft",
   },
   {
+    name: "board_comments",
+    label: "Read comments",
+    description:
+      "Reads the comments people left on the board and its tiles — their feedback for you. With `tile_id`: that tile's thread (a record tile's own thread, the same one its page shows; any other tile's comments kept on the board). Without: every comment on the board itself, each naming the `tile_id` it is about (null = the whole board). Returns id, author, whether an agent wrote it, body, created_at and reply_to. Answer one with board_comment.",
+    inputSchema: {
+      type: "object",
+      properties: { tile_id: { type: "string", description: "A tile id from board_read; omit for the board's own thread." } },
+      required: [],
+    },
+    mode: "draft",
+  },
+  {
+    name: "board_comment",
+    label: "Comment",
+    description:
+      "Posts a comment on a tile's thread (`tile_id`) or the board's own thread, or replies to one (`reply_to`: a comment id from board_comments, on the same thread). Use it to answer feedback where it was left, briefly.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: { type: "string", description: "The comment, plain words." },
+        tile_id: { type: "string", description: "The tile the comment is about; omit for the whole board." },
+        reply_to: { type: "string", description: "The comment id this answers (same thread)." },
+      },
+      required: ["text"],
+    },
+    mode: "draft",
+  },
+  {
     name: "board_undo",
     label: "Undo",
     description:

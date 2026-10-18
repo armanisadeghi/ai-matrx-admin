@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link, { useLinkStatus } from "next/link";
+import { useLinkStatus } from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight, Loader2, Settings } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -110,7 +111,7 @@ function SettingsMobileMenu({
           <span className="shell-nav-icon"><ChevronLeft /></span><span className="shell-nav-label settings-route-menu-label">Back</span>
         </button>
       ) : (
-        <Link href={SETTINGS_BASE} className={ROUTE_MENU_NAV_ITEM_CLASS} title="Settings"><span className="shell-nav-icon"><Settings /></span><span className="shell-nav-label settings-route-menu-label">Settings</span></Link>
+        <NavLink href={SETTINGS_BASE} className={ROUTE_MENU_NAV_ITEM_CLASS} title="Settings"><span className="shell-nav-icon"><Settings /></span><span className="shell-nav-label settings-route-menu-label">Settings</span></NavLink>
       )}
       <SettingsNavigationSearch value={query} onValueChange={setQuery} />
       {!query && parent?.navigable ? <SettingsMenuLink node={parent} label={parent.navigationLabel ?? parent.label} active={parent.id === activeTabId} /> : null}
@@ -133,9 +134,9 @@ function SettingsMobileMenu({
 }
 
 function SettingsMenuLink({ node, label = node.label, active }: { node: SettingsTreeNode; label?: string; active: boolean }) {
-  return <Link href={tabIdToHref(SETTINGS_BASE, node.id)} prefetch aria-current={active ? "page" : undefined} title={label} className={cn(ROUTE_MENU_NAV_ITEM_CLASS, active && "shell-active-pill")}>
+  return <NavLink href={tabIdToHref(SETTINGS_BASE, node.id)} aria-current={active ? "page" : undefined} title={label} className={cn(ROUTE_MENU_NAV_ITEM_CLASS, active && "shell-active-pill")}>
     <SettingsMenuLinkContent icon={node.icon} label={label} />
-  </Link>;
+  </NavLink>;
 }
 
 /**
@@ -165,9 +166,9 @@ function SettingsMenuLinkContent({ icon: Icon, label, description, location }: {
 
 function SettingsControlSearchResults({ results }: { results: ReturnType<typeof useSettingsControlSearch> }) {
   return <div className="settings-route-menu-results" aria-label="Exact setting results">
-    {results.map((result) => <Link key={`${result.tabId}:${result.controlId ?? result.id}`} href={result.href} className={cn(ROUTE_MENU_NAV_ITEM_CLASS, "settings-route-menu-result")}>
+    {results.map((result) => <NavLink key={`${result.tabId}:${result.controlId ?? result.id}`} href={result.href} className={cn(ROUTE_MENU_NAV_ITEM_CLASS, "settings-route-menu-result")}>
       <SettingsMenuLinkContent label={result.label} location={result.location} />
-    </Link>)}
+    </NavLink>)}
   </div>;
 }
 

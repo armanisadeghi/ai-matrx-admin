@@ -141,6 +141,20 @@ export interface EntityBulkActionConfirm {
   description: string;
   confirmLabel?: string;
   variant?: "default" | "destructive";
+  /**
+   * ASK ONE REASON FOR THE WHOLE SELECTION (2026-10-18). The confirm becomes a text dialog; what
+   * the person types reaches `run` as `input.reason`, once, for every row — an audited verb
+   * (close, reopen, refund) records the person's words, never a canned sentence. `placeholder`
+   * names where the reason goes ("Reason (recorded in the admin history)"); empty is refused
+   * unless `optional`.
+   */
+  reason?: { placeholder: string; optional?: boolean };
+}
+
+/** What the person supplied in the action's confirm (see `EntityBulkActionConfirm.reason`). */
+export interface EntityBulkActionInput {
+  /** The trimmed reason, when the confirm asked for one. */
+  reason?: string;
 }
 
 /** What an action tells the shell to do with the list once it succeeded. */
@@ -198,6 +212,7 @@ export interface EntityBulkAction<TRow> {
    */
   run: (
     selection: EntityBulkSelection<TRow>,
+    input: EntityBulkActionInput,
   ) => Promise<EntityBulkActionResult | void> | EntityBulkActionResult | void;
 }
 

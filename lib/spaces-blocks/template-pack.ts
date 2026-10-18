@@ -120,8 +120,8 @@ export interface SpaceTemplateCardFace extends PackIdentity {
 // The board a pack makes (Board gallery "Use template")
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** What a board tile shows: an installed table (by token), the person's own Note (seeded), or words kept on the board. */
-export const PACK_BOARD_TILE_KINDS = ["table", "note", "writeUp"] as const;
+/** What a board tile shows: an installed table (by token), the person's own Note (seeded), words kept on the board, or a Cover (hero HTML + prose). */
+export const PACK_BOARD_TILE_KINDS = ["table", "note", "writeUp", "cover"] as const;
 export type PackBoardTileKind = (typeof PACK_BOARD_TILE_KINDS)[number];
 
 /** One tile of a board chapter. */
@@ -132,8 +132,10 @@ export interface PackBoardTile {
   table?: string;
   /** kind "table": "section" draws the table as a titled, grouped, edit-in-place section (records-ui SectionCard). Default "table". */
   layout?: "section" | "table";
-  /** kind "note": the words the new Note starts with (its first line names it); kind "writeUp": the markdown. */
+  /** kind "note": the words the new Note starts with (its first line names it); kind "writeUp" and "cover": the markdown. */
   text?: string;
+  /** kind "cover": the hero, HTML + inline <style> using the theme's CSS variables (drawn sandboxed: no scripts). */
+  hero?: string;
   /** World px. In page layout a chapter is PACK_BOARD_COLUMN wide, so a full-width tile is PACK_BOARD_TILE_W. */
   size: { w: number; h: number };
 }

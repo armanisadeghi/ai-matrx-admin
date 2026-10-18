@@ -8,4 +8,5 @@ export const LAB_PAGES: { href: string; title: string }[] = [
   { href: "/lab/welcome-people", title: "Sign-up welcome — which one is you (real anchor rounds)" },
   { href: "/lab/phone-composer", title: "Phone composer — messages composer at phone and desktop width" },
   { href: "/lab/decision-block", title: "Decision block — the chat's pick-one control (fixtures)" },
+  { href: "/lab/shell", title: "App frame — sidebar, sheet, header, tabs, footer (static samples)" },
 ];

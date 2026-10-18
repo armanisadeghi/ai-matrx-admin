@@ -35,6 +35,7 @@ import "server-only";
 // has not opened its external lane all answer `null`. Telling them apart would
 // let a slug be used to learn that something is there.
 
+import type { PortalBlock } from "./blocks";
 import { versionUnread } from "@/lib/records/record-versions";
 import { cache } from "react";
 
@@ -246,6 +247,8 @@ export interface PortalMembership {
   style?: PortalStyle;
   /** S6 — the forms she may send, in the owner's order. */
   forms?: PortalFormLink[];
+  /** PORTAL-BLOCKS — the owner's page blocks, as stored (older databases answer nothing). */
+  blocks?: PortalBlock[];
   tables: PortalTable[];
 }
 

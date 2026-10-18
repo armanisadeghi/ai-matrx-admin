@@ -37,6 +37,7 @@ export const DECLARED: readonly Declared[] = [
   { fn: "iam.close_account(uuid,text)", reaches: [HELPER] },
   { fn: "iam.reopen_account(uuid,text)", reaches: [HELPER] },
   { fn: "iam.sign_out_everywhere(uuid,text)", reaches: [HELPER] },
+  { fn: "iam.admin_confirm_email(uuid,text)", reaches: [HELPER] },
   { fn: "billing.user_plan_set(uuid,text,text,timestamptz)", reaches: [HELPER] },
   { fn: "billing.free_months_apply(uuid[],text,integer,text)", reaches: [HELPER] },
   { fn: "billing.usage_reset_apply(uuid,billing.meter_period[],text)", reaches: [HELPER] },
@@ -137,6 +138,14 @@ async function liveHalf(c: Client, target: string): Promise<string[]> {
     const steps: Array<{ name: string; as: () => Promise<void>; run: () => Promise<unknown>; action: string }> = [
       { name: "iam.sign_out_everywhere", as: asAdmin, action: "sign_out_everywhere",
         run: () => c.query("select iam.sign_out_everywhere($1, 'audit guard')", [target]) },
+      { name: "iam.admin_confirm_email", as: asAdmin, action: "update",
+        run: async () => {
+          // The target may already be verified (then nothing is audited): make it unverified first, as the owner.
+          await c.query("reset role");
+          await c.query("update auth.users set email_confirmed_at = null where id = $1", [target]);
+          await asAdmin();
+          await c.query("select iam.admin_confirm_email($1, 'audit guard')", [target]);
+        } },
       { name: "iam.close_account (admin)", as: asAdmin, action: "account_close",
         run: () => c.query("select iam.close_account($1, 'audit guard')", [target]) },
       { name: "iam.reopen_account", as: asAdmin, action: "account_reopen",

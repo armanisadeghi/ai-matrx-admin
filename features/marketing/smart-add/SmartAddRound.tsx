@@ -32,16 +32,11 @@ import { parseEntityKind, type EntityKind } from "./entityKind";
 import { parseKeyPeople, type KeyPerson } from "./keyPeople";
 import { parseEntryOutcome, type EntryOutcome } from "./entryOutcome";
 import { parseNameStrength, type NameStrength } from "./nameStrength";
+import { ANCHOR_STEPS, FACT_STEPS, IDENTIFY_STEPS, WE_THINK_STEPS } from "./roundSteps";
 
 /** The steps a Smart Add workflow shows, in order. */
 export type SmartAddStepPair = readonly string[];
-/** Identify: the raw tier (site, accounts, web) then the confirmed tiers (news/videos/images, local). */
-export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "avatars", "socials", "web", "deep", "local"];
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
-/** Steps whose output may carry the facts agent's `brand_basics` (read for facts only, not shown as steps). */
-const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics", "person_facts", "whats_new_1", "whats_new_2", "whats_new_3"];
-/** The person branch's anchor stage and the email step (aidream brand.identify.email): their findings (read like any step's output, not shown as steps). */
-const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_extract", "email"];
 /** The web step's note when the page read found a parked domain after the search ran. */
 export const PARKED_WEB_NOTE = "Parked domain — web results set aside";
 /** The person / business verdict step (aidream brand.identify.person_signals). */
@@ -94,13 +89,6 @@ export function parsePersonSignals(raw: unknown): PersonSignals | null {
     signals,
   };
 }
-/**
- * The "we think" step (mandate brand_intake.we_think): its `brand_we_think` suggestions, per finding key. Its guard
- * step (aidream brand.identify.we_think_guard: fixed facts correct the agent's pre-marks) comes after it, so its
- * answer wins wherever it arrived. `identity_marks` (aidream brand.identify.identity_marks) carries the is-this-us
- * decisions on the accounts the guard left as ask later, in the same `brand_we_think` shape, so it comes after the guard.
- */
-const WE_THINK_STEPS: SmartAddStepPair = ["we_think", "we_think_guard", "identity_marks", "classify"];
 
 /** The page step's gate detection (aidream brand_identify_gate.GateReport), as far as the screen uses it. */
 export interface SiteGate {

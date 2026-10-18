@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
@@ -92,7 +92,7 @@ function NavRow({
 }) {
   const Icon = ICON_MAP[item.icon] ?? LayoutDashboard;
   return (
-    <Link
+    <NavLink
       href={item.href(topicId)}
       title={item.label}
       aria-label={item.label}
@@ -106,7 +106,7 @@ function NavRow({
         />
       </span>
       <span className="shell-nav-label truncate">{item.label}</span>
-    </Link>
+    </NavLink>
   );
 }
 
@@ -209,7 +209,7 @@ export default function ResearchTopicSidebarMenu({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-0.5">
-      <Link
+      <NavLink
         href="/research/topics"
         title="All topics"
         aria-label="All topics"
@@ -222,7 +222,7 @@ export default function ResearchTopicSidebarMenu({
           />
         </span>
         <span className="shell-nav-label truncate">All topics</span>
-      </Link>
+      </NavLink>
       <Divider />
       {primary.map(({ item }) => (
         <NavRow

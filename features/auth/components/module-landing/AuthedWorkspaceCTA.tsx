@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { ArrowRight } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -51,13 +51,13 @@ export function AuthedWorkspaceCTA({
           Welcome back,{" "}
           <span className="font-medium text-foreground">{firstName}</span>
         </span>
-        <Link
+        <NavLink
           href={workspaceHref}
           className="matrx-glass-thin-border inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-foreground hover:text-primary transition-colors whitespace-nowrap"
         >
           Open {workspaceLabel}
           <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        </NavLink>
       </div>
     </PageHeaderRightPortal>
   );

@@ -14,26 +14,33 @@
 
 import type { Rect } from "./camera";
 import { type Placed, boardUnits, frameOf, readingOrder } from "./arrange";
+import { sameName } from "./tile-chrome";
 
 export type BoardLayoutMode = "canvas" | "page";
 
 /** The readable column width, world px (shown at 100% when the view is wide enough). */
 export const PAGE_COLUMN_W = 1100;
-/** Space between sections (a frame's title sits in this gap, above its rect). */
-export const PAGE_SECTION_GAP = 96;
+/** Space between sections (chapters sit close: a column of cards, not islands). */
+export const PAGE_SECTION_GAP = 16;
 /** Space between tiles in a flow. */
-export const PAGE_TILE_GAP = 32;
-/** A frame's inner padding (its title is drawn above the rect, never inside). */
-export const PAGE_FRAME_PAD = 40;
+export const PAGE_TILE_GAP = 16;
+/** A frame's inner padding (sides and bottom). */
+export const PAGE_FRAME_PAD = 8;
+/** A frame's top padding when it shows no label (a tile inside already names it). */
 export const PAGE_FRAME_TOP = PAGE_FRAME_PAD;
+/** Room for a chapter's small label, drawn INSIDE the frame's top in page layout. */
+export const PAGE_LABEL_H = 24;
 /** An empty chapter still reads as one. */
-export const PAGE_MIN_FRAME_H = 200;
+export const PAGE_MIN_FRAME_H = 120;
+
+/** What page layout reads of a thing: its place, and (optionally) its name. */
+type PagePlaced = Placed & { title?: string };
 
 export interface PageMove {
   id: string;
   x: number;
   y: number;
-  /** Frames only: the new size (tiles never change size). */
+  /** The new size: frames always; a tile only when it is a chapter's one tile (it takes the chapter's width). */
   w?: number;
   h?: number;
 }
@@ -70,7 +77,7 @@ function flow(items: readonly Placed[], x0: number, y0: number, width: number): 
  * each frame a full-width section, runs of loose tiles a flowed block. Only what moves is returned.
  */
 export function planPageLayout(
-  scene: { tiles: readonly Placed[]; frames: readonly Placed[] },
+  scene: { tiles: readonly PagePlaced[]; frames: readonly PagePlaced[] },
   /** A chapter order to apply (the outline's move up / down): frames take the frame slots in this order. */
   frameOrder?: readonly string[],
 ): PagePlan {
@@ -80,6 +87,9 @@ export function planPageLayout(
   const { units, members } = boardUnits(scene);
   const frameIds = new Set(scene.frames.map((f) => f.id));
   const tileById = new Map(scene.tiles.map((t) => [t.id, t]));
+  const frameById = new Map(scene.frames.map((f) => [f.id, f]));
+  /** Tiles whose size page layout sets (a chapter's one tile). */
+  const sized = new Set<string>();
   let ordered = readingOrder(units);
   if (frameOrder) {
     // The listed frames take the listed frames' slots in the given order; a frame not listed (made
@@ -107,10 +117,18 @@ export function planPageLayout(
     }
     flushLoose();
     chapters.push(u.id);
-    const inside = (members.get(u.id) ?? []).map((id) => tileById.get(id)).filter((t): t is Placed => !!t);
-    const { placed, height } = flow(inside, x0 + PAGE_FRAME_PAD, y + PAGE_FRAME_TOP, W - PAGE_FRAME_PAD * 2);
+    const inside = (members.get(u.id) ?? []).map((id) => tileById.get(id)).filter((t): t is PagePlaced => !!t);
+    const frame = frameById.get(u.id);
+    // The label shows (inside the frame's top) unless a tile inside already carries the same name.
+    const labelled = !!frame?.title?.trim() && !inside.some((t) => sameName(t.title, frame.title));
+    const top = labelled ? PAGE_FRAME_PAD + PAGE_LABEL_H : PAGE_FRAME_TOP;
+    const innerW = W - PAGE_FRAME_PAD * 2;
+    // A chapter's one tile takes the chapter's full width (a section reads as the page's own card).
+    const sole = inside.length === 1 ? [{ ...inside[0], rect: { ...inside[0].rect, w: innerW } }] : inside;
+    if (sole !== inside) sized.add(inside[0].id);
+    const { placed, height } = flow(sole, x0 + PAGE_FRAME_PAD, y + top, innerW);
     for (const p of placed) out.set(p.id, p.rect);
-    const h = Math.max(PAGE_MIN_FRAME_H, PAGE_FRAME_TOP + height + PAGE_FRAME_PAD);
+    const h = inside.length ? top + height + PAGE_FRAME_PAD : Math.max(PAGE_MIN_FRAME_H, top + PAGE_FRAME_PAD);
     out.set(u.id, { x: x0, y, w: W, h });
     y += h + PAGE_SECTION_GAP;
   }
@@ -121,9 +139,10 @@ export function planPageLayout(
     const was = before.get(id);
     if (!was) continue;
     const isFrame = frameIds.has(id);
-    const sizeChanged = isFrame && (was.w !== r.w || was.h !== r.h);
+    const sizes = isFrame || sized.has(id);
+    const sizeChanged = sizes && (was.w !== r.w || was.h !== r.h);
     if (was.x === r.x && was.y === r.y && !sizeChanged) continue;
-    moves.push(isFrame ? { id, x: r.x, y: r.y, w: r.w, h: r.h } : { id, x: r.x, y: r.y });
+    moves.push(sizes ? { id, x: r.x, y: r.y, w: r.w, h: r.h } : { id, x: r.x, y: r.y });
   }
   return { moves, column: { x: x0, w: W }, chapters };
 }
@@ -170,9 +189,10 @@ export function restoreCanvas(
     const s = snapshot[p.id];
     if (!s) continue;
     const [x, y, w, h] = s;
-    restored.push({ x, y, w: frameIds.has(p.id) ? w : p.rect.w, h: frameIds.has(p.id) ? h : p.rect.h });
-    const same = p.rect.x === x && p.rect.y === y && (!frameIds.has(p.id) || (p.rect.w === w && p.rect.h === h));
-    if (!same) moves.push(frameIds.has(p.id) ? { id: p.id, x, y, w, h } : { id: p.id, x, y });
+    // A tile gets its canvas size back too (page layout widens a chapter's one tile and grows a tile to its content).
+    restored.push({ x, y, w, h });
+    const same = p.rect.x === x && p.rect.y === y && p.rect.w === w && p.rect.h === h;
+    if (!same) moves.push({ id: p.id, x, y, w, h });
   }
   const newcomers = scene.tiles.filter((t) => !snapshot[t.id]);
   if (!newcomers.length) return moves;

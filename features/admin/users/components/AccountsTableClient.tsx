@@ -101,6 +101,15 @@ import {
   rowInSegment,
   type AccountSegment,
 } from "../lib/accountSegments";
+import {
+  ACCOUNT_STARTER_VIEWS,
+  ACCOUNT_STATUS_COLUMN,
+  ACCOUNT_STATUS_LABEL,
+  ACCOUNT_STATUSES,
+  accountStatuses,
+  accountStatusLabels,
+  type AccountStatus,
+} from "../lib/accountStatus";
 
 const ROSTER_PAGE_SIZE = 50;
 
@@ -133,6 +142,22 @@ function usageTitle(plan: NonNullable<AdminUserRow["plan"]>): string | undefined
   const resets = b.resets_at ? ` · resets ${new Date(b.resets_at).toLocaleString()}` : "";
   return `${periodLabel(b.period)}: ${formatCount(b.used)} / ${limit} points${resets}`;
 }
+
+const STATUS_TONE: Record<AccountStatus, string> = {
+  active: "text-emerald-600 border-emerald-500/40 bg-emerald-500/10",
+  closed: "text-rose-600 border-rose-500/40 bg-rose-500/10",
+  guest: "text-muted-foreground border-border bg-muted",
+  admin: "text-sky-600 border-sky-500/40 bg-sky-500/10",
+  grant: "text-violet-600 border-violet-500/40 bg-violet-500/10",
+  near_limit: "text-amber-600 border-amber-500/40 bg-amber-500/10",
+  over_limit: "text-rose-600 border-rose-500/40 bg-rose-500/10",
+};
+
+/** The Status facet's "no status chosen" value. */
+const ANY_STATUS = "any";
+
+/** Seeded once per admin: the roster's starter views (the admin's own stored views win). */
+const ACCOUNT_VIEW_DEFAULTS = { savedViews: ACCOUNT_STARTER_VIEWS };
 
 const KIND_TONE: Record<AdminUserRow["kind"], string> = {
   person: "text-emerald-600 border-emerald-500/40 bg-emerald-500/10",
@@ -176,7 +201,7 @@ function AccountsRoster() {
     ? segmentParam
     : DEFAULT_ACCOUNT_SEGMENT;
   const { prefs: viewPrefs, setPrefs: setViewPrefs } =
-    useListViewPrefs("admin-user-accounts");
+    useListViewPrefs("admin-user-accounts", ACCOUNT_VIEW_DEFAULTS);
   const [rows, setRows] = useState<AdminUserRow[]>([]);
   const [plansError, setPlansError] = useState<string | null>(null);
   const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
@@ -363,6 +388,24 @@ function AccountsRoster() {
         width: 200,
       },
       { id: "email", accessorKey: "email", header: "Email", width: 220 },
+      {
+        // Every chip true of the account; an array cell, so the select filter matches any one.
+        id: ACCOUNT_STATUS_COLUMN,
+        header: "Status",
+        accessorFn: (row) => accountStatusLabels(row),
+        filter: "select",
+        sortable: false,
+        cell: (row) => (
+          <div className="flex flex-wrap items-center gap-1">
+            {accountStatuses(row).map((status) => (
+              <Badge key={status} variant="outline" className={STATUS_TONE[status]}>
+                {ACCOUNT_STATUS_LABEL[status]}
+              </Badge>
+            ))}
+          </div>
+        ),
+        width: 170,
+      },
       { id: "my_category", header: "My category", accessorFn: row => researchError ? "—" : RELATIONSHIP_LABELS[researchByUser.get(row.id)?.category ?? "unknown"], filter: "select", width: 150,
         cell: row => <Button variant="quiet" onClick={() => setResearchTarget(row)}>{researchError ? "—" : RELATIONSHIP_LABELS[researchByUser.get(row.id)?.category ?? "unknown"]}</Button> },
       { id: "contact_status", header: "Contact status", accessorFn: row => researchError ? "—" : CONTACT_STATE_LABELS[researchByUser.get(row.id)?.contact_state ?? (row.banned ? "hold" : "not_contacted")], filter: "select", width: 130 },
@@ -738,6 +781,7 @@ function AccountsRoster() {
         accessorKey: "created_at",
         header: "Created",
         format: { id: "datetime" },
+        filter: "date",
         cell: (row) => (
           <span className="text-xs text-muted-foreground">
             {fmtDate(row.created_at)}
@@ -797,6 +841,37 @@ function AccountsRoster() {
     ? classifiedRows.filter((row) => row.id === focusedUserId)
     : classifiedRows.filter((row) => rowInSegment(row, segment));
 
+  // THE STATUS FACET is the Status column's own select filter, drawn as chips: one source of truth,
+  // so a saved view, the column's filter menu and the chips can never disagree.
+  const statusFilter = tableQuery.state.columnFilters[ACCOUNT_STATUS_COLUMN];
+  const chosenStatusLabels =
+    statusFilter?.kind === "select" && !statusFilter.negated
+      ? (statusFilter.values ?? [statusFilter.value])
+      : [];
+  const statusFacetValue =
+    chosenStatusLabels.length === 0
+      ? ANY_STATUS
+      : chosenStatusLabels.length === 1
+        ? (ACCOUNT_STATUSES.find((entry) => entry.label === chosenStatusLabels[0])?.id ?? "")
+        : "";
+  const statusCounts = Object.fromEntries(
+    ACCOUNT_STATUSES.map((entry) => [
+      entry.id,
+      visibleRows.filter((row) => accountStatuses(row).includes(entry.id)).length,
+    ]),
+  ) as Record<AccountStatus, number>;
+  function selectStatus(next: string) {
+    const { [ACCOUNT_STATUS_COLUMN]: _previous, ...otherFilters } = tableQuery.state.columnFilters;
+    const label = ACCOUNT_STATUSES.find((entry) => entry.id === next)?.label;
+    tableQuery.onStateChange({
+      ...tableQuery.state,
+      page: 1,
+      columnFilters: label
+        ? { ...otherFilters, [ACCOUNT_STATUS_COLUMN]: { kind: "select", value: label, values: [label] } }
+        : otherFilters,
+    });
+  }
+
   // BULK CLOSE / REOPEN — the roster's own iam.close_account / reopen_account,
   // once per person; refusals (your own account, an erased one) are skipped and
   // named. Built-ins are off: people are not favouritable/trashable records.
@@ -828,14 +903,16 @@ function AccountsRoster() {
         description: `${sel.count} ${sel.count === 1 ? "person" : "people"} can't sign in again (open sessions last up to an hour); API keys are revoked, schedules pause. Records stay; reopen any time.`,
         confirmLabel: "Close accounts",
         variant: "destructive",
+        reason: { placeholder: "Reason (recorded with each closure)" },
       }),
-      run: async (sel) => {
+      run: async (sel, { reason }) => {
+        if (!reason) throw new Error("A reason is required to close accounts.");
         return runPerRow(
           sel,
           async (id) => {
             const { error } = await createClient()
               .schema("iam")
-              .rpc("close_account", { p_user: id, p_reason: "closed by a platform admin" });
+              .rpc("close_account", { p_user: id, p_reason: reason });
             if (error) throw new Error(error.message);
           },
           {
@@ -861,14 +938,16 @@ function AccountsRoster() {
         title: `Reopen ${sel.count} account${sel.count === 1 ? "" : "s"}?`,
         description: `${sel.count} ${sel.count === 1 ? "person" : "people"} can sign in again; paused schedules and connections resume. Revoked API keys stay revoked.`,
         confirmLabel: "Reopen",
+        reason: { placeholder: "Reason (recorded in the admin history)" },
       }),
-      run: async (sel) => {
+      run: async (sel, { reason }) => {
+        if (!reason) throw new Error("A reason is required to reopen accounts.");
         return runPerRow(
           sel,
           async (id) => {
             const { error } = await createClient()
               .schema("iam")
-              .rpc("reopen_account", { p_user: id, p_reason: "reopened by a platform admin" });
+              .rpc("reopen_account", { p_user: id, p_reason: reason });
             if (error) throw new Error(error.message);
           },
           {
@@ -1166,6 +1245,24 @@ function AccountsRoster() {
                       label: `${entry.label} ${formatCount(segmentCounts[entry.id])}`,
                     })),
                     onChange: selectSegment,
+                  },
+                  {
+                    type: "button-group",
+                    id: ACCOUNT_STATUS_COLUMN,
+                    label: "Status",
+                    value: statusFacetValue,
+                    defaultValue: ANY_STATUS,
+                    options: [
+                      { value: ANY_STATUS, label: "Any status" },
+                      // A status no account in this slice has is not offered (unless it is the one chosen).
+                      ...ACCOUNT_STATUSES.filter(
+                        (entry) => statusCounts[entry.id] > 0 || entry.id === statusFacetValue,
+                      ).map((entry) => ({
+                        value: entry.id,
+                        label: `${entry.label} ${formatCount(statusCounts[entry.id])}`,
+                      })),
+                    ],
+                    onChange: selectStatus,
                   },
                 ],
             actions: (

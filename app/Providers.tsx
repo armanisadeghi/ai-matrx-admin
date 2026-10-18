@@ -100,6 +100,7 @@ import { ResourcePeekRoot } from "@/features/organizations/peek/ResourcePeekRoot
 import DeferredSingletonWrapper from "./DeferredSingletonWrapper";
 import { ServerToggleQueryReset } from "@/providers/ServerToggleQueryReset";
 import { LoopbackApiAccessSync } from "@/providers/LoopbackApiAccessSync";
+import { PreferencesLiveSync } from "@/lib/redux/preferences/PreferencesLiveSync";
 import { RetiredApiSelectionNotice } from "@/providers/RetiredApiSelectionNotice";
 import { AppSummonProvider } from "@/features/overlays/host/AppSummonProvider";
 // ExtensionBridgeSubscriber bridges matrx-extend Chrome extension envelopes
@@ -217,6 +218,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                           <DeferredSingletonWrapper />
                                           <ServerToggleQueryReset />
                                           <LoopbackApiAccessSync />
+                                          <PreferencesLiveSync />
                                           <RetiredApiSelectionNotice />
                                           <GoogleOAuthRedirectNotice />
                                           <ExtensionBridgeSubscriber />

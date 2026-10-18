@@ -92,6 +92,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { useTaskEditorControllerCtx } from "./TaskEditorControllerContext";
 import { SectionHeader, PropertyRow } from "./editorPrimitives";
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";
+import { insertBlockAtLine } from "@/utils/text-insertion";
 
 const TASKS_SURFACE_NAME = "matrx-user/tasks";
 
@@ -579,27 +580,16 @@ export function TaskEditorBody({
                 }
                 getApplicationScope={getApplicationScope}
                 onTextReplace={(next) => patch("description", next)}
+                // Under / over the selection's LINE, never inside it (Q-06).
                 onTextInsertBefore={(text) => {
                   const el = descriptionRef.current;
-                  const at = el?.selectionStart ?? 0;
-                  patch(
-                    "description",
-                    effective.description.slice(0, at) +
-                      text +
-                      "\n\n" +
-                      effective.description.slice(at),
-                  );
+                  const d = effective.description;
+                  patch("description", insertBlockAtLine(d, el?.selectionStart ?? 0, el?.selectionEnd ?? 0, text, "before"));
                 }}
                 onTextInsertAfter={(text) => {
                   const el = descriptionRef.current;
-                  const at = el?.selectionEnd ?? effective.description.length;
-                  patch(
-                    "description",
-                    effective.description.slice(0, at) +
-                      "\n\n" +
-                      text +
-                      effective.description.slice(at),
-                  );
+                  const d = effective.description;
+                  patch("description", insertBlockAtLine(d, el?.selectionStart ?? d.length, el?.selectionEnd ?? d.length, text, "after"));
                 }}
                 contextData={contextData}
                 contentSource={{ type: "raw" }}

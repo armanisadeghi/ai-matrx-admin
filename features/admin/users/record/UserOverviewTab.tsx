@@ -27,9 +27,8 @@ import { heldRunHref } from "@/features/admin/held-runs/heldRuns";
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { periodLabel } from "@/features/admin/limits/types";
 import { ADMIN_LEVEL_LABEL } from "../constants";
+import { userRecordHref } from "./userSurfaces";
 import { AI_REQUESTS_LABEL, actionSubjectOf, isClosed, personTitle, type UserOverview } from "./userOverview";
-
-const SUPPORT_SESSIONS_PATH = "/administration/users/support-sessions";
 
 const PLAN_SOURCE_LABEL: Record<NonNullable<UserOverview["plan"]>["source"], string> = {
   grant: "Assigned to this person",
@@ -88,7 +87,7 @@ function attentionOf(o: UserOverview, onReopen: () => void): AttentionItem[] {
       tone: "info",
       label: "Support session live",
       detail: a.support_live.expires_at ? `Until ${when(a.support_live.expires_at)}` : a.support_live.status,
-      href: SUPPORT_SESSIONS_PATH,
+      href: userRecordHref(o.identity.id, "support"),
     });
   }
   const usageState = o.usage?.state;

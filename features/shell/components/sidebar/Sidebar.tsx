@@ -14,6 +14,7 @@
 // data-sidebar-view on <nav> controls which is visible (default: "main").
 
 import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
+import { PrepaintScript } from "@/components/ssr/PrepaintScript";
 import NavItem from "./NavItem";
 import PrimaryNavFlyoutGroup from "./PrimaryNavFlyoutGroup";
 import FavoritesNavGroup from "./FavoritesNavGroup";
@@ -50,7 +51,7 @@ export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: 
     <aside className="shell-sidebar" data-title-side="right">
       <LoadMark name="Sidebar" />
       {/* Publishes the person's dragged panel width before first paint (no shift on load). */}
-      <script dangerouslySetInnerHTML={{ __html: DOMAIN_PANEL_PREPAINT_SCRIPT }} />
+      <PrepaintScript html={DOMAIN_PANEL_PREPAINT_SCRIPT} />
       {/* Brand Section — Route header override + default toggle fallback */}
       <div className="shell-sidebar-brand">
         {/* Route header override — rendered by client island, empty on Small/Medium routes */}
@@ -120,7 +121,7 @@ export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: 
           account rail's first slot (ShellUserBlock), below this column. */}
       {/* Reserves the admin block's last measured height before first paint, so the footer
           does not grow (and shift) when admin status resolves — admin-footer-reserve.ts. */}
-      <script dangerouslySetInnerHTML={{ __html: ADMIN_FOOTER_PREPAINT_SCRIPT }} />
+      <PrepaintScript html={ADMIN_FOOTER_PREPAINT_SCRIPT} />
       <div className="shell-sidebar-footer" {...(isAdmin ? { "data-admin-reserve": "" } : {})}>
         <AdminSidebarSection />
         <SidebarWindowToggleIsland />

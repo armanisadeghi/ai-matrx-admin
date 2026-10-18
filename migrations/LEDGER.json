@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-18T01:40:46.677Z",
+  "generated_at": "2026-10-18T05:35:23.516Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -49,6 +49,12 @@
       "filename": "20261017120000_w2e_a_connected_app_triggers_and_github_issue_step.sql",
       "checksum": "80db5dfaeeb795487bdc42c6bf387f1d487b73920ae7a75ceca40d84bb716f0c",
       "applied_at": "2026-10-17 21:09:53.403222+00"
+    },
+    "migrations/campaign/20261018140000_mswrite_a_outlook_mail_calendar_and_teams_steps.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261018140000_mswrite_a_outlook_mail_calendar_and_teams_steps.sql",
+      "checksum": "e674ec2aa21c5e7596ffa021cd40791ff67793c6ebb3411154ca8033566276bf",
+      "applied_at": "2026-10-18 05:35:18.875179+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -6661,6 +6667,12 @@
       "filename": "portal_an_organization_opens_its_own_outside_door.sql",
       "checksum": "22ec48655cea46d1fb552f1a2ad51ef123faa5777485cca6272567ae360dc9b4",
       "applied_at": "2026-09-20 08:27:49.477943+00"
+    },
+    "migrations/campaign/portal_blocks_a_portal_page_has_blocks.sql": {
+      "source": "matrx-frontend",
+      "filename": "portal_blocks_a_portal_page_has_blocks.sql",
+      "checksum": "386bcdb46ed7d0d8feb2c42ebdc29835d1bf3427d3be1dd2f454168a84ca29c7",
+      "applied_at": "2026-10-18 04:48:42.678486+00"
     },
     "migrations/campaign/portal_census_thirteen_asks_about_the_outsider_too.sql": {
       "source": "matrx-frontend",

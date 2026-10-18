@@ -33,6 +33,7 @@ import {
   type StatusCounts,
 } from "./lib";
 import { postgrestError } from "@/lib/failure/postgrestError";
+import { IN_MY_ORGANIZATIONS, IN_MY_ORGANIZATIONS_ARM } from "@/features/organizations/service/inMyOrganizations";
 
 /** How far back the win trend looks. A quarter is the reporting unit clients use. */
 export const TREND_DAYS = 90;
@@ -193,14 +194,10 @@ export async function fetchOrgOutreachReport(
   const db = await crm();
   const platformDb = await platform();
 
-  const scoped = <T extends { or: (f: string) => T; eq: (c: string, v: string) => T }>(
-    query: T,
-  ): T =>
-    ctx.orgIds.length
-      ? query.or(
-          `created_by.eq.${ctx.userId},organization_id.in.(${ctx.orgIds.join(",")})`,
-        )
-      : query.eq("created_by", ctx.userId);
+  // Mine, or in ANY of her organizations — asked on the server (`in_my_organizations`),
+  // never an id list built from the first page of her organizations (2026-10-17).
+  const scoped = <T extends { or: (f: string) => T }>(query: T): T =>
+    query.or(`created_by.eq.${ctx.userId},${IN_MY_ORGANIZATIONS_ARM}`);
 
   const [lists, total, outcomes] = await Promise.all([
     scoped(
@@ -217,21 +214,13 @@ export async function fetchOrgOutreachReport(
         .select("id", { count: "exact", head: true })
         .is("deleted_at", null),
     ),
-    ctx.orgIds.length
-      ? platformDb
-          .from("outcome_event")
-          .select("matched_at,status")
-          .in("organization_id", ctx.orgIds)
-          .gte("matched_at", sinceIso(TREND_DAYS))
-          .order("matched_at", { ascending: true })
-          .limit(MAX_TREND_ROWS)
-      : platformDb
-          .from("outcome_event")
-          .select("matched_at,status")
-          .eq("created_by", ctx.userId)
-          .gte("matched_at", sinceIso(TREND_DAYS))
-          .order("matched_at", { ascending: true })
-          .limit(MAX_TREND_ROWS),
+    platformDb
+      .from("outcome_event")
+      .select("matched_at,status")
+      .is(IN_MY_ORGANIZATIONS, true)
+      .gte("matched_at", sinceIso(TREND_DAYS))
+      .order("matched_at", { ascending: true })
+      .limit(MAX_TREND_ROWS),
   ]);
   if (lists.error) throw pgError(lists.error);
   if (total.error) throw pgError(total.error);

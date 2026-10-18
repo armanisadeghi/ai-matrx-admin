@@ -53,7 +53,7 @@ export interface UserActionSubject {
 }
 
 export type UserActionPatch = Partial<
-  Pick<UserActionSubject, "banned" | "mcp_full_access" | "top_tier_models" | "onboarding_completed">
+  Pick<UserActionSubject, "banned" | "mcp_full_access" | "top_tier_models" | "onboarding_completed" | "email_confirmed">
 >;
 
 export interface UseUserActionsOptions {
@@ -76,6 +76,8 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
   const [reopening, setReopening] = useState(false);
   const [signOutTarget, setSignOutTarget] = useState<UserActionSubject | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [verifyTarget, setVerifyTarget] = useState<UserActionSubject | null>(null);
+  const [verifying, setVerifying] = useState(false);
   const [messageTarget, setMessageTarget] = useState<UserActionSubject | null>(null);
   const [messageDraft, setMessageDraft] = useState("");
   const [messageSending, setMessageSending] = useState(false);
@@ -84,7 +86,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     const noun = type === "magiclink" ? "magic sign-in link" : "password reset link";
     const ok = await confirm({
       title: `Send ${noun}?`,
-      description: `Email a ${noun} to ${subject.email}. This is a single-use link that lets them sign in / reset without their current password.`,
+      description: `Single-use link, emailed to ${subject.email}.`,
       confirmLabel: "Send",
     });
     if (!ok) return;
@@ -150,7 +152,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     if (next) {
       const ok = await confirm({
         title: "Allow top-tier models?",
-        description: `${who} will be able to run Mythos, Fable, GPT-6 Astra and every -max model, billed at top-tier prices. Recorded under your name.`,
+        description: `${who} can run top-tier models at top-tier prices.`,
         confirmLabel: "Allow",
       });
       if (!ok) return;
@@ -254,6 +256,31 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     }
   };
 
+  /** Marks the email verified (iam.admin_confirm_email); asks for the reason first. */
+  const verifyEmail = (subject: UserActionSubject) => setVerifyTarget(subject);
+
+  const confirmVerify = async (reason: string) => {
+    if (!verifyTarget) return;
+    const who = whoOf(verifyTarget);
+    setVerifying(true);
+    try {
+      const { data, error } = await createClient()
+        .schema("iam")
+        .rpc("admin_confirm_email", { p_user: verifyTarget.id, p_reason: reason.trim() });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      invalidateAdminRoster();
+      onPatched?.(verifyTarget.id, { email_confirmed: true });
+      const changed = isJsonObject(data) && data.changed === false;
+      toast.success(changed ? `${who} was already verified` : `Marked ${who}'s email verified`);
+      setVerifyTarget(null);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const openMessage = (subject: UserActionSubject) => {
     setMessageTarget(subject);
     setMessageDraft("");
@@ -295,7 +322,6 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
           if (!open && !closing) setCloseTarget(null);
         }}
         title={`Close ${closeTarget ? whoOf(closeTarget) : "account"}?`}
-        description="They can't sign in again (open sessions last up to an hour); API keys are revoked, schedules pause. Records stay; reopen any time."
         placeholder="Reason (recorded with the closure)"
         confirmLabel="Close account"
         busy={closing}
@@ -307,7 +333,6 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
           if (!open && !reopening) setReopenTarget(null);
         }}
         title={`Reopen ${reopenTarget ? whoOf(reopenTarget) : "account"}?`}
-        description="They can sign in again; paused schedules and connections resume. Revoked API keys stay revoked."
         placeholder="Reason (recorded in the admin history)"
         confirmLabel="Reopen"
         busy={reopening}
@@ -319,11 +344,21 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
           if (!open && !signingOut) setSignOutTarget(null);
         }}
         title={`Sign ${signOutTarget ? whoOf(signOutTarget) : "this person"} out everywhere?`}
-        description="Ends every sign-in on every device; a page already open can work up to an hour. They can sign in again."
         placeholder="Reason (recorded in the admin history)"
         confirmLabel="Sign out everywhere"
         busy={signingOut}
         onConfirm={confirmSignOut}
+      />
+      <TextInputDialog
+        open={verifyTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !verifying) setVerifyTarget(null);
+        }}
+        title={`Mark ${verifyTarget ? whoOf(verifyTarget) : "this person"}'s email verified?`}
+        placeholder="Reason (recorded in the admin history)"
+        confirmLabel="Mark verified"
+        busy={verifying}
+        onConfirm={confirmVerify}
       />
       <Dialog
         open={messageTarget !== null}
@@ -337,10 +372,6 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
               In-app message to {messageTarget?.display_name ?? messageTarget?.email}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-xs text-muted-foreground">
-            Sends a direct message from you into the user&apos;s in-app inbox
-            (the DM system). They see it in Messages.
-          </p>
           <ProTextarea
             data-surface-value="dm_draft"
             value={messageDraft}
@@ -377,6 +408,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     setAccountClosed,
     closeBlockedReason,
     signOutEverywhere,
+    verifyEmail,
     openMessage,
     /** The person the message dialog is open for (surface context). */
     messageTarget,

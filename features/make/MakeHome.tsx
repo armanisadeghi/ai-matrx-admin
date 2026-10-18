@@ -57,12 +57,14 @@ import {
   type MakeTile,
 } from "./tiles";
 import { answerForRecent, isTestOrganization, recentlyChanged, withoutTestOrganizations } from "./recent";
+import { PortalBlocksEditor } from "@/features/portals/PortalBlocksEditor";
 import { MakeMount, NewTableBody, SAVED_WHERE_CHOSEN, SavesTo } from "./MakeMount";
 import { InstalledOneOffs, TemplateGallerySection } from "./gallery/TemplateGallery";
 import { DescribeBox } from "./describe/DescribeBox";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { readOrgPublicUrls } from "@/lib/custom-domains/public-url-reader";
 // ─────────────────────────────────────────────────────────────────────────────
 // Two reads across every organization: Recent (the data home's one call) and step 1's tables.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,6 +125,7 @@ function useRecentRead(userId: string | null) {
     const built = await buildDataHomeRows(
       { client, dataSource: source, answer: answerForRecent(answered.data, new Set()) },
       HUB_CAPABILITIES.filter((c) => c.id !== "shared-with-me"),
+      readOrgPublicUrls,
     );
     return { ok: true, data: built.rows };
   });
@@ -421,6 +424,7 @@ function PortalFlow({ organizationId, madeId, onMade, onName }: { organizationId
             setSaved(true);
           }}
         />
+        {madeId ? <PortalBlocksEditor portalId={madeId} /> : null}
       </MakeMount>
     </div>
   );

@@ -109,3 +109,14 @@ export function caseDecidersLine(c: Pick<TestCaseView, "checkCount" | "factCount
   if (c.factCount > 0) parts.push(`${c.factCount} ${c.factCount === 1 ? "fact" : "facts"}`);
   return parts.join(" · ") || "Nothing to decide";
 }
+
+/** The judge row's side note: its model, and "Advisory" when its word decides nothing. */
+export function judgeMeta(
+  model: string | null,
+  outcome: { model: string | null; advisory: boolean } | null,
+): string | undefined {
+  const parts = [model ?? outcome?.model ?? null];
+  if (outcome?.advisory) parts.push("Advisory");
+  const text = parts.filter(Boolean).join(" · ");
+  return text || undefined;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { ImageIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ export default function ImagesSidebarMenu({
   const activeRoute = resolveActiveRouteMode(IMAGE_ROUTE_MODES, pathname);
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-0.5">
-      <Link
+      <NavLink
         href={IMAGES_ROOT_PATH}
         title="Images Hub"
         aria-label="Images Hub"
@@ -65,7 +65,7 @@ export default function ImagesSidebarMenu({
           />
         </span>
         <span className="shell-nav-label truncate">Images Hub</span>
-      </Link>
+      </NavLink>
       {GROUP_ORDER.map((group, index) => {
         const routes = IMAGES_ROUTES.filter((route) => route.group === group);
         return (
@@ -78,7 +78,7 @@ export default function ImagesSidebarMenu({
               const Icon = route.Icon;
               const isActive = activeRoute?.path === route.path;
               return (
-                <Link
+                <NavLink
                   key={route.path}
                   href={route.path}
                   title={route.label}
@@ -100,7 +100,7 @@ export default function ImagesSidebarMenu({
                   <span className="shell-nav-label truncate">
                     {route.label}
                   </span>
-                </Link>
+                </NavLink>
               );
             })}
           </div>

@@ -3,8 +3,8 @@
 // Owner ruling 2026-10-17: "There is no need to read google at all! Not until someone actually
 // engages it." The new-chat connector card decides whether to offer itself WITHOUT a read: from
 // the last answer this device saw (any Google state read — the card's own, the consent dialog's,
-// Settings → Connectors — remembers it here). No answer yet = the offer shows; the first touch of
-// the card reads the real state and the card steps away if it is already connected.
+// Settings → Connectors — remembers it here). No answer yet = NO offer (owner 2026-10-17: never show it on a guess); the hint is written by
+// any surface that reads the real Google state (Settings → Connectors, the consent dialog).
 // Per person, per provider; localStorage only (a hint, never a source of truth for an action).
 
 export interface ConnectorHint {

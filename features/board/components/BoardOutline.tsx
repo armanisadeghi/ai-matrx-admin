@@ -9,7 +9,27 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, FileText, Frame, LoaderCircle, PanelLeftClose, Plus } from "lucide-react";
+import {
+  Activity,
+  Blend,
+  BookOpen,
+  Bookmark,
+  ChevronDown,
+  ChevronUp,
+  Component,
+  FileText,
+  Folder,
+  Layers,
+  LoaderCircle,
+  type LucideIcon,
+  MoveHorizontal,
+  Palette,
+  PanelLeftClose,
+  Plus,
+  Ruler,
+  SquareDashed,
+  Type,
+} from "lucide-react";
 import { ErrorNotice, PANEL_MOTION_CLASS } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,6 +39,32 @@ import { screenToWorld } from "../engine/camera";
 import { frameKey } from "../engine/selection";
 import { activeChapter, chapterOrder, type BoardLayoutMode } from "../engine/page-layout";
 import type { BoardFrame } from "../board/board-store";
+import { CHAPTER_FALLBACK_ICON } from "../engine/tile-chrome";
+
+/** The chapter icons the outline draws by name (`engine/tile-chrome.ts` names them; a static map keeps the bundle small). */
+const CHAPTER_ICONS: Readonly<Record<string, LucideIcon>> = {
+  Palette,
+  Type,
+  Ruler,
+  MoveHorizontal,
+  SquareDashed,
+  Layers,
+  Blend,
+  Activity,
+  Component,
+  Folder,
+  BookOpen,
+  Bookmark,
+  FileText,
+};
+
+/** A chapter's icon: a name from the map, or an item type's own icon component; anything else the neutral one. */
+export type ChapterIcon = string | LucideIcon;
+function iconFor(icon: ChapterIcon | undefined): LucideIcon {
+  const fallback = CHAPTER_ICONS[CHAPTER_FALLBACK_ICON];
+  if (icon === undefined) return fallback;
+  return typeof icon === "string" ? (CHAPTER_ICONS[icon] ?? fallback) : icon;
+}
 
 /** Rail width, px. */
 export const OUTLINE_WIDTH = 240;
@@ -40,6 +86,8 @@ interface OutlineProps {
   pages: OutlinePages | null;
   /** Page layout only: move a chapter up or down. */
   onMoveChapter?: (id: string, dir: -1 | 1) => void;
+  /** Each chapter's own icon, by frame id (`chapterIconName`); absent = the neutral icon. */
+  chapterIcons?: Readonly<Record<string, ChapterIcon>>;
   onClose: () => void;
 }
 
@@ -94,7 +142,7 @@ function useActiveChapter(
   return { active: pinned ?? active, pin: (id: string) => setPin({ id, layout }) };
 }
 
-function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fill = false }: OutlineProps & { fill?: boolean }) {
+function OutlineBody({ frames, store, layout, pages, onMoveChapter, chapterIcons, onClose, fill = false }: OutlineProps & { fill?: boolean }) {
   const chapters = chapterOrder(frames);
   const { active, pin } = useActiveChapter(store, chapters, layout);
   const go = (f: BoardFrame) => {
@@ -107,7 +155,7 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fil
   };
   return (
     <div className="flex h-full min-h-0 flex-col" style={fill ? undefined : { width: OUTLINE_WIDTH }}>
-      <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border px-3">
+      <div className="flex h-10 shrink-0 items-center justify-between gap-2 border-b border-border pl-3 pr-1.5">
         <span className="text-sm font-medium text-foreground">Outline</span>
         <button
           type="button"
@@ -119,35 +167,38 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fil
           <PanelLeftClose className="h-4 w-4" />
         </button>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2" data-board-outline>
-        <div className="px-2 pb-1 pt-1 text-xs font-medium text-muted-foreground">Chapters</div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-1.5 py-1.5" data-board-outline>
+        <div className="flex h-6 items-center px-2 text-[11px] font-medium text-muted-foreground">Chapters</div>
         {chapters.length === 0 ? (
           <div className="px-2 py-1.5 text-xs text-muted-foreground">Add a frame to start a chapter</div>
         ) : (
-          <ul className="flex flex-col gap-0.5">
-            {chapters.map((f, i) => (
+          <ul className="flex flex-col">
+            {chapters.map((f, i) => {
+              const Icon = iconFor(chapterIcons?.[f.id]);
+              return (
               <li key={f.id} className="group relative">
                 <button
                   type="button"
                   onClick={() => go(f)}
                   aria-current={active === f.id ? "true" : undefined}
+                  data-board-chapter-icon={typeof chapterIcons?.[f.id] === "string" ? chapterIcons?.[f.id] : "type"}
                   className={cn(
-                    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm",
-                    active === f.id ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    "flex h-7 w-full items-center gap-2 rounded-md px-2 text-left text-[13px]",
+                    active === f.id ? "bg-accent font-medium text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
                   )}
                 >
-                  <Frame className="h-3.5 w-3.5 shrink-0" />
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="min-w-0 flex-1 truncate">{f.title || "Untitled frame"}</span>
                 </button>
                 {onMoveChapter && chapters.length > 1 && (
-                  <span className="absolute right-1 top-1/2 hidden -translate-y-1/2 items-center group-hover:flex group-focus-within:flex">
+                  <span className="absolute right-0.5 top-1/2 hidden -translate-y-1/2 items-center group-hover:flex group-focus-within:flex">
                     <button
                       type="button"
                       disabled={i === 0}
                       onClick={() => onMoveChapter(f.id, -1)}
                       title="Move up"
                       aria-label={`Move ${f.title || "frame"} up`}
-                      className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground disabled:text-disabled-foreground"
+                      className="flex h-6 w-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground disabled:text-disabled-foreground"
                     >
                       <ChevronUp className="h-3.5 w-3.5" />
                     </button>
@@ -157,20 +208,21 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fil
                       onClick={() => onMoveChapter(f.id, 1)}
                       title="Move down"
                       aria-label={`Move ${f.title || "frame"} down`}
-                      className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground disabled:text-disabled-foreground"
+                      className="flex h-6 w-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground disabled:text-disabled-foreground"
                     >
                       <ChevronDown className="h-3.5 w-3.5" />
                     </button>
                   </span>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
         {pages && (
           <>
-            <div className="mt-3 flex items-center justify-between px-2 pb-1 pt-1">
-              <span className="text-xs font-medium text-muted-foreground">Pages</span>
+            <div className="mt-2 flex h-6 items-center justify-between pl-2">
+              <span className="text-[11px] font-medium text-muted-foreground">Pages</span>
               <button
                 type="button"
                 onClick={pages.onAdd}
@@ -198,14 +250,14 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fil
                 <div className="ml-4 h-6 rounded-md bg-muted" />
               </div>
             ) : (
-              <ul className="flex flex-col gap-0.5">
+              <ul className="flex flex-col">
                 {pages.list.map((p) => (
                   <li key={p.id}>
                     <Link
                       href={`/board/${p.id}`}
                       aria-current={p.id === pages.currentId ? "page" : undefined}
                       className={cn(
-                        "flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-sm",
+                        "flex h-7 w-full items-center gap-2 rounded-md pr-2 text-[13px]",
                         p.parentId ? "pl-6" : "pl-2",
                         p.id === pages.currentId ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
                       )}
@@ -220,7 +272,7 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fil
                     type="button"
                     onClick={pages.onAdd}
                     disabled={pages.adding}
-                    className="flex w-full items-center gap-2 rounded-md py-1.5 pl-6 pr-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground disabled:text-disabled-foreground"
+                    className="flex h-7 w-full items-center gap-2 rounded-md pl-6 pr-2 text-left text-[13px] text-muted-foreground hover:bg-accent hover:text-foreground disabled:text-disabled-foreground"
                   >
                     <Plus className="h-3.5 w-3.5 shrink-0" />
                     Add page

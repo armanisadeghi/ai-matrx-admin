@@ -1,4 +1,4 @@
-import { MEMBER_RESOURCE_COLUMNS } from "./MemberResourcesView";
+import { OWNED_RESOURCE_COLUMNS as MEMBER_RESOURCE_COLUMNS } from "./OwnedResourcesTable";
 
 describe("MemberResourcesView canonical table contract", () => {
   it("keeps every resource field independently filterable and sortable", () => {

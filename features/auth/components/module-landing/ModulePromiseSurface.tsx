@@ -16,7 +16,7 @@
 // workspace ships: mount it instead, and delete the registry entry in the
 // same commit.
 
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 
@@ -97,7 +97,7 @@ export function ModulePromiseSurface({
               const DoorIcon = door.icon;
               return (
                 <li key={door.href}>
-                  <Link
+                  <NavLink
                     href={door.href}
                     className="group flex min-h-11 items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40 hover:bg-accent/40"
                   >
@@ -116,7 +116,7 @@ export function ModulePromiseSurface({
                       className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
                       aria-hidden
                     />
-                  </Link>
+                  </NavLink>
                 </li>
               );
             })}

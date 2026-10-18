@@ -17,6 +17,13 @@ import {
   walkCapGate,
   type WalkRegistry,
   type WalkKnobs,
+  type MemorySnapshot,
+  type MemoryVerdict,
+  burstHosts,
+  judgeMemory,
+  parseMemorySnapshot,
+  shedForMemory,
+  MEMORY_STALE_MS,
 } from "./walkCap";
 
 const MIN = 60_000;
@@ -595,5 +602,241 @@ describe("walkCapGate refusal page — names the way out", () => {
     expect(html).toContain("reload this page");
     expect(html).not.toMatch(/3002/);
     expect(html).not.toMatch(/not built|waiting is the only path/);
+  });
+});
+
+// ─── BURST SLOTS (Arman, 2026-10-17: "normally maxes at 4 ... permitted to go up to 8, as long as
+// they watch the memory and close it if it raises") ─────────────────────────────────────────────
+
+const BURST: WalkKnobs = {
+  cap: 4,
+  windowMinutes: 10,
+  burst: { burstCap: 8, admitAvailableGb: 64, shedAvailableGb: 32, admitPreviewGb: 32, shedPreviewGb: 40 },
+  holdIdleMinutes: 20,
+};
+const HEADROOM: MemoryVerdict = { state: "headroom", why: "120 GB of memory is free" };
+const TIGHT: MemoryVerdict = { state: "tight", why: "extra slots open only with 64 GB free" };
+const SHED: MemoryVerdict = { state: "shed", why: "only 20 GB of memory is free" };
+
+function snapshot(over: Partial<MemorySnapshot> = {}): MemorySnapshot {
+  return { atMs: T0, availableGb: 120, totalGb: 256, previewGb: 20, pressure: 1, swapUsedGb: 0, ...over };
+}
+
+/** n hosts admitted in order h1..hn, each last seen (page and request) `idleMin` minutes ago. */
+function admittedHosts(n: number, idleMin: number): WalkRegistry {
+  const registry: WalkRegistry = {
+    admitted: new Map(),
+    evicted: new Set(),
+    lastRequest: new Map(),
+    admittedAt: new Map(),
+  };
+  for (let i = 1; i <= n; i++) {
+    const h = `h${i}.localhost:3001`;
+    registry.admitted.set(h, T0 - idleMin * MIN);
+    registry.lastRequest!.set(h, T0 - idleMin * MIN);
+    registry.admittedAt!.set(h, T0 - 60 * MIN + i);
+  }
+  return registry;
+}
+
+describe("parseMemorySnapshot + judgeMemory — the watchdog's reading, judged", () => {
+  it("parses the watchdog's key=value file and refuses a malformed one", () => {
+    const parsed = parseMemorySnapshot("epoch=1800000000\navailable_gb=132.0\nfree_gb=41.9\ntotal_gb=256.0\npressure=1\nswap_used_gb=0.0\npreview_gb=28.6\n");
+    expect(parsed).toEqual({ atMs: 1_800_000_000_000, availableGb: 132, totalGb: 256, previewGb: 28.6, pressure: 1, swapUsedGb: 0 });
+    expect(parseMemorySnapshot("available_gb=12\n")).toBeNull();
+    expect(parseMemorySnapshot("")).toBeNull();
+    expect(parseMemorySnapshot(null)).toBeNull();
+  });
+
+  it("headroom only with normal pressure, enough free memory and a small preview", () => {
+    expect(judgeMemory(snapshot(), BURST.burst, T0).state).toBe("headroom");
+    expect(judgeMemory(snapshot({ availableGb: 63 }), BURST.burst, T0).state).toBe("tight");
+    expect(judgeMemory(snapshot({ previewGb: 33 }), BURST.burst, T0).state).toBe("tight");
+    expect(judgeMemory(snapshot({ previewGb: null }), BURST.burst, T0).state).toBe("tight");
+  });
+
+  it("sheds on macOS pressure, low free memory, or a preview at its shed size", () => {
+    expect(judgeMemory(snapshot({ pressure: 2 }), BURST.burst, T0)).toMatchObject({ state: "shed", why: expect.stringMatching(/pressure \(warning\)/) });
+    expect(judgeMemory(snapshot({ pressure: 4 }), BURST.burst, T0).why).toMatch(/critical/);
+    expect(judgeMemory(snapshot({ availableGb: 31 }), BURST.burst, T0)).toMatchObject({ state: "shed", why: expect.stringMatching(/only 31 GB/) });
+    expect(judgeMemory(snapshot({ previewGb: 40 }), BURST.burst, T0)).toMatchObject({ state: "shed", why: expect.stringMatching(/preview server uses 40 GB/) });
+  });
+
+  it("a stale or missing reading, or missing burst knobs, is unknown — never headroom", () => {
+    expect(judgeMemory(snapshot({ atMs: T0 - MEMORY_STALE_MS - 1 }), BURST.burst, T0).state).toBe("unknown");
+    expect(judgeMemory(null, BURST.burst, T0).state).toBe("unknown");
+    expect(judgeMemory(snapshot(), undefined, T0).state).toBe("unknown");
+  });
+});
+
+describe("decideWalkAdmission — burst slots open only while memory is spare", () => {
+  it("with headroom, a 5th..8th host gets an extra slot and nobody busy or idle is paused", () => {
+    const registry = admittedHosts(4, 0.5); // all four in use (a request 30 s ago)
+    for (let i = 5; i <= 8; i++) {
+      const decision = decideWalkAdmission(registry, `n${i}.localhost:3001`, T0, BURST, "document", new Set(), HEADROOM);
+      expect(decision).toMatchObject({ verdict: "admit", newlyAdmitted: true, burst: true, evicted: [] });
+    }
+    expect(registry.admitted.size).toBe(8);
+    expect(burstHosts(registry, 4)).toEqual(["n5.localhost:3001", "n6.localhost:3001", "n7.localhost:3001", "n8.localhost:3001"]);
+  });
+
+  it("never past the burst cap: the 9th host is refused while all eight are in use", () => {
+    const registry = admittedHosts(8, 0.5);
+    const decision = decideWalkAdmission(registry, "n9.localhost:3001", T0, BURST, "document", new Set(), HEADROOM);
+    expect(decision.verdict).toBe("refuse");
+    expect(registry.admitted.size).toBe(8);
+  });
+
+  it("without headroom the cap stays at 4: a newcomer is refused when the four are in use", () => {
+    for (const memory of [TIGHT, SHED, undefined]) {
+      const registry = admittedHosts(4, 0.5);
+      const decision = decideWalkAdmission(registry, "n5.localhost:3001", T0, BURST, "document", new Set(), memory);
+      expect(decision.verdict).toBe("refuse");
+      expect(registry.admitted.size).toBe(4);
+    }
+  });
+
+  it("tight memory never grows the count: a newcomer may only swap in for an idle host", () => {
+    const registry = admittedHosts(6, 0.5);
+    registry.admitted.set("h6.localhost:3001", T0 - 5 * MIN);
+    registry.lastRequest!.set("h6.localhost:3001", T0 - 5 * MIN); // idle past the busy guard
+    const decision = decideWalkAdmission(registry, "n7.localhost:3001", T0, BURST, "document", new Set(), TIGHT);
+    expect(decision).toMatchObject({ verdict: "admit", evicted: ["h6.localhost:3001"] });
+    expect(registry.admitted.size).toBe(6);
+  });
+
+  it("an admitted extra host keeps working while memory is merely tight", () => {
+    const registry = admittedHosts(6, 0.5);
+    const decision = decideWalkAdmission(registry, "h6.localhost:3001", T0, BURST, "document", new Set(), TIGHT);
+    expect(decision).toMatchObject({ verdict: "admit", newlyAdmitted: false, evicted: [] });
+    expect(registry.admitted.size).toBe(6);
+  });
+
+  it("when memory rises, an extra host is paused — never a base host, even an idle one", () => {
+    const registry = admittedHosts(6, 0.5);
+    // base host h1 idle for 8 minutes: still never shed for memory
+    registry.admitted.set("h1.localhost:3001", T0 - 8 * MIN);
+    registry.lastRequest!.set("h1.localhost:3001", T0 - 8 * MIN);
+    const decision = decideWalkAdmission(registry, "h2.localhost:3001", T0, BURST, "document", new Set(), SHED);
+    expect(decision.shed).toHaveLength(1);
+    expect(["h5.localhost:3001", "h6.localhost:3001"]).toContain(decision.shed![0]);
+    expect(registry.admitted.has("h1.localhost:3001")).toBe(true);
+    expect(registry.evictedWhy?.get(decision.shed![0])).toBe("memory");
+  });
+
+  it("sheds the idle extra host first, then the longest idle, a held or busy one included", () => {
+    const registry = admittedHosts(7, 0.5);
+    registry.admitted.set("h6.localhost:3001", T0 - 4 * MIN);
+    registry.lastRequest!.set("h6.localhost:3001", T0 - 4 * MIN); // idle: shed first
+    registry.lastRequest!.set("h5.localhost:3001", T0 - 1 * MIN); // busy, longer idle than h7
+    registry.admitted.set("h5.localhost:3001", T0 - 1 * MIN);
+    const held = new Set(["h5.localhost", "h7.localhost"]);
+    expect(shedForMemory(registry, T0, BURST, SHED, held)).toEqual(["h6.localhost:3001"]);
+    expect(shedForMemory(registry, T0, BURST, SHED, held)).toEqual(["h5.localhost:3001"]);
+    expect(shedForMemory(registry, T0, BURST, SHED, held)).toEqual(["h7.localhost:3001"]);
+    expect(shedForMemory(registry, T0, BURST, SHED, held)).toEqual([]); // back at the base cap
+    expect(registry.admitted.size).toBe(4);
+    expect([...registry.admitted.keys()]).toEqual(["h1.localhost:3001", "h2.localhost:3001", "h3.localhost:3001", "h4.localhost:3001"]);
+  });
+
+  it("nothing is shed unless memory says shed, or when burst knobs are missing", () => {
+    for (const memory of [HEADROOM, TIGHT, { state: "unknown", why: "" } as MemoryVerdict]) {
+      expect(shedForMemory(admittedHosts(6, 0.5), T0, BURST, memory)).toEqual([]);
+    }
+    expect(shedForMemory(admittedHosts(6, 0.5), T0, KNOBS, SHED)).toEqual([]);
+  });
+
+  it("a base host that leaves promotes the oldest extra host into a base slot", () => {
+    const registry = admittedHosts(5, 0.5);
+    expect(burstHosts(registry, 4)).toEqual(["h5.localhost:3001"]);
+    registry.admitted.delete("h2.localhost:3001");
+    registry.admittedAt!.delete("h2.localhost:3001");
+    expect(burstHosts(registry, 4)).toEqual([]);
+  });
+});
+
+describe("createWalkKnobReader — the burst and hold-idle knobs", () => {
+  const all = [
+    { key: "production_concurrent_cap", value: 4 },
+    { key: "activity_window_minutes", value: 10 },
+    { key: "production_burst_cap", value: 8 },
+    { key: "burst_admit_available_gb", value: 64 },
+    { key: "burst_shed_available_gb", value: 32 },
+    { key: "burst_admit_preview_gb", value: 32 },
+    { key: "burst_shed_preview_gb", value: 40 },
+    { key: "hold_idle_expire_minutes", value: 20 },
+  ];
+  const reader = (rows: unknown[], log = jest.fn()) =>
+    createWalkKnobReader({
+      fetchImpl: jest.fn(async () => new Response(JSON.stringify(rows), { status: 200 })),
+      restUrl: "https://db.matrxserver.com",
+      apiKey: "k",
+      now: () => T0,
+      log,
+    });
+
+  it("reads every knob in the one request", async () => {
+    await expect(reader(all)()).resolves.toEqual(BURST);
+  });
+
+  it("a missing burst knob screams BURST OFF and keeps the base cap working", async () => {
+    const log = jest.fn();
+    const knobs = await reader(all.filter((r) => r.key !== "burst_shed_preview_gb"), log)();
+    expect(knobs).toEqual({ cap: 4, windowMinutes: 10, holdIdleMinutes: 20 });
+    expect(log.mock.calls.map((c) => String(c[0])).join("\n")).toMatch(/BURST OFF: .*burst_shed_preview_gb.*ops_agent_walks_burst_cap_2026_10_17\.sql/);
+  });
+});
+
+describe("heldPreviewHosts — a hold ends with the process that took it", () => {
+  it("drops a hold whose owner pid is gone, keeps one whose owner lives, and still reads old holds", () => {
+    const dir = mkdtempSync(join(tmpdir(), "walk-holds-owner-"));
+    try {
+      const now = 2_000_000_000;
+      writeFileSync(join(dir, "live-runner"), `${now + 600} s-a owner=101 owner_start=x\n`);
+      writeFileSync(join(dir, "dead-runner"), `${now + 600} s-b owner=202 owner_start=x\n`);
+      writeFileSync(join(dir, "no-owner"), `${now + 600} s-c\n`);
+      const alive = (pid: number) => pid === 101;
+      expect([...heldPreviewHosts(dir, now, alive)].sort()).toEqual(["live-runner.localhost", "no-owner.localhost"]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("walkCapGate — refusal page and log name the memory reason", () => {
+  it("a refused newcomer is told the extra slots are closed, and why", async () => {
+    const log = jest.fn();
+    const registry = admittedHosts(4, 0.5);
+    const response = await walkCapGate({
+      host: "n5.localhost:3001",
+      env: { NODE_ENV: "development", NEXT_PUBLIC_SUPABASE_URL: "https://db.matrxserver.com" },
+      readKnobs: async () => BURST,
+      registry,
+      now: T0,
+      log,
+      memory: snapshot({ availableGb: 50 }),
+    });
+    expect(response?.status).toBe(503);
+    const html = await response!.text();
+    expect(html).toMatch(/up to 8 while this computer has spare memory/);
+    expect(html).toMatch(/Extra slots are closed right now: extra slots open only with 64 GB free \(now 50 GB\)/);
+    expect(log.mock.calls.map((c) => String(c[0])).join("\n")).toMatch(/REFUSED n5\.localhost:3001 — 4 of 8 \(4 normal \+ 4 extra while memory is spare\).*extra slots closed/);
+  });
+
+  it("a memory shed is logged as SHED, not as an eviction for a newcomer", async () => {
+    const log = jest.fn();
+    const registry = admittedHosts(6, 0.5);
+    await walkCapGate({
+      host: "h1.localhost:3001",
+      env: { NODE_ENV: "development", NEXT_PUBLIC_SUPABASE_URL: "https://db.matrxserver.com" },
+      readKnobs: async () => BURST,
+      registry,
+      now: T0,
+      log,
+      memory: snapshot({ pressure: 4 }),
+    });
+    const lines = log.mock.calls.map((c) => String(c[0])).join("\n");
+    expect(lines).toMatch(/SHED h[56]\.localhost:3001 \(extra slot\) — macOS reports memory pressure \(critical\)/);
+    expect(lines).not.toMatch(/EVICTED/);
   });
 });

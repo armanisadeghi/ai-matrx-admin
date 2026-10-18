@@ -31,8 +31,10 @@ export function useRecordLoad<T>(
   }, [fetcher, userId, token, enabled]);
 
   const fresh = settled.token === token;
+  // Same person, new version (reload) keeps the rows; a different person never shows the old one's.
+  const samePerson = settled.token.split("|")[0] === userId;
   return {
-    data: settled.data,
+    data: fresh || samePerson ? settled.data : null,
     loading: enabled && !fresh,
     error: fresh ? settled.error : null,
   };

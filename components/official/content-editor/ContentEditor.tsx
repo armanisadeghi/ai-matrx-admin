@@ -35,6 +35,7 @@ import { ContentManagerMenu } from "./ContentManagerMenu.lazy";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { insertBlockAtLine } from "@/utils/text-insertion";
 
 // Mode configurations
 export const MODE_CONFIGS: EditorModeConfig[] = [
@@ -447,12 +448,16 @@ export function ContentEditor({
               entity={entity}
               getTextarea={() => plainTextareaRef.current}
               onTextReplace={handleContentChange}
-              onTextInsertBefore={(text) =>
-                handleContentChange(`${text}${localContent}`)
-              }
-              onTextInsertAfter={(text) =>
-                handleContentChange(`${localContent}${text}`)
-              }
+              // Under / over the selection's LINE, never glued to the text (Q-06).
+              onTextInsertBefore={(text) => {
+                const ta = plainTextareaRef.current;
+                handleContentChange(insertBlockAtLine(localContent, ta?.selectionStart ?? 0, ta?.selectionEnd ?? 0, text, "before"));
+              }}
+              onTextInsertAfter={(text) => {
+                const ta = plainTextareaRef.current;
+                const n = localContent.length;
+                handleContentChange(insertBlockAtLine(localContent, ta?.selectionStart ?? n, ta?.selectionEnd ?? n, text, "after"));
+              }}
             >
               <Textarea variant="bare" minHeight={300}
                 ref={setPlainTextarea}

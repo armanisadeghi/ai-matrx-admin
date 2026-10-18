@@ -98,9 +98,14 @@ function getOrCreateClientStore(
   // Seed from the cookie the server already holds, so a "system" person whose
   // device colour has not changed costs no POST on every page load.
   let lastCookieMode: ResolvedThemeMode | undefined = readThemeCookie();
-  const mirrorResolvedTheme = (mode: ThemeMode) => {
+  const mirrorResolvedTheme = (mode: ThemeMode, opts?: { onlyIfCookieHeld?: boolean }) => {
     const resolved = resolveThemeMode(mode);
     if (resolved === lastCookieMode) return;
+    // The boot reconcile is not a theme CHANGE. With no cookie yet, the page was painted from the
+    // device colour by SyncBootScript and nobody changed anything: posting would only plant a cookie
+    // on every first visit (an /api/set-theme call after settle on an empty page). The cookie is
+    // written when the person, or the device, actually changes the theme.
+    if (opts?.onlyIfCookieHeld && lastCookieMode === undefined) return;
     lastCookieMode = resolved;
     writeThemeCookie(resolved);
   };
@@ -119,13 +124,13 @@ function getOrCreateClientStore(
   // stored preference.
   if (typeof window.matchMedia === "function") {
     const systemMedia = window.matchMedia("(prefers-color-scheme: dark)");
-    const applySystemTheme = () => {
+    const applySystemTheme = (opts?: { onlyIfCookieHeld?: boolean }) => {
       if (store.getState().theme?.mode === "system") {
         applyPrePaintDescriptors(themePolicy.prePaintDescriptors, { mode: "system" });
-        mirrorResolvedTheme("system");
+        mirrorResolvedTheme("system", opts);
       }
     };
-    systemMedia.addEventListener("change", applySystemTheme);
+    systemMedia.addEventListener("change", () => applySystemTheme());
     // 🚨 NOT called at creation: until the sync boot restores the saved
     // choice, theme.mode is the initial "system", so repainting now would paint
     // + post the DEVICE colour over a saved explicit choice, then flip back
@@ -133,7 +138,7 @@ function getOrCreateClientStore(
     // SyncBootScript paint stands until the person's choice is known; the boot
     // then signals it and this reconciles once (a no-op post when the cookie
     // already holds the device colour).
-    whenThemeChoiceKnown(applySystemTheme);
+    whenThemeChoiceKnown(() => applySystemTheme({ onlyIfCookieHeld: true }));
     // Guard: providers/__tests__/theme-boot-never-flips.test.tsx
   }
 

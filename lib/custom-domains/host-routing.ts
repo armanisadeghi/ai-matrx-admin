@@ -94,7 +94,53 @@ const PUBLIC_API_PREFIXES = [
 ];
 
 export function apiAllowedOnCustomHost(pathname: string): boolean {
-  return PUBLIC_API_PREFIXES.some((prefix) => pathname === prefix.replace(/\/$/, "") || pathname.startsWith(prefix));
+  // An entry ending in "/" is a family (/api/forms/<id>/submit); any other entry is that exact path.
+  return PUBLIC_API_PREFIXES.some((entry) => (entry.endsWith("/") ? pathname.startsWith(entry) : pathname === entry));
+}
+
+/** Files a published page loads beside its HTML (images, fonts, scripts, styles, media). */
+const ASSET_EXTENSION = /\.(?:js|mjs|css|svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf|eot|mp3|mp4|webm|wasm)$/i;
+
+/** The magic-link / OAuth landings a portal sign-in completes through on the business's host. */
+const SIGN_IN_AUTH_PATHS = ["/auth/confirm", "/auth/callback"];
+
+/**
+ * What a custom host does with a path BEFORE page routing (proxy.ts `customHostGate`):
+ * - "api":    an /api path — served only if `apiAllowedOnCustomHost`;
+ * - "asset":  a file a published page loads (and Next's own /_next files) — served;
+ * - "auth":   a sign-in landing — served only when the domain maps a portal;
+ * - "blocked": every other non-page path the app answers (/auth/*, /app_redirect, /app_callback,
+ *             /public/*, sitemap/robots/manifests, .json/.txt/.xml/.pdf/... route handlers) — 404;
+ * - "page":   everything else — decided by the domain's routes (`internalPathFor` / passthrough).
+ */
+export type CustomHostPathClass = "api" | "asset" | "auth" | "blocked" | "page";
+
+export function customHostPathClass(pathname: string): CustomHostPathClass {
+  const path = pathname.toLowerCase();
+  if (path.startsWith("/api/") || path === "/api") return "api";
+  if (path.startsWith("/_next/")) return "asset";
+  if (SIGN_IN_AUTH_PATHS.some((p) => path === p || path === `${p}/`)) return "auth";
+  if (/^\/(auth|app_redirect|app_callback|public)(\/|$)/.test(path)) return "blocked";
+  if (ASSET_EXTENSION.test(path)) return "asset";
+  // Any other file-shaped path (sitemap.xml, robots.txt, *.webmanifest, *.json, *.pdf ...) is ours, not theirs.
+  if (/\.[a-z0-9]+$/.test(path.split("/").pop() ?? "")) return "blocked";
+  return "page";
+}
+
+/** The gate's verdict for a non-page path on a mapped custom host. */
+export function nonPageAllowedOnCustomHost(pathname: string, domain: ResolvedDomain): boolean {
+  switch (customHostPathClass(pathname)) {
+    case "api":
+      return apiAllowedOnCustomHost(pathname);
+    case "asset":
+      return true;
+    case "auth":
+      return domain.routes.some((route) => route.target_kind === "portal");
+    case "blocked":
+      return false;
+    case "page":
+      return true;
+  }
 }
 
 /** Sign-in pages a portal visitor needs on the business's own host (session cookies are per host). */
@@ -111,4 +157,16 @@ export function passthroughOnCustomHost(pathname: string, domain: ResolvedDomain
   if (kinds.has("portal") && SIGN_IN_PATHS.some((p) => path === p || path.startsWith(`${p}/`))) return true;
   if (kinds.has("booking") && path.startsWith("/b/manage/")) return true;
   return false;
+}
+
+/**
+ * The inverse of internalPathFor: the path THIS host shows an internal target at (/f/<id> → "/intake"),
+ * or null when the host does not map it. Used to build links a visitor follows on the host they are on.
+ */
+export function publicPathFor(internalPath: string, domain: ResolvedDomain): string | null {
+  const routes = [...domain.routes].sort((a, b) => a.path_prefix.length - b.path_prefix.length);
+  for (const route of routes) {
+    if (basePath(route, domain.organization_id) === internalPath) return route.path_prefix;
+  }
+  return null;
 }

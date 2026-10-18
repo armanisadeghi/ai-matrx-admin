@@ -95,7 +95,11 @@ beforeEach(() => {
 
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 20)); });
 
-async function mount() {
+const KNOWN_NOT_CONNECTED = { connected: false, blocked: false };
+
+/** `hint` = what this device last learned; `null` = nothing learned yet (no card may show). */
+async function mount(hint: { connected: boolean; blocked: boolean } | null = KNOWN_NOT_CONNECTED) {
+  if (hint) rememberConnectorHint(GOOGLE_CONNECTOR_PROVIDER.id, USER, hint);
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -155,8 +159,19 @@ it("the Connect press opens the consent dialog at once (no waiting for a read)",
 });
 
 it("a device that already learned she is connected draws no card and reads nothing", async () => {
-  rememberConnectorHint(GOOGLE_CONNECTOR_PROVIDER.id, USER, { connected: true, blocked: false });
-  const { container, root } = await mount();
+  const { container, root } = await mount({ connected: true, blocked: false });
+  expectNoReads();
+  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
+  await act(async () => root.unmount());
+});
+
+it("NEVER OFFERS ON A GUESS: nothing learned about Google yet = no card and no reads", async () => {
+  window.localStorage.clear();
+  const { container, root } = await mount(null);
+  expectNoReads();
+  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
+  await act(async () => engageForTest());
+  await settle();
   expectNoReads();
   expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
   await act(async () => root.unmount());

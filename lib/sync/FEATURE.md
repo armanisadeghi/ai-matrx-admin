@@ -174,6 +174,7 @@ hydration errors.
   different items keep both. Guard:
   `lib/redux/preferences/__tests__/preference-writes-never-lost.test.ts` — red
   3/3 on the previous engine + patch (scratch-mapped), green now.
+- 2026-10-17 — **Preferences update only on change.** `userPreferences` lost its 60 s `staleAfter` timer. A change made anywhere reaches the tab live: `PreferencesLiveSync` (mounted in `app/Providers.tsx` inside RealtimeHost) holds one `postgres_changes` binding on the person's own `users.user_preferences` row and re-runs the policy's `remote.fetch` through `invokeRemoteFetch` (held edits and pending writes behave as on any refresh); `onBackfill` covers sleep and network loss. Echoes of this tab's own saves are dropped by `version` (`preferencesLive.ts`: `noteOwnPreferencesWrite` in `remote.write`, exact-version match so a collaborator's older version is still news). New engine option `remote.revalidateOnFocusAfterMs`: with `revalidateOnFocus` a slice needs no `staleAfter` timer, and returning to the tab re-reads once only after that long away (preferences: 30 min, `PREFERENCES_REVALIDATE_AFTER_ABSENCE_MS`). Other slices' timers are unchanged. Guard: `lib/redux/preferences/__tests__/preferences-update-only-on-change.test.ts`.
 - 2026-09-27 — **A warm-cache write sends only what this tab changed.** The
   write scheduler keeps a per-slice BASE — the record as of the last load
   (REHYDRATE / `empty`; a slice may supply it via `remote.baseline`), advanced

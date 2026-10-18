@@ -221,7 +221,7 @@ function ChooseOrganizationDialog({ row, state, onClose }: { row: ProjectRow | n
   const allProjects = state.report?.organization_id ?? null;
   const current = row?.chosen ?? (row && !row.held && allProjects ? FOLLOW_ALL : CHOOSE);
   const options = [
-    ...(current === CHOOSE ? [{ value: CHOOSE, label: "Choose organization" }] : []),
+    ...(current === CHOOSE ? [{ value: CHOOSE, label: "No organization set yet" }] : []),
     ...(allProjects || row?.chosen ? [{ value: FOLLOW_ALL, label: allProjects ? `${state.organizationName(allProjects)} (all projects)` : "Clear my choice" }] : []),
     ...organizations.map((o) => ({ value: o.id, label: o.name })),
   ];

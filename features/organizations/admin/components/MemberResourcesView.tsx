@@ -3,19 +3,14 @@
 /** Read-only org-scoped resource inventory for one member. */
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { formatCount } from "@ai-matrx/kit/format";
 import { Card } from "@/components/ui/card";
-import {
-  MatrxDataTable,
-  type MatrxColumnDef,
-} from "@ai-matrx/design-system/data-table";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   ORGANIZATIONS_SURFACE_NAME,
   createOrganizationsScope,
 } from "@/features/surfaces/manifests/organizations.manifest";
 import type { Organization } from "../../types";
-import type { OrgMemberResource } from "../types";
+import { OwnedResourcesTable } from "./OwnedResourcesTable";
 import { recordUnavailableMessage } from "@/lib/records/recordUnavailable";
 import { useOrgMemberDetail } from "../hooks";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -27,44 +22,6 @@ interface Props {
   organization: Organization;
   userId: string;
 }
-
-export const MEMBER_RESOURCE_COLUMNS: MatrxColumnDef<OrgMemberResource>[] = [
-  {
-    id: "type",
-    header: "Resource type",
-    accessorKey: "displayLabel",
-    filter: "text",
-    width: 240,
-    cell: (row) => (
-      <span className="font-medium text-foreground">{row.displayLabel}</span>
-    ),
-  },
-  {
-    id: "schema",
-    header: "Schema",
-    accessorKey: "schemaName",
-    filter: "text",
-    width: 150,
-    mobileHidden: true,
-  },
-  {
-    id: "table",
-    header: "Table",
-    accessorKey: "tableName",
-    filter: "text",
-    width: 180,
-    mobileHidden: true,
-  },
-  {
-    id: "count",
-    header: "Count",
-    accessorKey: "count",
-    filter: "number",
-    align: "right",
-    width: 100,
-    cell: (row) => formatCount(row.count),
-  },
-];
 
 export function MemberResourcesView({ orgId, organization, userId }: Props) {
   const { member, loading, error, refresh } = useOrgMemberDetail(orgId, userId);
@@ -129,28 +86,16 @@ export function MemberResourcesView({ orgId, organization, userId }: Props) {
         </p>
         {/* A failed refresh is said once, by the table's stale notice (read=). */}
         <div className="min-h-0 flex-1">
-          <MatrxDataTable
+          <OwnedResourcesTable
             tableId="organizations-admin-member-resources"
-            data={member.resources}
-            columns={MEMBER_RESOURCE_COLUMNS}
-            getRowId={(resource) => resource.resourceType}
+            rows={member.resources}
             isLoading={loading && !member}
             isFetching={loading && Boolean(member)}
             read={membersRead}
-            coverage={{
-              noun: "org-scoped resource type",
-              answeredBy: "client",
-              total: member.resources.length,
-            }}
-            toolbar={{
-              title: "Org-scoped resources",
-              searchPlaceholder: "Search resource types or locations…",
-              refresh: { onRefresh: async () => refresh() },
-            }}
-            emptyState={{
-              title:
-                "This member owns no org-scoped resources in this organization.",
-            }}
+            coverageNoun="org-scoped resource type"
+            title="Org-scoped resources"
+            emptyTitle="This member owns no org-scoped resources in this organization."
+            onRefresh={refresh}
           />
         </div>
       </div>

@@ -40,6 +40,7 @@ import {
   type PortalMembership,
   type PortalTable,
 } from "@/features/portals/service";
+import { detailFieldKeys } from "@/features/portals/blocks";
 import { isHers, readable, shownFields } from "@/features/portals/shown";
 
 import { addPortalComment, payPortalRecord, savePortalField } from "./actions";
@@ -165,10 +166,14 @@ export default async function PortalRecordPage({
       : "Pay";
 
   // A relation Field holds another record's id — not something a person reads.
-  const worded = fields.filter((field) => field.type !== "relation");
+  // PORTAL-BLOCKS: the owner may choose which of the shown Fields this record's page carries
+  // (kept to what the portal shows — a block never widens it). Editable ones stay editable.
+  const chosen = detailFieldKeys(membership.blocks, table.table_id, fields.map((f) => f.key));
+  const pick = chosen ? new Set(chosen) : null;
+  const worded = fields.filter((field) => field.type !== "relation" && (!pick || pick.has(field.key)));
   const headline = worded[0] ? readable(document[worded[0].key]) : "";
   const readOnly = worded.filter((field) => !field.editable);
-  const editable = fields.filter((field) => field.editable);
+  const editable = fields.filter((field) => field.editable && (!pick || pick.has(field.key)));
 
   return (
     <Frame align="start" look={look}>

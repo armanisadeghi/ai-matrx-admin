@@ -9,7 +9,7 @@ import { join } from "node:path";
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../spaces/templates/packs/design-system-board.pack.json"), "utf8"));
 const { spec, ...pack } = PACK;
 const TEMPLATE = { id: "t1", catalogue_id: "SP0363", version: 3, spec, pack };
-const TABLES = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow"].map((t) => [t, { tableId: `tbl-${t}`, viewIds: {} }]));
+const TABLES = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow", "component"].map((t) => [t, { tableId: `tbl-${t}`, viewIds: {} }]));
 
 const readSpaceTemplate = jest.fn();
 const listSpaceTemplates = jest.fn();

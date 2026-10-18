@@ -27,7 +27,7 @@ import type { PlanBlockKind } from "../../planner/types";
 import type { NarrativeReport } from "../narrative";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { OrganizationPickerButton } from "@/features/organizations/components/OrganizationPickerPopover";
+import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import type { OrganizationState } from "@/features/organizations/useOrganizationRequired";
 
 const STUDY_ANALYTICS_NARRATIVE_KIND = "study_analytics_narrative" as const;
@@ -189,14 +189,12 @@ export function NarrativeCard({
       </div>
 
       {needsOrganization ? (
-        // The picker is a whole list: it opens from the shared button (popover
-        // on desktop, sheet on a phone) so the numbers below keep the first screen.
-        <div className="flex flex-wrap items-center justify-between gap-2 py-1">
-          <p className="text-sm text-muted-foreground">
-            Choose an organization and your insights will be written here.
-          </p>
-          <OrganizationPickerButton align="end" />
-        </div>
+        <OrganizationContextNotice
+          compact
+          state={organizationState}
+          what="Your insights"
+          description="Insights are written once you have one."
+        />
       ) : checkingOrganization ? (
         <div className="flex flex-col gap-2 py-1" aria-label="Checking your organization">
           <Skeleton className="h-4 w-3/4 rounded" />

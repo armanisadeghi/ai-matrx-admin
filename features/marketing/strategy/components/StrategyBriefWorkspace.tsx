@@ -210,101 +210,74 @@ export function StrategyBriefWorkspace({
   const brandStrategyNoun = brandKindCopy(brandKind).strategy.noun;
   const sources = current ? builtFrom(scope, current.inputs) : [];
   const status = current ? statusRow(current) : null;
-  const factsEmpty = current
-    ? FACT_ROWS[scope].every((row) => !asText(current.facts[row.key]))
-    : false;
   const openQuestions = current ? asList(current.facts.open_questions) : [];
+  const factValues = current
+    ? FACT_ROWS[scope]
+        .map((row) => ({ ...row, value: asText(current.facts[row.key]) }))
+        .filter((row) => row.value)
+    : [];
+  const headline = factValues[0]?.value ?? "";
+  const heroFacts = factValues.slice(1, 4);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-3 px-3 py-3 sm:px-4">
       <h1 className="sr-only">{nounTitle}</h1>
-      {/* The one card that answers "where does this stand" */}
-      <SectionCard
-        title={nounTitle}
-        about={
-          scope === "brand"
-            ? "The business facts every website of this brand reads: what it does, who it serves, each service line and where it competes. AI writes it, you correct it, every agent inherits it."
-            : "What this one website is for, read from the brand strategy and the site itself. AI writes it, you correct it, every agent on this site works from it."
-        }
-        headerExtra={
-          <>
-            {current ? <Badge variant="secondary">v{current.versionNo}</Badge> : null}
-            {current?.agentConfidence != null ? (
-              <Badge variant="outline" title={current.confidenceReason}>
-                AI confidence {current.agentConfidence}/5
-              </Badge>
-            ) : null}
-            {generate.running ? (
-              <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                {generate.stage ?? "Working…"}
-              </span>
-            ) : (
-              <Button
-                variant={current ? "outline" : "primary"}
-                onClick={() => void runGenerate()}
-              >
-                {current ? (
-                  <RefreshCw className="size-3.5" aria-hidden />
-                ) : (
-                  <AGENT_ICON className="size-3.5" aria-hidden />
-                )}
-                {current ? "Write a new version" : `Write the ${noun}`}
-              </Button>
-            )}
-          </>
-        }
-      >
-        <div className="grid gap-3 p-3 sm:grid-cols-2 lg:grid-cols-3">
-          <PropertyRow
-            label="Status"
-            value={status?.value}
-            missing={current ? undefined : "None yet"}
-            help={
-              status?.help ??
-              (current ? undefined : "Nothing downstream can refer back to it until one exists.")
-            }
-          />
-          <PropertyRow
-            label="Built"
-            value={current ? formatDate(current.generatedAt) : undefined}
-            missing={current ? undefined : "Not yet"}
-          />
-          <PropertyRow
-            label="Built from"
-            value={sources.length > 0 ? sources.join(", ") : undefined}
-            missing={sources.length > 0 ? undefined : current ? "Not recorded" : "Not yet"}
-          />
-          {scope === "site" ? (
-            <PropertyRow
-              label={`Reads the ${brandStrategyNoun}`}
-              value={
-                brandStrategy.data
-                  ? brandStrategy.data.status === "confirmed"
-                    ? "Confirmed"
-                    : brandStrategy.data.status === "auto_accepted"
-                      ? "Accepted by lapse"
-                      : "Not yet reviewed"
-                  : undefined
-              }
-              missing={brandStrategy.data ? undefined : "None yet"}
-              help={
-                brandStrategy.data
-                  ? undefined
-                  : `Without it the site brief infers the business facts itself; write the ${brandStrategyNoun} first.`
-              }
-              meta={
-                <Button asChild variant="quiet">
-                  <Link href={brandStrategyHref} target="_blank" rel="noopener noreferrer">
-                    Open
-                    <ExternalLink className="size-3" aria-hidden />
-                  </Link>
-                </Button>
-              }
-            />
+      {/* Lead with the substance: who they are, then the strategy itself. */}
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            {nounTitle}
+          </p>
+          {generate.running ? (
+            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              {generate.stage ?? "Working…"}
+            </span>
+          ) : current ? (
+            <Button variant="quiet" onClick={() => void runGenerate()}>
+              <RefreshCw className="size-3.5" aria-hidden />
+              Write a new version
+            </Button>
           ) : null}
         </div>
-      </SectionCard>
+        {current && headline ? (
+          <>
+            <h2 className="mt-3 max-w-4xl text-balance text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+              {headline}
+            </h2>
+            {heroFacts.length > 0 ? (
+              <dl className="mt-6 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+                {heroFacts.map((row) => (
+                  <div key={row.key} className="bg-card/90 p-4">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {row.label}
+                    </dt>
+                    <dd className="mt-1 text-sm leading-snug text-foreground">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+          </>
+        ) : current ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Asked after this version — write a new version
+          </p>
+        ) : (
+          <div className="mt-3 space-y-4">
+            <h2 className="max-w-3xl text-balance text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+              {scope === "brand"
+                ? "What this business does, who it serves, where it competes."
+                : "What this website is for and what it must win."}
+            </h2>
+            {generate.running ? null : (
+              <Button variant="primary" onClick={() => void runGenerate()}>
+                <AGENT_ICON className="size-3.5" aria-hidden />
+                {`Write the ${noun}`}
+              </Button>
+            )}
+          </div>
+        )}
+      </header>
 
       <DurableRunFailure
         error={generate.error}
@@ -317,41 +290,6 @@ export function StrategyBriefWorkspace({
           <SectionCard title="The brief">
             <div className="p-3">
               <MarkdownRenderer content={current.briefMarkdown} fontSize={14} />
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            title="Facts the AI established"
-            about="What the AI concluded about the business. Anything wrong goes in Your corrections and outranks these."
-          >
-            <div className="space-y-3 p-3">
-              {factsEmpty ? (
-                <p className="type-secondary text-muted-foreground">
-                  Asked after this version — write a new version
-                </p>
-              ) : null}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {FACT_ROWS[scope].map((row) => {
-                  const value = asText(current.facts[row.key]);
-                  return (
-                    <PropertyRow
-                      key={row.key}
-                      label={row.label}
-                      value={value || undefined}
-                      missing={value ? undefined : "Not established"}
-                    />
-                  );
-                })}
-              </div>
-              {openQuestions.length > 0 ? (
-                <PropertyRow label="What the AI was unsure about">
-                  <ul className="list-disc space-y-0.5 pl-5">
-                    {openQuestions.map((q) => (
-                      <li key={q}>{q}</li>
-                    ))}
-                  </ul>
-                </PropertyRow>
-              ) : null}
             </div>
           </SectionCard>
 
@@ -434,6 +372,71 @@ export function StrategyBriefWorkspace({
               </li>
             ))}
           </ul>
+        </SectionCard>
+      ) : null}
+
+      {current ? (
+        <SectionCard
+          title="About this version"
+          headerExtra={
+            <>
+              <Badge variant="secondary">v{current.versionNo}</Badge>
+              {current.agentConfidence != null ? (
+                <Badge variant="outline" title={current.confidenceReason}>
+                  AI confidence {current.agentConfidence}/5
+                </Badge>
+              ) : null}
+            </>
+          }
+        >
+          <div className="space-y-3 p-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <PropertyRow label="Status" value={status?.value} help={status?.help} />
+              <PropertyRow label="Built" value={formatDate(current.generatedAt)} />
+              <PropertyRow
+                label="Built from"
+                value={sources.length > 0 ? sources.join(", ") : undefined}
+                missing="Not recorded"
+              />
+              {scope === "site" ? (
+                <PropertyRow
+                  label={`Reads the ${brandStrategyNoun}`}
+                  value={
+                    brandStrategy.data
+                      ? brandStrategy.data.status === "confirmed"
+                        ? "Confirmed"
+                        : brandStrategy.data.status === "auto_accepted"
+                          ? "Accepted by lapse"
+                          : "Not yet reviewed"
+                      : undefined
+                  }
+                  missing={brandStrategy.data ? undefined : "None yet"}
+                  help={
+                    brandStrategy.data
+                      ? undefined
+                      : `Without it the site brief infers the business facts itself; write the ${brandStrategyNoun} first.`
+                  }
+                  meta={
+                    <Button asChild variant="quiet">
+                      <Link href={brandStrategyHref} target="_blank" rel="noopener noreferrer">
+                        Open
+                        <ExternalLink className="size-3" aria-hidden />
+                      </Link>
+                    </Button>
+                  }
+                />
+              ) : null}
+            </div>
+            {openQuestions.length > 0 ? (
+              <PropertyRow label="What the AI was unsure about">
+                <ul className="list-disc space-y-0.5 pl-5">
+                  {openQuestions.map((q) => (
+                    <li key={q}>{q}</li>
+                  ))}
+                </ul>
+              </PropertyRow>
+            ) : null}
+          </div>
         </SectionCard>
       ) : null}
 

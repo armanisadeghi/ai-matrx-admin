@@ -96,6 +96,14 @@ describe("universal settings taxonomy", () => {
     expect(mockRangeCall).toHaveBeenCalledWith(0, 999);
   });
 
+  it("callers arriving while a read is in flight share it; the next read asks again", async () => {
+    const [a, b] = await Promise.all([fetchTaxonomyIndex(), fetchTaxonomyIndex()]);
+    expect(a).toBe(b);
+    expect(mockReadAllRows).toHaveBeenCalledTimes(1);
+    await fetchTaxonomyIndex();
+    expect(mockReadAllRows).toHaveBeenCalledTimes(2);
+  });
+
   it("keeps a sub-feature's controls under its canonical feature", () => {
     expect(taxonomyForNodeId("subfeature", taxonomy)?.feature_name).toBe("Surfaces");
   });

@@ -13,6 +13,7 @@
  * app instead of insetting it; a canvas holding only launcher tabs closes on restore.
  * Guard: `pnpm check:smoke --restored`.
  */
+import { PrepaintScript } from "@/components/ssr/PrepaintScript";
 import {
   CANVAS_LAUNCHER_KIND,
   CANVAS_PHONE_MAX_WIDTH,
@@ -41,5 +42,5 @@ r.setAttribute("data-canvas-reserved","");
 
 /** Render right after the page's main column (it measures `.shell-main`), before the canvas column. */
 export function CanvasPrepaintScript() {
-  return <script dangerouslySetInnerHTML={{ __html: CANVAS_PREPAINT_SCRIPT }} />;
+  return <PrepaintScript html={CANVAS_PREPAINT_SCRIPT} />;
 }

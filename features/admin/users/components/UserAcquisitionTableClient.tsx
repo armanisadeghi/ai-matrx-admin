@@ -1,5 +1,6 @@
 "use client";
 
+import { AGENT_RUNS_LABEL } from "../record/userOverview";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import { useAdminCost } from "@/components/cost/useAdminCost";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -497,7 +498,7 @@ export function UserAcquisitionTableClient() {
       {
         id: "total_requests",
         accessorKey: "total_requests",
-        header: "Requests",
+        header: AGENT_RUNS_LABEL,
         filter: "number",
         align: "right",
         width: 100,
@@ -620,7 +621,7 @@ export function UserAcquisitionTableClient() {
             setClickedRow(row);
             if (!row) return null;
             return {
-              content: `${row.display_name}: ${STATE_LABEL[row.identity_state]}, ${row.total_requests} requests`,
+              content: `${row.display_name}: ${STATE_LABEL[row.identity_state]}, ${row.total_requests} agent runs`,
             };
           }}
           extraSections={[
@@ -713,7 +714,7 @@ export function UserAcquisitionTableClient() {
             listDescription:
               "The filtered acquisition cohort currently visible.",
             humanRow: (row) =>
-              `${row.display_name}: ${STATE_LABEL[row.identity_state]}, ${row.total_requests} requests, ${fmtCost(row.total_cost)}, first page ${row.landing_path ?? "not captured"}`,
+              `${row.display_name}: ${STATE_LABEL[row.identity_state]}, ${row.total_requests} agent runs, ${fmtCost(row.total_cost)}, first page ${row.landing_path ?? "not captured"}`,
             rowAttributes: (row) => ({
               user_id: row.user_id,
               state: row.identity_state,

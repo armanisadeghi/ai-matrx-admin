@@ -20,11 +20,13 @@ import {
   OUTCOME_STATUS_LABEL,
   VERDICT_META,
   doorLabel,
+  judgeMeta,
 } from "../verdicts";
 import type {
   AgentTestSeat,
   CheckResultView,
   JudgeVerdictView,
+  OutcomeJudgeView,
   TestCaseView,
   TestResultView,
 } from "../types";
@@ -79,12 +81,40 @@ function CheckRow({ check }: { check: CheckResultView }) {
   );
 }
 
-function JudgeSection({ id }: { id: string }) {
+/** What the result's stored outcome says about the judge: advisory, or not fed every fact. */
+function JudgeOutcomeRows({ judge }: { judge: OutcomeJudgeView }) {
+  return (
+    <>
+      {judge.advisory ? (
+        <PropertyRow
+          label="Advisory"
+          value={judge.advisoryReason ?? "Below the agreement bar"}
+        />
+      ) : null}
+      {judge.fedOk === false ? (
+        <PropertyRow
+          label="Judge input"
+          value="Missing expected facts"
+          meta={judge.missingFacts.join(", ") || undefined}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function JudgeSection({
+  id,
+  outcome,
+}: {
+  id: string | null;
+  outcome: OutcomeJudgeView | null;
+}) {
   const [judge, setJudge] = useState<JudgeVerdictView | null | undefined>(
     undefined,
   );
   const [failed, setFailed] = useState<string | null>(null);
   useEffect(() => {
+    if (!id) return;
     let live = true;
     fetchJudgeVerdict(id)
       .then((row) => live && setJudge(row))
@@ -97,6 +127,20 @@ function JudgeSection({ id }: { id: string }) {
       live = false;
     };
   }, [id]);
+  if (!id) {
+    if (!outcome) return null;
+    return (
+      <>
+        <PropertyRow
+          label="Judge"
+          value={outcome.verdict}
+          missing={outcome.verdict ? undefined : "No verdict"}
+          meta={judgeMeta(null, outcome)}
+        />
+        <JudgeOutcomeRows judge={outcome} />
+      </>
+    );
+  }
   if (failed) return <PropertyRow label="Judge" value={failed} />;
   if (judge === undefined)
     return (
@@ -113,8 +157,9 @@ function JudgeSection({ id }: { id: string }) {
       <PropertyRow
         label="Judge"
         value={judge.verdict}
-        meta={judge.model ?? undefined}
+        meta={judgeMeta(judge.model, outcome)}
       />
+      {outcome ? <JudgeOutcomeRows judge={outcome} /> : null}
       <PropertyRow
         label="Reasoning"
         value={judge.reasoning}
@@ -280,8 +325,11 @@ export function ResultDetail({
           )}
         </div>
 
-        {result.judgeVerdictId ? (
-          <JudgeSection id={result.judgeVerdictId} />
+        {result.judgeVerdictId || result.outcome?.judge ? (
+          <JudgeSection
+            id={result.judgeVerdictId}
+            outcome={result.outcome?.judge ?? null}
+          />
         ) : null}
 
         {testCase ? (

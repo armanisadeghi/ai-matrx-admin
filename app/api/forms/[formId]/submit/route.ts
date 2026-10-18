@@ -25,6 +25,7 @@ import { NextResponse } from "next/server";
 import { publicForm, submitPublicForm } from "@/features/forms/service";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
 import { checkoutIfAsked } from "@/features/payments/server";
+import { pathOnRequestHost } from "@/lib/custom-domains/request-host";
 
 export const dynamic = "force-dynamic";
 
@@ -114,7 +115,7 @@ export async function POST(
           subjectId: formId,
           recordId: outcome.record_id,
           origin: new URL(request.url).origin,
-          back: `/f/${formId}`,
+          back: await pathOnRequestHost(request, `/f/${formId}`),
         }).catch((thrown: unknown) => ({ refused: thrown instanceof Error ? thrown.message : "Payment could not be started." }))
       : null;
     return NextResponse.json(

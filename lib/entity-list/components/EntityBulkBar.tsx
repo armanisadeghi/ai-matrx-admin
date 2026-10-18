@@ -24,11 +24,16 @@
 
 import { useState, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button, TextInputDialog } from "@ai-matrx/design-system";
 import { Checkbox } from "@/components/ui/checkbox";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
-import { bulkCountLabel, type EntityBulkAction } from "../selection";
+import {
+  bulkCountLabel,
+  type EntityBulkAction,
+  type EntityBulkActionConfirm,
+  type EntityBulkActionInput,
+} from "../selection";
 import type { EntityListSelection } from "../useEntityListSelection";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -50,6 +55,14 @@ export function EntityBulkActions<TRow>({
   compact?: boolean;
 }) {
   const [pending, setPending] = useState<string | null>(null);
+  // A confirm that asks for a reason: ONE text dialog for the whole selection.
+  const [asking, setAsking] = useState<{
+    question: EntityBulkActionConfirm;
+    confirmLabel: string;
+    resolve: (reason: string | null) => void;
+  } | null>(null);
+  const askReason = (question: EntityBulkActionConfirm, confirmLabel: string) =>
+    new Promise<string | null>((resolve) => setAsking({ question, confirmLabel, resolve }));
 
   const run = async (action: EntityBulkAction<TRow>) => {
     const target = selection.build();
@@ -59,7 +72,12 @@ export function EntityBulkActions<TRow>({
     // because only it knows what is lost, duplicated or spent; the shell only
     // guarantees the stop happens before anything runs.
     const question = action.confirm?.(target) ?? null;
-    if (question) {
+    const input: EntityBulkActionInput = {};
+    if (question?.reason) {
+      const reason = await askReason(question, question.confirmLabel ?? action.label);
+      if (reason === null) return;
+      input.reason = reason.trim();
+    } else if (question) {
       const ok = await confirm({
         title: question.title,
         description: question.description,
@@ -71,7 +89,7 @@ export function EntityBulkActions<TRow>({
 
     setPending(action.id);
     try {
-      const result = await action.run(target);
+      const result = await action.run(target, input);
       // 🚨 NOTHING HAPPENED MEANS NOTHING HAPPENED (jobs-bar cold-walk-13,
       // Friction). An action whose verb is a DIALOG resolves with nothing when
       // the person presses Cancel — and this line used to read that as `{}`,
@@ -161,6 +179,25 @@ export function EntityBulkActions<TRow>({
           </Button>
         );
       })}
+      {asking ? (
+        <TextInputDialog
+          open
+          onOpenChange={(open) => {
+            if (open) return;
+            asking.resolve(null);
+            setAsking(null);
+          }}
+          title={asking.question.title}
+          description={asking.question.description}
+          placeholder={asking.question.reason?.placeholder}
+          confirmLabel={asking.confirmLabel}
+          allowEmpty={asking.question.reason?.optional ?? false}
+          onConfirm={(value) => {
+            asking.resolve(value);
+            setAsking(null);
+          }}
+        />
+      ) : null}
     </>
   );
 }

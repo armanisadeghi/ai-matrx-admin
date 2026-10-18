@@ -1,4 +1,4 @@
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, CheckCircle2, Zap, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -165,27 +165,27 @@ export function ModuleLanding({
               className="w-full sm:w-auto"
               asChild
             >
-              <Link href={primaryCtaUrl}>
+              <NavLink href={primaryCtaUrl}>
                 {primaryCtaLabel}
                 <ArrowRight className="h-4 w-4" />
-              </Link>
+              </NavLink>
             </Button>
             <Button hero
               variant="outline"
               className="w-full sm:w-auto"
               asChild
             >
-              <Link href="#capabilities">See what it does</Link>
+              <NavLink href="#capabilities">See what it does</NavLink>
             </Button>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link
+            <NavLink
               href={signInUrl}
               className="font-medium text-primary hover:underline"
             >
               Sign in
-            </Link>
+            </NavLink>
           </p>
         </div>
       </section>
@@ -334,9 +334,9 @@ export function ModuleLanding({
 
               if (area.href) {
                 return (
-                  <Link key={area.title} href={area.href} className="block">
+                  <NavLink key={area.title} href={area.href} className="block">
                     {card}
-                  </Link>
+                  </NavLink>
                 );
               }
 
@@ -362,19 +362,19 @@ export function ModuleLanding({
                   Pairs well with
                 </h2>
               </div>
-              <Link
+              <NavLink
                 href="/features"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
               >
                 Browse every module
                 <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+              </NavLink>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedEntries.map((entry) => {
                 const Icon = entry.icon;
                 return (
-                  <Link
+                  <NavLink
                     key={entry.href}
                     href={entry.href}
                     className={cn(
@@ -394,7 +394,7 @@ export function ModuleLanding({
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {entry.teaser}
                     </p>
-                  </Link>
+                  </NavLink>
                 );
               })}
             </div>
@@ -416,10 +416,10 @@ export function ModuleLanding({
             asChild
           >
             {/* The same sign-up link as the hero, so the bottom CTA keeps the destination too (audit9 G5). */}
-            <Link href={primaryCtaUrl}>
+            <NavLink href={primaryCtaUrl}>
               {primaryCtaLabel}
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </NavLink>
           </Button>
         </div>
       </section>

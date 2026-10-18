@@ -353,6 +353,11 @@ function checkBoard(raw: unknown, tables: Map<string, TemplateSpec["tables"][num
           else if (!tables.has(t.table)) say(`${tat}.table`, `No table has the token "${t.table}". Tables: ${[...tables.keys()].join(", ") || "none"}.`);
           if (t.layout !== undefined && t.layout !== "section" && t.layout !== "table") say(`${tat}.layout`, `"${String(t.layout)}" is not a table layout. Write "section" or "table".`);
           if (t.text !== undefined) say(`${tat}.text`, "A table tile has no text; its rows are the table's sample rows.");
+        } else if (t.kind === "cover") {
+          if (!str(t.hero) && !str(t.text)) say(`${tat}`, "A cover tile has a hero (HTML) or text (markdown): write at least one.");
+          if (t.hero !== undefined && typeof t.hero !== "string") say(`${tat}.hero`, "A cover's hero is HTML text.");
+          else if (typeof t.hero === "string" && /<script\b/i.test(t.hero)) say(`${tat}.hero`, "A cover's hero is markup and CSS only: scripts do not run in it.");
+          if (t.table !== undefined || t.layout !== undefined) say(`${tat}`, "A cover tile names no table and no layout.");
         } else if (t.kind === "note" || t.kind === "writeUp") {
           if (!str(t.text)) say(`${tat}.text`, `A ${String(t.kind)} tile starts with words: write its text.`);
           else if (/\bNotion\b/.test(t.text)) say(`${tat}.text`, "Write in our own words: the text names another product.");

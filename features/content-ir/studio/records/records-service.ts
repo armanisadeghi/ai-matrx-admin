@@ -29,6 +29,7 @@ import type { ColumnFiltersState } from "@ai-matrx/design-system/data-table/type
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { getUserOrganizations } from "@/features/organizations/service";
 import { getOrganizationMembers } from "@/features/organizations/service";
+import { IN_MY_ORGANIZATIONS } from "@/features/organizations/service/inMyOrganizations";
 import type { Json } from "@/types/database.types";
 import type {
   ConfirmationFilter,
@@ -146,19 +147,6 @@ export async function creatorNames(
   return byUser;
 }
 
-/**
- * The organizations a BLENDED `orgs` scope covers: every organization the
- * viewer belongs to EXCEPT their personal one, whose content is what "Mine"
- * answers (lib/list-scope/types.ts). Every reader here — the page, the scope
- * counts, the archive counts — goes through this one function, because the
- * first version did not: the list included the personal org and the tab count
- * did not, so the tab said 9 over a list of 10. A screen never lies.
- */
-async function blendedOrgIds(): Promise<string[]> {
-  const orgs = await readableOrganizations();
-  return orgs.map((o) => o.id);
-}
-
 /** Narrow the raw enum text without widening an unknown value to "confirmed". */
 function toConfirmation(raw: string): RecordConfirmation {
   return raw === "confirmed" ? "confirmed" : "unconfirmed";
@@ -226,7 +214,7 @@ function applyRecordFilters<Q extends RecordQueryShape>(
     KindRecordsQuery,
     "scope" | "orgId" | "archiveFilter" | "confirmation" | "writer" | "search" | "columnFilters"
   >,
-  ctx: { userId: string; orgIds: string[]; searchKeys: string[] },
+  ctx: { userId: string; searchKeys: string[] },
 ): Q {
   let out = query;
 
@@ -234,7 +222,9 @@ function applyRecordFilters<Q extends RecordQueryShape>(
   if (q.scope.kind === "mine") {
     out = out.eq("created_by", ctx.userId) as Q;
   } else {
-    out = out.in("organization_id", ctx.orgIds) as Q;
+    // ANY of her organizations, asked on the server (`in_my_organizations`) — never an id
+    // list built from the first page of her organizations (bounded organizations, 2026-10-17).
+    out = out.is(IN_MY_ORGANIZATIONS, true) as Q;
   }
   // The page's organization filter narrows every lane, Mine included.
   if (q.orgId) {
@@ -298,11 +288,6 @@ export async function listKindRecords(
   args: ListKindRecordsArgs,
 ): Promise<KindRecordsPage> {
   const userId = await currentUserId();
-  const orgIds = args.scope.kind === "orgs" ? await blendedOrgIds() : [];
-
-  if (args.scope.kind === "orgs" && orgIds.length === 0) {
-    return { rows: [], total: 0 };
-  }
 
   const base = db()
     .from("kind_instance")
@@ -313,7 +298,7 @@ export async function listKindRecords(
   const filtered = applyRecordFilters(
     base as unknown as RecordQueryShape,
     args,
-    { userId, orgIds, searchKeys: args.searchKeys },
+    { userId, searchKeys: args.searchKeys },
   ) as unknown as typeof base;
 
   // `page` is ONE-based — MatrxDataTable's controlled pagination speaks that,
@@ -398,15 +383,11 @@ export async function countKindRecordsByScope(
   args: Omit<ListKindRecordsArgs, "sort" | "direction" | "page" | "pageSize" | "scope">,
 ): Promise<RecordScopeCounts> {
   const userId = await currentUserId();
-  const orgIds = await blendedOrgIds();
 
 
   async function countFor(
     scope: KindRecordsQuery["scope"],
   ): Promise<number> {
-    if (scope.kind === "orgs" && orgIds.length === 0) {
-      return 0;
-    }
     const base = db()
       .from("kind_instance")
       .select("id", { count: "exact", head: true })
@@ -415,7 +396,7 @@ export async function countKindRecordsByScope(
     const filtered = applyRecordFilters(
       base as unknown as RecordQueryShape,
       { ...args, scope },
-      { userId, orgIds, searchKeys: args.searchKeys },
+      { userId, searchKeys: args.searchKeys },
     ) as unknown as typeof base;
     const { count, error } = await filtered;
     if (error) {
@@ -440,7 +421,6 @@ export async function countKindRecordsByArchiveState(
   args: Omit<ListKindRecordsArgs, "sort" | "direction" | "page" | "pageSize" | "archiveFilter">,
 ): Promise<Partial<Record<ArchiveFilterValue, number>>> {
   const userId = await currentUserId();
-  const orgIds = args.scope.kind === "orgs" ? await blendedOrgIds() : [];
 
   async function countFor(archiveFilter: ArchiveFilterValue): Promise<number> {
     const base = db()
@@ -451,7 +431,7 @@ export async function countKindRecordsByArchiveState(
     const filtered = applyRecordFilters(
       base as unknown as RecordQueryShape,
       { ...args, archiveFilter },
-      { userId, orgIds, searchKeys: args.searchKeys },
+      { userId, searchKeys: args.searchKeys },
     ) as unknown as typeof base;
     const { count, error } = await filtered;
     if (error) {

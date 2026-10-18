@@ -9,7 +9,7 @@
 // Plan gating: custom_domains.allowed_plans (+ the platform-only plan_exception grant).
 // Plan: common-docs/systems/data/custom-data/CUSTOM-DOMAINS.md
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Copy, ExternalLink, RefreshCw } from "lucide-react";
@@ -22,6 +22,9 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import type { DnsRecord, DomainStatus } from "@/lib/custom-domains/dns-records";
+
+/** Same throttle as the edge re-check (lib/custom-domains/recheck.ts). */
+const RECHECK_MS = 120_000;
 
 interface Route {
   id: string;
@@ -95,6 +98,33 @@ export default function OrgDomainsPage() {
       await load();
     })();
   }, [load]);
+
+  // Viewing the page re-checks every domain still waiting for DNS (once per RECHECK_MS per domain),
+  // so nobody has to press Check now to see a domain go live. Admins only: the route refuses others.
+  const rechecked = useRef(new Set<string>());
+  useEffect(() => {
+    if (!read?.can_manage || !organizationId) return;
+    const stale = read.domains.filter(
+      (d) =>
+        d.status !== "live" &&
+        !rechecked.current.has(d.id) &&
+        (!d.last_check_at || Date.now() - new Date(d.last_check_at).getTime() > RECHECK_MS),
+    );
+    if (stale.length === 0) return;
+    stale.forEach((d) => rechecked.current.add(d.id));
+    void (async () => {
+      await Promise.all(
+        stale.map((d) =>
+          fetch(`/api/organizations/${organizationId}/domains`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "check", domain_id: d.id }),
+          }).catch((thrown: unknown) => console.error(`[domains] re-check of ${d.host} failed`, thrown)),
+        ),
+      );
+      await load();
+    })();
+  }, [read, organizationId, load]);
 
   const api = useCallback(
     async (method: "POST" | "DELETE", body?: Record<string, string>, query = "") => {
@@ -399,6 +429,12 @@ function RoutesEditor({
     else {
       setTarget("");
       setPath("/");
+      // The host serves the new routes now, not after the edge cache's TTL.
+      await fetch(`/api/organizations/${organizationId}/domains`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "purge", domain_id: domain.id }),
+      }).catch((thrown: unknown) => console.error("[domains] cache purge failed; the host follows within 60 s", thrown));
     }
     await onChanged();
   }

@@ -11,7 +11,7 @@
  * row and destroys the user's spatial map.
  */
 
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import { usePathname } from "next/navigation";
 import { IconResolver } from "@ai-matrx/icons";
 import { ADMIN_LAUNCHPAD_PATH } from "@/features/admin/constants/admin-categories";
@@ -62,7 +62,7 @@ export default function AdminRouteSidebarMenu({
       className="shell-admin-route-menu"
       data-sidebar-expanded={expanded ? "true" : "false"}
     >
-      <AppLink
+      <NavLink
         href="/administration"
         title="Administration"
         aria-label="Administration"
@@ -76,9 +76,9 @@ export default function AdminRouteSidebarMenu({
           <AdminRouteIcon iconName="ShieldCheck" />
         </span>
         <span className="shell-nav-label">Administration</span>
-      </AppLink>
+      </NavLink>
 
-      <AppLink
+      <NavLink
         href={ADMIN_LAUNCHPAD_PATH}
         target="_blank"
         rel="noopener noreferrer"
@@ -97,7 +97,7 @@ export default function AdminRouteSidebarMenu({
         <span className="shell-nav-external">
           <IconResolver iconName="ArrowUpRight" className="h-3.5 w-3.5" />
         </span>
-      </AppLink>
+      </NavLink>
 
       <div className="shell-admin-domain-list">
         {adminMenuDomains
@@ -143,7 +143,7 @@ export default function AdminRouteSidebarMenu({
                       // `/mandates/[mandateKey]`), never every pattern match.
                       const active = activeLocation?.destination.link === item.link;
                       return (
-                        <AppLink
+                        <NavLink
                           key={item.link}
                           href={item.link}
                           title={item.title}
@@ -159,7 +159,7 @@ export default function AdminRouteSidebarMenu({
                             <AdminRouteIcon iconName={item.iconName} />
                           </span>
                           <span className="shell-nav-label">{item.title}</span>
-                        </AppLink>
+                        </NavLink>
                       );
                     }),
                   )}
