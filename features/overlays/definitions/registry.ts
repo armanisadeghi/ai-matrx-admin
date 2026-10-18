@@ -235,4 +235,5 @@ export const APP_OVERLAYS = [
   d.dictionarySelectorWindowOverlay,
   d.dataSourceWindowOverlay,
   d.dataChangesWindowOverlay,
+  d.welcomeFoundWindowOverlay,
 ] as const;

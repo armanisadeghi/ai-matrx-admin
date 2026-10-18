@@ -54,6 +54,20 @@ interface UseUserFormProfileReturn {
 
 const ENDPOINT = "/api/user/form-profile";
 
+/** The parts of a profile save a found search can search with, or null when it carries none. */
+function foundSearchInfoOf(patch: UserFormProfilePatch): {
+  name: string | null;
+  website: string | null;
+  socials: { handle_or_url: string; platform?: string }[];
+} | null {
+  const name = [patch.legal_first_name, patch.legal_last_name].filter(Boolean).join(" ").trim() || patch.preferred_name?.trim() || null;
+  const website = patch.website_url?.trim() || null;
+  const socials = (patch.social_handles ?? [])
+    .filter((h) => (h.url ?? h.handle)?.trim())
+    .map((h) => ({ handle_or_url: (h.url ?? h.handle).trim(), ...(h.platform ? { platform: h.platform } : {}) }));
+  return name || website || socials.length ? { name, website, socials } : null;
+}
+
 function diffKeys<T extends Record<string, unknown>>(
   next: T,
   prev: T,
@@ -173,6 +187,13 @@ export function useUserFormProfile(): UseUserFormProfileReturn {
           setServerData(json.data);
         }
         toast.success("Profile saved");
+        // A website, an account or a name is new information for a found search that found nothing: one more
+        // background round (sign-up welcome, foundSearchBackground.ts), loaded only when the save carries one.
+        const info = foundSearchInfoOf(patch);
+        if (info)
+          void import("@/features/marketing/smart-add/welcome/foundSearchBackground")
+            .then((m) => m.foundSearchNewInfo(info))
+            .catch((error: unknown) => console.error("[found-search] The new information could not start a search.", error));
         return true;
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Network error";

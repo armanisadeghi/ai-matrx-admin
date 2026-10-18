@@ -21,13 +21,15 @@ import { websiteLinkIn } from "./personPrefill";
 import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
 import { PersonFoundStage } from "./found/PersonFoundStage";
-import { personAnswers, personCards, personCoreReady } from "./found/personCards";
-import { loginSeed as readLoginSeed, provenProfileName, seedEvidence, websiteCandidate, type LoginSeed } from "./welcome/loginSeed";
-import { siteIsTheirs } from "./welcome/siteTheirs";
+import { personAnswers, personCoreReady } from "./found/personCards";
+import { loginSeed as readLoginSeed, provenProfileName, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
 import { readTypedName, writeTypedName } from "./welcome/typedNameStore";
 import { WelcomeNameFrame, WelcomeNothingFrame } from "./welcome/WelcomeAsk";
-import { peopleGroups, type PersonGroup } from "./welcome/peopleGroups";
+import type { PersonGroup } from "./welcome/peopleGroups";
 import { PersonPickCards } from "./welcome/PersonPickCards";
+import { startWelcomeRound, welcomeFirstRound, welcomeFirstSeeds } from "./welcome/welcomeRound";
+import { welcomeVerdict } from "./welcome/welcomeVerdict";
+import { visibleEvidence } from "./visibleEvidence";
 import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
 import { writeWelcomeProfile } from "./welcome/saveWelcomeProfile";
 import { findSessionBrand } from "./welcome/sessionBrand";
@@ -57,11 +59,10 @@ import { useExistingBrands } from "./useExistingBrands";
 import { ExistingBrandNotice } from "./ExistingBrandNotice";
 import { smartAddEnrichHref } from "./smartAddUrl";
 import { factSlotKey, typedWebsiteItem, wakesFacts, type FactsSaw } from "./firstData";
-import { categoriesFor, liveKnownDomainRules } from "@/lib/web-domains/registry";
+import { liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
 import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
-import { withoutOwnAccountRows } from "./ownAccountRows";
 import {
   createBrand,
   createBusinessFact,
@@ -117,9 +118,6 @@ import {
   autoWork,
   nameAnchors,
   releaseChanged,
-  orderedEvidence,
-  withoutNonContactEmails,
-  withoutRepeatedText,
   seedKeys,
   linkPages,
   websiteHost,
@@ -1038,16 +1036,7 @@ export function SmartAddBrand({
     (setupView?.spendUsd ?? 0);
   // A later round's judgment of a finding wins over an earlier one (it saw more).
   const suggestions: Record<string, WeThinkSuggestion> = Object.assign({}, ...rounds.map((r) => (r.runId ? suggestionsByRun[r.runId] : undefined) ?? {}));
-  // Staff profiles' names, photos and bios never reach a business's own slots (they are key people).
-  const visible = withSuggestions(
-    withoutRepeatedText(
-      withoutNonContactEmails(orderedEvidence(withoutStaffFacts(withoutOwnAccountRows(items.values(), decisions), person)), (host) =>
-        categoriesFor(host, liveKnownDomainRules() ?? []).includes("non_contact_mail"),
-      ),
-      decisions,
-    ),
-    suggestions,
-  );
+  const visible = visibleEvidence(items.values(), decisions, person, suggestions);
   // What is known about the person ranks every candidate card (typed facts, confirmed sites): anchors over counts.
   const knownAnchors: PersonAnchors = {
     city: personTyped.current?.city ?? null,
@@ -1807,10 +1796,6 @@ export function SmartAddBrand({
   // The name the login alone gives (the provider's, the one typed at sign-up, the email's hint): known from the first
   // frame, before the domain registry loads.
   const welcomeLoginName = welcomeOn && loginSeed ? readLoginSeed(loginSeed.user, null).name : null;
-  const welcomeFirstSeeds = (seed: LoginSeed): RoundSeeds => ({
-    website: websiteCandidate(seed) ?? "",
-    socials: seed.githubLogin ? [{ handle_or_url: `https://github.com/${seed.githubLogin}`, platform: "github" }] : [],
-  });
   const bootWelcome = useEffectEvent(async () => {
     if (!loginSeed) return;
     // The domain registry first: whether the email's domain is free mail decides whether it is a website candidate.
@@ -1853,17 +1838,31 @@ export function SmartAddBrand({
     void bootWelcome();
   }, [welcomeOn]);
   // The first round: proven values as confirmed inputs, the person by name (find), the email's free lookups.
-  // Without a name it is the email round alone (its proven GitHub profile may name them).
-  const runWelcomeFirst = useEffectEvent(() => {
+  // Without a name it is the email round alone (its proven GitHub profile may name them). Built by the ONE shared
+  // builder (welcome/welcomeRound.ts) the background found search also starts, so either start is the same run.
+  const runWelcomeFirst = useEffectEvent(async () => {
     const seed = welcomeSeed;
-    if (!seed) return;
-    const name = personTyped.current?.name ?? null;
-    if (name) welcomeNameSearched.current = name;
-    emailPending.current = seed.emailProven && seed.email ? seed.email : "";
-    void startRound(welcomeFirstSeeds(seed), name ? { name } : {}, true, Boolean(name));
+    if (!seed || !loginSeed) return;
+    const round = welcomeFirstRound(seed, personTyped.current?.name ?? null);
+    if (!round) return;
+    if (round.name) welcomeNameSearched.current = round.name;
+    const id = crypto.randomUUID();
+    // A failed start keeps its redo, so Retry starts the same round through the screen's own path.
+    const redo = { woken: round.name ? { name: round.name } : {}, firstData: true, find: round.find, email: round.email };
+    setRounds((r) => [...r, { id, runId: null, seeds: round.seeds, error: null, redo }]);
+    welcomeRoundCount.current = 1;
+    try {
+      const organizationId = await ensureOrgId(null);
+      const { runId } = await startWelcomeRound(dispatch, { base: loginSeed.subject, n: 0, inputs: round.inputs, organizationId });
+      setRounds((r) => r.map((x) => (x.id === id ? { ...x, runId } : x)));
+      if (round.find) anchorRunId.current = runId;
+    } catch (error) {
+      welcomeRoundCount.current = 0;
+      setRounds((r) => r.map((x) => (x.id === id ? { ...x, error: plainStartError(error) } : x)));
+    }
   });
   useEffect(() => {
-    if (welcomeKick) runWelcomeFirst();
+    if (welcomeKick) void runWelcomeFirst();
   }, [welcomeKick]);
   // A name that arrived after the first round (typed into the name frame, or proven by GitHub): its own find round.
   const welcomeSetName = (name: string, typedByThem: boolean) => {
@@ -1925,33 +1924,12 @@ export function SmartAddBrand({
 
   // The login's website candidate is theirs only when the run shows it (the site names them, or their account links
   // to it); then it is vouched for like a site they typed. Until then it is never "Your site".
-  const welcomeCandidate = welcomeSeed ? websiteCandidate(welcomeSeed) : null;
-  const welcomeSiteTheirs = Boolean(
-    welcomeCandidate && welcomeName && siteIsTheirs({ host: welcomeCandidate, name: welcomeName, items: visible, facts, decisions }),
-  );
-  const welcomeCardsFound = personCards({
-    items: visible,
-    witnesses,
-    facts,
-    decisions,
-    typedWebsiteKey: welcomeSiteTheirs && welcomeCandidate ? `website:${websiteHost(welcomeCandidate)}` : null,
-    name: welcomeName,
-    avatarUrl: welcomeSeed?.avatarUrl ?? null,
-  });
-  const welcomeCards =
-    welcomeCandidate &&
-    !welcomeSiteTheirs &&
-    welcomeCardsFound.website &&
-    websiteHost(welcomeCardsFound.website.url ?? welcomeCardsFound.website.value) === websiteHost(welcomeCandidate)
-      ? { ...welcomeCardsFound, website: null }
-      : welcomeCardsFound;
+  const welcome = welcomeVerdict({ items: visible, witnesses, facts, decisions, seed: welcomeSeed, name: welcomeName, namesakes });
+  const welcomeCards = welcome.cards;
   const anchorView = anchorRunId.current ? views[anchorRunId.current] : undefined;
   const anchorDone = Boolean(anchorView && TERMINAL.includes(anchorView.status ?? ""));
-  const welcomeCandidates = visible.filter((i) => i.anchor && decisions[i.key] !== "no" && !namesakes.has(i.key));
-  const welcomePeople = welcomeName ? peopleGroups(welcomeCandidates, welcomeName) : { people: [], more: 0 };
-  const welcomePicked = visible.some((i) => i.anchor && (decisions[i.key] === "yes" || decisions[i.key] === "preferred"));
-  const welcomeSeedAnchor = Boolean(welcomeSeed?.githubLogin) || welcomeSiteTheirs;
-  const welcomeAnchored = welcomeSeedAnchor || welcomePicked || Boolean(welcomeCards.website) || welcomeCards.accounts.length > 0;
+  const welcomePeople = welcome.people;
+  const welcomeAnchored = welcome.anchored;
   // The people are asked only once the anchor round settled AND the session's saved answers are back: a reload must
   // never ask "Which one is you?" (or lead with another account) before the pick already made has been restored.
   const welcomeAsks = memoryReady && !welcomeAnchored && anchorDone && welcomePeople.people.length > 0;
@@ -1959,12 +1937,7 @@ export function SmartAddBrand({
   const welcomeNeedsName = welcomeOn && !welcomeName;
   // Settled, and the only certain facts are what they typed (their name, a city typed under "None of these"):
   // never a grid of their own words; an honest frame with another search or Skip.
-  const welcomeOnlyTyped =
-    !welcomeCards.website &&
-    welcomeCards.accounts.length === 0 &&
-    !welcomeCards.bio &&
-    !welcomeCards.tools &&
-    (!welcomeCards.location || (welcomeCards.location.facts.length === 0 && welcomeCards.location.item?.source.kind === "typed"));
+  const welcomeOnlyTyped = welcome.onlyTyped;
   const welcomeNothing =
     Boolean(welcomeSeed) && memoryReady && !working && rounds.length > 0 && !startFailure && !welcomeAsks && welcomeOnlyTyped;
 

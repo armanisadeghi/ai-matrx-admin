@@ -229,6 +229,7 @@ export const RENDER_MAP: OverlayRenderMap = {
   voicePad: () => import("./voicePad.render"),
   voicePadAdvanced: () => import("./voicePadAdvanced.render"),
   waitingRunsWindow: () => import("./waitingRunsWindow.render"),
+  welcomeFoundWindow: () => import("./welcomeFoundWindow.render"),
   workInboxWindow: () => import("./workInboxWindow.render"),
   workflowRunWindow: () => import("./workflowRunWindow.render"),
   workingDocumentWindow: () => import("./workingDocumentWindow.render"),
