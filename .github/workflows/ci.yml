@@ -443,6 +443,14 @@ jobs:
         run: pnpm check:one-peek:strict
       - name: the one-peek guard can still fail (self-test)
         run: pnpm check:one-peek:self-test
+      # Arman, 2026-10-18: every record id shown or copied is <RecordId> from
+      # @ai-matrx/design-system. A new hand-sliced id, private copy-id button or
+      # local id component is NEW debt. Baseline scripts/one-id/baseline.json
+      # only shrinks. Static; CI has no ../aidream checkout, so THIS repo only.
+      - name: THERE IS ONE ID (no hand-built id displays)
+        run: pnpm check:one-id:strict
+      - name: the one-id guard can still fail (self-test)
+        run: pnpm check:one-id:self-test
       - name: ONE DOOR TO BROWSER STORAGE
         # 2026-10-14: outside lib/sync nothing calls localStorage/sessionStorage
         # directly. Declare the key with @/lib/sync/client-storage (kind + reason),
