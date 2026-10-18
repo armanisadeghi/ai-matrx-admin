@@ -144,6 +144,11 @@ export interface UpdateListInput {
   p_description?: string;
   p_is_public?: boolean;
   p_public_read?: boolean;
-  /** Full replace of items if provided */
-  p_items?: CreateListItemInput[] | null;
+  /** The list's whole set of choices: an item carrying its `id` is edited in place and keeps that id
+   * (references to it hold); one without is added; a live item left out is archived. */
+  p_items?: UpdateListItemInput[] | null;
+}
+
+export interface UpdateListItemInput extends CreateListItemInput {
+  id?: string;
 }
