@@ -248,7 +248,7 @@ export function parseCustomFieldFilters(raw: unknown): CustomFieldFilters | unde
 
 /** The PostgREST builder methods the predicates use, structurally (every builder returns itself). */
 export type CustomFieldPredicateBuilder<Q> = {
-  is(column: string, value: null): Q;
+  is(column: string, value: boolean | null): Q;
   not(column: string, operator: string, value: unknown): Q;
   eq(column: string, value: unknown): Q;
   neq(column: string, value: unknown): Q;

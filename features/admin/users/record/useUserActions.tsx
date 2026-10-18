@@ -50,6 +50,8 @@ export interface UserActionSubject {
   mcp_full_access: boolean;
   top_tier_models: boolean;
   onboarding_completed: boolean;
+  /** The email address is verified. */
+  email_confirmed: boolean;
 }
 
 export type UserActionPatch = Partial<
