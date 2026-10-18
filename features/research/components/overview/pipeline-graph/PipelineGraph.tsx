@@ -917,7 +917,7 @@ export function PipelineGraph() {
               hint={
                 p.failed_analyses > 0
                   ? `${p.failed_analyses} failed`
-                  : "page summaries"
+                  : "pages & videos"
               }
               status={analysisStatus}
               href={`${base}/analysis`}
@@ -1069,7 +1069,7 @@ export function PipelineGraph() {
               hint={
                 p.failed_analyses > 0
                   ? `${p.failed_analyses} failed · ${topic.analyses_per_keyword ?? 5}/kw`
-                  : `${topic.analyses_per_keyword ?? 5}/kw page summaries`
+                  : `${topic.analyses_per_keyword ?? 5}/kw · pages & videos`
               }
               status={analysisStatus}
               href={`${base}/analysis`}

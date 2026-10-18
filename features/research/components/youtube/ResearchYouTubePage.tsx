@@ -20,6 +20,9 @@ import { useResearchKeywords } from "../../hooks/useResearchState";
 import { TopicYouTubeLibrary } from "./TopicYouTubeLibrary";
 import { loadTopicVideoLibrary, type RankedTopicVideo } from "./topicVideoLibrary";
 
+/** Video analyses streamed at once; a large selection queues behind this. */
+const ANALYSIS_CONCURRENCY = 3;
+
 export default function ResearchYouTubePage() {
   const dispatch = useAppDispatch();
   const topicId = useTopicId();
@@ -30,7 +33,6 @@ export default function ResearchYouTubePage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [libraryError, setLibraryError] = useState<unknown>(null);
-  const [processing, setProcessing] = useState(false);
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
   /** Adopted `activeRequests` rows for the bounded batch. */
   const adoptedRequestIdsRef = useRef(new Set<string>());
@@ -99,17 +101,19 @@ export default function ResearchYouTubePage() {
   };
 
   const [analyzing, setAnalyzing] = useState<Set<string>>(new Set());
+  // Derived, never its own state: two overlapping Analyze clicks each add and
+  // remove their own ids, so neither can switch the other's progress off.
+  const processing = analyzing.size > 0;
 
   const processVideos = async (videoIds: string[]) => {
     if (videoIds.length === 0) return;
     setAnalyzing((current) => new Set([...current, ...videoIds]));
-    setProcessing(true);
     setBatchProgress(`Connecting to ${videoIds.length} videos…`);
     try {
       let completed = 0;
       const result = await runWithConcurrency(
         videoIds,
-        videoIds.length,
+        ANALYSIS_CONCURRENCY,
         async (videoId) => {
           const abortController = new AbortController();
           streamAbortControllersRef.current.add(abortController);
@@ -165,7 +169,6 @@ export default function ResearchYouTubePage() {
         setSelected(new Set());
       }
     } finally {
-      setProcessing(false);
       setBatchProgress(null);
     }
   };

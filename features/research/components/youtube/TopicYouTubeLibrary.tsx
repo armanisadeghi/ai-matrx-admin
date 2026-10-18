@@ -51,8 +51,14 @@ const SHORTS_SHELF = 6;
 /** Regular videos shown above the Shorts shelf — two rows of three. */
 const VIDEOS_BEFORE_SHORTS = 6;
 
-/** A Short: YouTube's /shorts/ address, or a minute or less. */
+/**
+ * A Short: YouTube's own verdict when we have it (`media_kind`, set from its
+ * /shorts/ probe — Shorts run to three minutes); otherwise a /shorts/ address,
+ * or a minute or less as the last resort.
+ */
 export function isShort(entry: RankedTopicVideo): boolean {
+  if (entry.mediaKind === "short") return true;
+  if (entry.mediaKind === "long") return false;
   const { video } = entry;
   if (video.canonical_url?.includes("/shorts/")) return true;
   return video.duration_seconds != null && video.duration_seconds > 0 && video.duration_seconds <= 60;
@@ -271,7 +277,7 @@ function Thumbnail({
   selecting: boolean;
   onToggle: () => void;
 }) {
-  const { video, score } = entry;
+  const { video } = entry;
   const thumb = useThumbnail(video.youtube_video_id, video.thumbnail_url);
   return (
     <div className="group/thumb relative">
@@ -295,12 +301,6 @@ function Thumbnail({
           onLoad={thumb.onLoad}
         />
         {/* ui-exception: ink on a photo is fixed white on a dark scrim (YouTube's own convention). */}
-        <span
-          className="absolute left-2 top-2 rounded bg-black/75 px-1.5 py-0.5 type-meta font-semibold tabular-nums text-white"
-          aria-label={`Match score ${score.score}`}
-        >
-          {score.score}
-        </span>
         {aspect === "video" && video.duration && (
           <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1 py-0.5 type-meta font-medium tabular-nums text-white">
             {formatYouTubeDuration(video.duration)}
@@ -310,7 +310,9 @@ function Thumbnail({
       <div
         className={cn(
           "absolute right-2 top-2 rounded-md bg-card p-1 shadow-sm transition-opacity",
-          selected || selecting ? "opacity-100" : "opacity-0 focus-within:opacity-100 group-hover/thumb:opacity-100",
+          selected || selecting
+            ? "opacity-100"
+            : "opacity-0 focus-within:opacity-100 group-hover/thumb:opacity-100 [@media(hover:none)]:opacity-100",
         )}
       >
         <Checkbox checked={selected} onCheckedChange={onToggle} aria-label={`Select ${video.title ?? "video"}`} />
@@ -370,7 +372,16 @@ function VideoMenu({
   );
 }
 
-function AnalyzedMark({ entry }: { entry: RankedTopicVideo }) {
+function AnalyzedMark({ entry, analyzing }: { entry: RankedTopicVideo; analyzing: boolean }) {
+  if (analyzing) {
+    return (
+      <>
+        <span aria-hidden> · </span>
+        <LoaderCircle aria-hidden className="inline size-3.5 -translate-y-px animate-spin" />
+        <span> Analyzing</span>
+      </>
+    );
+  }
   if (videoReadState(entry.video) !== "analyzed") return null;
   return (
     <>
@@ -409,7 +420,7 @@ function VideoTile({
         onToggle={() => onToggle(id)}
       />
       <div className="flex gap-3">
-        <UserAvatarDisplay user={{ id: video.channel_id, name: video.channel_title }} size="sm" className="mt-0.5 shrink-0" />
+        <ChannelAvatar entry={entry} />
         <div className="min-w-0 flex-1">
           {/* ui-exception: flagship stage — a video title reads at YouTube's own size. */}
           <Link href={href} className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground" title={video.title ?? undefined}>
@@ -418,7 +429,7 @@ function VideoTile({
           <p className="mt-1 truncate type-secondary text-muted-foreground">{video.channel_title ?? "YouTube creator"}</p>
           <p className="truncate type-secondary tabular-nums text-muted-foreground">
             {meta.join(" · ")}
-            <AnalyzedMark entry={entry} />
+            <AnalyzedMark entry={entry} analyzing={analyzing.has(id)} />
           </p>
         </div>
         <VideoMenu
@@ -457,7 +468,7 @@ function ShortTile({ entry, selected, onToggle, analyzing, onAnalyze }: TileActi
           </Link>
           <p className="truncate type-secondary tabular-nums text-muted-foreground">
             {video.view_count != null ? `${formatYouTubeCount(video.view_count)} views` : "—"}
-            <AnalyzedMark entry={entry} />
+            <AnalyzedMark entry={entry} analyzing={analyzing.has(id)} />
           </p>
         </div>
         <VideoMenu
@@ -472,3 +483,23 @@ function ShortTile({ entry, selected, onToggle, analyzing, onAnalyze }: TileActi
     </article>
   );
 }
+
+function ChannelAvatar({ entry }: { entry: RankedTopicVideo }) {
+  const { video, channelThumbnail } = entry;
+  const [failed, setFailed] = useState(false);
+  if (channelThumbnail && !failed) {
+    return (
+      <Image
+        src={channelThumbnail}
+        alt=""
+        width={36}
+        height={36}
+        unoptimized
+        className="mt-0.5 size-9 shrink-0 rounded-full bg-muted object-cover"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return <UserAvatarDisplay user={{ id: video.channel_id, name: video.channel_title }} size="sm" className="mt-0.5 shrink-0" />;
+}
+
