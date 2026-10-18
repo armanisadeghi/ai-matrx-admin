@@ -1,0 +1,3698 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0453",
+  "version": 1,
+  "title": "PR Agency Desk",
+  "description": "Clients, campaigns, a media contact book, pitches and earned coverage for a PR agency.",
+  "forWho": "Public relations and communications agencies",
+  "icon": {
+    "emoji": "📣"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "clients",
+  "tags": [
+    "pr",
+    "media relations",
+    "pitching",
+    "coverage"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-pr-agency-desk",
+    "catalogueId": "SP0453",
+    "useCase": "Delphine Marchetti-Oyelaran runs a PR agency and uses this to see which pitches need a follow-up, which journalists are warm, and what coverage each client earned this month.",
+    "industry": "media_creators",
+    "vertical": "PR agency",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Fairlight Communications",
+      "describes": "A six-person public relations agency handling launches, funding news and thought leadership for growth-stage companies and local institutions.",
+      "address": {
+        "line1": "17 Candlewick Court",
+        "city": "Minneapolis",
+        "region": "MN",
+        "postalCode": "55401",
+        "country": "US"
+      },
+      "phone": "(612) 555-0154",
+      "website": "fairlightcomms.net",
+      "email": "team@fairlightcomms.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-pr-agency-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The organizations the agency represents, with retainer and ownership.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Active",
+              "On hold",
+              "Ended"
+            ],
+            "choiceColors": {
+              "Prospect": "slate",
+              "Active": "green",
+              "On hold": "blue",
+              "Ended": "amber"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Active": "in_progress",
+              "On hold": "in_progress",
+              "Ended": "done"
+            }
+          },
+          {
+            "key": "sector",
+            "label": "Sector",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Software",
+              "Food and drink",
+              "Healthcare",
+              "Nonprofit",
+              "Financial technology",
+              "Consumer goods"
+            ],
+            "choiceColors": {
+              "Software": "slate",
+              "Food and drink": "blue",
+              "Healthcare": "amber",
+              "Nonprofit": "violet",
+              "Financial technology": "teal",
+              "Consumer goods": "orange"
+            }
+          },
+          {
+            "key": "retainer",
+            "label": "Monthly fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Account lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "campaigns_live",
+            "label": "Campaigns live",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "campaigns",
+            "pick": "campaign_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Pitching",
+                "Live"
+              ]
+            }
+          },
+          {
+            "key": "coverage_month",
+            "label": "Coverage this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "client_coverage",
+            "pick": "headline",
+            "agg": "count",
+            "filter": {
+              "published_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "reach_month",
+            "label": "Reach this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "client_coverage",
+            "pick": "reach",
+            "agg": "sum",
+            "filter": {
+              "published_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_campaign",
+            "label": "New campaign",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "campaign",
+              "template": "New campaign",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About them"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Mission, audiences and what makes them newsworthy."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Spokespeople"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who can speak to media, on what, and how to reach them fast."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rules"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Topics to avoid, approval chain and embargo habits."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Larkspur Analytics",
+              "status": "Active",
+              "sector": "Software",
+              "retainer": 6500,
+              "contact_email": "press@larkspuranalytics.net",
+              "since": "@today-380d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Honeycomb Kitchens",
+              "status": "Active",
+              "sector": "Food and drink",
+              "retainer": 4200,
+              "contact_email": "hello@honeycombkitchens.net",
+              "since": "@today-210d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Westbrook Community Clinic",
+              "status": "Active",
+              "sector": "Healthcare",
+              "retainer": 3500,
+              "contact_email": "comms@westbrookclinic.net",
+              "since": "@today-500d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Ledgerwise Payments",
+              "status": "Active",
+              "sector": "Financial technology",
+              "retainer": 8000,
+              "contact_email": "media@ledgerwisepay.net",
+              "since": "@today-90d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Riverbend Food Bank",
+              "status": "On hold",
+              "sector": "Nonprofit",
+              "retainer": 1800,
+              "contact_email": "info@riverbendfoodbank.net",
+              "since": "@today-640d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Brightleaf Tea Company",
+              "status": "Prospect",
+              "sector": "Consumer goods",
+              "contact_email": "marketing@brightleaftea.net",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Torchlight Learning",
+              "status": "Ended",
+              "sector": "Software",
+              "retainer": 5000,
+              "contact_email": "press@torchlightlearn.net",
+              "since": "@today-800d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "campaign",
+        "name": "Campaigns",
+        "labelSingular": "Campaign",
+        "labelPlural": "Campaigns",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "newspaper",
+        "titleField": "campaign_name",
+        "describes": "Each news moment the agency pitches, from planning to wrap-up.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "campaign_name",
+            "label": "Campaign",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "Pitching",
+              "Live",
+              "Wrapped"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "Pitching": "blue",
+              "Live": "green",
+              "Wrapped": "amber"
+            },
+            "required": true,
+            "default": "Planning",
+            "statusGroups": {
+              "Planning": "todo",
+              "Pitching": "in_progress",
+              "Live": "in_progress",
+              "Wrapped": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Product launch",
+              "Funding news",
+              "Event",
+              "Thought leadership",
+              "Crisis prep"
+            ],
+            "choiceColors": {
+              "Product launch": "slate",
+              "Funding news": "blue",
+              "Event": "amber",
+              "Thought leadership": "violet",
+              "Crisis prep": "teal"
+            }
+          },
+          {
+            "key": "starts_on",
+            "label": "Pitching starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "embargo_on",
+            "label": "News date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "pitch_count",
+            "label": "Pitches",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pitches",
+            "pick": "label",
+            "agg": "count"
+          },
+          {
+            "key": "reply_count",
+            "label": "Replies and wins",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pitches",
+            "pick": "label",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Replied",
+                "Covered"
+              ]
+            }
+          },
+          {
+            "key": "reply_rate",
+            "label": "Reply rate (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Pitches} > 0, ROUND({Replies and wins} / {Pitches} * 100, 0), 0)"
+          },
+          {
+            "key": "coverage_count",
+            "label": "Pieces of coverage",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "coverage",
+            "pick": "headline",
+            "agg": "count"
+          },
+          {
+            "key": "reach_total",
+            "label": "Total reach",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "coverage",
+            "pick": "reach",
+            "agg": "sum"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_send_to_media",
+            "label": "Send to media",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "campaign_send_to_media"
+            }
+          },
+          {
+            "key": "add_pitch",
+            "label": "New pitch",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "pitch",
+              "template": "New pitch",
+              "prefill": {
+                "campaign": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_coverage",
+            "label": "Log coverage",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "coverage",
+              "template": "New coverage",
+              "prefill": {
+                "campaign": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "starts_on",
+            "embargo_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New campaign",
+            "values": {
+              "campaign_name": "New campaign",
+              "status": "Planning"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Message"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The one thing we want a reader to remember."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Hook"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Why this is news now."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Materials"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Release, photos, data, spokespeople, embargo terms."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "campaign-1",
+            "values": {
+              "campaign_name": "Larkspur forecasting launch",
+              "status": "Live",
+              "kind": "Product launch",
+              "starts_on": "@today-20d",
+              "embargo_on": "@today-3d",
+              "client": "client-1",
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-2",
+            "values": {
+              "campaign_name": "Larkspur customer data study",
+              "status": "Pitching",
+              "kind": "Thought leadership",
+              "starts_on": "@today-5d",
+              "embargo_on": "@today+9d",
+              "client": "client-1",
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "campaign-3",
+            "values": {
+              "campaign_name": "Honeycomb second location opening",
+              "status": "Pitching",
+              "kind": "Event",
+              "starts_on": "@today-8d",
+              "embargo_on": "@today+6d",
+              "client": "client-2",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-4",
+            "values": {
+              "campaign_name": "Honeycomb summer menu preview",
+              "status": "Planning",
+              "kind": "Product launch",
+              "starts_on": "@today+12d",
+              "embargo_on": "@today+30d",
+              "client": "client-2",
+              "lead": "tm-4"
+            }
+          },
+          {
+            "key": "campaign-5",
+            "values": {
+              "campaign_name": "Westbrook flu clinic drive",
+              "status": "Live",
+              "kind": "Event",
+              "starts_on": "@today-30d",
+              "embargo_on": "@today-14d",
+              "client": "client-3",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-6",
+            "values": {
+              "campaign_name": "Ledgerwise Series B announcement",
+              "status": "Pitching",
+              "kind": "Funding news",
+              "starts_on": "@today-6d",
+              "embargo_on": "@today+4d",
+              "client": "client-4",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "campaign-7",
+            "values": {
+              "campaign_name": "Ledgerwise fraud trends briefing",
+              "status": "Planning",
+              "kind": "Thought leadership",
+              "starts_on": "@today+7d",
+              "embargo_on": "@today+21d",
+              "client": "client-4",
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-8",
+            "values": {
+              "campaign_name": "Riverbend winter appeal",
+              "status": "Wrapped",
+              "kind": "Event",
+              "starts_on": "@today-120d",
+              "embargo_on": "@today-70d",
+              "client": "client-5",
+              "lead": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "media_contact",
+        "name": "Media contacts",
+        "labelSingular": "Media contact",
+        "labelPlural": "Media contacts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "contact",
+        "titleField": "full_name",
+        "describes": "Journalists, editors and producers the agency pitches.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "full_name",
+            "label": "Journalist",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "outlet",
+            "label": "Outlet",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "beat",
+            "label": "Beat",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Business",
+              "Technology",
+              "Food",
+              "Health",
+              "Local news",
+              "Trade press"
+            ],
+            "choiceColors": {
+              "Business": "slate",
+              "Technology": "blue",
+              "Food": "amber",
+              "Health": "violet",
+              "Local news": "teal",
+              "Trade press": "orange"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "relationship",
+            "label": "Relationship",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Cold",
+              "Warm",
+              "Friendly"
+            ],
+            "choiceColors": {
+              "Cold": "slate",
+              "Warm": "blue",
+              "Friendly": "amber"
+            }
+          },
+          {
+            "key": "last_contacted",
+            "label": "Last contacted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Relationship owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "pitched_count",
+            "label": "Pitches sent",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "contact_pitches",
+            "pick": "label",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New media contact",
+            "values": {
+              "full_name": "New media contact"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Beat and style"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they cover, how they like to be pitched, deadlines."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "History"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Stories we pitched, what they wrote, and what they said no to."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "media_contact-1",
+            "values": {
+              "full_name": "Petra Lindholm",
+              "outlet": "Cascade Business Ledger",
+              "beat": "Business",
+              "email": "plindholm@cascadeledger.net",
+              "relationship": "Warm",
+              "last_contacted": "@today-12d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "media_contact-2",
+            "values": {
+              "full_name": "Idris Bellamy",
+              "outlet": "Northern Tech Wire",
+              "beat": "Technology",
+              "email": "idris@northerntechwire.net",
+              "relationship": "Friendly",
+              "last_contacted": "@today-4d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "media_contact-3",
+            "values": {
+              "full_name": "Calista Everhart",
+              "outlet": "Metro Table Magazine",
+              "beat": "Food",
+              "email": "calista@metrotable.net",
+              "relationship": "Warm",
+              "last_contacted": "@today-20d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "media_contact-4",
+            "values": {
+              "full_name": "Gideon Okafor",
+              "outlet": "Heartland Health Journal",
+              "beat": "Health",
+              "email": "gokafor@heartlandhealth.net",
+              "relationship": "Cold",
+              "last_contacted": "@today-90d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "media_contact-5",
+            "values": {
+              "full_name": "Thalia Brandvold",
+              "outlet": "Twin Cities Daily",
+              "beat": "Local news",
+              "email": "tbrandvold@tcdaily.net",
+              "relationship": "Friendly",
+              "last_contacted": "@today-6d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "media_contact-6",
+            "values": {
+              "full_name": "Marcus Teodorescu",
+              "outlet": "Payments Quarterly",
+              "beat": "Trade press",
+              "email": "marcus@paymentsquarterly.net",
+              "relationship": "Warm",
+              "last_contacted": "@today-3d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "media_contact-7",
+            "values": {
+              "full_name": "Rosalind Achterberg",
+              "outlet": "Prairie Public Radio",
+              "beat": "Local news",
+              "email": "rachterberg@prairiepublic.net",
+              "relationship": "Cold",
+              "last_contacted": "@today-150d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "media_contact-8",
+            "values": {
+              "full_name": "Dev Ranganathan",
+              "outlet": "Venture Ledger",
+              "beat": "Business",
+              "email": "dev@ventureledger.net",
+              "relationship": "Warm",
+              "last_contacted": "@today-8d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "media_contact-9",
+            "values": {
+              "full_name": "Annika Sorensen",
+              "outlet": "Kitchen & Cellar",
+              "beat": "Food",
+              "email": "annika@kitchencellar.net",
+              "relationship": "Friendly",
+              "last_contacted": "@today-2d",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "pitch",
+        "name": "Pitches",
+        "labelSingular": "Pitch",
+        "labelPlural": "Pitches",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "send",
+        "titleField": "label",
+        "describes": "Each pitch sent to a journalist for a campaign, with its follow-up date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "label",
+            "label": "Pitch",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Replied",
+              "Covered",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Declined": "red",
+              "Draft": "slate",
+              "Sent": "green",
+              "Replied": "blue",
+              "Covered": "amber"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Replied": "in_progress",
+              "Covered": "done",
+              "Declined": "done"
+            }
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "contact",
+            "label": "Journalist",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "media_contact",
+            "relationMax": 1
+          },
+          {
+            "key": "sent_on",
+            "label": "Sent",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "follow_up_on",
+            "label": "Follow up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "angle",
+            "label": "Angle",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_won_coverage",
+            "label": "Won coverage",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pitch_won_coverage"
+            }
+          }
+        ],
+        "independentOf": {
+          "campaign": "Either record can be created or change status before the other.",
+          "contact": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Sent",
+              "Replied",
+              "Covered",
+              "Declined"
+            ],
+            "filled": [
+              "sent_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "sent_on",
+            "follow_up_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New pitch",
+            "values": {
+              "label": "New pitch",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Subject line"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Under nine words, with the news in it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pitch"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Three short paragraphs: the news, why this reader, what we can offer."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What to say if there is no reply."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pitch-1",
+            "values": {
+              "label": "Larkspur launch to Northern Tech Wire",
+              "status": "Covered",
+              "campaign": "campaign-1",
+              "contact": "media_contact-2",
+              "sent_on": "@today-18d",
+              "follow_up_on": "@today-12d",
+              "angle": "First look at the forecasting engine"
+            }
+          },
+          {
+            "key": "pitch-2",
+            "values": {
+              "label": "Larkspur launch to Cascade Business Ledger",
+              "status": "Replied",
+              "campaign": "campaign-1",
+              "contact": "media_contact-1",
+              "sent_on": "@today-17d",
+              "follow_up_on": "@today-10d",
+              "angle": "Customer story: cutting stockouts"
+            }
+          },
+          {
+            "key": "pitch-3",
+            "values": {
+              "label": "Larkspur study to Venture Ledger",
+              "status": "Sent",
+              "campaign": "campaign-2",
+              "contact": "media_contact-8",
+              "sent_on": "@today-4d",
+              "follow_up_on": "@today+1d",
+              "angle": "Data on how teams share dashboards"
+            }
+          },
+          {
+            "key": "pitch-4",
+            "values": {
+              "label": "Larkspur study to Cascade Business Ledger",
+              "status": "Draft",
+              "campaign": "campaign-2",
+              "contact": "media_contact-1",
+              "follow_up_on": "@today+2d",
+              "angle": "Exclusive for Monday"
+            }
+          },
+          {
+            "key": "pitch-5",
+            "values": {
+              "label": "Honeycomb opening to Metro Table",
+              "status": "Sent",
+              "campaign": "campaign-3",
+              "contact": "media_contact-3",
+              "sent_on": "@today-5d",
+              "follow_up_on": "@mon+2d",
+              "angle": "Second kitchen and the new bread program"
+            }
+          },
+          {
+            "key": "pitch-6",
+            "values": {
+              "label": "Honeycomb opening to Kitchen & Cellar",
+              "status": "Replied",
+              "campaign": "campaign-3",
+              "contact": "media_contact-9",
+              "sent_on": "@today-6d",
+              "follow_up_on": "@today+3d",
+              "angle": "Chef interview offer"
+            }
+          },
+          {
+            "key": "pitch-7",
+            "values": {
+              "label": "Honeycomb opening to Twin Cities Daily",
+              "status": "Sent",
+              "campaign": "campaign-3",
+              "contact": "media_contact-5",
+              "sent_on": "@today-7d",
+              "follow_up_on": "@today-1d",
+              "angle": "Local jobs and neighborhood angle"
+            }
+          },
+          {
+            "key": "pitch-8",
+            "values": {
+              "label": "Westbrook drive to Twin Cities Daily",
+              "status": "Covered",
+              "campaign": "campaign-5",
+              "contact": "media_contact-5",
+              "sent_on": "@today-28d",
+              "follow_up_on": "@today-22d",
+              "angle": "Free flu shots, extended hours"
+            }
+          },
+          {
+            "key": "pitch-9",
+            "values": {
+              "label": "Westbrook drive to Prairie Public Radio",
+              "status": "Declined",
+              "campaign": "campaign-5",
+              "contact": "media_contact-7",
+              "sent_on": "@today-27d",
+              "follow_up_on": "@today-20d",
+              "angle": "Interview with the nurse lead"
+            }
+          },
+          {
+            "key": "pitch-10",
+            "values": {
+              "label": "Ledgerwise Series B to Venture Ledger",
+              "status": "Replied",
+              "campaign": "campaign-6",
+              "contact": "media_contact-8",
+              "sent_on": "@today-4d",
+              "follow_up_on": "@today+2d",
+              "angle": "Embargoed round details"
+            }
+          },
+          {
+            "key": "pitch-11",
+            "values": {
+              "label": "Ledgerwise Series B to Payments Quarterly",
+              "status": "Sent",
+              "campaign": "campaign-6",
+              "contact": "media_contact-6",
+              "sent_on": "@today-3d",
+              "follow_up_on": "@today+3d",
+              "angle": "Where the money goes next"
+            }
+          },
+          {
+            "key": "pitch-12",
+            "values": {
+              "label": "Ledgerwise briefing to Payments Quarterly",
+              "status": "Draft",
+              "campaign": "campaign-7",
+              "contact": "media_contact-6",
+              "follow_up_on": "@today+10d",
+              "angle": "Fraud trend numbers"
+            }
+          }
+        ]
+      },
+      {
+        "token": "coverage",
+        "name": "Coverage",
+        "labelSingular": "Coverage",
+        "labelPlural": "Coverage",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "newspaper",
+        "titleField": "headline",
+        "describes": "Every earned mention, with outlet, reach and tone.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "headline",
+            "label": "Headline",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "outlet",
+            "label": "Outlet",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "published_on",
+            "label": "Published",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reach",
+            "label": "Estimated reach",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000000
+              }
+            ]
+          },
+          {
+            "key": "sentiment",
+            "label": "Tone",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Positive",
+              "Neutral",
+              "Negative"
+            ],
+            "choiceColors": {
+              "Positive": "slate",
+              "Neutral": "blue",
+              "Negative": "amber"
+            }
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "campaign": "Either record can be created or change status before the other.",
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New coverage",
+            "values": {
+              "headline": "New coverage"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the piece says about the client in two lines."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Thank the journalist, share it, and note quotes for the report."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "coverage-1",
+            "values": {
+              "headline": "Larkspur unveils forecasting engine for retailers",
+              "outlet": "Northern Tech Wire",
+              "published_on": "@today-12d",
+              "reach": 210000,
+              "sentiment": "Positive",
+              "link": "https://northerntechwire.net/larkspur-forecasting",
+              "campaign": "campaign-1",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "coverage-2",
+            "values": {
+              "headline": "The software trying to end stockouts",
+              "outlet": "Cascade Business Ledger",
+              "published_on": "@today-9d",
+              "reach": 340000,
+              "sentiment": "Positive",
+              "link": "https://cascadeledger.net/stockouts",
+              "campaign": "campaign-1",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "coverage-3",
+            "values": {
+              "headline": "Free flu shots return to Westbrook this week",
+              "outlet": "Twin Cities Daily",
+              "published_on": "@today-22d",
+              "reach": 180000,
+              "sentiment": "Positive",
+              "link": "https://tcdaily.net/westbrook-flu",
+              "campaign": "campaign-5",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "coverage-4",
+            "values": {
+              "headline": "Honeycomb to open second kitchen in Eastside",
+              "outlet": "Kitchen & Cellar",
+              "published_on": "@today-2d",
+              "reach": 95000,
+              "sentiment": "Positive",
+              "link": "https://kitchencellar.net/honeycomb-second",
+              "campaign": "campaign-3",
+              "client": "client-2"
+            }
+          },
+          {
+            "key": "coverage-5",
+            "values": {
+              "headline": "Ledgerwise raises Series B to widen fraud checks",
+              "outlet": "Venture Ledger",
+              "published_on": "@today-1d",
+              "reach": 260000,
+              "sentiment": "Positive",
+              "link": "https://ventureledger.net/ledgerwise-series-b",
+              "campaign": "campaign-6",
+              "client": "client-4"
+            }
+          },
+          {
+            "key": "coverage-6",
+            "values": {
+              "headline": "Local clinic stretches hours but queues remain",
+              "outlet": "Heartland Health Journal",
+              "published_on": "@today-20d",
+              "reach": 120000,
+              "sentiment": "Neutral",
+              "link": "https://heartlandhealth.net/clinic-hours",
+              "campaign": "campaign-5",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "coverage-7",
+            "values": {
+              "headline": "Food bank appeal falls short of winter goal",
+              "outlet": "Prairie Public Radio",
+              "published_on": "@today-80d",
+              "reach": 75000,
+              "sentiment": "Negative",
+              "link": "https://prairiepublic.net/foodbank-appeal",
+              "campaign": "campaign-8",
+              "client": "client-5"
+            }
+          },
+          {
+            "key": "coverage-8",
+            "values": {
+              "headline": "Where Honeycomb sources its flour",
+              "outlet": "Metro Table Magazine",
+              "published_on": "@today-4d",
+              "reach": 150000,
+              "sentiment": "Positive",
+              "link": "https://metrotable.net/honeycomb-flour",
+              "campaign": "campaign-3",
+              "client": "client-2"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one account lead.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each campaign belongs to one client.",
+        "fromTable": "campaign",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "campaigns"
+      },
+      {
+        "describes": "Each campaign belongs to one lead.",
+        "fromTable": "campaign",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "campaign_by_lead"
+      },
+      {
+        "describes": "Each media contact belongs to one relationship owner.",
+        "fromTable": "media_contact",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "contact_by_owner"
+      },
+      {
+        "describes": "Each pitch belongs to one campaign.",
+        "fromTable": "pitch",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "pitches"
+      },
+      {
+        "describes": "Each pitch belongs to one journalist.",
+        "fromTable": "pitch",
+        "fromField": "contact",
+        "toTable": "media_contact",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "contact_pitches"
+      },
+      {
+        "describes": "Each coverage belongs to one campaign.",
+        "fromTable": "coverage",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "coverage"
+      },
+      {
+        "describes": "Each coverage belongs to one client.",
+        "fromTable": "coverage",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "client_coverage"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Delphine Marchetti-Oyelaran",
+              "role": "Founder",
+              "work_email": "delphine@fairlightcomms.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Rafael Quintanilla",
+              "role": "Senior account director",
+              "work_email": "rafael@fairlightcomms.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Soo-jin Petrakis",
+              "role": "Media relations lead",
+              "work_email": "soo-jin@fairlightcomms.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Everett Lund",
+              "role": "Account executive",
+              "work_email": "everett@fairlightcomms.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Naledi Brouwer",
+              "role": "Coordinator",
+              "work_email": "naledi@fairlightcomms.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "campaign_intake",
+        "name": "Plan a campaign",
+        "describes": "Capture a new news moment before it is planned.",
+        "audience": "staff",
+        "table": "campaign",
+        "fields": [
+          {
+            "fieldKey": "campaign_name",
+            "ask": "What is the news?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which client?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of campaign?"
+          },
+          {
+            "fieldKey": "embargo_on",
+            "ask": "When does the news break?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is on the board as Planning."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "campaign_send_to_media",
+        "table": "campaign",
+        "name": "Send to media",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Pitching"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pitch_won_coverage",
+        "table": "pitch",
+        "name": "Won coverage",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Covered"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_campaign",
+        "name": "All campaigns",
+        "table": "campaign",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "campaign_board",
+        "name": "Campaigns board",
+        "table": "campaign",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "campaign_cal",
+        "name": "Campaigns calendar",
+        "table": "campaign",
+        "kind": "calendar",
+        "dateField": "embargo_on",
+        "allDay": true
+      },
+      {
+        "token": "campaign_over",
+        "name": "Overdue",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "embargo_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planning",
+            "Pitching"
+          ]
+        }
+      },
+      {
+        "token": "campaign_week",
+        "name": "Due this week",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "embargo_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planning",
+            "Pitching"
+          ]
+        }
+      },
+      {
+        "token": "campaign_next7",
+        "name": "Next 7 days",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "embargo_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planning",
+            "Pitching"
+          ]
+        }
+      },
+      {
+        "token": "campaign_mine",
+        "name": "My campaigns",
+        "table": "campaign",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_media_contact",
+        "name": "All media contacts",
+        "table": "media_contact",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "media_contact_board",
+        "name": "Media contacts board",
+        "table": "media_contact",
+        "kind": "kanban",
+        "groupBy": "relationship"
+      },
+      {
+        "token": "media_contact_stale",
+        "name": "Contacted this month",
+        "table": "media_contact",
+        "kind": "grid",
+        "within": {
+          "last_contacted": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "all_pitch",
+        "name": "All pitches",
+        "table": "pitch",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "pitch_board",
+        "name": "Pitches board",
+        "table": "pitch",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "pitch_cal",
+        "name": "Pitches calendar",
+        "table": "pitch",
+        "kind": "calendar",
+        "dateField": "follow_up_on",
+        "allDay": true
+      },
+      {
+        "token": "pitch_over",
+        "name": "Overdue",
+        "table": "pitch",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Replied"
+          ]
+        }
+      },
+      {
+        "token": "pitch_week",
+        "name": "Due this week",
+        "table": "pitch",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Replied"
+          ]
+        }
+      },
+      {
+        "token": "pitch_next7",
+        "name": "Next 7 days",
+        "table": "pitch",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Replied"
+          ]
+        }
+      },
+      {
+        "token": "all_coverage",
+        "name": "All coverage",
+        "table": "coverage",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "coverage_cal",
+        "name": "Coverage calendar",
+        "table": "coverage",
+        "kind": "calendar",
+        "dateField": "published_on",
+        "allDay": true
+      },
+      {
+        "token": "coverage_week",
+        "name": "Published this week",
+        "table": "coverage",
+        "kind": "grid",
+        "within": {
+          "published_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "coverage_month",
+        "name": "Published this month",
+        "table": "coverage",
+        "kind": "grid",
+        "within": {
+          "published_on": {
+            "relative": "this_month"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "PR Agency Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "pitch",
+          "describes": "Each pitch sent to a journalist for a campaign, with its follow-up date."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many pitches are waiting for a reply?",
+        "whyItMatters": "The media lead chases every sent pitch after three days.",
+        "expect": {
+          "table": "pitch",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Sent"
+          },
+          "answer": 4,
+          "unit": "pitches"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open campaigns.",
+        "action": {
+          "kind": "open",
+          "surface": "campaign_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "campaign_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open media contacts.",
+        "action": {
+          "kind": "open",
+          "surface": "media_contact_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "media_contact_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "fairlightcomms.net"
+      ],
+      "fictionalStreets": [
+        "Candlewick Court"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "pr-agency-desk",
+      "parent": null,
+      "title": "PR Agency Desk",
+      "icon": {
+        "emoji": "📣"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The agency's media desk in one place: clients, the news moments you are pitching, a contact book of journalists, every pitch with its follow-up date and the coverage it earned. Open the Dashboard on Monday, work pitches that need a follow-up, and log each piece of coverage the day it runs."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:writing-a-pitch"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:media-list-hygiene"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:coverage-reporting"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:launch-day-runbook"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The organizations the agency represents, with retainer and ownership."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Campaigns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each news moment the agency pitches, from planning to wrap-up."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "campaign",
+              "view": "campaign_board"
+            },
+            "inline": true,
+            "title": "Campaigns",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cam-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cam-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "embargo_on"
+              },
+              {
+                "id": "cam-t",
+                "name": "All campaigns",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cam-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "embargo_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planning",
+                    "Pitching"
+                  ]
+                }
+              },
+              {
+                "id": "cam-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "embargo_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planning",
+                    "Pitching"
+                  ]
+                }
+              },
+              {
+                "id": "cam-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "embargo_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planning",
+                    "Pitching"
+                  ]
+                }
+              },
+              {
+                "id": "cam-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cam-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Media contacts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Journalists, editors and producers the agency pitches."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "media_contact",
+              "view": "media_contact_board"
+            },
+            "inline": true,
+            "title": "Media contacts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "med-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "relationship"
+              },
+              {
+                "id": "med-t",
+                "name": "All media contacts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "med-stale",
+                "name": "Contacted this month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "last_contacted": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "med-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pitches"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each pitch sent to a journalist for a campaign, with its follow-up date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pitch",
+              "view": "pitch_board"
+            },
+            "inline": true,
+            "title": "Pitches",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pit-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pit-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "follow_up_on"
+              },
+              {
+                "id": "pit-t",
+                "name": "All pitches",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pit-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Replied"
+                  ]
+                }
+              },
+              {
+                "id": "pit-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Replied"
+                  ]
+                }
+              },
+              {
+                "id": "pit-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Replied"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "pit-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Coverage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every earned mention, with outlet, reach and tone."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "coverage",
+              "view": "all_coverage"
+            },
+            "inline": true,
+            "title": "Coverage",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cov-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "published_on"
+              },
+              {
+                "id": "cov-t",
+                "name": "All coverage",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cov-week",
+                "name": "Published this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "published_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "cov-month",
+                "name": "Published this month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "published_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "cov-c"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "pr-agency-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pitching and coverage at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "pitch",
+                      "view": "all_pitch"
+                    },
+                    "inline": true,
+                    "title": "Pitches by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Pitches by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "coverage",
+                      "view": "all_coverage"
+                    },
+                    "inline": true,
+                    "title": "Reach by outlet",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Reach by outlet",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "outlet",
+                          "op": "sum",
+                          "field": "reach"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "coverage",
+                      "view": "all_coverage"
+                    },
+                    "inline": true,
+                    "title": "Coverage by tone",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Coverage by tone",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "sentiment",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "campaign",
+                      "view": "all_campaign"
+                    },
+                    "inline": true,
+                    "title": "Campaigns by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Campaigns by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-ups due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pitch",
+              "view": "all_pitch"
+            },
+            "inline": true,
+            "title": "Follow-ups due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Follow-ups due",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Replied"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-ups in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pitch",
+              "view": "all_pitch"
+            },
+            "inline": true,
+            "title": "Follow-ups in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Follow-ups in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Replied"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Coverage this month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "coverage",
+              "view": "all_coverage"
+            },
+            "inline": true,
+            "title": "Coverage this month",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Coverage this month",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "published_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reply rate (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pitches that got a reply or coverage divided by pitches sent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 20 means rework the angle before pitching more people"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reach this month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Estimated audience of coverage published this month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use as context only; pair it with the tone and the message pull-through"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Follow-ups due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pitches past their follow-up date and not yet answered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Follow up once, with a new fact, then leave it alone"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Relationship"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cold, warm or friendly, set by the contact owner"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Move a journalist to Warm after a real exchange, not after a sent email"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "writing-a-pitch",
+      "parent": "pr-agency-desk",
+      "title": "Writing a pitch that gets read",
+      "icon": {
+        "emoji": "✉️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A journalist decides in the subject line. Everything else is there to prove it was worth the click."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The shape"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Subject: the news in under nine words, without hype."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "First line: what is new and why their readers care this week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Second paragraph: the proof, a number or a named person."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Last line: what you can offer and by when, such as an interview or early data."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you send"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "You have read their last three stories"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The embargo and time zone are stated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Attachments are small; images are linked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The pitch is under 150 words"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After you send"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log the pitch and set the follow-up date for three working days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Follow up once with something new. Never send the same note twice."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "media-list-hygiene",
+      "parent": "pr-agency-desk",
+      "title": "Keeping the media list honest",
+      "icon": {
+        "emoji": "🗂️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules for the contact book"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One row per journalist, with beat, outlet and the date you last spoke."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Only add someone after reading their recent work. A name from a list is not a contact."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move people between Cold, Warm and Friendly based on real replies."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly clean-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Contacted this month and see who has gone quiet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check outlets for staff changes and update beats."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Remove anyone who asked not to be pitched."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Etiquette"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never share one journalist's private note with another."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Do not pitch two people at the same outlet the same exclusive."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "coverage-reporting",
+      "parent": "pr-agency-desk",
+      "title": "Coverage reporting for clients",
+      "icon": {
+        "emoji": "📊"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clients remember headlines, not hours. A clear coverage report is the best renewal argument."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What goes in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each piece with headline, outlet, date and tone."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Estimated reach, labelled as an estimate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One paragraph on what the coverage did for the campaign message."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Build it in ten minutes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Coverage table and choose Published this month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Group by campaign and copy the headlines into the client report."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add two quotes from the pieces that match the key message."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the plan for next month: two stories to pitch and one to hold."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Be straight about misses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Say what did not land and what you will change. Clients trust an agency that explains a miss."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "launch-day-runbook",
+      "parent": "pr-agency-desk",
+      "title": "News day runbook",
+      "icon": {
+        "emoji": "⏰"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Embargoed materials sent with the lift time in the subject"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Spokespeople briefed and available all day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Approved quotes and facts in one shared page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the embargo lifts and the website is live."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a short note to everyone who asked for a heads up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log coverage as it appears and thank the journalist."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Post only what the client approved."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day after"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect screenshots and links."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Note questions journalists asked; they become next time's pitch."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

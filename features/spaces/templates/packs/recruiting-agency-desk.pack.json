@@ -1,0 +1,3401 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0452",
+  "version": 1,
+  "title": "Recruiting Agency Desk",
+  "description": "Employer clients, job orders, candidates and submissions for a staffing and search firm.",
+  "forWho": "Recruiting, staffing and executive search firms",
+  "icon": {
+    "emoji": "🧲"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "clients",
+  "tags": [
+    "recruiting",
+    "staffing",
+    "job orders",
+    "placements"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-recruiting-agency-desk",
+    "catalogueId": "SP0452",
+    "useCase": "Odalys Brennan-Park leads a recruiting firm and uses this to see which job orders are stuck, which candidates are ready to submit, and what fees are likely to land this quarter.",
+    "industry": "staffing_hr_recruiting",
+    "vertical": "Recruiting agency",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Kestrel Talent Partners",
+      "describes": "A seven-person recruiting firm placing office, operations and technical staff with mid-sized employers on contingent and retained searches.",
+      "address": {
+        "line1": "90 Morrow Street",
+        "city": "Columbus",
+        "region": "OH",
+        "postalCode": "43215",
+        "country": "US"
+      },
+      "phone": "(614) 555-0187",
+      "website": "kestreltalent.net",
+      "email": "desk@kestreltalent.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-recruiting-agency-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Employers",
+        "labelSingular": "Employer",
+        "labelPlural": "Employers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The employers who give the firm job orders, with their fee terms.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Employer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Active",
+              "Preferred",
+              "Dormant"
+            ],
+            "choiceColors": {
+              "Prospect": "slate",
+              "Active": "green",
+              "Preferred": "blue",
+              "Dormant": "amber"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Active": "in_progress",
+              "Preferred": "in_progress",
+              "Dormant": "done"
+            }
+          },
+          {
+            "key": "terms",
+            "label": "Search type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Contingent",
+              "Retained"
+            ],
+            "choiceColors": {
+              "Contingent": "slate",
+              "Retained": "blue"
+            }
+          },
+          {
+            "key": "fee_pct",
+            "label": "Fee (% of salary)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "hiring_contact",
+            "label": "Hiring contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Employer since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Account owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "roles_open",
+            "label": "Roles open",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "job_orders",
+            "pick": "role_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Open",
+                "Interviewing",
+                "Offer"
+              ]
+            }
+          },
+          {
+            "key": "roles_filled",
+            "label": "Roles filled",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "job_orders",
+            "pick": "role_title",
+            "agg": "count",
+            "filter": {
+              "status": "Filled"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_job_order",
+            "label": "New job order",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "job_order",
+              "template": "New job order",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New employer",
+            "values": {
+              "client_name": "New employer",
+              "status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Their hiring picture"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Teams, growth plans and how fast they decide."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms signed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Fee, guarantee period, payment terms and exclusivity."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they like"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Candidate style, interview process and past wins."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Hartwell Logistics",
+              "status": "Preferred",
+              "terms": "Contingent",
+              "fee_pct": 20,
+              "hiring_contact": "Bernadette Oyelowo",
+              "contact_email": "bernadette@hartwelllogistics.net",
+              "since": "@today-700d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Pinecrest Medical Billing",
+              "status": "Active",
+              "terms": "Contingent",
+              "fee_pct": 22,
+              "hiring_contact": "Matthias Ferreira",
+              "contact_email": "mferreira@pinecrestbilling.net",
+              "since": "@today-300d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Arclight Fabrication",
+              "status": "Active",
+              "terms": "Retained",
+              "fee_pct": 25,
+              "hiring_contact": "Josephine Takahashi",
+              "contact_email": "jtakahashi@arclightfab.net",
+              "since": "@today-180d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Brookline Property Group",
+              "status": "Dormant",
+              "terms": "Contingent",
+              "fee_pct": 18,
+              "hiring_contact": "Silas Whitcombe",
+              "contact_email": "silas@brooklinepg.net",
+              "since": "@today-900d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Tidewater Insurance Brokers",
+              "status": "Active",
+              "terms": "Contingent",
+              "fee_pct": 20,
+              "hiring_contact": "Imogen Radcliffe",
+              "contact_email": "imogen@tidewaterbrokers.net",
+              "since": "@today-120d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Quill & Anchor Publishing",
+              "status": "Prospect",
+              "terms": "Contingent",
+              "fee_pct": 20,
+              "hiring_contact": "Ravi Subramanian",
+              "contact_email": "ravi@quillanchorpub.net",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Northfield Cold Storage",
+              "status": "Active",
+              "terms": "Contingent",
+              "fee_pct": 20,
+              "hiring_contact": "Greta Holmqvist",
+              "contact_email": "greta@northfieldcold.net",
+              "since": "@today-60d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "job_order",
+        "name": "Job orders",
+        "labelSingular": "Job order",
+        "labelPlural": "Job orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "role_title",
+        "describes": "Each open role an employer has asked the firm to fill.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "role_title",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Interviewing",
+              "Offer",
+              "Filled",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Interviewing": "blue",
+              "Offer": "amber",
+              "Filled": "green",
+              "Closed": "violet"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "todo",
+              "Interviewing": "in_progress",
+              "Offer": "in_progress",
+              "Filled": "in_progress",
+              "Closed": "done"
+            }
+          },
+          {
+            "key": "level",
+            "label": "Level",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Entry",
+              "Mid",
+              "Senior",
+              "Lead"
+            ],
+            "choiceColors": {
+              "Entry": "slate",
+              "Mid": "blue",
+              "Senior": "amber",
+              "Lead": "violet"
+            }
+          },
+          {
+            "key": "salary",
+            "label": "Pay budget (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400000
+              }
+            ]
+          },
+          {
+            "key": "opened_on",
+            "label": "Opened",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "target_on",
+            "label": "Target fill",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "filled_on",
+            "label": "Filled on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_open",
+            "label": "Days open",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Opened}, TODAY(), 'days')"
+          },
+          {
+            "key": "days_to_target",
+            "label": "Days to target",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Target fill}, 'days')"
+          },
+          {
+            "key": "subs",
+            "label": "Candidates submitted",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "submissions",
+            "pick": "label",
+            "agg": "count"
+          },
+          {
+            "key": "interviews",
+            "label": "Interviewing now",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "submissions",
+            "pick": "label",
+            "agg": "count",
+            "filter": {
+              "stage": "Interview"
+            }
+          },
+          {
+            "key": "placed_salary",
+            "label": "Placed pay total (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "submissions",
+            "pick": "offer_salary",
+            "agg": "sum",
+            "filter": {
+              "stage": "Placed"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Employer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "recruiter",
+            "label": "Recruiter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_close_as_filled",
+            "label": "Close as filled",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_order_close_as_filled"
+            }
+          },
+          {
+            "key": "add_submission",
+            "label": "Submit a candidate",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "submission",
+              "template": "New submission",
+              "prefill": {
+                "job_order": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "recruiter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Filled"
+            ],
+            "filled": [
+              "filled_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "opened_on",
+            "target_on"
+          ],
+          [
+            "opened_on",
+            "filled_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New job order",
+            "values": {
+              "role_title": "New job order",
+              "status": "Open"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The role"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Why it exists, reporting line, must-haves and nice-to-haves."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Search plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where we source, who we call first, and the screening questions."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Interview process"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Rounds, who interviews, and how fast they decide."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "job_order-1",
+            "values": {
+              "role_title": "Dispatch supervisor",
+              "status": "Interviewing",
+              "level": "Lead",
+              "salary": 64000,
+              "opened_on": "@today-24d",
+              "target_on": "@today+14d",
+              "client": "client-1",
+              "recruiter": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job_order-2",
+            "values": {
+              "role_title": "Billing analyst",
+              "status": "Open",
+              "level": "Mid",
+              "salary": 56000,
+              "opened_on": "@today-9d",
+              "target_on": "@today+30d",
+              "client": "client-2",
+              "recruiter": "tm-3"
+            }
+          },
+          {
+            "key": "job_order-3",
+            "values": {
+              "role_title": "Maintenance planner",
+              "status": "Offer",
+              "level": "Senior",
+              "salary": 78000,
+              "opened_on": "@today-45d",
+              "target_on": "@today+3d",
+              "client": "client-3",
+              "recruiter": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job_order-4",
+            "values": {
+              "role_title": "Welding lead",
+              "status": "Interviewing",
+              "level": "Lead",
+              "salary": 72000,
+              "opened_on": "@today-33d",
+              "target_on": "@today-2d",
+              "client": "client-3",
+              "recruiter": "tm-2"
+            }
+          },
+          {
+            "key": "job_order-5",
+            "values": {
+              "role_title": "Account coordinator",
+              "status": "Open",
+              "level": "Entry",
+              "salary": 46000,
+              "opened_on": "@today-5d",
+              "target_on": "@today+35d",
+              "client": "client-5",
+              "recruiter": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job_order-6",
+            "values": {
+              "role_title": "Claims assistant",
+              "status": "Filled",
+              "level": "Entry",
+              "salary": 44000,
+              "opened_on": "@today-50d",
+              "target_on": "@today-10d",
+              "filled_on": "@today-16d",
+              "client": "client-5",
+              "recruiter": "tm-3"
+            }
+          },
+          {
+            "key": "job_order-7",
+            "values": {
+              "role_title": "Warehouse manager",
+              "status": "Interviewing",
+              "level": "Senior",
+              "salary": 82000,
+              "opened_on": "@today-18d",
+              "target_on": "@today+20d",
+              "client": "client-7",
+              "recruiter": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job_order-8",
+            "values": {
+              "role_title": "Fleet coordinator",
+              "status": "Filled",
+              "level": "Mid",
+              "salary": 58000,
+              "opened_on": "@today-80d",
+              "target_on": "@today-40d",
+              "filled_on": "@today-44d",
+              "client": "client-1",
+              "recruiter": "tm-2"
+            }
+          },
+          {
+            "key": "job_order-9",
+            "values": {
+              "role_title": "Shift lead, night",
+              "status": "Open",
+              "level": "Mid",
+              "salary": 52000,
+              "opened_on": "@today-3d",
+              "target_on": "@today+40d",
+              "client": "client-7",
+              "recruiter": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job_order-10",
+            "values": {
+              "role_title": "Property accountant",
+              "status": "Closed",
+              "level": "Senior",
+              "salary": 74000,
+              "opened_on": "@today-120d",
+              "target_on": "@today-80d",
+              "client": "client-4",
+              "recruiter": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "candidate",
+        "name": "Candidates",
+        "labelSingular": "Candidate",
+        "labelPlural": "Candidates",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user",
+        "titleField": "full_name",
+        "describes": "The people the firm is working with, from first call to placement.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "full_name",
+            "label": "Candidate",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Screened",
+              "Available",
+              "Placed",
+              "Withdrawn"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Screened": "blue",
+              "Available": "amber",
+              "Placed": "green",
+              "Withdrawn": "violet"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Screened": "in_progress",
+              "Available": "in_progress",
+              "Placed": "in_progress",
+              "Withdrawn": "done"
+            }
+          },
+          {
+            "key": "current_title",
+            "label": "Current title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "skills",
+            "label": "Key skills",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral",
+              "Job board",
+              "Social",
+              "Event",
+              "Past candidate"
+            ],
+            "choiceColors": {
+              "Referral": "slate",
+              "Job board": "blue",
+              "Social": "amber",
+              "Event": "violet",
+              "Past candidate": "teal"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "desired_salary",
+            "label": "Expected pay (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400000
+              }
+            ]
+          },
+          {
+            "key": "last_contact",
+            "label": "Last contact",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Recruiter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "subs",
+            "label": "Submissions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "submissions",
+            "pick": "label",
+            "agg": "count"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New candidate",
+            "values": {
+              "full_name": "New candidate",
+              "status": "New"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Background"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Career in three lines and what they want next."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Screening notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Compensation, notice period, deal-breakers, references."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Submitted to"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Roles they have gone forward for and the feedback."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "candidate-1",
+            "values": {
+              "full_name": "Ines Moreau",
+              "status": "Available",
+              "current_title": "Operations lead",
+              "skills": "Dispatch, route planning, team coaching",
+              "source": "Referral",
+              "email": "ines.moreau@mailpost.net",
+              "phone": "(614) 555-0101",
+              "desired_salary": 66000,
+              "last_contact": "@today-3d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "candidate-2",
+            "values": {
+              "full_name": "Tobias Wanjiru",
+              "status": "Screened",
+              "current_title": "Billing specialist",
+              "skills": "Medical billing, claims appeals, reporting",
+              "source": "Job board",
+              "email": "tobias.w@mailpost.net",
+              "phone": "(614) 555-0102",
+              "desired_salary": 58000,
+              "last_contact": "@today-6d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "candidate-3",
+            "values": {
+              "full_name": "Priscilla Dunmore",
+              "status": "Available",
+              "current_title": "Maintenance planner",
+              "skills": "Preventive maintenance, CMMS, vendors",
+              "source": "Referral",
+              "email": "p.dunmore@mailpost.net",
+              "phone": "(614) 555-0103",
+              "desired_salary": 81000,
+              "last_contact": "@today-2d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "candidate-4",
+            "values": {
+              "full_name": "Anders Kvist",
+              "status": "Screened",
+              "current_title": "Lead welder",
+              "skills": "TIG and MIG, drawings, apprentice training",
+              "source": "Event",
+              "email": "anders.kvist@mailpost.net",
+              "phone": "(614) 555-0104",
+              "desired_salary": 74000,
+              "last_contact": "@today-9d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "candidate-5",
+            "values": {
+              "full_name": "Marguerite Oyelaran",
+              "status": "New",
+              "current_title": "Account assistant",
+              "skills": "Client service, policy renewals",
+              "source": "Social",
+              "email": "m.oyelaran@mailpost.net",
+              "phone": "(614) 555-0105",
+              "desired_salary": 47000,
+              "last_contact": "@today-1d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "candidate-6",
+            "values": {
+              "full_name": "Jonah Castellanos",
+              "status": "Placed",
+              "current_title": "Claims clerk",
+              "skills": "Claims intake, customer calls",
+              "source": "Job board",
+              "email": "jonah.c@mailpost.net",
+              "phone": "(614) 555-0106",
+              "desired_salary": 46500,
+              "last_contact": "@today-30d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "candidate-7",
+            "values": {
+              "full_name": "Henrietta Bui",
+              "status": "Available",
+              "current_title": "Warehouse supervisor",
+              "skills": "Inventory, safety, scheduling",
+              "source": "Past candidate",
+              "email": "henrietta.bui@mailpost.net",
+              "phone": "(614) 555-0107",
+              "desired_salary": 80000,
+              "last_contact": "@today-5d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "candidate-8",
+            "values": {
+              "full_name": "Lazar Pettigrew",
+              "status": "Available",
+              "current_title": "Fleet scheduler",
+              "skills": "Telematics, driver scheduling",
+              "source": "Referral",
+              "email": "lazar.p@mailpost.net",
+              "phone": "(614) 555-0108",
+              "desired_salary": 60500,
+              "last_contact": "@today-50d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "candidate-9",
+            "values": {
+              "full_name": "Wilhelmina Aziz",
+              "status": "Screened",
+              "current_title": "Distribution manager",
+              "skills": "Cold chain, labor planning",
+              "source": "Event",
+              "email": "w.aziz@mailpost.net",
+              "phone": "(614) 555-0109",
+              "desired_salary": 85000,
+              "last_contact": "@today-8d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "candidate-10",
+            "values": {
+              "full_name": "Cormac Eberhardt",
+              "status": "Withdrawn",
+              "current_title": "Controller",
+              "skills": "Close, audit, property accounting",
+              "source": "Job board",
+              "email": "c.eberhardt@mailpost.net",
+              "phone": "(614) 555-0110",
+              "desired_salary": 78000,
+              "last_contact": "@today-70d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "candidate-11",
+            "values": {
+              "full_name": "Sunita Rasmussen",
+              "status": "New",
+              "current_title": "Shift supervisor",
+              "skills": "Night operations, safety, hiring",
+              "source": "Social",
+              "email": "sunita.r@mailpost.net",
+              "phone": "(614) 555-0111",
+              "desired_salary": 53000,
+              "last_contact": "@today-2d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "candidate-12",
+            "values": {
+              "full_name": "Everard Lindgren",
+              "status": "Available",
+              "current_title": "Operations analyst",
+              "skills": "Dashboards, process improvement",
+              "source": "Job board",
+              "email": "e.lindgren@mailpost.net",
+              "phone": "(614) 555-0112",
+              "desired_salary": 62000,
+              "last_contact": "@today-14d",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "submission",
+        "name": "Submissions",
+        "labelSingular": "Submission",
+        "labelPlural": "Submissions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "send",
+        "titleField": "label",
+        "describes": "A candidate put forward for a job order, from submitted to placed.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "label",
+            "label": "Submission",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Submitted",
+              "Interview",
+              "Offer",
+              "Placed",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Declined": "red",
+              "Submitted": "slate",
+              "Interview": "blue",
+              "Offer": "amber",
+              "Placed": "green"
+            },
+            "required": true,
+            "default": "Submitted",
+            "statusGroups": {
+              "Submitted": "todo",
+              "Interview": "in_progress",
+              "Offer": "in_progress",
+              "Placed": "in_progress",
+              "Declined": "done"
+            }
+          },
+          {
+            "key": "candidate",
+            "label": "Candidate",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "candidate",
+            "relationMax": 1
+          },
+          {
+            "key": "job_order",
+            "label": "Job order",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job_order",
+            "relationMax": 1
+          },
+          {
+            "key": "submitted_on",
+            "label": "Submitted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "interview_on",
+            "label": "Interview",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "start_on",
+            "label": "Start date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "offer_salary",
+            "label": "Agreed annual pay (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400000
+              }
+            ]
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_confirm_placement",
+            "label": "Confirm placement",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "submission_confirm_placement"
+            }
+          }
+        ],
+        "independentOf": {
+          "candidate": "Either record can be created or change status before the other.",
+          "job_order": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Placed"
+            ],
+            "filled": [
+              "start_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "submitted_on",
+            "interview_on"
+          ],
+          [
+            "interview_on",
+            "start_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New submission",
+            "values": {
+              "label": "New submission",
+              "stage": "Submitted"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why this candidate"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The two or three reasons they fit, as sent to the employer."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Feedback"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the employer said after each step."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "submission-1",
+            "values": {
+              "label": "Ines Moreau for dispatch supervisor",
+              "stage": "Interview",
+              "candidate": "candidate-1",
+              "job_order": "job_order-1",
+              "submitted_on": "@today-9d",
+              "interview_on": "@mon+2d"
+            }
+          },
+          {
+            "key": "submission-2",
+            "values": {
+              "label": "Lazar Pettigrew for dispatch supervisor",
+              "stage": "Submitted",
+              "candidate": "candidate-8",
+              "job_order": "job_order-1",
+              "submitted_on": "@today-2d"
+            }
+          },
+          {
+            "key": "submission-3",
+            "values": {
+              "label": "Priscilla Dunmore for maintenance planner",
+              "stage": "Offer",
+              "candidate": "candidate-3",
+              "job_order": "job_order-3",
+              "submitted_on": "@today-30d",
+              "interview_on": "@today-14d",
+              "offer_salary": 79000
+            }
+          },
+          {
+            "key": "submission-4",
+            "values": {
+              "label": "Anders Kvist for welding lead",
+              "stage": "Interview",
+              "candidate": "candidate-4",
+              "job_order": "job_order-4",
+              "submitted_on": "@today-12d",
+              "interview_on": "@today+2d"
+            }
+          },
+          {
+            "key": "submission-5",
+            "values": {
+              "label": "Henrietta Bui for warehouse manager",
+              "stage": "Interview",
+              "candidate": "candidate-7",
+              "job_order": "job_order-7",
+              "submitted_on": "@today-6d",
+              "interview_on": "@today+4d"
+            }
+          },
+          {
+            "key": "submission-6",
+            "values": {
+              "label": "Wilhelmina Aziz for warehouse manager",
+              "stage": "Submitted",
+              "candidate": "candidate-9",
+              "job_order": "job_order-7",
+              "submitted_on": "@today-1d"
+            }
+          },
+          {
+            "key": "submission-7",
+            "values": {
+              "label": "Jonah Castellanos for claims assistant",
+              "stage": "Placed",
+              "candidate": "candidate-6",
+              "job_order": "job_order-6",
+              "submitted_on": "@today-40d",
+              "interview_on": "@today-30d",
+              "start_on": "@today-20d",
+              "offer_salary": 45000
+            }
+          },
+          {
+            "key": "submission-8",
+            "values": {
+              "label": "Tobias Wanjiru for billing analyst",
+              "stage": "Submitted",
+              "candidate": "candidate-2",
+              "job_order": "job_order-2",
+              "submitted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "submission-9",
+            "values": {
+              "label": "Lazar Pettigrew for fleet coordinator",
+              "stage": "Placed",
+              "candidate": "candidate-8",
+              "job_order": "job_order-8",
+              "submitted_on": "@today-70d",
+              "interview_on": "@today-60d",
+              "start_on": "@today-30d",
+              "offer_salary": 59000
+            }
+          },
+          {
+            "key": "submission-10",
+            "values": {
+              "label": "Marguerite Oyelaran for account coordinator",
+              "stage": "Declined",
+              "candidate": "candidate-5",
+              "job_order": "job_order-5",
+              "submitted_on": "@today-4d"
+            }
+          },
+          {
+            "key": "submission-11",
+            "values": {
+              "label": "Everard Lindgren for billing analyst",
+              "stage": "Interview",
+              "candidate": "candidate-12",
+              "job_order": "job_order-2",
+              "submitted_on": "@today-5d",
+              "interview_on": "@today+3d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each employer belongs to one account owner.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "employer_by_owner"
+      },
+      {
+        "describes": "Each job order belongs to one employer.",
+        "fromTable": "job_order",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "job_orders"
+      },
+      {
+        "describes": "Each job order belongs to one recruiter.",
+        "fromTable": "job_order",
+        "fromField": "recruiter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "job_by_recruiter"
+      },
+      {
+        "describes": "Each candidate belongs to one recruiter.",
+        "fromTable": "candidate",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "candidate_by_owner"
+      },
+      {
+        "describes": "Each submission belongs to one candidate.",
+        "fromTable": "submission",
+        "fromField": "candidate",
+        "toTable": "candidate",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "submissions"
+      },
+      {
+        "describes": "Each submission belongs to one job order.",
+        "fromTable": "submission",
+        "fromField": "job_order",
+        "toTable": "job_order",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "submissions"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Odalys Brennan-Park",
+              "role": "Managing partner",
+              "work_email": "odalys@kestreltalent.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Wendell Achebe",
+              "role": "Senior recruiter",
+              "work_email": "wendell@kestreltalent.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Farah Lindqvist",
+              "role": "Recruiter",
+              "work_email": "farah@kestreltalent.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Cormac Daly",
+              "role": "Sourcer",
+              "work_email": "cormac@kestreltalent.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Linh Tranter",
+              "role": "Coordinator",
+              "work_email": "linh@kestreltalent.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "job_order_intake",
+        "name": "New job order",
+        "describes": "Capture a new search from an employer call.",
+        "audience": "staff",
+        "table": "job_order",
+        "fields": [
+          {
+            "fieldKey": "role_title",
+            "ask": "What is the role?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which employer?",
+            "required": true
+          },
+          {
+            "fieldKey": "level",
+            "ask": "What level is it?"
+          },
+          {
+            "fieldKey": "salary",
+            "ask": "What is the salary?"
+          },
+          {
+            "fieldKey": "target_on",
+            "ask": "When do they want it filled?"
+          }
+        ],
+        "submitLabel": "Send the job order",
+        "confirmation": "Thanks. It is on the board as Open."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "job_order_close_as_filled",
+        "table": "job_order",
+        "name": "Close as filled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Filled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "submission_confirm_placement",
+        "table": "submission",
+        "name": "Confirm placement",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Placed"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All employers",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Employers board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My employers",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_job_order",
+        "name": "All job orders",
+        "table": "job_order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "job_order_board",
+        "name": "Job orders board",
+        "table": "job_order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "job_order_cal",
+        "name": "Job orders calendar",
+        "table": "job_order",
+        "kind": "calendar",
+        "dateField": "target_on",
+        "allDay": true
+      },
+      {
+        "token": "job_order_over",
+        "name": "Overdue",
+        "table": "job_order",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Interviewing",
+            "Offer"
+          ]
+        }
+      },
+      {
+        "token": "job_order_week",
+        "name": "Due this week",
+        "table": "job_order",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Interviewing",
+            "Offer"
+          ]
+        }
+      },
+      {
+        "token": "job_order_next7",
+        "name": "Next 7 days",
+        "table": "job_order",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "Interviewing",
+            "Offer"
+          ]
+        }
+      },
+      {
+        "token": "job_order_mine",
+        "name": "My job orders",
+        "table": "job_order",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_candidate",
+        "name": "All candidates",
+        "table": "candidate",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "candidate_board",
+        "name": "Candidates board",
+        "table": "candidate",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "candidate_stale",
+        "name": "Not contacted this month",
+        "table": "candidate",
+        "kind": "grid",
+        "within": {
+          "last_contact": {
+            "relative": "last_month"
+          }
+        }
+      },
+      {
+        "token": "candidate_mine",
+        "name": "My candidates",
+        "table": "candidate",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_submission",
+        "name": "All submissions",
+        "table": "submission",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "submission_board",
+        "name": "Submissions board",
+        "table": "submission",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "submission_cal",
+        "name": "Submissions calendar",
+        "table": "submission",
+        "kind": "calendar",
+        "dateField": "interview_on",
+        "allDay": true
+      },
+      {
+        "token": "submission_week",
+        "name": "Interviews this week",
+        "table": "submission",
+        "kind": "grid",
+        "within": {
+          "interview_on": {
+            "relative": "this_week"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Recruiting Agency Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "job_order",
+          "describes": "Each open role an employer has asked the firm to fill."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many job orders are at interview stage?",
+        "whyItMatters": "The partner checks pipeline health before each Friday review.",
+        "expect": {
+          "table": "job_order",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Interviewing"
+          },
+          "answer": 3,
+          "unit": "job orders"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open employers.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open job orders.",
+        "action": {
+          "kind": "open",
+          "surface": "job_order_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "job_order_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open candidates.",
+        "action": {
+          "kind": "open",
+          "surface": "candidate_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "candidate_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "kestreltalent.net"
+      ],
+      "fictionalStreets": [
+        "Morrow Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "recruiting-agency-desk",
+      "parent": null,
+      "title": "Recruiting Agency Desk",
+      "icon": {
+        "emoji": "🧲"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The whole desk in one place: employers and their fee terms, open job orders, the candidates you are working, and every submission from first send to placement. Start on the Dashboard, then work the Overdue target fills and Mine views. Never let a submission sit without a next step."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:intake-call"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:submission-standards"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:placement-and-guarantee"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:weekly-pipeline-review"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Employers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The employers who give the firm job orders, with their fee terms."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Employers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All employers",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Job orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each open role an employer has asked the firm to fill."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job_order",
+              "view": "job_order_board"
+            },
+            "inline": true,
+            "title": "Job orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "job-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "job-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "target_on"
+              },
+              {
+                "id": "job-t",
+                "name": "All job orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "job-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "target_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Interviewing",
+                    "Offer"
+                  ]
+                }
+              },
+              {
+                "id": "job-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "target_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Interviewing",
+                    "Offer"
+                  ]
+                }
+              },
+              {
+                "id": "job-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "target_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Interviewing",
+                    "Offer"
+                  ]
+                }
+              },
+              {
+                "id": "job-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "job-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Candidates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The people the firm is working with, from first call to placement."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "candidate",
+              "view": "candidate_board"
+            },
+            "inline": true,
+            "title": "Candidates",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "can-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "can-t",
+                "name": "All candidates",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "can-stale",
+                "name": "Not contacted this month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "last_contact": {
+                    "relative": "last_month"
+                  }
+                }
+              },
+              {
+                "id": "can-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "can-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Submissions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A candidate put forward for a job order, from submitted to placed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "submission",
+              "view": "submission_board"
+            },
+            "inline": true,
+            "title": "Submissions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sub-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "sub-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "interview_on"
+              },
+              {
+                "id": "sub-t",
+                "name": "All submissions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sub-week",
+                "name": "Interviews this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "interview_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "sub-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "recruiting-agency-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Where searches stand right now."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job_order",
+                      "view": "all_job_order"
+                    },
+                    "inline": true,
+                    "title": "Job orders by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Job orders by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "submission",
+                      "view": "all_submission"
+                    },
+                    "inline": true,
+                    "title": "Submissions by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Submissions by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "candidate",
+                      "view": "all_candidate"
+                    },
+                    "inline": true,
+                    "title": "Candidates by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Candidates by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job_order",
+                      "view": "all_job_order"
+                    },
+                    "inline": true,
+                    "title": "Pay budget of roles by recruiter (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Pay budget of roles by recruiter (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "recruiter",
+                          "op": "sum",
+                          "field": "salary"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Past target fill date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job_order",
+              "view": "all_job_order"
+            },
+            "inline": true,
+            "title": "Past target fill date",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Past target fill date",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "target_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Interviewing",
+                    "Offer"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Interviews this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "submission",
+              "view": "all_submission"
+            },
+            "inline": true,
+            "title": "Interviews this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Interviews this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "interview_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Available candidates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "candidate",
+              "view": "all_candidate"
+            },
+            "inline": true,
+            "title": "Available candidates",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Available candidates",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Available"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Days since a job order was opened"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over 45 days with no interviews means reset the search plan with the employer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Candidates submitted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Submissions linked to the job order"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fewer than three by day 10 means source harder"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Placed pay total (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Agreed pay on placed submissions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Multiply by the fee percentage on the employer row for the expected fee"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to target"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Target fill date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Negative means tell the employer today, with a new plan"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "intake-call",
+      "parent": "recruiting-agency-desk",
+      "title": "Job order intake call",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A rushed intake is the root of most failed searches. Fifteen extra minutes here saves two weeks later."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions to cover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Why is the role open and what happened to the last person?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What would the first ninety days look like for a great hire?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Which two skills are non-negotiable and which can be taught?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Salary range and what could move it; benefits that candidates always ask about."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Interview rounds, who is in them, and how many days between rounds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the job order with salary, target fill date and level."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the role page: the role, search plan and interview process."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the employer a short summary of what you heard and ask them to correct it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Agree these before you source"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fee and guarantee period on the employer row"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A named person who gives feedback within two working days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Whether the role is exclusive to us"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "submission-standards",
+      "parent": "recruiting-agency-desk",
+      "title": "Submission standards",
+      "icon": {
+        "emoji": "📤"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What goes to the employer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A short note: why this person, in three sentences."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Their resume, with any changes they approved."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Salary expectations and notice period, stated plainly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Two lines on what they asked about the role."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What never goes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything the candidate asked you to keep private."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A salary figure you have not confirmed with them this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After you send"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the submission with the submitted date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set a reminder to call the employer in two working days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the candidate what happens next and by when."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A candidate who never hears back stops answering your calls. A short update is always better than silence."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "placement-and-guarantee",
+      "parent": "recruiting-agency-desk",
+      "title": "Offer, placement and guarantee",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "From offer to start date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When a submission reaches Offer, call both sides the same day and confirm the number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the agreed pay on the submission only once the candidate has said yes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Confirm placement after the written offer is signed and the start date is agreed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the employer the fee invoice according to the terms on their row."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the guarantee period"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call the new hire at day 7, day 30 and day 60."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Note anything that sounds like trouble and tell the employer early."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If a hire leaves, open a replacement job order at no new fee and link it in the notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why this matters"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Employers remember how replacements were handled far longer than they remember the original fee."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "weekly-pipeline-review",
+      "parent": "recruiting-agency-desk",
+      "title": "Weekly pipeline review",
+      "icon": {
+        "emoji": "📊"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Agenda for forty-five minutes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Past target fill date: each job order gets a plan or a decision to close."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Interviews this week: who is prepping each candidate?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Stale candidates: anyone available who has not been contacted this month gets a call."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "New searches: ownership and the first three actions for each."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every open job order has a named recruiter and a next step with a date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If nothing has happened in ten days, the job order is discussed first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update statuses before the meeting, not during it."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

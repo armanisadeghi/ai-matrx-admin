@@ -1,0 +1,4622 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0450",
+  "version": 1,
+  "title": "Digital Marketing Agency HQ",
+  "description": "Clients, retainers, campaigns, deliverables and monthly reports for a marketing agency.",
+  "forWho": "Digital marketing agencies and growth studios",
+  "icon": {
+    "emoji": "📈"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "clients",
+  "tags": [
+    "agency",
+    "retainers",
+    "campaigns",
+    "reporting"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-digital-marketing-agency",
+    "catalogueId": "SP0450",
+    "useCase": "Imani Okafor-Brandt runs a growth studio and uses this to see which retainers are close to their hours, which campaigns are late and which monthly reports are still owed.",
+    "industry": "cross_industry",
+    "vertical": "Digital marketing agency",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Northbeam Growth Studio",
+      "describes": "A nine-person performance marketing agency running paid, email and SEO programs for local and regional brands on monthly retainers.",
+      "address": {
+        "line1": "214 Alder Quay",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97209",
+        "country": "US"
+      },
+      "phone": "(503) 555-0176",
+      "website": "northbeamgrowth.net",
+      "email": "hello@northbeamgrowth.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-digital-marketing-agency",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The brands the agency runs programs for, with their retainer terms.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Onboarding",
+              "Active",
+              "Paused",
+              "Churned"
+            ],
+            "choiceColors": {
+              "Churned": "red",
+              "Prospect": "slate",
+              "Onboarding": "blue",
+              "Active": "green",
+              "Paused": "amber"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Onboarding": "in_progress",
+              "Active": "in_progress",
+              "Paused": "in_progress",
+              "Churned": "done"
+            }
+          },
+          {
+            "key": "industry",
+            "label": "Industry",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Retail",
+              "Restaurants",
+              "Home services",
+              "Health and fitness",
+              "Software",
+              "Nonprofit"
+            ],
+            "choiceColors": {
+              "Retail": "slate",
+              "Restaurants": "blue",
+              "Home services": "amber",
+              "Health and fitness": "violet",
+              "Software": "teal",
+              "Nonprofit": "orange"
+            }
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "website",
+            "label": "Website",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "monthly_fee",
+            "label": "Monthly retainer (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "hours_included",
+            "label": "Hours included per month",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "renews_on",
+            "label": "Renews on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_renewal",
+            "label": "Days to renewal",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Renews on}, 'days')"
+          },
+          {
+            "key": "manager",
+            "label": "Account manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "hours_month",
+            "label": "Hours used this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "time_entries",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "worked_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "used_pct",
+            "label": "Hours used (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Hours included per month} > 0, ROUND({Hours used this month} / {Hours included per month} * 100, 0), 0)"
+          },
+          {
+            "key": "hours_state",
+            "label": "Hours status",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Hours used (%)} >= 100, \"Over\", IF({Hours used (%)} >= 80, \"Near limit\", \"On track\"))"
+          },
+          {
+            "key": "campaigns_live",
+            "label": "Campaigns live",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "campaigns",
+            "pick": "campaign_name",
+            "agg": "count",
+            "filter": {
+              "status": "Live"
+            }
+          },
+          {
+            "key": "reports_owed",
+            "label": "Reports owed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reports",
+            "pick": "report_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Not started",
+                "Drafting",
+                "Client review"
+              ]
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_campaign",
+            "label": "New campaign",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "campaign",
+              "template": "New campaign",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          },
+          {
+            "key": "btn_site",
+            "label": "Open website",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{website}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "manager": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "since",
+            "renews_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About the business"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they sell, to whom, and what a good year looks like."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "People"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who decides, who approves creative, who sends the data."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agreed scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Channels, hours per month, reporting day and what is out of scope."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Access checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Ad accounts, analytics, tag manager, email platform, site admin."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Cedar & Stone Outfitters",
+              "status": "Active",
+              "industry": "Retail",
+              "contact_email": "marketing@cedarstoneoutfit.net",
+              "website": "https://cedarstoneoutfit.net",
+              "since": "@today-420d",
+              "monthly_fee": 6500,
+              "hours_included": 60,
+              "renews_on": "@today+38d",
+              "manager": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Harbor Lane Bistro Group",
+              "status": "Active",
+              "industry": "Restaurants",
+              "contact_email": "owner@harborlanebistro.net",
+              "website": "https://harborlanebistro.net",
+              "since": "@today-300d",
+              "monthly_fee": 4200,
+              "hours_included": 40,
+              "renews_on": "@today+12d",
+              "manager": "tm-5"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Brightwater Plumbing",
+              "status": "Active",
+              "industry": "Home services",
+              "contact_email": "office@brightwaterplumb.net",
+              "website": "https://brightwaterplumb.net",
+              "since": "@today-180d",
+              "monthly_fee": 3800,
+              "hours_included": 35,
+              "renews_on": "@today-4d",
+              "manager": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Pulse Studio Fitness",
+              "status": "Active",
+              "industry": "Health and fitness",
+              "contact_email": "hello@pulsestudiofit.net",
+              "website": "https://pulsestudiofit.net",
+              "since": "@today-540d",
+              "monthly_fee": 5200,
+              "hours_included": 50,
+              "renews_on": "@today+75d",
+              "manager": "tm-5"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Fernhill Dental Partners",
+              "status": "Onboarding",
+              "industry": "Health and fitness",
+              "contact_email": "admin@fernhilldental.net",
+              "website": "https://fernhilldental.net",
+              "since": "@today-20d",
+              "monthly_fee": 4800,
+              "hours_included": 45,
+              "renews_on": "@today+345d",
+              "manager": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Lumen Ledger Software",
+              "status": "Active",
+              "industry": "Software",
+              "contact_email": "growth@lumenledger.net",
+              "website": "https://lumenledger.net",
+              "since": "@today-250d",
+              "monthly_fee": 9000,
+              "hours_included": 90,
+              "renews_on": "@today+110d",
+              "manager": "tm-1"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Greenroots Food Cooperative",
+              "status": "Paused",
+              "industry": "Nonprofit",
+              "contact_email": "team@greenrootscoop.net",
+              "website": "https://greenrootscoop.net",
+              "since": "@today-610d",
+              "monthly_fee": 2400,
+              "hours_included": 25,
+              "renews_on": "@today+20d",
+              "manager": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Tallpine Roofing",
+              "status": "Prospect",
+              "industry": "Home services",
+              "contact_email": "info@tallpineroofing.net",
+              "website": "https://tallpineroofing.net",
+              "manager": "tm-1"
+            }
+          },
+          {
+            "key": "client-9",
+            "values": {
+              "client_name": "Marigold Pet Supply",
+              "status": "Active",
+              "industry": "Retail",
+              "contact_email": "shop@marigoldpets.net",
+              "website": "https://marigoldpets.net",
+              "since": "@today-90d",
+              "monthly_fee": 3600,
+              "hours_included": 30,
+              "renews_on": "@today+5d",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-10",
+            "values": {
+              "client_name": "Oakridge Credit Union Foundation",
+              "status": "Churned",
+              "industry": "Nonprofit",
+              "contact_email": "give@oakridgecuf.net",
+              "website": "https://oakridgecuf.net",
+              "since": "@today-800d",
+              "monthly_fee": 2800,
+              "hours_included": 28,
+              "renews_on": "@today-60d",
+              "manager": "tm-5"
+            }
+          },
+          {
+            "key": "client-11",
+            "values": {
+              "client_name": "Summit Peak Climbing Gym",
+              "status": "Active",
+              "industry": "Health and fitness",
+              "contact_email": "crew@summitpeakclimb.net",
+              "website": "https://summitpeakclimb.net",
+              "since": "@today-150d",
+              "monthly_fee": 3100,
+              "hours_included": 30,
+              "renews_on": "@today+95d",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-12",
+            "values": {
+              "client_name": "Kettle & Thread Cafe",
+              "status": "Prospect",
+              "industry": "Restaurants",
+              "contact_email": "hi@kettlethreadcafe.net",
+              "website": "https://kettlethreadcafe.net",
+              "manager": "tm-5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "campaign",
+        "name": "Campaigns",
+        "labelSingular": "Campaign",
+        "labelPlural": "Campaigns",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "megaphone",
+        "titleField": "campaign_name",
+        "describes": "Each program the agency runs for a client.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "campaign_name",
+            "label": "Campaign",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "In production",
+              "Live",
+              "Reporting",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "In production": "blue",
+              "Live": "green",
+              "Reporting": "amber",
+              "Closed": "violet"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "In production": "in_progress",
+              "Live": "in_progress",
+              "Reporting": "in_progress",
+              "Closed": "done"
+            }
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Paid search",
+              "Paid social",
+              "Email",
+              "SEO",
+              "Content",
+              "Organic social"
+            ],
+            "choiceColors": {
+              "Paid search": "green",
+              "Paid social": "slate",
+              "Email": "blue",
+              "SEO": "amber",
+              "Content": "violet",
+              "Organic social": "teal"
+            }
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "budget",
+            "label": "Ad budget (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "spend",
+            "label": "Spend to date (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "spend_pct",
+            "label": "Budget spent (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Ad budget (USD)} > 0, ROUND({Spend to date (USD)} / {Ad budget (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "hours_logged",
+            "label": "Hours logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "time_logged",
+            "pick": "hours",
+            "agg": "sum"
+          },
+          {
+            "key": "items_total",
+            "label": "Deliverables",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliverables",
+            "pick": "deliverable_name",
+            "agg": "count"
+          },
+          {
+            "key": "items_done",
+            "label": "Deliverables done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliverables",
+            "pick": "deliverable_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "progress",
+            "label": "Delivery progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Deliverables} > 0, ROUND({Deliverables done} / {Deliverables} * 100, 0), 0)"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_live",
+            "label": "Mark live",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "campaign_mark_live"
+            }
+          },
+          {
+            "key": "btn_close_campaign",
+            "label": "Close campaign",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "campaign_close_campaign"
+            }
+          },
+          {
+            "key": "add_deliverable",
+            "label": "New deliverable",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deliverable",
+              "template": "New deliverable",
+              "prefill": {
+                "campaign": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New campaign",
+            "values": {
+              "campaign_name": "New campaign",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The number this campaign has to move, and by when."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Audience and offer"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who we are reaching and what we are asking them to do."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tracking"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Tags, UTMs, conversion events and where the report reads from."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approvals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who signs off on copy, creative and budget changes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "campaign-1",
+            "values": {
+              "campaign_name": "Spring trail collection launch",
+              "status": "Live",
+              "channel": "Paid social",
+              "starts_on": "@today-25d",
+              "ends_on": "@today+20d",
+              "budget": 9000,
+              "spend": 5100,
+              "client": "client-1",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-2",
+            "values": {
+              "campaign_name": "Branded search defence",
+              "status": "Live",
+              "channel": "Paid search",
+              "starts_on": "@today-120d",
+              "ends_on": "@today+60d",
+              "budget": 6000,
+              "spend": 3900,
+              "client": "client-1",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "campaign-3",
+            "values": {
+              "campaign_name": "Happy hour email series",
+              "status": "Live",
+              "channel": "Email",
+              "starts_on": "@today-40d",
+              "ends_on": "@today+15d",
+              "budget": 0,
+              "spend": 0,
+              "client": "client-2",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-4",
+            "values": {
+              "campaign_name": "Emergency repair local search",
+              "status": "Live",
+              "channel": "Paid search",
+              "starts_on": "@today-60d",
+              "ends_on": "@today+30d",
+              "budget": 7500,
+              "spend": 5200,
+              "client": "client-3",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "campaign-5",
+            "values": {
+              "campaign_name": "January membership drive",
+              "status": "Reporting",
+              "channel": "Paid social",
+              "starts_on": "@today-70d",
+              "ends_on": "@today-8d",
+              "budget": 8000,
+              "spend": 7850,
+              "client": "client-4",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-6",
+            "values": {
+              "campaign_name": "Site relaunch SEO plan",
+              "status": "In production",
+              "channel": "SEO",
+              "starts_on": "@today-14d",
+              "ends_on": "@today+75d",
+              "budget": 0,
+              "spend": 0,
+              "client": "client-5",
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "campaign-7",
+            "values": {
+              "campaign_name": "Product-led trial nurture",
+              "status": "Live",
+              "channel": "Email",
+              "starts_on": "@today-90d",
+              "ends_on": "@today+45d",
+              "budget": 0,
+              "spend": 0,
+              "client": "client-6",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-8",
+            "values": {
+              "campaign_name": "Content hub buildout",
+              "status": "In production",
+              "channel": "Content",
+              "starts_on": "@today-30d",
+              "ends_on": "@today+60d",
+              "budget": 0,
+              "spend": 0,
+              "client": "client-6",
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "campaign-9",
+            "values": {
+              "campaign_name": "Pause-period list warming",
+              "status": "Planned",
+              "channel": "Email",
+              "starts_on": "@today+10d",
+              "ends_on": "@today+55d",
+              "budget": 0,
+              "spend": 0,
+              "client": "client-7",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-10",
+            "values": {
+              "campaign_name": "Autumn dog-food bundle push",
+              "status": "Live",
+              "channel": "Paid social",
+              "starts_on": "@today-18d",
+              "ends_on": "@today+12d",
+              "budget": 5400,
+              "spend": 2900,
+              "client": "client-9",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "campaign-11",
+            "values": {
+              "campaign_name": "Local guide articles",
+              "status": "Reporting",
+              "channel": "Content",
+              "starts_on": "@today-60d",
+              "ends_on": "@today-3d",
+              "budget": 0,
+              "spend": 0,
+              "client": "client-9",
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "campaign-12",
+            "values": {
+              "campaign_name": "Spring open-day promotion",
+              "status": "Planned",
+              "channel": "Paid social",
+              "starts_on": "@today+6d",
+              "ends_on": "@today+34d",
+              "budget": 4500,
+              "spend": 0,
+              "client": "client-11",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "campaign-13",
+            "values": {
+              "campaign_name": "Year-end giving appeal",
+              "status": "Closed",
+              "channel": "Email",
+              "starts_on": "@today-150d",
+              "ends_on": "@today-90d",
+              "budget": 0,
+              "spend": 0,
+              "client": "client-10",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "deliverable",
+        "name": "Deliverables",
+        "labelSingular": "Deliverable",
+        "labelPlural": "Deliverables",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "deliverable_name",
+        "describes": "The pieces of work inside a campaign, from ad sets to landing pages.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "deliverable_name",
+            "label": "Deliverable",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "In review",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "In review": "amber",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "In review": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ad creative",
+              "Landing page",
+              "Email",
+              "Article",
+              "Tracking setup",
+              "Audit"
+            ],
+            "choiceColors": {
+              "Ad creative": "slate",
+              "Landing page": "blue",
+              "Email": "amber",
+              "Article": "violet",
+              "Tracking setup": "teal",
+              "Audit": "orange"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "estimate",
+            "label": "Estimate (hours)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deliverable_mark_done"
+            }
+          }
+        ],
+        "independentOf": {
+          "campaign": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New deliverable",
+            "values": {
+              "deliverable_name": "New deliverable",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Brief"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What this piece needs to do and who it is for."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Steps to finish, including tracking and links."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Feedback from the reviewer and what changed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "deliverable-1",
+            "values": {
+              "deliverable_name": "Trail collection hero ad set (6 variants)",
+              "status": "In progress",
+              "kind": "Ad creative",
+              "due_on": "@mon+2d",
+              "estimate": 14,
+              "campaign": "campaign-1",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-2",
+            "values": {
+              "deliverable_name": "Retargeting audience rebuild",
+              "status": "To do",
+              "kind": "Tracking setup",
+              "due_on": "@today+3d",
+              "estimate": 6,
+              "campaign": "campaign-1",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "deliverable-3",
+            "values": {
+              "deliverable_name": "Brand terms negative keyword review",
+              "status": "Done",
+              "kind": "Audit",
+              "due_on": "@today-9d",
+              "estimate": 4,
+              "campaign": "campaign-2",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-4",
+            "values": {
+              "deliverable_name": "Weekly happy hour email #4",
+              "status": "In review",
+              "kind": "Email",
+              "due_on": "@today+1d",
+              "estimate": 5,
+              "campaign": "campaign-3",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "deliverable-5",
+            "values": {
+              "deliverable_name": "Weekly happy hour email #5",
+              "status": "To do",
+              "kind": "Email",
+              "due_on": "@today+8d",
+              "estimate": 5,
+              "campaign": "campaign-3",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-6",
+            "values": {
+              "deliverable_name": "Emergency call-extension copy test",
+              "status": "In progress",
+              "kind": "Ad creative",
+              "due_on": "@today-3d",
+              "estimate": 8,
+              "campaign": "campaign-4",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "deliverable-7",
+            "values": {
+              "deliverable_name": "Final results deck inputs",
+              "status": "To do",
+              "kind": "Audit",
+              "due_on": "@today+2d",
+              "estimate": 6,
+              "campaign": "campaign-5",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-8",
+            "values": {
+              "deliverable_name": "Technical SEO crawl and fixes list",
+              "status": "In progress",
+              "kind": "Audit",
+              "due_on": "@mon+3d",
+              "estimate": 16,
+              "campaign": "campaign-6",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "deliverable-9",
+            "values": {
+              "deliverable_name": "Service area landing pages (3)",
+              "status": "To do",
+              "kind": "Landing page",
+              "due_on": "@today+14d",
+              "estimate": 20,
+              "campaign": "campaign-6",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-10",
+            "values": {
+              "deliverable_name": "Day-3 trial nudge rewrite",
+              "status": "Done",
+              "kind": "Email",
+              "due_on": "@today-14d",
+              "estimate": 4,
+              "campaign": "campaign-7",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "deliverable-11",
+            "values": {
+              "deliverable_name": "Pillar article: onboarding checklists",
+              "status": "In review",
+              "kind": "Article",
+              "due_on": "@today-1d",
+              "estimate": 12,
+              "campaign": "campaign-8",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-12",
+            "values": {
+              "deliverable_name": "Bundle offer product feed cleanup",
+              "status": "In progress",
+              "kind": "Tracking setup",
+              "due_on": "@mon+1d",
+              "estimate": 7,
+              "campaign": "campaign-10",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "deliverable-13",
+            "values": {
+              "deliverable_name": "Guide article: winter walks",
+              "status": "Done",
+              "kind": "Article",
+              "due_on": "@today-20d",
+              "estimate": 9,
+              "campaign": "campaign-11",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-14",
+            "values": {
+              "deliverable_name": "Open-day creative brief",
+              "status": "To do",
+              "kind": "Ad creative",
+              "due_on": "@today+4d",
+              "estimate": 3,
+              "campaign": "campaign-12",
+              "owner": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "time_entry",
+        "name": "Time entries",
+        "labelSingular": "Time entry",
+        "labelPlural": "Time entries",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clock",
+        "titleField": "entry",
+        "describes": "Hours logged against clients and campaigns, the source of every retainer figure.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "entry",
+            "label": "What was done",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "worked_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 24
+              }
+            ]
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "person",
+            "label": "Person",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "billable",
+            "label": "Billable",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "campaign": "Either record can be created or change status before the other.",
+          "person": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New time entry",
+            "values": {
+              "entry": "New time entry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the next person logging time on this client should know."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "time_entry-1",
+            "values": {
+              "entry": "Ad set build and QA",
+              "worked_on": "@today-1d",
+              "hours": 3.5,
+              "client": "client-1",
+              "campaign": "campaign-1",
+              "person": "tm-2",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-2",
+            "values": {
+              "entry": "Weekly client call and notes",
+              "worked_on": "@today-2d",
+              "hours": 1,
+              "client": "client-1",
+              "person": "tm-5",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-3",
+            "values": {
+              "entry": "Search term mining",
+              "worked_on": "@today-3d",
+              "hours": 2.5,
+              "client": "client-3",
+              "campaign": "campaign-4",
+              "person": "tm-2",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-4",
+            "values": {
+              "entry": "Email design and QA",
+              "worked_on": "@today-1d",
+              "hours": 4,
+              "client": "client-2",
+              "campaign": "campaign-3",
+              "person": "tm-4",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-5",
+            "values": {
+              "entry": "Crawl audit write-up",
+              "worked_on": "@today-2d",
+              "hours": 5,
+              "client": "client-5",
+              "campaign": "campaign-6",
+              "person": "tm-3",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-6",
+            "values": {
+              "entry": "Trial nurture sequence edits",
+              "worked_on": "@today-4d",
+              "hours": 3,
+              "client": "client-6",
+              "campaign": "campaign-7",
+              "person": "tm-4",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-7",
+            "values": {
+              "entry": "Pillar article draft",
+              "worked_on": "@today-3d",
+              "hours": 6,
+              "client": "client-6",
+              "campaign": "campaign-8",
+              "person": "tm-3",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-8",
+            "values": {
+              "entry": "Product feed fixes",
+              "worked_on": "@today-1d",
+              "hours": 2,
+              "client": "client-9",
+              "campaign": "campaign-10",
+              "person": "tm-2",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-9",
+            "values": {
+              "entry": "Monthly report assembly",
+              "worked_on": "@today-5d",
+              "hours": 3.5,
+              "client": "client-4",
+              "campaign": "campaign-5",
+              "person": "tm-5",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-10",
+            "values": {
+              "entry": "Pitch deck for new prospect",
+              "worked_on": "@today-6d",
+              "hours": 4,
+              "person": "tm-1",
+              "billable": false
+            }
+          },
+          {
+            "key": "time_entry-11",
+            "values": {
+              "entry": "Budget pacing check",
+              "worked_on": "@today-2d",
+              "hours": 1.5,
+              "client": "client-1",
+              "campaign": "campaign-2",
+              "person": "tm-2",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-12",
+            "values": {
+              "entry": "Landing page copy",
+              "worked_on": "@today-5d",
+              "hours": 4.5,
+              "client": "client-3",
+              "campaign": "campaign-4",
+              "person": "tm-3",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-13",
+            "values": {
+              "entry": "Weekly client call and notes",
+              "worked_on": "@today-8d",
+              "hours": 1,
+              "client": "client-9",
+              "person": "tm-5",
+              "billable": true
+            }
+          },
+          {
+            "key": "time_entry-14",
+            "values": {
+              "entry": "Creative review round",
+              "worked_on": "@today-7d",
+              "hours": 2,
+              "client": "client-4",
+              "campaign": "campaign-5",
+              "person": "tm-2",
+              "billable": true
+            }
+          }
+        ]
+      },
+      {
+        "token": "report",
+        "name": "Monthly reports",
+        "labelSingular": "Monthly report",
+        "labelPlural": "Monthly reports",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "report_name",
+        "describes": "The report owed to each client every month.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "report_name",
+            "label": "Monthly report",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "Drafting",
+              "Client review",
+              "Sent"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "Drafting": "blue",
+              "Client review": "amber",
+              "Sent": "green"
+            },
+            "required": true,
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "Drafting": "in_progress",
+              "Client review": "in_progress",
+              "Sent": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "sent_on",
+            "label": "Sent",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_sent",
+            "label": "Mark sent",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "report_mark_sent"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "author": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Sent"
+            ],
+            "filled": [
+              "sent_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "due_on",
+            "sent_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New monthly report",
+            "values": {
+              "report_name": "New monthly report",
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Headline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence a busy owner can repeat to their team."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Numbers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Spend, results, cost per result against last month."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we did"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Work shipped this month."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we recommend"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Next month plan and any decision we need."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "report-1",
+            "values": {
+              "report_name": "Cedar & Stone: last month results",
+              "status": "Drafting",
+              "client": "client-1",
+              "due_on": "@today+2d",
+              "author": "tm-5"
+            }
+          },
+          {
+            "key": "report-2",
+            "values": {
+              "report_name": "Harbor Lane: last month results",
+              "status": "Not started",
+              "client": "client-2",
+              "due_on": "@today+4d",
+              "author": "tm-5"
+            }
+          },
+          {
+            "key": "report-3",
+            "values": {
+              "report_name": "Brightwater: last month results",
+              "status": "Client review",
+              "client": "client-3",
+              "due_on": "@today-1d",
+              "author": "tm-2"
+            }
+          },
+          {
+            "key": "report-4",
+            "values": {
+              "report_name": "Pulse Studio: January drive wrap-up",
+              "status": "Drafting",
+              "client": "client-4",
+              "due_on": "@mon+3d",
+              "author": "tm-5"
+            }
+          },
+          {
+            "key": "report-5",
+            "values": {
+              "report_name": "Lumen Ledger: last month results",
+              "status": "Sent",
+              "client": "client-6",
+              "due_on": "@today-6d",
+              "sent_on": "@today-5d",
+              "author": "tm-1"
+            }
+          },
+          {
+            "key": "report-6",
+            "values": {
+              "report_name": "Marigold Pets: last month results",
+              "status": "Not started",
+              "client": "client-9",
+              "due_on": "@today+6d",
+              "author": "tm-5"
+            }
+          },
+          {
+            "key": "report-7",
+            "values": {
+              "report_name": "Summit Peak: last month results",
+              "status": "Sent",
+              "client": "client-11",
+              "due_on": "@today-8d",
+              "sent_on": "@today-7d",
+              "author": "tm-5"
+            }
+          },
+          {
+            "key": "report-8",
+            "values": {
+              "report_name": "Greenroots: pause summary",
+              "status": "Sent",
+              "client": "client-7",
+              "due_on": "@today-25d",
+              "sent_on": "@today-24d",
+              "author": "tm-5"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one account manager.",
+        "fromTable": "client",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_manager"
+      },
+      {
+        "describes": "Each campaign belongs to one client.",
+        "fromTable": "campaign",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "campaigns"
+      },
+      {
+        "describes": "Each campaign belongs to one lead.",
+        "fromTable": "campaign",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "campaign_by_lead"
+      },
+      {
+        "describes": "Each deliverable belongs to one campaign.",
+        "fromTable": "deliverable",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deliverables"
+      },
+      {
+        "describes": "Each deliverable belongs to one owner.",
+        "fromTable": "deliverable",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deliverable_by_owner"
+      },
+      {
+        "describes": "Each time entry belongs to one client.",
+        "fromTable": "time_entry",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "time_entries"
+      },
+      {
+        "describes": "Each time entry belongs to one campaign.",
+        "fromTable": "time_entry",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "time_logged"
+      },
+      {
+        "describes": "Each time entry belongs to one person.",
+        "fromTable": "time_entry",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "time_by_person"
+      },
+      {
+        "describes": "Each monthly report belongs to one client.",
+        "fromTable": "report",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "reports"
+      },
+      {
+        "describes": "Each monthly report belongs to one author.",
+        "fromTable": "report",
+        "fromField": "author",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "report_by_author"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Imani Okafor-Brandt",
+              "role": "Founder and strategy",
+              "work_email": "imani@northbeamgrowth.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Tomas Vilhelmsen",
+              "role": "Paid media lead",
+              "work_email": "tomas@northbeamgrowth.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Priya Venkataraman",
+              "role": "SEO and content lead",
+              "work_email": "priya@northbeamgrowth.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Dale Whitcombe",
+              "role": "Email and automation",
+              "work_email": "dale@northbeamgrowth.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Rosalind Achterberg",
+              "role": "Account manager",
+              "work_email": "rosalind@northbeamgrowth.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "campaign_intake",
+        "name": "Request a campaign",
+        "describes": "Capture a new campaign before it is planned.",
+        "audience": "staff",
+        "table": "campaign",
+        "fields": [
+          {
+            "fieldKey": "campaign_name",
+            "ask": "What is the campaign called?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which client is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "channel",
+            "ask": "Which channel?"
+          },
+          {
+            "fieldKey": "starts_on",
+            "ask": "When should it start?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is on the board as Planned."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "campaign_mark_live",
+        "table": "campaign",
+        "name": "Mark live",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Live"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "campaign_close_campaign",
+        "table": "campaign",
+        "name": "Close campaign",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Closed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deliverable_mark_done",
+        "table": "deliverable",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "report_mark_sent",
+        "table": "report",
+        "name": "Mark sent",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sent"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_cal",
+        "name": "Clients calendar",
+        "table": "client",
+        "kind": "calendar",
+        "dateField": "renews_on",
+        "allDay": true
+      },
+      {
+        "token": "client_over",
+        "name": "Overdue",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "client_week",
+        "name": "Due this week",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "client_next7",
+        "name": "Next 7 days",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_campaign",
+        "name": "All campaigns",
+        "table": "campaign",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "campaign_board",
+        "name": "Campaigns board",
+        "table": "campaign",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "campaign_cal",
+        "name": "Campaigns calendar",
+        "table": "campaign",
+        "kind": "calendar",
+        "dateField": "ends_on",
+        "allDay": true
+      },
+      {
+        "token": "campaign_over",
+        "name": "Overdue",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In production",
+            "Live"
+          ]
+        }
+      },
+      {
+        "token": "campaign_week",
+        "name": "Due this week",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In production",
+            "Live"
+          ]
+        }
+      },
+      {
+        "token": "campaign_next7",
+        "name": "Next 7 days",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In production",
+            "Live"
+          ]
+        }
+      },
+      {
+        "token": "campaign_mine",
+        "name": "My campaigns",
+        "table": "campaign",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_deliverable",
+        "name": "All deliverables",
+        "table": "deliverable",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "deliverable_board",
+        "name": "Deliverables board",
+        "table": "deliverable",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "deliverable_cal",
+        "name": "Deliverables calendar",
+        "table": "deliverable",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "deliverable_over",
+        "name": "Overdue",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_week",
+        "name": "Due this week",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_next7",
+        "name": "Next 7 days",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_mine",
+        "name": "My deliverables",
+        "table": "deliverable",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_time_entry",
+        "name": "All time entries",
+        "table": "time_entry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "time_entry_cal",
+        "name": "Time entries calendar",
+        "table": "time_entry",
+        "kind": "calendar",
+        "dateField": "worked_on",
+        "allDay": true
+      },
+      {
+        "token": "time_entry_week",
+        "name": "This week",
+        "table": "time_entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "time_entry_month",
+        "name": "This month",
+        "table": "time_entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "all_report",
+        "name": "All monthly reports",
+        "table": "report",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "report_board",
+        "name": "Monthly reports board",
+        "table": "report",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "report_cal",
+        "name": "Monthly reports calendar",
+        "table": "report",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "report_over",
+        "name": "Overdue",
+        "table": "report",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting",
+            "Client review"
+          ]
+        }
+      },
+      {
+        "token": "report_week",
+        "name": "Due this week",
+        "table": "report",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting",
+            "Client review"
+          ]
+        }
+      },
+      {
+        "token": "report_next7",
+        "name": "Next 7 days",
+        "table": "report",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting",
+            "Client review"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Digital Marketing Agency HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "campaign",
+          "describes": "Each program the agency runs for a client."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many campaigns are live?",
+        "whyItMatters": "The account team checks live spend every Monday.",
+        "expect": {
+          "table": "campaign",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Live"
+          },
+          "answer": 6,
+          "unit": "campaigns"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open campaigns.",
+        "action": {
+          "kind": "open",
+          "surface": "campaign_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "campaign_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open deliverables.",
+        "action": {
+          "kind": "open",
+          "surface": "deliverable_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "deliverable_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "northbeamgrowth.net"
+      ],
+      "fictionalStreets": [
+        "Alder Quay"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "digital-marketing-agency",
+      "parent": null,
+      "title": "Digital Marketing Agency HQ",
+      "icon": {
+        "emoji": "📈"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything the agency runs on, in one place: clients and their retainers, campaigns, the deliverables inside them, time logged and the monthly reports owed. Start with the Dashboard each Monday, then work the Overdue and Mine views. Check Hours used on every client before agreeing extra work."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:monthly-reporting"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:client-onboarding"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:retainer-and-scope-rules"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:weekly-team-rhythm"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The brands the agency runs programs for, with their retainer terms."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "renews_on"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "renews_on": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
+                "id": "cli-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "renews_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "cli-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Campaigns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each program the agency runs for a client."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "campaign",
+              "view": "campaign_board"
+            },
+            "inline": true,
+            "title": "Campaigns",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cam-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cam-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ends_on"
+              },
+              {
+                "id": "cam-t",
+                "name": "All campaigns",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cam-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ends_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In production",
+                    "Live"
+                  ]
+                }
+              },
+              {
+                "id": "cam-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ends_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In production",
+                    "Live"
+                  ]
+                }
+              },
+              {
+                "id": "cam-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ends_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In production",
+                    "Live"
+                  ]
+                }
+              },
+              {
+                "id": "cam-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cam-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliverables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The pieces of work inside a campaign, from ad sets to landing pages."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable",
+              "view": "deliverable_board"
+            },
+            "inline": true,
+            "title": "Deliverables",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "del-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "del-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "del-t",
+                "name": "All deliverables",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "del-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "del-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "del-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "del-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "del-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time entries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hours logged against clients and campaigns, the source of every retainer figure."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "time_entry",
+              "view": "all_time_entry"
+            },
+            "inline": true,
+            "title": "Time entries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tim-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "worked_on"
+              },
+              {
+                "id": "tim-t",
+                "name": "All time entries",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tim-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "tim-month",
+                "name": "This month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "tim-c"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly reports"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The report owed to each client every month."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "report",
+              "view": "report_board"
+            },
+            "inline": true,
+            "title": "Monthly reports",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rep-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rep-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "rep-t",
+                "name": "All monthly reports",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rep-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting",
+                    "Client review"
+                  ]
+                }
+              },
+              {
+                "id": "rep-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting",
+                    "Client review"
+                  ]
+                }
+              },
+              {
+                "id": "rep-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting",
+                    "Client review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "rep-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "digital-marketing-agency",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The agency at a glance. Charts read from the live tables, so they move as the team logs time and updates statuses."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "campaign",
+                      "view": "all_campaign"
+                    },
+                    "inline": true,
+                    "title": "Campaigns by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Campaigns by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "campaign",
+                      "view": "all_campaign"
+                    },
+                    "inline": true,
+                    "title": "Ad budget by channel (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Ad budget by channel (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "channel",
+                          "op": "sum",
+                          "field": "budget"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "time_entry",
+                      "view": "all_time_entry"
+                    },
+                    "inline": true,
+                    "title": "Hours logged by person",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Hours logged by person",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "person",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deliverable",
+                      "view": "all_deliverable"
+                    },
+                    "inline": true,
+                    "title": "Deliverables by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Deliverables by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Monthly retainer by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Monthly retainer by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "monthly_fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "report",
+                      "view": "all_report"
+                    },
+                    "inline": true,
+                    "title": "Reports by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Reports by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliverables overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable",
+              "view": "all_deliverable"
+            },
+            "inline": true,
+            "title": "Deliverables overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Deliverables overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "In review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reports waiting on us"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "report",
+              "view": "all_report"
+            },
+            "inline": true,
+            "title": "Reports waiting on us",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Reports waiting on us",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting",
+                    "Client review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewing in the next 30 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Renewing in the next 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Renewing in the next 30 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours used (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours logged this month divided by the hours included in the retainer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 80 percent warn the client; at 100 percent agree extra hours or scope in writing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to renewal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Renewal date minus today; negative means the renewal date has passed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Book the review call at 45 days; chase any negative number today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Budget spent (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Spend to date divided by the ad budget"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over 100 means overspend; under 60 near the end means underspend"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Delivery progress (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deliverables done divided by deliverables in the campaign"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Below plan at the halfway date means re-plan with the client"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "monthly-reporting",
+      "parent": "digital-marketing-agency",
+      "title": "Monthly reporting routine",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A report is what keeps a retainer renewed. Clients rarely remember the work, they remember the story you told about it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When it happens"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Start on the second working day of the month, once ad platforms have settled their final numbers."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every report row in the Monthly reports table is due by the fifth working day. Drafting beyond that needs the account manager to tell the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Build it in five steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the client row and read Hours used this month and Campaigns live."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pull the spend and result figures from each channel into the report row's Numbers section."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the headline last. It should say what changed and why in one sentence."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List what shipped from the Deliverables table, using the Done filter for that client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the recommendation: one thing to start, one to stop, one decision you need from them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you send"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Numbers match the platform screens, not last month's copy"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hours used is shown against hours included"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every recommendation names who decides and by when"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A second person read the headline"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After sending"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press Mark sent on the report row so the client's Reports owed count drops, then log any follow-up questions as deliverables."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "client-onboarding",
+      "parent": "digital-marketing-agency",
+      "title": "Client onboarding checklist",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first thirty days decide whether a client sees you as a vendor or a partner. Treat access as the first deliverable."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Contract and retainer terms entered on the client row (fee, hours included, renewal date)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kickoff call held; notes saved in the client page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Access requested: ad accounts, analytics, tag manager, email platform, CMS"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shared folder created and the client contact told where assets go"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "First campaign row created with a goal that has a number in it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weeks two and three"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Audit the tracking before spending money: do conversions fire once, with the right value?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree the reporting day and who receives the report."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set the weekly call and put the standing agenda in the client page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week four"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send a short first-month note: what was learned, what is planned, what is needed from them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review hours used against hours included and tell the client if the scope looks too small or too large."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common traps"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Accepting access to a personal account instead of the business account."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Starting ads before conversion tracking is checked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Promising a result date before you have seen thirty days of data."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "retainer-and-scope-rules",
+      "parent": "digital-marketing-agency",
+      "title": "Retainer hours and scope rules",
+      "icon": {
+        "emoji": "⏱️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Hours are the agency's only stock. These rules keep the balance honest without making clients feel metered."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log time the same day. Use one entry per client per task, with the campaign filled in when there is one."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Internal work such as pitches and training is not billable; untick Billable."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours used (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 80"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On track"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nothing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "80 to 99"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Near limit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tell the client this week which work will finish first"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "100 or more"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Agree extra hours or drop scope before doing more"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Handling extra requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write down the request in the client page with a rough hour estimate."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer two options: swap it for planned work, or buy extra hours."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the decision and log the work against the right campaign."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At renewal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open the renewal view at 45 days. Bring last quarter's results, hours used per month and one proposal to grow the scope."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "weekly-team-rhythm",
+      "parent": "digital-marketing-agency",
+      "title": "Weekly team rhythm",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open the Dashboard and read the overdue deliverables list aloud. Each item gets an owner and a new date or a reason."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check Reports waiting on us and assign authors."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Midweek"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Account managers review Hours used on their clients and flag anything near the limit."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Paid media checks pacing: Budget spent against days elapsed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Friday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Everyone logs the week's time before leaving."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move finished deliverables to Done so campaign progress is true."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write one line per live campaign in its page: what happened and what is next."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A Friday that ends with clean statuses makes Monday a ten minute meeting."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
