@@ -30,6 +30,7 @@ import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { displayId } from "@ai-matrx/design-system";
 // context-menu-exempt: entity — an in-memory Redux debug session (the raw NDJSON stream of one batch-extract call), not a persisted record
 
 function useCopyText(text: string) {
@@ -63,7 +64,7 @@ function SessionSidebarRow({
   isSelected: boolean;
   onSelect: () => void;
 }) {
-  const shortId = session.id.slice(0, 8);
+  const idLabel = displayId(session.id);
   const fileLabel =
     session.request.fileNames.length === 1
       ? session.request.fileNames[0]
@@ -93,7 +94,7 @@ function SessionSidebarRow({
         <span className="truncate text-[10px] font-medium">{fileLabel}</span>
       </div>
       <span className="font-mono text-[9px] text-muted-foreground">
-        {shortId} · {session.lines.length} lines
+        {idLabel} · {session.lines.length} lines
       </span>
     </button>
   );

@@ -64,6 +64,7 @@ import { createShapesScope } from "@/features/surfaces/manifests/shapes.manifest
 import { getKindInputContractBySlug } from "@/features/content-ir/registry/schema-source-kind-tables";
 import type { KindSchema } from "@ai-matrx/content-ir";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { displayId } from "@ai-matrx/design-system";
 
 interface ShapeInstancesTabProps {
   kind: string;
@@ -525,7 +526,7 @@ export default function ShapeInstancesTab({
                       title={`Validation: ${entry.validationStatus}`}
                     />
                     <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-                      {entry.title ?? `Untitled (${entry.id.slice(0, 8)})`}
+                      {entry.title ?? `Untitled (${displayId(entry.id)})`}
                     </span>
                     {entry.archivedAt !== null && (
                       <span
@@ -567,7 +568,7 @@ export default function ShapeInstancesTab({
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-foreground">
-                  {selected.title ?? `Untitled (${selected.id.slice(0, 8)})`}
+                  {selected.title ?? `Untitled (${displayId(selected.id)})`}
                 </span>
                 <span
                   className={`h-2 w-2 rounded-full ${statusDotClass(selected.validationStatus)}`}

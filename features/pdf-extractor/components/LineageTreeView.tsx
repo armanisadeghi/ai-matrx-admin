@@ -38,7 +38,7 @@ import {
 } from "../hooks/useDocumentLineage";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { ReadFailure } from "@ai-matrx/design-system";
+import { ReadFailure, RecordId } from "@ai-matrx/design-system";
 
 interface LineageTreeViewProps {
   doc: PdfDocument;
@@ -112,7 +112,7 @@ export function LineageTreeView({ doc }: LineageTreeViewProps) {
                     door. */}
                 <p className="text-xs font-medium truncate">{doc.name}</p>
                 <p className="text-[10px] text-muted-foreground truncate">
-                  <code className="font-mono">{doc.id.slice(0, 8)}…</code> ·{" "}
+                  <RecordId value={doc.id} label="Document" /> ·{" "}
                   current · {doc.derivationKind}
                   {doc.totalPages != null && (
                     <> · {doc.totalPages.toLocaleString()} pages</>
@@ -254,7 +254,7 @@ function ProcessingRow({
           className="text-[11px] font-medium"
         />
         <p className="text-[9px] text-muted-foreground truncate">
-          <code className="font-mono">{node.id.slice(0, 8)}…</code> ·{" "}
+          <RecordId value={node.id} label="Document" /> ·{" "}
           {node.derivationKind}
         </p>
       </div>
@@ -307,7 +307,7 @@ function BinaryRow({
           className="text-[11px] font-medium"
         />
         <p className="text-[9px] text-muted-foreground truncate">
-          <code className="font-mono">{node.id.slice(0, 8)}…</code>
+          <RecordId value={node.id} label="Document" />
           {node.derivationKind && <> · {node.derivationKind}</>}
           {node.fileSize != null && <> · {formatFileSize(node.fileSize)}</>}
         </p>

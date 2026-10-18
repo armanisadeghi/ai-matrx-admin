@@ -196,7 +196,7 @@ export function FactoryBuildsPage() {
             <EntityRef
               token="agent"
               id={r.agentId}
-              name={r.agentId.slice(0, 8)}
+              name={null}
               showIcon={false}
             />
           ) : (

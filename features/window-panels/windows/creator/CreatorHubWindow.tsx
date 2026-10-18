@@ -62,6 +62,7 @@ import { ObservationalMemoryCore } from "@ai-matrx/chat/agents/components/observ
 import CreatorSettingsTab from "./tabs/CreatorSettingsTab";
 import CreatorDataTab from "./tabs/CreatorDataTab";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
+import { displayId } from "@ai-matrx/design-system";
 
 interface CreatorHubTabDef {
   id: CreatorHubTabId;
@@ -161,7 +162,7 @@ function CreatorHubContextStatus() {
           <EntityRef
             token="agent"
             id={activeAgentId}
-            name={activeAgentName ?? `${activeAgentId.slice(0, 8)}…`}
+            name={activeAgentName ?? `${displayId(activeAgentId)}…`}
             showIcon={false}
             nameClassName="font-medium"
           />
@@ -175,13 +176,13 @@ function CreatorHubContextStatus() {
           <EntityRef
             token="conversation"
             id={inputConvId}
-            name={`${inputConvId.slice(0, 8)}…`}
+            name={`${displayId(inputConvId)}…`}
             showIcon={false}
             nameClassName="font-mono"
           />
         ) : (
           <span className="font-mono">
-            {inputConvId ? `${inputConvId.slice(0, 8)}…` : "none"}
+            {inputConvId ? `${displayId(inputConvId)}…` : "none"}
           </span>
         )}
       </span>
@@ -194,7 +195,7 @@ function CreatorHubContextStatus() {
           <EntityRef
             token={surfaceEntity.token}
             id={surfaceEntity.id}
-            name={`${surfaceEntity.id.slice(0, 8)}…`}
+            name={`${displayId(surfaceEntity.id)}…`}
             showIcon={false}
             nameClassName="font-mono"
           />

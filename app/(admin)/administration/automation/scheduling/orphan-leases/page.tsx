@@ -9,6 +9,7 @@
 
 "use client";
 
+import { displayId } from "@ai-matrx/design-system";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,7 @@ export default function OrphanLeasesPage() {
           <span className="flex flex-col gap-1">
             <span>
               Force-fail run{" "}
-              <code className="font-mono text-xs">{run.id.slice(0, 8)}…</code>?
+              <code className="font-mono text-xs">{displayId(run.id)}…</code>?
               The scanner will re-enqueue on the next tick for recurring
               triggers.
             </span>
@@ -243,7 +244,7 @@ export default function OrphanLeasesPage() {
             rowAttributes: (r) => ({ id: r.id, status: r.status }),
           }}
           detail={{
-            title: (r) => `Run ${r.id.slice(0, 8)}…`,
+            title: (r) => `Run ${displayId(r.id)}…`,
             description: (r) => (
               <EntityRef
                 token="scheduled_task"

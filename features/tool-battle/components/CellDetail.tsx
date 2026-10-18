@@ -2,7 +2,7 @@ import { Check, X } from "lucide-react";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@ai-matrx/design-system/controls";
-import { ErrorNotice } from "@ai-matrx/design-system";
+import { ErrorNotice, RecordId } from "@ai-matrx/design-system";
 import { formatMs, formatPoints, laneName, reasonLabel, statusLabel } from "../derive";
 import type { AnswerField, BattleView, CellView } from "../types";
 import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
@@ -68,7 +68,7 @@ export function CellDetail({
                   ) : (
                     <Badge tone="warning">Not verified</Badge>
                   )}
-                  {cell.callId && <Badge>{cell.callId.slice(0, 8)}</Badge>}
+                  {cell.callId && <RecordId value={cell.callId} label="Call" look="chip" />}
                 </div>
                 {(cell.errorCode || (cell.evidence?.problems.length ?? 0) > 0) && (
                   <ErrorNotice

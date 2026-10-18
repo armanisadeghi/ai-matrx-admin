@@ -93,6 +93,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
+import { RecordId } from "@ai-matrx/design-system";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -258,10 +259,6 @@ function FooterControls({
     dispatch(fetchFullAgent(agentId));
   };
 
-  const handleCopyId = () => {
-    copyText(agentId);
-  };
-
   return (
     <div className="flex w-full min-w-0 items-center justify-between gap-2">
       <div className="flex min-w-0 items-center gap-1.5">
@@ -288,15 +285,7 @@ function FooterControls({
           showIcon={false}
           nameClassName="max-w-[160px] truncate text-[11px] font-medium text-foreground"
         />
-        <button
-          type="button"
-          onClick={handleCopyId}
-          className="inline-flex shrink-0 items-center gap-1 rounded bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          title="Copy agent ID"
-        >
-          <span className="max-w-[80px] truncate">{agentId.slice(0, 8)}…</span>
-          <Copy className="h-2.5 w-2.5 shrink-0" />
-        </button>
+        <RecordId value={agentId} label="Agent" token="agent" look="chip" className="shrink-0" />
       </div>
 
       {showSaveControls && (

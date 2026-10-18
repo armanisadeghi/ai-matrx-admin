@@ -9,13 +9,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Eye } from "lucide-react";
 import { originClassLabel } from "@ai-matrx/chat/agents/redux/conversation-history/source-registry";
-import { cn, ErrorNotice } from "@ai-matrx/design-system";
+import { cn, ErrorNotice, displayId } from "@ai-matrx/design-system";
 import {
   EVERYTHING_PAGE_SIZE,
   NO_FILTERS,
+  fetchAgentNames,
   fetchEverythingNames,
   fetchEverythingPage,
   mergeEverything,
+  rowTitle,
   type EverythingFilters,
   type EverythingRow,
 } from "./everything-feed";
@@ -43,6 +45,7 @@ export default function EverythingFeed({
   const [loading, setLoading] = useState(true);
   const [more, setMore] = useState(true);
   const [names, setNames] = useState<{ people: Record<string, string>; organizations: Record<string, string> }>({ people: {}, organizations: {} });
+  const [agentNames, setAgentNames] = useState<Record<string, string>>({});
   // The options of each filter are what the feed has shown so far; picking one re-reads on the server.
   const seen = useRef({ people: new Set<string>(), orgs: new Set<string>(), origins: new Set<string>(), mandates: new Set<string>(), agents: new Map<string, string>() });
   const [, bump] = useState(0);
@@ -55,10 +58,11 @@ export default function EverythingFeed({
       if (r.organizationId) s.orgs.add(r.organizationId);
       if (r.originClass) s.origins.add(r.originClass);
       if (r.mandateKey) s.mandates.add(r.mandateKey);
-      if (r.agentId) s.agents.set(r.agentId, r.agentName ?? r.agentId.slice(0, 8));
+      if (r.agentId) s.agents.set(r.agentId, r.agentName ?? displayId(r.agentId));
     }
     bump((n) => n + 1);
     void fetchEverythingNames([...s.people], [...s.orgs]).then(setNames, () => undefined);
+    void fetchAgentNames([...s.agents.keys()]).then((n) => setAgentNames((cur) => ({ ...cur, ...n })), () => undefined);
   }, []);
 
   // New filters start the feed over; the newest page then refreshes on a timer.
@@ -113,11 +117,11 @@ export default function EverythingFeed({
         <div className={cn("flex gap-1", !framed && "flex-wrap")}>
           <select aria-label="Person" className={selectCls} value={filters.personId ?? ""} onChange={(e) => set({ personId: e.target.value || null })}>
             <option value="">Everyone</option>
-            {[...s.people].map((id) => <option key={id} value={id}>{names.people[id] ?? id.slice(0, 8)}</option>)}
+            {[...s.people].map((id) => <option key={id} value={id}>{names.people[id] ?? displayId(id)}</option>)}
           </select>
           <select aria-label="Organization" className={selectCls} value={filters.organizationId ?? ""} onChange={(e) => set({ organizationId: e.target.value || null })}>
             <option value="">Any organization</option>
-            {[...s.orgs].map((id) => <option key={id} value={id}>{names.organizations[id] ?? id.slice(0, 8)}</option>)}
+            {[...s.orgs].map((id) => <option key={id} value={id}>{names.organizations[id] ?? displayId(id)}</option>)}
           </select>
         </div>
         <div className={cn("flex gap-1", !framed && "flex-wrap")}>
@@ -133,11 +137,11 @@ export default function EverythingFeed({
         <div className="flex items-center gap-1">
           <select aria-label="Agent" className={selectCls} value={filters.agentId ?? ""} onChange={(e) => set({ agentId: e.target.value || null })}>
             <option value="">Any agent</option>
-            {[...s.agents].map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            {[...s.agents].map(([id, name]) => <option key={id} value={id}>{agentNames[id] ?? name}</option>)}
           </select>
           <label className="flex shrink-0 items-center gap-1 text-muted-foreground">
             <input type="checkbox" checked={filters.backgroundOnly} onChange={(e) => set({ backgroundOnly: e.target.checked })} />
-            Background
+            Background only
           </label>
           {anyFilter ? (
             <button type="button" className="shrink-0 text-muted-foreground underline" onClick={() => setFilters(NO_FILTERS)}>
@@ -168,14 +172,14 @@ export default function EverythingFeed({
           <span className="flex items-center justify-between gap-2">
             <span className="flex min-w-0 items-center gap-1">
               {r.status && LIVE_STATUSES.has(r.status) ? <Eye className="h-3 w-3 shrink-0 text-orange-500" /> : null}
-              <span className="truncate" title={r.label}>{r.label}</span>
+              <span className="truncate" title={rowTitle(r, agentNames)}>{rowTitle(r, agentNames)}</span>
             </span>
             <span className="shrink-0 text-muted-foreground">{r.status ?? ""}</span>
           </span>
           <span className="flex items-center justify-between gap-2 text-muted-foreground">
             <span className="truncate">
               {originClassLabel(r.originClass ?? "unknown")}
-              {r.personId ? ` · ${names.people[r.personId] ?? r.personId.slice(0, 8)}` : ""}
+              {r.personId ? ` · ${names.people[r.personId] ?? displayId(r.personId)}` : ""}
             </span>
             <span className="shrink-0">{when(r.createdAt)}</span>
           </span>

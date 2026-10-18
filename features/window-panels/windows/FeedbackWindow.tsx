@@ -88,6 +88,7 @@ import { describeSubject, subjectMetadata } from "./feedback-subject";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { displayId } from "@ai-matrx/design-system";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1553,7 +1554,7 @@ function FeedbackWindowBody({ form }: { form: FeedbackFormState }) {
                     <SelectItem value="none">None</SelectItem>
                     {assignableAdmins.map((a) => (
                       <SelectItem key={a.user_id} value={a.user_id}>
-                        {a.display_name || a.email || a.user_id.slice(0, 8)}
+                        {a.display_name || a.email || displayId(a.user_id)}
                         {reduxUser?.id === a.user_id ? " (you)" : ""}
                       </SelectItem>
                     ))}

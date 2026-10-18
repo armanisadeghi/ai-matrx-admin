@@ -1,7 +1,5 @@
 "use client";
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useEffect } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { EditInPlace } from "@ai-matrx/rich-content/editor/in-place/EditInPlace";
@@ -15,16 +13,15 @@ import {
   Paperclip,
   MessageSquare,
   CheckSquare,
+  Check,
   Loader2,
   Save,
   X as XIcon,
   ChevronLeft,
   Trash2,
-  Check,
   MoreVertical,
   Share2,
   ExternalLink,
-  Copy,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useEnsureTaskLoaded } from "@/features/tasks/hooks/useEnsureTaskLoaded";
@@ -38,7 +35,7 @@ import {
 } from "@/features/tasks/redux/thunks";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import * as taskService from "@/features/tasks/services/taskService";
-import { Input, } from "@ai-matrx/design-system";
+import { Input, RecordId } from "@ai-matrx/design-system";
 import { ProInput } from "@/components/official/ProInput";
 import { TaskDescriptionEditor } from "@/features/tasks/components/editor/TaskDescriptionEditor";
 import { Button } from "@/components/ui/button";
@@ -112,9 +109,6 @@ export default function TaskDetailsPanel({
   writeSurfaceName,
   surfaceDraftRef,
 }: TaskDetailsPanelProps) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const dispatch = useAppDispatch();
   const refresh = () => dispatch(invalidateAndRefetchFullContext());
   const createSubtask = async (parentTaskId: string, title: string) => {
@@ -154,17 +148,11 @@ export default function TaskDetailsPanel({
   const { id: currentUserId } = useAppSelector(selectUser);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [idCopied, setIdCopied] = useState(false);
   const [labels, setLabels] = useState<TaskLabel[]>(
     (task.settings?.labels as TaskLabel[]) || [],
   );
   const [showDescPreview, setShowDescPreview] = useState(false);
 
-  const handleCopyId = async () => {
-    if (!(await copyText(task.id))) return;
-    setIdCopied(true);
-    setTimeout(() => setIdCopied(false), 2000);
-  };
 
   // Update local state when task changes from context
   useEffect(() => {
@@ -741,29 +729,7 @@ export default function TaskDetailsPanel({
           <label className="text-xs font-semibold text-muted-foreground mb-1 block">
             Task ID
           </label>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCopyId}
-              className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors max-w-full"
-              title="Copy task ID"
-            >
-              {idCopied ? (
-                <Check size={11} className="text-success flex-shrink-0" />
-              ) : (
-                <Copy size={11} className="flex-shrink-0" />
-              )}
-              <span className="truncate">{task.id}</span>
-            </button>
-            <Link
-              href={`/tasks/${task.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline flex items-center gap-1 flex-shrink-0"
-            >
-              <ExternalLink size={11} />
-              Open
-            </Link>
-          </div>
+          <RecordId value={task.id} label="Task" token="task" href={`/tasks/${task.id}`} show="full" />
         </div>
 
         {/* Labels */}

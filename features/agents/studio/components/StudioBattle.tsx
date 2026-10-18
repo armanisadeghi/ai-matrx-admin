@@ -8,14 +8,14 @@
  * answer is `agent.cmp_response_feedback`. "Keep" saves the candidate as a new live version.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Swords } from "lucide-react";
 import { Badge, Button, EmptyState, RegionSkeleton, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { ErrorNotice, ReadFailure } from "@ai-matrx/design-system";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { Cost } from "@/components/cost/Cost";
 import { fetchTestCaseRows, type TestCaseRow } from "@/features/agent-tests/cases";
-import { fetchCaseResults, fetchRunResults, launchBattle, toCaseView } from "@/features/agent-tests/service";
+import { fetchCaseResults, fetchLatestAgentBattle, fetchRunResults, launchBattle, toCaseView } from "@/features/agent-tests/service";
 import { DEFAULT_RUN_OPTIONS, type TestResultView } from "@/features/agent-tests/types";
 import { TestRunPanel } from "@/features/agent-tests/components/AgentTestPage";
 import { BattleOutcome } from "@/features/agent-tests/components/BattleOutcome";
@@ -86,6 +86,33 @@ export function StudioBattle({
     if (candidate) setChallenger("candidate");
     setKept(false);
   }
+
+  // The agent's newest battle comes back on load (and after a reload): its verdict table, not the bare form.
+  const restored = useRef(false);
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    let live = true;
+    void (async () => {
+      try {
+        const latest = await fetchLatestAgentBattle(agentId);
+        if (!latest || !live) return;
+        const past = await fetchRunResults(latest.run.id);
+        if (!live) return;
+        setRunId((cur) => {
+          if (cur) return cur;
+          setSetups(latest.setups.map((s) => ({ ...s, patch: s.patch ?? {} })) as RunSetupBody[]);
+          setResults(past);
+          return latest.run.id;
+        });
+      } catch {
+        // The setup form still works; a failed read is not a failed battle.
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [agentId]);
 
   useEffect(() => {
     let live = true;
@@ -270,8 +297,8 @@ export function StudioBattle({
       </div>
       {/* Cost first, then the one action. */}
       <TabHead className="border-t border-border pt-2" >
-        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" data-testid="studio-battle-cost">
-          {/* The runs picker beside it says ×N; the pane is narrow, so the cost must never truncate away. */}
+        <span className="min-w-0 flex-1 text-xs text-muted-foreground" data-testid="studio-battle-cost">
+          {/* The cost is the whole line: the runs picker has its own row below, so nothing truncates it. */}
           {caseCount} {caseCount === 1 ? "case" : "cases"} ·{" "}
           {estimate !== null ? (
             <>
@@ -281,13 +308,6 @@ export function StudioBattle({
             "Cost not measured yet"
           )}
         </span>
-        <SegmentedControl
-          aria-label="Runs per case"
-          value={String(runsPerCase ?? 1)}
-          onValueChange={(v) => setRepeats(Number(v))}
-          data={[1, 2, 3].map((n) => ({ value: String(n), label: `×${n}` }))}
-          data-testid="studio-battle-repeats"
-        />
         <Button
           variant={keepPrimary ? "outline" : "primary"}
           icon={<Swords />}
@@ -298,6 +318,16 @@ export function StudioBattle({
           {launching ? "Starting…" : runId ? "Run again" : "Run battle"}
         </Button>
       </TabHead>
+      <div className="flex items-center gap-2" data-testid="studio-battle-repeats-row">
+        <span className="text-xs text-muted-foreground">Runs per case</span>
+        <SegmentedControl
+          aria-label="Runs per case"
+          value={String(runsPerCase ?? 1)}
+          onValueChange={(v) => setRepeats(Number(v))}
+          data={[1, 2, 3].map((n) => ({ value: String(n), label: `×${n}` }))}
+          data-testid="studio-battle-repeats"
+        />
+      </div>
       {launchError ? (
         <ErrorNotice size="inline" title="The battle did not start" error={launchError} operation="Battle on cases" />
       ) : null}

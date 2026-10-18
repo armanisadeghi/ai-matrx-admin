@@ -113,6 +113,7 @@ import { NEEDS_YOU_ROUTE } from "@/features/capture-ladder/route";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { displayId, RecordId } from "@ai-matrx/design-system";
 
 type RowStatus = "pending" | "success" | "failed";
 
@@ -199,7 +200,7 @@ export function batchSourceFilterText(row: BatchRow): string {
   if (!row.processedDocumentId) {
     return row.sourceNotices[0]?.message ?? "This page did not become a Source.";
   }
-  return ["Open", row.kept ? "Saved" : null, row.processedDocumentId.slice(0, 8), ...row.sourceNotices.map((notice) => notice.message)]
+  return ["Open", row.kept ? "Saved" : null, displayId(row.processedDocumentId), ...row.sourceNotices.map((notice) => notice.message)]
     .filter(Boolean)
     .join(" ");
 }
@@ -612,12 +613,7 @@ export default function BatchScrapePage() {
                 Saved
               </Badge>
             ) : null}
-            <span
-              className="shrink-0 font-mono text-[10px] text-muted-foreground"
-              title={row.processedDocumentId}
-            >
-              {row.processedDocumentId.slice(0, 8)}
-            </span>
+            <RecordId value={row.processedDocumentId} label="Source" className="shrink-0" />
             {row.sourceNotices.map((n) => (
               <span
                 key={n.code + n.message}

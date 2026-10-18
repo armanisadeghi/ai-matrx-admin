@@ -68,6 +68,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { openResourcePeek } from "@/features/organizations/peek/resourcePeekStore";
 import { cn } from "@/lib/utils";
 import { resolveEntityDoors } from "./doors";
+import { displayId } from "@ai-matrx/design-system";
 
 export const ENTITY_DOOR_CONTROL_CLASS =
   "flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground " +
@@ -125,7 +126,7 @@ export function EntityDoorControls({
   const doors = resolveEntityDoors(token, id, href);
   const resolvedHref = doors.href;
   const canPeek = !disablePeek && doors.canPeek;
-  const label = name?.trim() || `${id.slice(0, 8)}…`;
+  const label = name?.trim() || `${displayId(id)}…`;
 
   // Nothing to offer → render no chrome at all. A control that goes nowhere is
   // the dead end this whole module exists to kill.

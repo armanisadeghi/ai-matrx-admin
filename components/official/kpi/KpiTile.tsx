@@ -18,7 +18,7 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import type { ReactNode } from "react";
 
 import { InfoHint } from "@/components/official/InfoHint";

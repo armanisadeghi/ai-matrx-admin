@@ -6,7 +6,7 @@
 // Read and update that checklist before fixing table UI feedback in any host.
 import { startTransition, useCallback, useEffect, useMemo, useSyncExternalStore, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname, useRouter } from "next/navigation";
 import { MatrxDataTableProvider, type MatrxDataTableHost as TableHost, type TableContextMenuBoundaryProps, type TableDoors, type TableMenuIconProps, type TableWindowPanelProps } from "@ai-matrx/design-system/data-table/host";
 import { readMenuTarget } from "@ai-matrx/design-system/data-table/menu-targets";

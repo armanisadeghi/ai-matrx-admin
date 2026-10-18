@@ -67,6 +67,7 @@ import { cn } from "@/lib/utils";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { SandboxVersionHealthCard } from "./SandboxVersionHealthCard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { RecordId } from "@ai-matrx/design-system";
 
 type DiagCheck = {
   ok?: boolean;
@@ -715,9 +716,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
                   <Activity className="h-3 w-3 animate-pulse" /> Booting
                 </Badge>
               )}
-              <span className="text-xs text-muted-foreground font-mono">
-                {diag.sandbox_id}
-              </span>
+              <RecordId value={diag.sandbox_id} label="Sandbox" show="full" />
               {(diag.sandbox.template || diag.sandbox.tier) && (
                 <span className="text-xs text-muted-foreground">
                   ·{" "}

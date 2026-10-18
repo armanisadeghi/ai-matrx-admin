@@ -24,6 +24,7 @@
  * chasing an unmapped employment needs the actual UUID to hand to whoever can fix it.
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
@@ -38,34 +39,25 @@ const COMING_SOON_ID: Record<HrIdentityKind, string> = {
   workweek: "hr.workweek-detail",
 };
 
-function shortId(id: string): string {
-  return id.length > 13 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
-}
-
 const DOOR_CLASS =
   "inline-flex items-center gap-1 rounded-sm font-mono text-xs text-primary underline underline-offset-2 hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function HrIdentityDoor({
   kind,
   id,
-  label,
   className,
 }: {
   kind: HrIdentityKind;
   id: string;
-  /** Overrides the shortened id as the visible text. */
-  label?: string;
   className?: string;
 }) {
   return (
-    <button
-      type="button"
-      title={id}
-      onClick={() => void announceComingSoon(COMING_SOON_ID[kind])}
-      className={cn(DOOR_CLASS, className)}
-    >
-      {label ?? shortId(id)}
-    </button>
+    <RecordId
+      value={id}
+      label={kind === "employment" ? "Employment" : "Workweek"}
+      onOpen={() => void announceComingSoon(COMING_SOON_ID[kind])}
+      className={className}
+    />
   );
 }
 
@@ -87,7 +79,8 @@ export function PayPeriodDoor({
   payPeriodId: string;
   /** The employer this row belongs to — a slug or a uuid, carried straight through. */
   orgRef?: string | null;
-  label?: string;
+  /** The period's dates: what the person reads. The id itself is the tooltip. */
+  label: string;
   className?: string;
 }) {
   return (
@@ -98,7 +91,7 @@ export function PayPeriodDoor({
        target="_blank"
        rel="noopener noreferrer"
      >
-      {label ?? shortId(payPeriodId)}
+      {label}
       <ExternalLink className="h-3 w-3" aria-hidden />
     </Link>
   );

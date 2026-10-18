@@ -33,7 +33,6 @@ import { ExamplesField, filledExamples } from "@/features/agents/factory/compone
 import { startAgentBuild } from "@/features/agents/factory/service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
-import { toast } from "@/lib/toast";
 import { STUDIO_MODES, STUDIO_STARTERS, type StudioMode } from "../modes";
 import { buildNameFrom, type StudioState } from "../studio-state";
 import { canEditAgent } from "../improve";
@@ -67,6 +66,8 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
   // "Add an example" opens the shared field with a single box.
   const [examples, setExamples] = useState<string[]>([]);
   const [starting, setStarting] = useState(false);
+  // The build that did not start says so under the box, where the person is looking (a toast is gone in seconds).
+  const [buildError, setBuildError] = useState<string | null>(null);
   // The way in whose navigation is in flight: its chevron becomes a spinner, a second press is ignored.
   const [leaving, setLeaving] = useState<string | null>(null);
   const [navigating, startNavigation] = useTransition();
@@ -138,6 +139,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
     const purpose = description.trim();
     if (!purpose || starting) return;
     setStarting(true);
+    setBuildError(null);
     try {
       const given = filledExamples(examples);
       const buildId = await startAgentBuild({
@@ -152,7 +154,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
       setDescription("");
       onStart({ mode: "describe", buildId });
     } catch (e) {
-      toast.error("The build did not start", { description: e instanceof Error ? e.message : String(e) });
+      setBuildError(e instanceof Error ? e.message : String(e));
     } finally {
       setStarting(false);
     }
@@ -245,6 +247,11 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
               ) : null
             }
           />
+          {buildError ? (
+            <p role="alert" className="type-secondary text-destructive" data-testid="studio-build-error">
+              The build did not start. {buildError}
+            </p>
+          ) : null}
           {examples.length > 0 && <ExamplesField examples={examples} onChange={setExamples} disabled={starting} />}
         </div>
 

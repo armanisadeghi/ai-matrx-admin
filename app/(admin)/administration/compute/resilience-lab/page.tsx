@@ -55,7 +55,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 
 type RunResult = { ok: true; detail: string } | { ok: false; error: string };
 
-function shortId() {
+function makeLabId() {
   return `lab_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
 }
 
@@ -85,7 +85,7 @@ async function runScenario(args: {
     recoveryId = null;
   }
 
-  const requestId = shortId();
+  const requestId = makeLabId();
   const abortController = new AbortController();
 
   try {
@@ -377,7 +377,7 @@ async function runServerScenario(args: {
   scenario: ServerScenario;
 }): Promise<RunResult> {
   const { dispatch, scenario } = args;
-  const requestId = shortId();
+  const requestId = makeLabId();
   const abortController = new AbortController();
   try {
     await runTrackedRequest(dispatch, {
@@ -455,7 +455,7 @@ export default function ResilienceLabPage() {
 
   const append = (name: string, result: string) =>
     setLog((l) => [
-      { id: shortId(), ts: new Date().toLocaleTimeString(), name, result },
+      { id: makeLabId(), ts: new Date().toLocaleTimeString(), name, result },
       ...l.slice(0, 49),
     ]);
 

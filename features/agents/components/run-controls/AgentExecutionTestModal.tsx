@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
-import { Badge } from "@ai-matrx/design-system";
+import { Badge, RecordId } from "@ai-matrx/design-system";
 import { Textarea } from "@ai-matrx/design-system";
 import { ScrollArea } from "@ai-matrx/design-system";
 import { Separator } from "@ai-matrx/design-system";
@@ -526,22 +526,16 @@ function BackgroundTestMode({
                 </Badge>
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground font-mono">
-                    <span className="shrink-0">
-                      {task.startedAt} — {task.conversationId.substring(0, 8)}
-                    </span>
-                    {/* THE DOOR LAW: each background task IS a conversation, and
-                        its id was truncated into unreachable text — the run you
-                        just launched was the one thing you could not open.
-
-                        Sibling controls, not a link on the id: `tasks` is local
-                        `useState`, so a same-tab navigation unmounts the modal
-                        and the whole record of what was launched goes with it.
-                        The row carries `group` so these actually appear. */}
-                    <EntityDoorControls
+                    <span className="shrink-0">{task.startedAt} —</span>
+                    {/* THE DOOR LAW: each background task IS a conversation. RecordId
+                        carries copy, new tab and quick look as sibling controls, not a
+                        same-tab link: `tasks` is local `useState`, so a same-tab
+                        navigation would unmount the modal and lose the record of
+                        what was launched. */}
+                    <RecordId
+                      value={task.conversationId}
+                      label="Conversation"
                       token="conversation"
-                      id={task.conversationId}
-                      name={task.conversationId.substring(0, 8)}
-                      className="shrink-0"
                     />
                   </div>
                   {task.preview && (
@@ -577,19 +571,23 @@ function AgentUnderTest({ agentId }: { agentId: string }) {
   }
   return (
     <>
-      <span className="min-w-0 truncate font-medium">
-        {agentName || `${agentId.slice(0, 8)}…`}
-      </span>
+      {agentName ? (
+        <span className="min-w-0 truncate font-medium">{agentName}</span>
+      ) : (
+        <RecordId value={agentId} label="Agent" token="agent" />
+      )}
       {/* Sibling controls for the same reason as the task rows: the launched-run
           list is local state, so a same-tab jump to the agent would erase it.
           `alwaysShowActions` because a dialog header offers nothing to hover. */}
-      <EntityDoorControls
-        token="agent"
-        id={agentId}
-        name={agentName}
-        alwaysShowActions
-        className="shrink-0"
-      />
+      {agentName ? (
+        <EntityDoorControls
+          token="agent"
+          id={agentId}
+          name={agentName}
+          alwaysShowActions
+          className="shrink-0"
+        />
+      ) : null}
     </>
   );
 }

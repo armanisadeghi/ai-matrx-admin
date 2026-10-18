@@ -16,7 +16,6 @@
  * 404/403 stops are ANSWERS, rendered honestly in place.
  */
 
-import { TapTargetCopyButton } from "@ai-matrx/design-system/tap-target";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -68,6 +67,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { RecordedStepError } from "./RecordedStepError";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { RecordId } from "@ai-matrx/design-system";
 
 export interface ReviewWalkWindowProps {
   onClose: () => void;
@@ -704,11 +704,8 @@ function TechnicalDetails({ out }: { out: DescendOut }) {
     </div>
   );
 
-  const mono = (id: string, tooltip: string) => (
-    <>
-      <span className="truncate font-mono">{id}</span>
-      <TapTargetCopyButton value={id} variant="transparent" ariaLabel={tooltip} />
-    </>
+  const mono = (id: string, kind: string) => (
+    <RecordId value={id} label={kind} show="full" />
   );
 
   return (
@@ -743,7 +740,7 @@ function TechnicalDetails({ out }: { out: DescendOut }) {
               )}
             </>,
           )}
-          {row("Message ID", mono(out.unit.id, "Copy message id"))}
+          {row("Message ID", mono(out.unit.id, "Message"))}
           {out.unit.conversation_id &&
             row(
               "Conversation",
@@ -755,7 +752,7 @@ function TechnicalDetails({ out }: { out: DescendOut }) {
                   Open in a new tab
                   <ExternalLink className="h-3 w-3" aria-hidden />
                 </OutboundLink>
-                <TapTargetCopyButton value={out.unit.conversation_id} variant="transparent" ariaLabel="Copy conversation id" />
+                <RecordId value={out.unit.conversation_id} label="Conversation" token="conversation" show="short" />
               </>,
             )}
           {producer &&
@@ -773,7 +770,7 @@ function TechnicalDetails({ out }: { out: DescendOut }) {
               </>,
             )}
           {(out.snapshot_refs ?? []).map((snapshotId) =>
-            row("Snapshot", mono(snapshotId, "Copy snapshot id"), snapshotId),
+            row("Snapshot", mono(snapshotId, "Snapshot"), snapshotId),
           )}
           {(out.notes ?? []).map((note, i) => (
             <div key={i} className="text-[11px] text-muted-foreground">
@@ -1014,12 +1011,7 @@ function ReceiptPanel({
             openInNewTab
           />
         )}
-        <span className="inline-flex items-center gap-1 text-muted-foreground">
-          <span className="font-mono">
-            finding {receipt.finding_id.slice(0, 8)}…
-          </span>
-          <TapTargetCopyButton value={receipt.finding_id} variant="transparent" ariaLabel="Copy finding id" />
-        </span>
+        <RecordId value={receipt.finding_id} label="Finding" labelled />
       </div>
       <Button
         type="button"

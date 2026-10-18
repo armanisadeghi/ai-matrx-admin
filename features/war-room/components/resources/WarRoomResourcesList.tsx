@@ -8,12 +8,8 @@
 // come from the registries; the ⋯ menu carries only what EntityRef does not:
 // association actions (detach / pin) and the destructive entity delete.
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState, type ReactNode } from "react";
 import {
-  Check,
-  Copy,
   Link2,
   MoreHorizontal,
   Pin,
@@ -25,7 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { Skeleton } from "@ai-matrx/design-system";
+import { RecordId, Skeleton } from "@ai-matrx/design-system";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
@@ -412,7 +408,7 @@ export function WarRoomResourcesList({
                             label: labelFor(row),
                           });
                           const idPrefix = unresolved ? null : (
-                            <ResourceIdCopy id={row.resourceId} />
+                            <RecordId value={row.resourceId} label="Resource" />
                           );
                           const menu = (
                             <ResourceRowMenu
@@ -659,38 +655,6 @@ function DefaultResourceRow({
       </div>
       {menu}
     </div>
-  );
-}
-
-function ResourceIdCopy({ id }: { id: string }) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    if (!(await copyText(id, "ID copied", "Could not copy ID"))) return;
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  return (
-    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
-      <span>{id.slice(0, 8)}</span>
-      <button
-        type="button"
-        onClick={() => void handleCopy()}
-        title="Copy full ID"
-        aria-label="Copy full ID"
-        className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-      >
-        {copied ? (
-          <Check className="h-3 w-3 text-success" />
-        ) : (
-          <Copy className="h-3 w-3" />
-        )}
-      </button>
-    </span>
   );
 }
 

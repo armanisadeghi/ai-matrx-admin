@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ban, Play, Radio, RefreshCw, ScanSearch, Trash2 } from "lucide-react";
@@ -149,9 +150,7 @@ export function CrawlsTable() {
           <p className="text-xs font-medium">
             {formatCompactDate(row.started_at ?? row.created_at)}
           </p>
-          <p className="font-mono text-[10px] text-muted-foreground">
-            {row.id.slice(0, 12)}
-          </p>
+          <RecordId value={row.id} label="Crawl" />
         </div>
       ),
     },

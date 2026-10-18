@@ -5,6 +5,7 @@
 
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -156,9 +157,7 @@ function RegionCard({
         <span className="text-muted-foreground">
           {region.pages.length} pages · {Math.round(region.confidence * 100)}%
         </span>
-        <span className="ml-auto font-mono text-[9px] text-muted-foreground">
-          {region.region_id.slice(0, 6)}
-        </span>
+        <RecordId value={region.region_id} label="Region" className="ml-auto" />
       </div>
       <div className="aspect-[8.5/11] bg-muted/30">
         {png ? (

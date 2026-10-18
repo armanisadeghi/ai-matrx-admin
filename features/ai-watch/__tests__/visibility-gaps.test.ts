@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { everythingRow, mergeEverything, type EverythingRow } from "../everything-feed";
+import { everythingRow, mergeEverything, rowTitle, type EverythingRow } from "../everything-feed";
 import { watchAiCopyToClose } from "../watch-ai-one-place";
 
 const src = (rel: string) => readFileSync(join(__dirname, "..", "..", "..", rel), "utf8");
@@ -17,6 +17,16 @@ describe("Everything feed", () => {
       agent_id: "a1", total_cost: "0.0012", source_feature: "patrol", metadata: { mandate_watch: { mandate_key: "patrol.sweep" }, agent_name: "Sweeper" },
     });
     expect(r).toMatchObject({ userRequestId: "u1", label: "patrol.sweep", originClass: "system", personId: "p1", organizationId: "o1", mandateKey: "patrol.sweep", totalCost: 0.0012 });
+  });
+
+  it("a run whose only label is a raw source key wears the agent's name, else the feature as words", () => {
+    const r = everythingRow({ id: "u9", agent_id: "a9", source_feature: "manual", created_at: "2026-10-17T10:00:00Z", metadata: {} });
+    expect(rowTitle(r, { a9: "Support reply drafter" })).toBe("Support reply drafter");
+    expect(rowTitle(r, {})).toBe("Manual");
+    expect(rowTitle(everythingRow({ id: "u8", source_feature: "agent-service", created_at: "x", metadata: {} }))).toBe("Agent service");
+    // a mandate or holder label is already a name: the agent lookup never overrides it
+    const m = everythingRow({ id: "u7", agent_id: "a9", metadata: { mandate_watch: { mandate_key: "patrol.sweep" } }, created_at: "x" });
+    expect(rowTitle(m, { a9: "Other" })).toBe("patrol.sweep");
   });
 
   it("a refresh merges over older pages by id, newest first", () => {

@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { shallowEqual } from "react-redux";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
+import { RecordId, displayId } from "@ai-matrx/design-system";
 // Reused menu labeled item shapes: the canonical `buildConversationMenu` needs
 // favorite/archived/excludeFromKg state this debug slice does not carry (it
 // only tracks stream/request status, not conversation-list metadata), so
@@ -37,23 +38,6 @@ import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 // row and the active conversation both get a real `conversation` entity —
 // Attach To / Share / the canonical Open door all work — without guessing at
 // state this file cannot see.
-
-// ─── Copy helper ──────────────────────────────────────────────────────────────
-
-function useCopyText(text: string) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
-  const [copied, setCopied] = useState(false);
-  const copy = useCallback(() => {
-    copyText(text).then((copied) => {
-      if (!copied) return;
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-  }, [text]);
-  return { copied, copy };
-}
 
 // ─── Status badge colours (mirrors StreamDebugPanel) ─────────────────────────
 
@@ -98,8 +82,6 @@ function ConversationSidebarRow({
     return state.activeRequests.byRequestId[ids[ids.length - 1]];
   });
 
-  const { copied, copy } = useCopyText(conversationId);
-  const shortId = conversationId.slice(0, 8) + "…";
   const reqStatus = latestRequest?.status;
   const eventCount = latestRequest?.timeline.length ?? 0;
   const hasError = latestRequest?.error?.message != null;
@@ -128,13 +110,8 @@ function ConversationSidebarRow({
       />
       <div className="flex-1 min-w-0 space-y-0.5">
         <div className="flex items-center gap-1 min-w-0">
-          <span
-            className={cn(
-              "text-[11px] font-mono truncate flex-1",
-              isSelected ? "text-primary font-medium" : "text-foreground",
-            )}
-          >
-            {shortId}
+          <span className="min-w-0 flex-1">
+            <RecordId value={conversationId} label="Conversation" token="conversation" className={isSelected ? "text-primary" : undefined} />
           </span>
           {hasError && (
             <span
@@ -180,34 +157,6 @@ function ConversationSidebarRow({
           )}
         </div>
       </div>
-      {/* THE DOOR LAW: the row's only identity was a truncated uuid, and the
-          only affordance was "copy it and go find it yourself". The row itself
-          is a role="button" that selects the conversation in this window, so
-          the doors render as a SIBLING — an anchor nested inside interactive
-          content is invalid DOM and a stray click would cost the operator the
-          panel they are standing in. */}
-      <div
-        className="shrink-0 mt-0.5"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <EntityDoorControls token="conversation" id={conversationId} />
-      </div>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          copy();
-        }}
-        className="opacity-0 group-hover:opacity-100 h-4 w-4 flex items-center justify-center rounded text-muted-foreground hover:text-foreground transition-all shrink-0 mt-0.5"
-        title="Copy conversation ID"
-      >
-        {copied ? (
-          <Check className="h-3 w-3 text-emerald-500" />
-        ) : (
-          <Copy className="h-3 w-3" />
-        )}
-      </button>
     </div>
   );
 }
@@ -353,7 +302,7 @@ function StreamDebugHistoryWindowInner({
               [CONTEXT_MENU_ENTITY_KEY]: {
                 type: "conversation",
                 id,
-                title: id.slice(0, 8) + "…",
+                title: displayId(id) + "…",
               },
               content: `conversationId: ${id}`,
             };
@@ -377,7 +326,7 @@ function StreamDebugHistoryWindowInner({
             [CONTEXT_MENU_ENTITY_KEY]: {
               type: "conversation",
               id: activeId,
-              title: activeId.slice(0, 8) + "…",
+              title: displayId(activeId) + "…",
             },
             content: "",
           }}

@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -195,7 +196,7 @@ export function SiteAnalysisTable() {
                 );
                 }}
               >
-                {row.page_path || row.page_id.slice(0, 12)}
+                {row.page_path || <RecordId value={row.page_id} label="Page" />}
               </button>
             ) : (
               <p className="truncate font-mono text-[11px]">Site-level</p>

@@ -11,6 +11,7 @@
 
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useEffect, useState } from "react";
 import { Calculator } from "lucide-react";
 
@@ -41,7 +42,7 @@ const columns: MatrxColumnDef<EstimatedSpendRow>[] = [
         {r.linkKind ? (
           <div className="truncate font-mono text-[11px] text-muted-foreground">
             {r.linkKind}
-            {r.linkId ? ` ${r.linkId.slice(0, 8)}` : ""}
+            {r.linkId ? <> <RecordId value={r.linkId} label={r.linkKind} /></> : null}
           </div>
         ) : null}
       </div>

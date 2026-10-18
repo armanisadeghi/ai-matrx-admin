@@ -1,4 +1,5 @@
 import type { StepDoer, SystemPlan, SystemPlanStep } from "./types";
+import { cleanStepMarkdown, withoutTitle } from "./step-text";
 
 /**
  * The Architect (system agent "Master Intelligence Architect") answers in markdown with no
@@ -136,9 +137,9 @@ export function stepBadge(step: Pick<SystemPlanStep, "doer" | "modelClass">): st
     case "agent":
       return "Agent";
     case "code":
-      return "Code";
+      return "Code step";
     case "human":
-      return "You";
+      return "Person step";
     default:
       return null;
   }
@@ -219,18 +220,21 @@ function withoutModelLine(body: string): string {
   return kept.length < lines.length ? plainOf(kept.join("\n")) : "";
 }
 
-function stepFrom(n: number, title: string, body: string): SystemPlanStep {
-  const plain = plainOf(body);
+function stepFrom(n: number, title: string, rawBody: string): SystemPlanStep {
+  // Type and model are read from what the Architect wrote; what a person reads has the planner's
+  // scaffolding resolved (internal names gone, empty fields hidden, the title not repeated).
+  const body = cleanStepMarkdown(rawBody);
+  const plain = withoutTitle(plainOf(body), title);
   const parts = numberedParts(body);
   return {
     n,
     title: clip(stripMd(title), 120),
     markdown: planText(body.replace(/\n{3,}/g, "\n\n").trim()),
     // A step with several numbered parts says them all, not just the first one's sentence.
-    summary: parts.length >= 2 ? `${parts.length} parts: ${parts.join("; ")}.` : summaryOf(withoutModelLine(body) || plain),
+    summary: parts.length >= 2 ? `${parts.length} parts: ${parts.join("; ")}.` : summaryOf(withoutTitle(withoutModelLine(body), title) || plain),
     job: plain,
-    doer: doerOf(`${title} ${body}`),
-    modelClass: modelClassOf(`${title} ${body}`),
+    doer: doerOf(`${title} ${rawBody}`),
+    modelClass: modelClassOf(`${title} ${rawBody}`),
     usesAgentId: null,
     usesAgentName: null,
   };
@@ -330,8 +334,10 @@ export function parsePlannerAnswer(
   const first = sections.find((s) => /^# /.test("# ") && s.level === 1 && s.title);
   const recAt = sections.findIndex((s) => /^recommend/i.test(s.title));
   const firstParagraph = (lines: string[]) => {
-    const body = lines.join("\n").trim().split(/\n\s*\n/)[0] ?? "";
-    return clip(stripMd(body.replace(/\n\s*[-*•]\s+.*/g, "")), 300);
+    // The summary is the opening prose: a table or list that follows it is not part of it.
+    const prose = lines.filter((l) => !/^\s*\|/.test(l)).join("\n").trim();
+    const body = prose.split(/\n\s*\n/)[0] ?? "";
+    return clip(stripMd(body.replace(/\n\s*[-*•]\s+.*/g, "")).replace(/:$/, "."), 1200);
   };
   const recommendation = recAt >= 0 ? firstParagraph(sections[recAt].lines) || null : null;
   const jobAt = sections.findIndex((s) => /^the job as a system/i.test(s.title));

@@ -1,9 +1,7 @@
 "use client";
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { UntrustedCount } from "@ai-matrx/design-system";
+import { RecordId, UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
 import {
   selectAgentAccessResolved,
@@ -28,7 +26,6 @@ import { Button } from "@/components/ui/button";
 import {
   Undo,
   Save,
-  Copy,
   Activity,
   Globe,
   Star,
@@ -88,9 +85,6 @@ export function AgentSettingsForm({
   agentId,
   writeSurfaceName,
 }: AgentSettingsFormProps) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const dispatch = useAppDispatch();
   const agent = useAppSelector((state) => selectAgentById(state, agentId));
   const modelId = agent?.modelId || "";
@@ -470,18 +464,7 @@ export function AgentSettingsForm({
                     <span className="text-muted-foreground/70 uppercase tracking-widest type-meta font-bold">
                       ID
                     </span>
-                    <div className="flex items-center gap-1.5 bg-background/60 rounded-md pl-2.5 pr-1 py-1 border border-border/50 max-w-fit">
-                      <span className="font-mono text-foreground/80 type-meta tracking-tight">
-                        {agent.id}
-                      </span>
-                      <Button
-                        icon={<Copy />} aria-label="Copy ID"
-                        variant="quiet"
-                        className="ml-1"
-                        onClick={() => copyText(agent.id)}
-                        title="Copy ID"
-                      />
-                    </div>
+                    <RecordId value={agent.id} label="Agent" show="full" look="chip" />
                   </div>
 
                   <div className="flex flex-col gap-1.5">

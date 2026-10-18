@@ -1,3 +1,4 @@
+import { displayId } from "@ai-matrx/design-system";
 import type {
   MatrxColumnDef,
   MatrxDataTableLocalDrillConfig,
@@ -36,7 +37,7 @@ export function toCodexCells(cells: readonly CodexUsageRow[]): CodexCell[] {
   const titleOf = new Map<string, string>();
   for (const c of cells) {
     const id = c.conversation_id;
-    if (id) titleOf.set(id, c.conversation_title ?? c.title ?? c.label ?? `Conversation ${id.slice(0, 8)}`);
+    if (id) titleOf.set(id, c.conversation_title ?? c.title ?? c.label ?? `Conversation ${displayId(id)}`);
   }
   return cells.map((c) => {
     const conversationId = c.conversation_id ?? "unknown";
@@ -45,7 +46,7 @@ export function toCodexCells(cells: readonly CodexUsageRow[]): CodexCell[] {
     return {
       id: `${conversationId}|${c.model ?? ""}|${c.effort ?? ""}`,
       conversationId,
-      conversation: titleOf.get(conversationId) ?? `Conversation ${conversationId.slice(0, 8)}`,
+      conversation: titleOf.get(conversationId) ?? `Conversation ${displayId(conversationId)}`,
       kind: c.root_id && c.root_id !== conversationId ? "Worker" : "Conversation",
       root: titleOf.get(c.root_id ?? conversationId) ?? "Unknown",
       project: c.project ?? "Unknown project",

@@ -1,8 +1,7 @@
 "use client";
 
+import { RecordId, displayId } from "@ai-matrx/design-system";
 import { MatrxDetailGrid } from "@ai-matrx/design-system/data-table";
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useEffect } from "react";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { useAppStore } from "@/lib/redux/hooks";
@@ -15,17 +14,9 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { pct } from "@/components/matrx/resizable/pct";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   Search,
-  Copy,
-  Check,
   ChevronDown,
   ChevronRight,
   MessageSquare,
@@ -82,10 +73,6 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function shortId(id: string) {
-  return id.slice(0, 8);
-}
-
 /** THE relative-time voice: @ai-matrx/kit/format owns "3m ago". */
 function relativeTime(iso: string) {
   return formatRelativeTime(iso, { style: "short" });
@@ -130,48 +117,6 @@ function roleClasses(role: string) {
 // ---------------------------------------------------------------------------
 // Shared UI primitives
 // ---------------------------------------------------------------------------
-
-function IdWithTooltip({ id, label }: { id: string; label?: string }) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
-  const [copied, setCopied] = useState(false);
-  return (
-    <TooltipProvider delayDuration={200}>
-      <span className="inline-flex items-center gap-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <code className="text-[10px] text-primary font-mono cursor-default">
-              {id}
-            </code>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-sm">
-            <p className="font-mono text-xs break-all">
-              {label ? `${label}: ` : ""}
-              {id}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-        <button
-          aria-label={`Copy ${label ?? "id"}`}
-          className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors shrink-0"
-          onClick={async (e) => {
-            e.stopPropagation();
-            if (!(await copyText(id))) return;
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-          }}
-        >
-          {copied ? (
-            <Check className="h-3 w-3 text-emerald-500" />
-          ) : (
-            <Copy className="h-3 w-3" />
-          )}
-        </button>
-      </span>
-    </TooltipProvider>
-  );
-}
 
 function StatusBadge({
   className,
@@ -285,10 +230,10 @@ function InstanceTab({
       <Section title="Identity">
         <div className="space-y-1">
           <KVRow label="conversationId" mono>
-            <IdWithTooltip id={instance.conversationId} />
+            <RecordId value={instance.conversationId} show="full" token="conversation" />
           </KVRow>
           <KVRow label="agentId" mono>
-            <IdWithTooltip id={instance.agentId} label="Agent" />{" "}
+            <RecordId value={instance.agentId} show="full" label="Agent" token="agent" />{" "}
             <span className="text-xs text-muted-foreground ml-1">
               ({agentName})
             </span>
@@ -298,7 +243,7 @@ function InstanceTab({
           </KVRow>
           <KVRow label="shortcutId" mono>
             {instance.shortcutId ? (
-              <IdWithTooltip id={instance.shortcutId} />
+              <RecordId value={instance.shortcutId} show="full" />
             ) : (
               <span className="text-muted-foreground italic">null</span>
             )}
@@ -371,7 +316,7 @@ function AgentTab({
         <div className="space-y-1">
           <KVRow label="name">{agentData.name || "—"}</KVRow>
           <KVRow label="id" mono>
-            {agentData.id ? <IdWithTooltip id={agentData.id} /> : "—"}
+            {agentData.id ? <RecordId value={agentData.id} show="full" token="agent" /> : "—"}
           </KVRow>
           <KVRow label="agentType">{agentData.agentType || "—"}</KVRow>
           <KVRow label="category">{agentData.category || "—"}</KVRow>
@@ -496,7 +441,7 @@ function HistoryTab({ data }: { data: MessagesEntry | undefined }) {
             </KVRow>
           )}
           <KVRow label="Conversation ID" mono>
-            <IdWithTooltip id={data.conversationId} />
+            <RecordId value={data.conversationId} show="full" token="conversation" />
           </KVRow>
           <KVRow label="API Endpoint Mode">
             <StatusBadge className={statusClasses(data.apiEndpointMode)}>
@@ -537,8 +482,9 @@ function HistoryTab({ data }: { data: MessagesEntry | undefined }) {
                     pos {record.position}
                   </span>
                   {record._streamRequestId && (
-                    <span className="text-xs text-muted-foreground font-mono">
-                      req {shortId(record._streamRequestId)}
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      req
+                      <RecordId value={record._streamRequestId} label="Stream request" />
                     </span>
                   )}
                 </div>
@@ -551,11 +497,11 @@ function HistoryTab({ data }: { data: MessagesEntry | undefined }) {
                   <div className="mt-2 space-y-3">
                     <div className="space-y-1">
                       <KVRow label="id" mono>
-                        <IdWithTooltip id={record.id} />
+                        <RecordId value={record.id} show="full" />
                       </KVRow>
                       {record._streamRequestId && (
                         <KVRow label="_streamRequestId" mono>
-                          <IdWithTooltip id={record._streamRequestId} />
+                          <RecordId value={record._streamRequestId} show="full" />
                         </KVRow>
                       )}
                       <KVRow label="createdAt">
@@ -813,7 +759,7 @@ function ResourcesTab({
       {Object.entries(data).map(([id, r]) => (
         <div key={id} className="border border-border rounded-md p-2.5">
           <div className="flex items-center gap-2">
-            <IdWithTooltip id={r.resourceId} label="resourceId" />
+            <RecordId value={r.resourceId} show="full" label="resourceId" />
             <StatusBadge className={statusClasses(r.status)}>
               {r.status}
             </StatusBadge>
@@ -944,7 +890,7 @@ function RequestsTab({ requests }: { requests: ActiveRequest[] }) {
             onClick={() => setExpandedReq(isExpanded ? null : req.requestId)}
           >
             <div className="flex items-center gap-2 flex-wrap">
-              <IdWithTooltip id={req.requestId} label="requestId" />
+              <RecordId value={req.requestId} show="full" label="requestId" />
               <StatusBadge className={statusClasses(req.status)}>
                 {req.status}
               </StatusBadge>
@@ -1314,7 +1260,7 @@ export default function ExecutionInstanceInspector({
             const inst = instances[convId];
             if (!inst) return null;
             const agentName =
-              agents[inst.agentId]?.name || shortId(inst.agentId);
+              agents[inst.agentId]?.name || displayId(inst.agentId);
             const isSelected = selectedConvId === convId;
             return (
               <div
@@ -1334,7 +1280,7 @@ export default function ExecutionInstanceInspector({
                 }}
               >
                 <div className="flex items-center">
-                  <IdWithTooltip id={convId} />
+                  <RecordId value={convId} show="full" token="conversation" />
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                   <span className="truncate font-medium text-foreground/70">
@@ -1386,7 +1332,7 @@ export default function ExecutionInstanceInspector({
 
       {selectedInstance && (
         <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border bg-muted/20 shrink-0 text-xs">
-          <IdWithTooltip id={selectedInstance.conversationId} />
+          <RecordId value={selectedInstance.conversationId} show="full" token="conversation" />
           <StatusBadge className={statusClasses(selectedInstance.status)}>
             {selectedInstance.status}
           </StatusBadge>
@@ -1462,7 +1408,7 @@ export default function ExecutionInstanceInspector({
             <span className="truncate">
               Focus:{" "}
               {Object.entries(focusSurfaces)
-                .map(([s, c]) => `${s} → ${shortId(c.display)}`)
+                .map(([s, c]) => `${s} → ${displayId(c.display)}`)
                 .join(", ")}
             </span>
           </>

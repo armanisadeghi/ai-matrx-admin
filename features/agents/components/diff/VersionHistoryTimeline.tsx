@@ -19,7 +19,7 @@ import { Copy, Atom, ShieldAlert, AlertTriangle } from "lucide-react";
 import type { AgentVersionHistoryItem } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { useSmartVersionFetch } from "@/features/agents/hooks/useSmartVersionFetch";
 import type { EnrichedVersion } from "@/features/agents/hooks/useSmartVersionFetch";
-import { VersionIdBadge } from "@/features/agents/components/diff/VersionIdBadge";
+import { RecordId } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@ai-matrx/chat/host/ui-slots";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
@@ -69,7 +69,7 @@ export function VersionHistoryTimeline({
       return {
         number: version.version_number,
         versionId: version.version_id,
-        idCell: <VersionIdBadge versionId={version.version_id} showLabel={false} />,
+        idCell: <RecordId value={version.version_id} label="Version" />,
         at: version.changed_at,
         note: version.change_note ?? null,
         loaded: enriched ? version.snapshotLoaded : false,

@@ -55,6 +55,7 @@ import {
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { displayId } from "@ai-matrx/design-system";
 // ── CanvasItemPreview ─────────────────────────────────────────────────────────
 
 /**
@@ -635,7 +636,7 @@ export function CmsArtifactDetail({ artifactId }: CmsArtifactDetailProps) {
               label="Source Message"
               value={
                 artifact.messageId
-                  ? `Message ${artifact.messageId.slice(0, 8)}…`
+                  ? `Message ${displayId(artifact.messageId)}…`
                   : null
               }
               href={
@@ -649,7 +650,7 @@ export function CmsArtifactDetail({ artifactId }: CmsArtifactDetailProps) {
               label="Conversation"
               value={
                 artifact.conversationId
-                  ? `Conversation ${artifact.conversationId.slice(0, 8)}…`
+                  ? `Conversation ${displayId(artifact.conversationId)}…`
                   : null
               }
               href={

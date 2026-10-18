@@ -29,6 +29,7 @@ import type {
 } from "@/features/pdf-extractor/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { displayId } from "@ai-matrx/design-system";
 
 interface Props {
   sourcePayload: PdfSourcePayload | null;
@@ -268,7 +269,7 @@ export function RegionOverlayPreview({
                       backgroundColor: o.color.replace(/0\.9\)/, "0.15)"),
                       boxShadow: `0 0 0 1px rgba(0,0,0,0.3)`,
                     }}
-                    title={`${o.kind} — ${o.regionId.slice(0, 8)}…`}
+                    title={`${o.kind} — ${displayId(o.regionId)}…`}
                   >
                     <span
                       className="absolute -top-4 left-0 rounded px-1 py-0.5 text-[9px] font-medium text-white"

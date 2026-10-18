@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ComingSoonCard } from "@/components/coming-soon/ComingSoonCard";
-import { Skeleton } from "@ai-matrx/design-system";
+import { Skeleton, RecordId } from "@ai-matrx/design-system";
 import { MetadataHero } from "@/features/podcasts/generator/components/MetadataHero";
 import { ProductionTeaser } from "@/features/podcasts/generator/components/ProductionTeaser";
 import { MediaOptionsGrid } from "@/features/podcasts/generator/components/MediaOptionsGrid";
@@ -232,7 +232,7 @@ export function StudioStage({ runId }: { runId: string }) {
                     <span className="font-medium text-foreground/70">
                       Episode ID:
                     </span>{" "}
-                    {state.episodeId}
+                    <RecordId value={state.episodeId} label="Episode" show="full" />
                   </p>
                 )}
                 {publicLink && (

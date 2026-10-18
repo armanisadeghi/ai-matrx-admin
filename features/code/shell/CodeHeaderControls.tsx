@@ -10,7 +10,6 @@
 // header stays in sync with manual panel drags/collapses.
 
 import {
-  CopyTapButton,
   PanelLeftTapButton,
   MessageTapButton,
   HistoryTapButton,
@@ -19,8 +18,7 @@ import { ExternalLink } from "lucide-react";
 import { useEffect } from "react";
 import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { RecordId } from "@ai-matrx/design-system";
 import type { SandboxDetailResponse } from "@/types/sandbox";
 import { sandboxDisplayName } from "@/lib/sandbox/format";
 import {
@@ -43,9 +41,6 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function CodeHeaderControls() {
   const dispatch = useAppDispatch();
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const sideOpen = useAppSelector(selectSideOpen);
   const rightOpen = useAppSelector(selectRightOpen);
   const farRightOpen = useAppSelector(selectFarRightOpen);
@@ -151,12 +146,7 @@ export function CodeHeaderControls() {
             </span>
           )}
           <HeaderActionsSlot>
-          <CopyTapButton
-            variant="transparent"
-            ariaLabel={`Copy sandbox ID ${activeSandbox.id}`}
-            tooltip="Copy sandbox ID"
-            onClick={() => void copyText(activeSandbox.id, "Sandbox ID copied")}
-          />
+          <RecordId value={activeSandbox.id} label="Sandbox" />
           <OutboundLink
             href={`/sandbox/${encodeURIComponent(activeSandbox.id)}`}
             aria-label={`Manage ${sandboxDisplayName(activeSandbox)}`}

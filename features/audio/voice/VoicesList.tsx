@@ -1,7 +1,6 @@
 "use client";
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { RecordId } from "@ai-matrx/design-system";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { listVoices } from "@/lib/cartesia/cartesiaUtils";
 import { CardContent, CardHeader } from "@/components/ui/card";
@@ -22,9 +21,6 @@ import { matchesSearch } from "@ai-matrx/kit/search-scoring";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const VoicesList: React.FC = () => {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const { loading, error, getOneData, setOneData, setLoading, setError } =
     useAiAudio();
 
@@ -101,11 +97,6 @@ const VoicesList: React.FC = () => {
     return filtered;
   }, [availableVoices, searchTerm, sortBy]);
 
-  const handleCopyId = useCallback(async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!(await copyText(id, "Voice ID copied"))) return;
-  }, []);
-
   const handleCardClick = useCallback((voice: AiVoice) => {
     setSelectedVoice(voice);
     setIsVoiceModalOpen(true);
@@ -155,7 +146,6 @@ const VoicesList: React.FC = () => {
               key={voice.id}
               voice={voice}
               onCardClick={() => handleCardClick(voice)}
-              onCopyId={handleCopyId}
             />
           ))}
         </div>
@@ -212,11 +202,10 @@ const VoicesList: React.FC = () => {
 interface VoiceCardProps {
   voice: AiVoice;
   onCardClick: () => void;
-  onCopyId: (id: string, e: React.MouseEvent) => void;
 }
 
 const VoiceCard: React.FC<VoiceCardProps> = React.memo(
-  ({ voice, onCardClick, onCopyId }) => (
+  ({ voice, onCardClick }) => (
     <motion.div
       className="cursor-pointer h-full"
       whileHover={{ scale: 1.05 }}
@@ -233,6 +222,7 @@ const VoiceCard: React.FC<VoiceCardProps> = React.memo(
           <p className="text-muted-foreground mb-4 text-sm line-clamp-2">
             {voice.description}
           </p>
+          <RecordId value={voice.id} label="Voice" />
         </CardContent>
       </Card>
     </motion.div>

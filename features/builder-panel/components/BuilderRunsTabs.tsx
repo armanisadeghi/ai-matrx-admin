@@ -20,6 +20,7 @@ import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.ove
 import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { ProvisionWindowBody } from "@/features/provision-window/ProvisionWindowBody";
 import type { BuilderEntry, BuilderRef } from "../types";
+import { RecordId } from "@ai-matrx/design-system";
 
 type AiRef = Extract<BuilderRef, { type: "ai_run" }>;
 
@@ -171,7 +172,7 @@ export function BuilderProvisionTab({
       {bar}
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
         <Select aria-label="Snapshot" value={current.id} onValueChange={setPicked} options={options} />
-        <span className="truncate font-mono text-[11px] text-muted-foreground">{current.id}</span>
+        <RecordId value={current.id} label="Snapshot" show="full" />
         <Button
           variant="quiet"
           className="ml-auto"

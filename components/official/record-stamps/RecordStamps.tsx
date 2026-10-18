@@ -21,6 +21,7 @@
 
 import { UserIdentity } from "@/components/user/UserIdentity";
 import { cn } from "@/lib/utils";
+import { RecordId } from "@ai-matrx/design-system";
 
 export interface RecordStampsProps {
   organizationId?: string | null;
@@ -97,7 +98,7 @@ function Stamp({
               className="truncate font-mono type-meta text-muted-foreground"
               title={`Account ${actor.id} — no longer a member of this organization`}
             >
-              a former member · {actor.id.slice(0, 8)}
+              a former member · <RecordId value={actor.id} label="Account" />
             </span>
           )
         ) : (

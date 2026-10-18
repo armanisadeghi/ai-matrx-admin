@@ -21,7 +21,7 @@
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState } from "react";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Repeat } from "lucide-react";
 import { Badge, Button, RegionSkeleton } from "@ai-matrx/design-system/controls";

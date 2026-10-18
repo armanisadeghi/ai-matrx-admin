@@ -7,7 +7,7 @@
  * renderers and a sixth would be a defect. Nothing here re-derives columns,
  * re-implements sorting, or re-writes value rendering:
  *
- *  - UUID cells are the platform's `ShortId` (shorten + hover-copy);
+ *  - UUID cells are the platform's `RecordId` (shorten + copy + doors);
  *  - value RECOGNITION is the tool-result field library's own detectors,
  *    via `./cell-value-shapes.ts` — the same functions `StructuredValueView`
  *    uses, so a UUID looks the same in a cell as in a tool result;
@@ -63,7 +63,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ShortId } from "@ai-matrx/chat/tool-call-visualization/result-fields/ShortId";
+import { RecordId } from "@ai-matrx/design-system";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
@@ -388,7 +388,7 @@ const StringCell: React.FC<{ value: string }> = ({ value }) => {
   if (trimmed === "") {
     return <EmptyCell title="Empty text — the source stored a value with nothing in it." />;
   }
-  if (isUuidShape(trimmed)) return <ShortId value={trimmed} />;
+  if (isUuidShape(trimmed)) return <RecordId value={trimmed} />;
   if (looksLikeUrl(trimmed)) return <UrlCell value={trimmed} />;
   if (looksLikeEmail(trimmed)) return <EmailCell value={trimmed} />;
   const shape = temporalShape(trimmed);
@@ -479,7 +479,7 @@ export const DataCell: React.FC<{
     return <UntypedValue value={value} label={label} origin={origin} />;
   }
   if (type === "uuid" && typeof value === "string") {
-    return <ShortId value={value} />;
+    return <RecordId value={value} />;
   }
   if (TEMPORAL_TYPES.has(type) && typeof value === "string") {
     const shape = type === "time" ? "time" : temporalShape(value);

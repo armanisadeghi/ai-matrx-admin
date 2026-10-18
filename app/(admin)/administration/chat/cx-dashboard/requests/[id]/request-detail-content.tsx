@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import AppLink from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
@@ -16,7 +17,6 @@ import {
   cacheWriteSplit,
   formatDuration,
   statusBadgeVariant,
-  truncateId,
   computeDuration,
 } from "@/features/cx-dashboard/utils/format";
 import { originClassLabel } from "@ai-matrx/chat/agents/redux/conversation-history/source-registry";
@@ -279,7 +279,7 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-semibold">User Request Detail</h2>
             <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
-              <span className="font-mono">{truncateId(ur.id, 16)}</span>
+              <RecordId value={ur.id} label="Request" />
               <Badge
                 variant={statusBadgeVariant(ur.status)}
                 className="text-[10px]"
@@ -342,7 +342,7 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
                   <span className="min-w-0 flex-1 truncate font-medium text-foreground">
                     {c.title || "Untitled"}
                   </span>
-                  <span className="font-mono text-muted-foreground">{truncateId(c.id, 12)}</span>
+                  <RecordId value={c.id} label="Conversation" />
                   <span className="text-muted-foreground">{c.model_calls} calls</span>
                   <span className="font-mono">{formatAdminCost(c.cost)}</span>
                 </AppLink>

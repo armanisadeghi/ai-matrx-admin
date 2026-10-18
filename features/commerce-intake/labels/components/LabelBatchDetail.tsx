@@ -66,7 +66,7 @@ import type { LabelBatch, LabelCode } from "../types";
 import { formatBatchState } from "../columns";
 import { PrinterCertificationNotice } from "../printers/components/PrinterCertificationNotice";
 import { useFailedPrinterGate } from "../printers/useFailedPrinterGate";
-import { readOf } from "@ai-matrx/design-system";
+import { readOf, displayId } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
 
 function stateTone(state: string): string {
@@ -384,7 +384,7 @@ export function LabelBatchDetail({
                   printData,
                   template.id,
                   { ecLevel },
-                  `labels-${batch.id.slice(0, 8)}.pdf`,
+                  `labels-${displayId(batch.id)}.pdf`,
                 ).catch((err: unknown) => {
                   console.error("[commerce-labels] pdf failed", err);
                   toast.error("Could not build the PDF.");

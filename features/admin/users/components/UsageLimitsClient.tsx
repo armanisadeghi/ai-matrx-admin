@@ -14,6 +14,7 @@
 // the calculation then counts that window from the marker. The row is
 // replaced with the function's fresh answer.
 
+import { displayId } from "@ai-matrx/design-system";
 import { useEffect, useState } from "react";
 import { MoreHorizontal, RotateCcw, WalletCards } from "lucide-react";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -77,7 +78,7 @@ const STATE_BAR: Record<AdminUsageState, string> = {
 };
 
 function displayName(row: AdminUserRow): string {
-  return row.display_name?.trim() || row.email?.trim() || `${row.is_anonymous ? "guest" : "account"} ${row.id.slice(0, 8)}`;
+  return row.display_name?.trim() || row.email?.trim() || `${row.is_anonymous ? "guest" : "account"} ${displayId(row.id)}`;
 }
 
 function WindowCell({ row, period }: { row: AdminUserRow; period: string }) {

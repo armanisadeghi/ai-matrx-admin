@@ -26,7 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { InfoHint } from "@/components/official/InfoHint";
 import { Button } from "@/components/ui/button";
-import { SelectChevron } from "@ai-matrx/design-system";
+import { SelectChevron, displayId } from "@ai-matrx/design-system";
 import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -1940,7 +1940,7 @@ function RolesSection({
     );
 
   const nameFor = (agentId: string) =>
-    agentNames[agentId] ?? `${agentId.slice(0, 8)}…`;
+    agentNames[agentId] ?? `${displayId(agentId)}…`;
 
   const setPlatformOverride = async (roleName: string, agentId: string) => {
     setBusyRole(roleName);

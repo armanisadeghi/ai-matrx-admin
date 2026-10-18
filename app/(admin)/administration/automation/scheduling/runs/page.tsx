@@ -11,6 +11,7 @@
 
 "use client";
 
+import { displayId } from "@ai-matrx/design-system";
 import { useMemo, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -296,7 +297,7 @@ export default function AdminRunsPage() {
             rowAttributes: (r) => ({ id: r.id, status: r.status }),
           }}
           detail={{
-            title: (r) => `Run ${r.id.slice(0, 8)}…`,
+            title: (r) => `Run ${displayId(r.id)}…`,
             description: (r) => (
               <EntityRef
                 token="scheduled_task"

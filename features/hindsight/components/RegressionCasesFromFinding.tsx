@@ -21,13 +21,12 @@
  *     never offered twice for the same snapshot and the panel answers "did the
  *     check pass?" rather than "a case exists".
  */
-import { TapTargetCopyButton } from "@ai-matrx/design-system/tap-target";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@ai-matrx/design-system";
+import { Skeleton, RecordId } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
@@ -53,9 +52,7 @@ function CaseRow({ item }: { item: RegressionCase }) {
   return (
     <li className="flex flex-wrap items-center gap-1.5 text-xs">
       <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-      <span className="font-mono text-muted-foreground">
-        {item.snapshot_id.slice(0, 8)}
-      </span>
+      <RecordId value={item.snapshot_id} label="Snapshot" />
       {item.status === "retired" ? (
         <Badge variant="outline" className="text-muted-foreground">
           retired
@@ -174,10 +171,7 @@ export function RegressionCasesFromFinding({ finding }: { finding: Finding }) {
                   ? "Saving…"
                   : "Make this a regression case"}
               </Button>
-              <span className="font-mono text-xs text-muted-foreground">
-                {snapshotId.slice(0, 8)}
-              </span>
-              <TapTargetCopyButton value={snapshotId} variant="transparent" ariaLabel="Copy snapshot id" />
+              <RecordId value={snapshotId} label="Snapshot" />
             </div>
           ))}
         </div>

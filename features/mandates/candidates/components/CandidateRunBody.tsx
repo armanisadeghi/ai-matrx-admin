@@ -9,6 +9,7 @@
  * derived that the server did not record (P8 / P10 / P13 / P15 / P19).
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useEffect, useState } from "react";
 import { Columns2, Loader2, MessagesSquare, ThumbsDown, ThumbsUp } from "lucide-react";
 
@@ -551,7 +552,8 @@ function VersionLine({ versionId, holderType }: { versionId: string; holderType:
   const n = number?.id === versionId ? number.n : null;
   return (
     <div className="type-meta text-muted-foreground tabular-nums" title={versionId} data-candidate-version>
-      {n != null ? `Version ${n}` : `Version ${versionId.slice(0, 8)}`}
+      {n != null ? `Version ${n}` : "Version"}{" "}
+      <RecordId value={versionId} label="Version" />
     </div>
   );
 }

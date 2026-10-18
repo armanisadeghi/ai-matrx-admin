@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import Link from 'next/link';
+import Link from "@/components/navigation/AppLink";
 
 interface SimpleCardProps {
   icon?: React.ReactNode;

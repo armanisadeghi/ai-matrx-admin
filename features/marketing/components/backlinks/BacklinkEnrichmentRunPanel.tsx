@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { AlertCircle, CheckCircle2, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -64,12 +65,7 @@ export function BacklinkEnrichmentRunPanel({
                 {run.failed > 0 ? ` · ${run.failed} could not finish` : ""}
               </p>
               {run.runId ? (
-                <p
-                  className="font-mono text-[10px] text-muted-foreground"
-                  title={run.runId}
-                >
-                  Run {run.runId.slice(0, 8)}
-                </p>
+                <RecordId value={run.runId} label="Run" labelled />
               ) : null}
             </div>
             <p

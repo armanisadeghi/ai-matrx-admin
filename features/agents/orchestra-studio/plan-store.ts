@@ -62,13 +62,15 @@ export async function savePlanChanges(id: string, plan: SystemPlan): Promise<voi
 function withFreshSteps(stored: SystemPlan): SystemPlan {
   const fresh = parsePlannerAnswer(stored.answer, stored.description, stored.conversationId);
   if (fresh.steps.length === 0) return stored;
-  const chosen = new Map(stored.steps.filter((s) => s.usesAgentId).map((s) => [s.title, s]));
+  const chosen = new Map(stored.steps.filter((s) => s.usesAgentId || s.codeNote || s.assignee).map((s) => [s.title, s]));
   return {
     ...stored,
     recommendation: fresh.recommendation ?? stored.recommendation,
     steps: fresh.steps.map((s) => {
       const c = chosen.get(s.title);
-      return c ? { ...s, usesAgentId: c.usesAgentId, usesAgentName: c.usesAgentName } : s;
+      return c
+        ? { ...s, usesAgentId: c.usesAgentId, usesAgentName: c.usesAgentName, agentConfirmed: c.agentConfirmed, codeNote: c.codeNote, assignee: c.assignee }
+        : s;
     }),
   };
 }

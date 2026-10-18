@@ -1,5 +1,6 @@
 "use client";
 
+import { displayId } from "@ai-matrx/design-system";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -975,7 +976,7 @@ export default function FeedbackTable() {
                           <SelectItem value={item.user_id} key={item.user_id}>
                             {item.display_name ||
                               item.email ||
-                              item.user_id.slice(0, 8)}
+                              displayId(item.user_id)}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { readOf } from "@ai-matrx/design-system";
+import { readOf, displayId } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { useState } from "react";
 import { ChevronDown, Loader2, Users } from "lucide-react";
@@ -24,7 +24,7 @@ type MeAgentMode = "exclude" | "roster" | "default";
 
 function agentName(names: Record<string, string>, id: string | null): string {
   if (!id) return "—";
-  return names[id] ?? `${id.slice(0, 8)}…`;
+  return names[id] ?? `${displayId(id)}…`;
 }
 
 function activeTierLabel(

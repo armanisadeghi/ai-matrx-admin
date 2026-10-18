@@ -16,8 +16,6 @@
 // The JSX is moved verbatim from the original TaskEditor body (zero visual
 // change for the ~9 existing consumers).
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useRef, useState } from "react";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
 import {
@@ -27,10 +25,8 @@ import {
   CheckSquare,
   Loader2,
   Trash2,
-  Check,
   ChevronDown,
   ChevronRight,
-  Copy,
   Tag,
   Info,
   CircleDot,
@@ -61,7 +57,6 @@ import { insertAtRichCaret } from "@ai-matrx/rich-content/editor/editor/caretIns
 import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { TaskDescriptionField, type TaskDescriptionMode } from "./TaskDescriptionField";
 import { ProInput } from "@/components/official/ProInput";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TaskPriorityPicker, TASK_PRIORITY_META } from "../TaskPriorityPicker";
 import { TASK_STATUSES } from "@/features/tasks/constants/status";
@@ -78,7 +73,7 @@ import { formatDateOnly } from "@ai-matrx/kit/dates";
 import { cn } from "@/utils/cn";
 import { useRefocusInputAfterAsync } from "@/features/tasks/hooks/useRefocusInputAfterAsync";
 import { useSubtasksRead } from "@/features/tasks/hooks/useSubtasksRead";
-import { ReadFailure } from "@ai-matrx/design-system";
+import { ReadFailure, RecordId } from "@ai-matrx/design-system";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
@@ -105,9 +100,6 @@ export function TaskEditorBody({
   /** In-tile drill-down: open a linked task (subtask) without leaving the tile. */
   onOpenLinkedTask?: (taskId: string) => void;
 }) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   // Canonical on-page label (THE NAMING LAW) — read from the lazily loaded
   // manifest body; the same word holds the place until it arrives.
   const { body: tasksBody } = useSurfaceBody(TASKS_SURFACE_NAME);
@@ -147,7 +139,6 @@ export function TaskEditorBody({
   };
 
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [idCopied, setIdCopied] = useState(false);
 
   // Canonical comment thread (@ai-matrx/associations, W6 host adoption):
   // the hook feeds the surface-scope contextData; `CommentThread` below is
@@ -263,11 +254,6 @@ export function TaskEditorBody({
     completed: !!completed,
   });
 
-  const handleCopyId = async () => {
-    if (!(await copyText(taskId))) return;
-    setIdCopied(true);
-    setTimeout(() => setIdCopied(false), 1500);
-  };
 
   const handleAddSubtask = async (): Promise<boolean> => {
     if (!newSubtask.trim() || isAddingSubtask) return false;
@@ -813,22 +799,7 @@ export function TaskEditorBody({
                 )}
               >
                 <PropertyRow label="Task ID" first compact={compact}>
-                  <div className="flex items-center gap-1 w-full">
-                    <code className="flex-1 text-[10px] font-mono bg-muted px-2 py-1 rounded truncate">
-                      {taskId}
-                    </code>
-                    <Button
-                      variant="quiet"
-                      onClick={handleCopyId}
-                      className="shrink-0"
-                    >
-                      {idCopied ? (
-                        <Check className="w-3 h-3 text-green-500" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
-                    </Button>
-                  </div>
+                  <RecordId value={taskId} label="Task" token="task" show="full" />
                 </PropertyRow>
                 <PropertyRow label="Created" compact={compact}>
                   {task.created_at ? (

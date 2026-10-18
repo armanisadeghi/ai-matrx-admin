@@ -34,9 +34,13 @@ export const NO_FILTERS: EverythingFilters = {
   backgroundOnly: false,
 };
 
+/** Where a row's `label` came from: only "feature"/"none" are worth replacing with the agent's name. */
+export type EverythingLabelSource = "holder" | "mandate" | "agent" | "feature" | "none";
+
 export interface EverythingRow {
   userRequestId: string;
   label: string;
+  labelSource: EverythingLabelSource;
   status: string | null;
   createdAt: string;
   originClass: string | null;
@@ -68,9 +72,14 @@ export function everythingRow(row: Row): EverythingRow {
   const watch = obj(metadata.mandate_watch);
   const mandateKey = str(watch?.mandate_key) ?? str(metadata.mandate_key);
   const cost = typeof row.total_cost === "number" ? row.total_cost : typeof row.total_cost === "string" ? Number(row.total_cost) : null;
+  const holderName = str(holder?.name);
+  const agentName = str(metadata.agent_name);
+  const feature = str(row.source_feature);
+  const labelSource: EverythingLabelSource = holderName ? "holder" : mandateKey ? "mandate" : agentName ? "agent" : feature ? "feature" : "none";
   return {
     userRequestId: String(row.id),
-    label: str(holder?.name) ?? mandateKey ?? str(metadata.agent_name) ?? str(row.source_feature) ?? "AI run",
+    label: holderName ?? mandateKey ?? agentName ?? feature ?? "AI run",
+    labelSource,
     status: str(row.status),
     createdAt: String(row.created_at ?? ""),
     originClass: str(row.origin_class),
@@ -84,6 +93,23 @@ export function everythingRow(row: Row): EverythingRow {
     sourceFeature: str(row.source_feature),
     totalCost: cost !== null && Number.isFinite(cost) ? cost : null,
   };
+}
+
+/** "agent-service" -> "Agent service": a feature key as words, never the raw key. */
+export function humanizeFeature(key: string): string {
+  const words = key.replace(/[_\-.]+/g, " ").trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : key;
+}
+
+/**
+ * The title a row wears: the mandate or holder if it has one, else THE AGENT'S NAME (looked up by id), else the
+ * feature as words. A raw source key ("manual", "chat") alone never names a run when an agent ran it.
+ */
+export function rowTitle(row: EverythingRow, agentNames: Readonly<Record<string, string>> = {}): string {
+  if (row.labelSource === "holder" || row.labelSource === "mandate" || row.labelSource === "agent") return row.label;
+  const agent = row.agentId ? agentNames[row.agentId] : undefined;
+  if (agent) return agent;
+  return row.labelSource === "feature" ? humanizeFeature(row.label) : row.label;
 }
 
 /** Commas, quotes and parens end a PostgREST `or(...)` term: a mandate key never carries them, so refuse rather than escape. */
@@ -140,4 +166,13 @@ export async function fetchEverythingNames(
   for (const r of (p.data ?? []) as Row[]) if (str(r.id) && str(r.display_name)) people[String(r.id)] = String(r.display_name);
   for (const r of (o.data ?? []) as Row[]) if (str(r.id) && str(r.name)) organizations[String(r.id)] = String(r.name);
   return { people, organizations };
+}
+
+/** Agent names for the ids a page mentions (ids stay the filter value). */
+export async function fetchAgentNames(agentIds: readonly string[]): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  if (!agentIds.length) return out;
+  const { data } = await supabase.schema("agent").from("definition").select("id, name").in("id", [...agentIds]);
+  for (const r of (data ?? []) as Row[]) if (str(r.id) && str(r.name)) out[String(r.id)] = String(r.name);
+  return out;
 }

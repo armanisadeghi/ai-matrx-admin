@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { formatDistanceToNow } from "date-fns";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";

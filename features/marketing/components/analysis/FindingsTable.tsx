@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -204,7 +205,7 @@ export function FindingsTable() {
               }}
             >
               <p className="truncate font-mono text-[11px]">
-                {row.page_path || row.page_id.slice(0, 12)}
+                {row.page_path || <RecordId value={row.page_id} label="Page" />}
               </p>
               {row.page_url ? (
                 <p className="truncate text-[10px] text-muted-foreground">

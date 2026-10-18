@@ -1,8 +1,21 @@
 import type { SystemPlan, SystemPlanStep } from "./types";
+import { needsAgent, stepKind } from "./step-kind";
 
-/** n of m steps have an agent (built in the Studio or chosen from the person's own). */
+/**
+ * n of m AGENT steps have an agent (built in the Studio or chosen from the person's own). Code steps
+ * and person steps are not agents: they never count against the total, and never block the Orchestra.
+ */
 export function planProgress(plan: Pick<SystemPlan, "steps">): { built: number; total: number } {
-  return { built: plan.steps.filter((s) => s.usesAgentId).length, total: plan.steps.length };
+  const agentSteps = plan.steps.filter(needsAgent);
+  return { built: agentSteps.filter((s) => s.usesAgentId).length, total: agentSteps.length };
+}
+
+/** How many steps are done by code or by a person (shown beside the progress, never counted in it). */
+export function otherSteps(plan: Pick<SystemPlan, "steps">): { code: number; person: number } {
+  return {
+    code: plan.steps.filter((s) => stepKind(s) === "code" && !s.usesAgentId).length,
+    person: plan.steps.filter((s) => stepKind(s) === "person" && !s.usesAgentId).length,
+  };
 }
 
 export interface PlanMember {

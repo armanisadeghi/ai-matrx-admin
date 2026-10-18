@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllShortcutsArray } from "@ai-matrx/chat/agents/redux/agent-shortcuts/selectors";
 import { Select } from "@ai-matrx/design-system/controls";
+import { displayId } from "@ai-matrx/design-system";
 
 interface AgentShortcutPickerProps {
   label: string;
@@ -54,7 +55,7 @@ export function AgentShortcutPicker({
             ? [
                 {
                   value: selectedId,
-                  label: `${selectedId.slice(0, 8)}… (not in registry)`,
+                  label: `${displayId(selectedId)}… (not in registry)`,
                 },
               ]
             : []),

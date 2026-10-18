@@ -111,7 +111,7 @@ describe("step cards are clean prose with one badge", () => {
   it("one badge per step from the parsed type", () => {
     expect(stepBadge({ doer: "decision", modelClass: "decision" })).toBe("Decision model");
     expect(stepBadge({ doer: "ai-call", modelClass: "frontier" })).toBe("Frontier model");
-    expect(stepBadge({ doer: "code", modelClass: null })).toBe("Code");
+    expect(stepBadge({ doer: "code", modelClass: null })).toBe("Code step");
     expect(stepBadge({ doer: "unknown", modelClass: null })).toBeNull();
   });
 
@@ -178,4 +178,44 @@ it("a step's card sentence never opens on its Model line", () => {
   const plan = parsePlannerAnswer(raw, "x");
   expect(plan.steps[0].summary).toMatch(/^Gets:/);
   expect(plan.steps[0].modelClass).toBe("frontier");
+});
+
+describe("what a person reads in a step (round 2, item 14)", () => {
+  const fs = require("fs") as typeof import("fs"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const path = require("path") as typeof import("path"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const names = ["", "-2", "-3", "-4", "-5", "-6"].map((x) => `real-planner-answer${x}.fixture.md`);
+
+  it.each(names)("%s: no internal names, no empty fields, no title repeated", (file) => {
+    const plan = parsePlannerAnswer(fs.readFileSync(path.join(__dirname, file), "utf8"), "x");
+    for (const s of plan.steps) {
+      for (const text of [s.summary, s.job, s.markdown]) {
+        expect(text).not.toMatch(/\bjev\b/i);
+        expect(text).not.toMatch(/Model:\s*[—–-]/);
+        expect(text).not.toMatch(/Who does it:\s*(single ai call|code|person)/i);
+      }
+      const lead = s.title.toLowerCase().replace(/[.:]+$/, "");
+      expect(s.summary.toLowerCase().startsWith(`${lead}:`)).toBe(false);
+      expect(s.summary.toLowerCase().startsWith(`${lead}.`)).toBe(false);
+    }
+  });
+
+  it("the post check step names the decision model, not jev", () => {
+    const plan = parsePlannerAnswer(fs.readFileSync(path.join(__dirname, "real-planner-answer-5.fixture.md"), "utf8"), "x");
+    const post = plan.steps.find((s) => /post check/i.test(s.title))!;
+    expect(post.job).toContain("decision model");
+    expect(post.job).not.toContain("jev");
+  });
+
+  it("keeps the whole summary paragraph", () => {
+    const long = `# T\n\n## 2. Recommendation\n${"Everything runs in order and nothing needs an orchestra leader. ".repeat(12)}\n\n## 5. Steps\n1. **A** — x\n2. **B** — y\n`;
+    const plan = parsePlannerAnswer(long, "x");
+    expect(plan.recommendation!.endsWith("…")).toBe(false);
+    expect(plan.recommendation!.length).toBeGreaterThan(300);
+  });
+
+  it("the summary is prose: a table under it is not part of it", () => {
+    const plan = parsePlannerAnswer(fs.readFileSync(path.join(__dirname, "real-planner-answer-6.fixture.md"), "utf8"), "x");
+    expect(plan.recommendation).not.toContain("|");
+    expect(plan.recommendation).not.toMatch(/:$/);
+  });
 });

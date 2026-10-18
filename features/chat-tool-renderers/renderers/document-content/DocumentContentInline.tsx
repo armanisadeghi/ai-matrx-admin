@@ -19,6 +19,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { displayId } from "@ai-matrx/design-system";
 
 /**
  * Inline renderer for `document_content` — random access into a processed
@@ -52,7 +53,7 @@ function docTitle(
     (typeof result?.document_id === "string" && result.document_id) ||
     getArg<string>(entry, "document_id") ||
     "";
-  return id ? `Document · ${id.slice(0, 8)}` : "Document";
+  return id ? `Document · ${displayId(id)}` : "Document";
 }
 
 // ─── action="read" (format clean / raw) ─────────────────────────────────────────────

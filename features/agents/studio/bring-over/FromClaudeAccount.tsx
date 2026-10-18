@@ -24,6 +24,24 @@ import { countLabel } from "./count-label";
 
 type Source = { file_id: string } | { text: string };
 
+/** Project instructions, skills or custom instructions: sent with the import as `extra_context`. Shown before and after the export is read, one value. */
+function ContextField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-1.5" data-testid="import-project-instructions">
+      <label className="text-sm font-medium" htmlFor="context">
+        Project instructions, skills or custom instructions (optional)
+      </label>
+      <ProTextarea
+        id="context"
+        rows={5}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Paste anything that shaped how Claude did this job"
+      />
+    </div>
+  );
+}
+
 export function FromClaudeAccount() {
   const dispatch = useAppDispatch();
   const { upload } = useFileUpload();
@@ -74,7 +92,7 @@ export function FromClaudeAccount() {
           <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
             <li>On claude.ai (web or desktop), open Settings, then Privacy, then Export data.</li>
             <li>Claude emails you a link. It works for 24 hours.</li>
-            <li>Upload the zip here. Phone apps cannot export, and Claude cannot export a Project on its own, so paste a project's instructions below.</li>
+            <li>Upload the zip here. Phone apps cannot export, and Claude cannot export a Project on its own, so paste a project's instructions in the box below.</li>
           </ol>
           <input
             ref={fileRef}
@@ -111,6 +129,7 @@ export function FromClaudeAccount() {
               />
             </div>
           ) : null}
+          <ContextField value={context} onChange={setContext} />
           <Button onClick={read} disabled={!canRead || busy}>
             {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Read it
@@ -164,18 +183,7 @@ export function FromClaudeAccount() {
             </div>
           ) : null}
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="context">
-              Project instructions, skills or custom instructions (optional)
-            </label>
-            <ProTextarea
-              id="context"
-              rows={5}
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-              placeholder="Paste anything that shaped how Claude did this job"
-            />
-          </div>
+          <ContextField value={context} onChange={setContext} />
 
           <BuildFromImport
             disabled={!conversationKey}

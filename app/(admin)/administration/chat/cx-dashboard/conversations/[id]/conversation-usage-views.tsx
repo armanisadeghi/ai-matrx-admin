@@ -4,6 +4,7 @@
 // rows (chat.request + chat.tool_call where conversation_id = it) — a user request can fan out
 // across several conversations, so its total is shown beside this conversation's share, never as it.
 
+import { RecordId } from "@ai-matrx/design-system";
 import AppLink from "@/components/navigation/AppLink";
 import { Badge, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -16,7 +17,6 @@ import {
   formatDuration,
   formatTokens,
   cacheWriteSplit,
-  truncateId,
 } from "@/features/cx-dashboard/utils/format";
 import type {
   CxConversationUsage,
@@ -77,9 +77,7 @@ const callColumns: MatrxColumnDef<CxRequest>[] = [
     header: "Request",
     width: 110,
     cell: (r) => (
-      <AppLink href={REQUEST_HREF(r.user_request_id)} className="font-mono text-xs hover:underline">
-        {truncateId(r.user_request_id)}
-      </AppLink>
+      <RecordId value={r.user_request_id} label="Request" href={REQUEST_HREF(r.user_request_id)} />
     ),
   },
   { id: "iteration", accessorKey: "iteration", header: "Iter", align: "right", width: 60 },
@@ -115,7 +113,7 @@ const relatedColumns: MatrxColumnDef<CxRelatedConversationCost>[] = [
     width: 280,
     cell: (r) => (
       <AppLink href={CONVERSATION_HREF(r.id)} className="hover:underline">
-        {r.title || <span className="font-mono text-muted-foreground">{truncateId(r.id, 12)}</span>}
+        {r.title || <RecordId value={r.id} label="Conversation" />}
       </AppLink>
     ),
   },
@@ -255,7 +253,7 @@ export function ConversationErrorsView({
           <div className="space-y-1">
             {failedRequests.map((ur) => (
               <AppLink key={ur.id} href={REQUEST_HREF(ur.id)} className="flex items-start gap-3 rounded p-2 text-xs hover:bg-muted/50">
-                <span className="font-mono text-muted-foreground">{truncateId(ur.id)}</span>
+                <RecordId value={ur.id} label="Request" />
                 <Badge tone={statusTone(ur.status)}>{ur.status}</Badge>
                 {ur.finish_reason === "max_tokens" && <Badge tone="warning">max_tokens</Badge>}
                 <span className="min-w-0 flex-1 truncate text-destructive">{ur.error ?? ""}</span>
@@ -271,7 +269,7 @@ export function ConversationErrorsView({
           <div className="space-y-1">
             {truncatedCalls.map((r) => (
               <AppLink key={r.id} href={REQUEST_HREF(r.user_request_id)} className="flex items-center gap-3 rounded p-2 text-xs hover:bg-muted/50">
-                <span className="font-mono text-muted-foreground">{truncateId(r.user_request_id)}</span>
+                <RecordId value={r.user_request_id} label="Request" />
                 <span>iter {r.iteration}</span>
                 <span>{r.model_name ?? "—"}</span>
                 <span className="text-muted-foreground">{formatTokens(r.output_tokens)} out</span>

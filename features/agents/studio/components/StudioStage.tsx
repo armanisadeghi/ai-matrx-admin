@@ -21,6 +21,7 @@ export function StudioStage({
   onBack,
   aside,
   testId,
+  title = "Agent Studio",
   children,
 }: {
   headline: React.ReactNode;
@@ -30,6 +31,8 @@ export function StudioStage({
   /** Beside "Agent Studio" (the "from plan … step n" back-link). */
   aside?: React.ReactNode;
   testId?: string;
+  /** The studio's name beside the back control (Orchestra Studio reuses this stage). */
+  title?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -42,7 +45,7 @@ export function StudioStage({
         {/* The back glyph sits ON the column's left edge (the quiet icon button's own inset pulled back). */}
         <div className="-ml-2 flex h-10 items-center gap-1" data-testid="studio-header">
           <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={onBack} />
-          <span className="type-title text-foreground">Agent Studio</span>
+          <span className="type-title text-foreground">{title}</span>
           {aside}
         </div>
         <h1

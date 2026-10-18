@@ -16,6 +16,15 @@ export interface SystemPlanStep {
   /** An existing agent the person chose for this step instead of building one. */
   usesAgentId: string | null;
   usesAgentName: string | null;
+  /**
+   * A person confirmed this agent fits the step (chose it, or built it for the step). Absent on
+   * agents put there before fit was checked: those show their fit and ask to be confirmed.
+   */
+  agentConfirmed?: boolean;
+  /** A code step: who will build it, in the person's words. */
+  codeNote?: string | null;
+  /** A person step: the person or role who does it. */
+  assignee?: string | null;
 }
 
 export interface SystemPlan {

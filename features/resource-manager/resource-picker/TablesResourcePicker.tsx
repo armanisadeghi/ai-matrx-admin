@@ -31,7 +31,7 @@ import {
 import { getTableMetadata, getTablePage, listTablesEverywhere } from "@/features/data-tables/service";
 import { locateTable } from "@/features/data-tables/data-source/locate-table";
 import { isServiceFailure } from "@/features/data-tables/types";
-import { ReadFailure } from "@ai-matrx/design-system";
+import { ReadFailure, displayId } from "@ai-matrx/design-system";
 
 // Types
 type UserTable = UserTableListRow;
@@ -202,7 +202,7 @@ export function TablesResourcePicker({
     }
 
     // Last resort: use row ID
-    return row.id.substring(0, 8);
+    return displayId(row.id);
   };
 
   const closePreviewModal = () => {

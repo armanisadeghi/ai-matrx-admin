@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { WindowPanelSlot } from "@ai-matrx/chat/host/ui-slots";
 import { useAppDispatch, useAppSelector } from "@ai-matrx/chat/store/hooks";
-import { cn } from "@ai-matrx/design-system";
+import { cn, RecordId, displayId } from "@ai-matrx/design-system";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
@@ -684,7 +684,6 @@ function AgentSidebarItem({
   const [open, setOpen] = useState(defaultOpen);
   const isSelected =
     selectedAgentId === agent.id && selectedConversationId === null;
-  const { copied, copy } = useCopyText(agent.id);
 
   return (
     <div>
@@ -729,14 +728,7 @@ function AgentSidebarItem({
             {agent.instanceIds.length}
           </span>
         )}
-        <Button variant="quiet" icon={copied ? (
-            <Check />
-          ) : (
-            <Copy />
-          )} glyphTone="success" onClick={(e) => {
-            e.stopPropagation();
-            copy();
-          }} title="Copy agent ID" aria-label="Copy agent ID" className="opacity-0 group-hover:opacity-100 shrink-0" />
+        <RecordId value={agent.id} label="Agent" token="agent" />
       </div>
       {open && agent.hasInstances && (
         <div className="pl-2">
@@ -767,8 +759,6 @@ function InstanceSidebarRow({
   onSelect: () => void;
 }) {
   const instance = useAppSelector(selectInstance(conversationId));
-  const { copied, copy } = useCopyText(conversationId);
-  const shortId = conversationId.slice(0, 8) + "…";
 
   const statusColor = (s?: string) => {
     if (!s) return "text-muted-foreground";
@@ -799,13 +789,8 @@ function InstanceSidebarRow({
           isSelected ? "text-primary" : "text-muted-foreground",
         )}
       />
-      <span
-        className={cn(
-          "type-meta font-mono flex-1 min-w-0 truncate",
-          isSelected ? "text-primary" : "text-foreground",
-        )}
-      >
-        {shortId}
+      <span className="flex-1 min-w-0">
+        <RecordId value={conversationId} label="Conversation" token="conversation" className={isSelected ? "text-primary" : undefined} />
       </span>
       {instance?.status && (
         <span
@@ -814,24 +799,6 @@ function InstanceSidebarRow({
           {instance.status}
         </span>
       )}
-      {/* Doors as a SIBLING: the row is a role="button" that selects the
-          instance in this window, so an anchor inside it would be invalid DOM
-          and a stray click would cost the operator the panel. */}
-      <div
-        className="shrink-0"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <EntityDoorControls token="conversation" id={conversationId} />
-      </div>
-      <Button variant="quiet" icon={copied ? (
-          <Check />
-        ) : (
-          <Copy />
-        )} glyphTone="success" onClick={(e) => {
-          e.stopPropagation();
-          copy();
-        }} title="Copy conversation ID" aria-label="Copy conversation ID" className="opacity-0 group-hover:opacity-100 shrink-0" />
     </div>
   );
 }
@@ -857,7 +824,7 @@ function AgentDebugSidebar({
     const instanceIds = instancesByAgent[agent.id] ?? [];
     const entry: SidebarAgent = {
       id: agent.id,
-      name: agent.name || agent.id.slice(0, 8) + "…",
+      name: agent.name || displayId(agent.id) + "…",
       hasInstances: instanceIds.length > 0,
       instanceIds,
     };
@@ -1010,7 +977,7 @@ function AgentDebugWindowInner({
   const agentName = useAgentName(selectedAgentId);
 
   const title = selectedConversationId
-    ? `${agentName ?? "Agent"} — ${selectedConversationId.slice(0, 8)}…`
+    ? `${agentName ?? "Agent"} — ${displayId(selectedConversationId)}…`
     : (agentName ?? "Agent Debug");
 
   const dispatch = useAppDispatch();

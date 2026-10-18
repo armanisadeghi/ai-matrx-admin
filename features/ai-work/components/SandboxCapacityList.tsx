@@ -16,6 +16,7 @@ import { useSandboxLifecycleSubmission } from "@/lib/sandbox/useSandboxLifecycle
 import type { SandboxCapacityRefusal, SandboxOccupant } from "@/features/ai-work/lib/ownPlan";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { displayId } from "@ai-matrx/design-system";
 function occupantLabel(o: SandboxOccupant): string {
   return o.template === "aidream"
     ? "Coding sandbox"
@@ -69,7 +70,7 @@ export function SandboxCapacityList({
         {capacity.occupants.map((o) => {
           const details = [
             o.sandbox_id,
-            o.organization_id ? `org ${o.organization_id.slice(0, 8)}` : null,
+            o.organization_id ? `org ${displayId(o.organization_id)}` : null,
             o.status,
             lastActive(o.last_heartbeat_at),
           ].filter(Boolean);

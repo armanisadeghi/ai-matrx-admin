@@ -16,6 +16,7 @@
  *                  evidence it was shown.
  */
 
+import { displayId } from "@ai-matrx/design-system";
 import {
   ADMIN_MANDATES_HOME,
   adminMandateRecordHref,
@@ -86,7 +87,7 @@ export function AutomationsPanel() {
     try {
       const response = await runSystemTaskNow(task.id);
       toast.success(
-        `"${task.title}" queued — run ${response.run_id.slice(0, 8)}. Watch it under Scheduling › Runs.`,
+        `"${task.title}" queued — run ${displayId(response.run_id)}. Watch it under Scheduling › Runs.`,
       );
     } catch (error) {
       toast.error(`Run-now failed: ${String(error)}`);

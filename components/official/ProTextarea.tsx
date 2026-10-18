@@ -1375,7 +1375,10 @@ export const ProTextarea = React.forwardRef<
     const micInline = micOffered && (fit.mic === "inline" || voiceBusyNow);
     const voiceInMenu = micOffered && !micInline;
     const expandInMenu = fit.folded.includes("expand");
-    const menuShown = !disabled && (showMenu || voiceInMenu || expandInMenu);
+    // A field that opted out of the registry (`menuActions="none"`) still keeps "…" for Audio settings.
+    const menuShown =
+      !disabled &&
+      (showMenu || voiceInMenu || expandInMenu || (menuActions === "none" && enableVoice));
     // Whenever "…" shows on a field that takes voice, it carries Audio settings.
     const audioSettingsInMenu = menuShown && enableVoice;
     // Touch devices have no hover, so the control cluster is ALWAYS visible

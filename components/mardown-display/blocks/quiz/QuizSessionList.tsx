@@ -9,6 +9,7 @@ import { EntityRef } from '@/components/official/entity-ref/EntityRef';
 import { toast } from '@/lib/toast';
 import { formatTime } from './quiz-utils';
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { displayId } from "@ai-matrx/design-system";
 
 interface QuizSessionListProps {
   onLoadSession?: (sessionId: string) => void;
@@ -116,7 +117,7 @@ export const QuizSessionList: React.FC<QuizSessionListProps> = ({
                       <EntityRef
                         token="quiz_session"
                         id={session.id}
-                        name={session.title || `Quiz ${session.id.substring(0, 8)}`}
+                        name={session.title || `Quiz ${displayId(session.id)}`}
                         showIcon={false}
                       />
                     </h3>

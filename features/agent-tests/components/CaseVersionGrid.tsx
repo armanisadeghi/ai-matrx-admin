@@ -38,8 +38,8 @@ export function CaseVersionGrid({ agentId }: { agentId: string }) {
   const { rows, grid } = data;
   if (rows.length === 0 || grid.versions.length === 0) return null;
   return (
-    <div className="overflow-x-auto" data-testid="case-version-grid">
-      <table className="w-full border-collapse text-xs">
+    <div className="max-w-full overflow-x-auto" data-testid="case-version-grid">
+      <table className="w-full min-w-0 border-collapse text-xs">
         <thead>
           <tr>
             <th className="px-2 py-1 text-left font-medium text-muted-foreground">Case</th>
@@ -53,7 +53,7 @@ export function CaseVersionGrid({ agentId }: { agentId: string }) {
         <tbody>
           {rows.map((row) => (
             <tr key={row.id} className="border-t border-border">
-              <td className="max-w-40 truncate px-2 py-1 text-foreground">{row.label || "Untitled case"}</td>
+              <td className="max-w-28 truncate px-2 py-1 text-foreground">{row.label || "Untitled case"}</td>
               {grid.versions.map((v) => {
                 const r = grid.cell(row.id, v);
                 const meta = r?.verdict ? VERDICT_META[r.verdict] : null;

@@ -27,7 +27,7 @@ import {
   resetAgentToSource,
 } from "@/features/agents/redux/builder-tier.thunks";
 import { confirm } from "@ai-matrx/chat/host/ui-slots";
-import { ReadFailure } from "@ai-matrx/design-system";
+import { ReadFailure, RecordId } from "@ai-matrx/design-system";
 import { selectCategoryById } from "@ai-matrx/chat/agents/redux/agent-shortcut-categories/selectors";
 import { getModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { useAgentModelLabel } from "@ai-matrx/chat/agents/hooks/useAgentModelLabel";
@@ -159,39 +159,6 @@ function RoleBadge({ role }: { role: string }) {
     >
       {role}
     </span>
-  );
-}
-
-function CopyableIdRow({
-  label,
-  value,
-  copyKey,
-  copied,
-  onCopy,
-}: {
-  label: string;
-  value: string;
-  copyKey: string;
-  copied: string | null;
-  onCopy: (key: string, text: string, message: string) => void;
-}) {
-  return (
-    <div className="inline-flex items-center gap-1.5 type-secondary min-w-0">
-      <span className="text-muted-foreground shrink-0">{label}:</span>
-      <button
-        type="button"
-        onClick={() => onCopy(copyKey, value, `${label} copied`)}
-        className="group inline-flex items-center gap-1 font-mono text-foreground/90 hover:text-foreground transition-colors min-w-0"
-        title={`Copy ${label}`}
-      >
-        <span className="truncate">{value}</span>
-        {copied === copyKey ? (
-          <Check className="w-3 h-3 text-success shrink-0" />
-        ) : (
-          <Copy className="w-3 h-3 opacity-60 group-hover:opacity-100 shrink-0" />
-        )}
-      </button>
-    </div>
   );
 }
 
@@ -675,12 +642,11 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
                     />
                   )}
                 {currentVersionId && (
-                  <CopyableIdRow
-                    label="Current Version ID"
+                  <RecordId
                     value={currentVersionId}
-                    copyKey="version-id"
-                    copied={copied}
-                    onCopy={handleCopy}
+                    label="Current Version"
+                    labelled
+                    show="full"
                   />
                 )}
                 {(categoryLabel || category) && (

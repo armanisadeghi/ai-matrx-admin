@@ -13,7 +13,7 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 export interface FloatingDockWrapperProps {
   items: { label: string; icon: React.ReactNode; href: string }[];

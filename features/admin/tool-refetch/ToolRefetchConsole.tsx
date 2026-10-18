@@ -20,27 +20,24 @@
  * copyable — never an inert string, never a button that 404s.
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import React, { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
-  ArrowUpRight,
   ChevronDown,
   ChevronRight,
-  Copy,
   Repeat2,
 } from "lucide-react";
 
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
-import AppLink from "@/components/navigation/AppLink";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import { ADMIN_REPORTING_SURFACE_NAME } from "@/features/surfaces/manifests/admin-reporting.manifest";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { cn } from "@/lib/utils";
 import {
   MatrxDataTable,
@@ -65,7 +62,6 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { ToolRefetchExplorer } from "./ToolRefetchExplorer";
-import { copyToClipboard } from "@/lib/clipboard/copy";
 
 /* ── formatters that refuse to invent a number ─────────────────────────────── */
 
@@ -280,40 +276,8 @@ export function toolRefetchCopyConfig(input: ToolRefetchCopyInput) {
 /* ── drill-down ────────────────────────────────────────────────────────────── */
 
 function ConversationCell({ id }: { id: string | null }) {
-  const href = useMemo(() => {
-    if (!id) return null;
-    const info = tryGetEntityInfo("conversation");
-    return info?.hrefFor ? info.hrefFor(id) : null;
-  }, [id]);
-
   if (!id) return <span className="text-muted-foreground">{EM_DASH}</span>;
-
-  const short = `${id.slice(0, 8)}…`;
-  if (href) {
-    return (
-      <AppLink
-        href={href}
-        className="inline-flex items-center gap-1 font-mono text-[11px] text-primary hover:underline"
-        title={id}
-      >
-        {short}
-        <ArrowUpRight className="h-3 w-3" />
-      </AppLink>
-    );
-  }
-  return (
-    <button
-      type="button"
-      title={`Copy conversation id ${id}`}
-      className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground hover:text-foreground"
-      onClick={() => {
-        void copyToClipboard(id, "Conversation id copied");
-      }}
-    >
-      {short}
-      <Copy className="h-3 w-3" />
-    </button>
-  );
+  return <RecordId value={id} label="Conversation" token="conversation" />;
 }
 
 function ArgsBlock({ args }: { args: unknown }) {

@@ -4,7 +4,7 @@ import { loadPlan, savePlanChanges } from "@/features/agents/orchestra-studio/pl
 jest.mock("@/features/agents/orchestra-studio/plan-store", () => ({ loadPlan: jest.fn(), savePlanChanges: jest.fn() }));
 
 const step = (n: number, id: string | null, name: string | null = null) => ({
-  n, title: `S${n}`, markdown: "", summary: "", job: "", doer: "agent", modelClass: null, usesAgentId: id, usesAgentName: name,
+  n, title: `S${n}`, markdown: "", summary: "", job: "", doer: "agent", modelClass: null, usesAgentId: id, usesAgentName: name, agentConfirmed: Boolean(id && name),
 });
 const plan = (steps: unknown[]) => ({ title: "P", description: "", recommendation: null, steps, answer: "", conversationId: null });
 
