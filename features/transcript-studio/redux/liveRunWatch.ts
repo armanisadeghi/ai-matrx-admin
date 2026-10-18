@@ -27,7 +27,7 @@
  */
 
 import type { AppDispatch } from "@/lib/redux/store";
-import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.action";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { bindAgentRunConversation } from "../service/studioService";
 import type { TriggerCause } from "../types";

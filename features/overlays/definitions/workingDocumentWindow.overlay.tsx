@@ -13,10 +13,12 @@
  * instead of stacking duplicates.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { workingDocumentInstanceId } from "./opener-instance-ids";
 
 const OVERLAY_ID = "workingDocumentWindow" as const;
 
@@ -29,30 +31,31 @@ export interface WorkingDocumentWindowHandle {
   close: () => void;
 }
 
-function instanceIdFor(conversationId: string): string {
-  return `${OVERLAY_ID}:${conversationId}`;
+const instanceIdFor = workingDocumentInstanceId;
+
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createWorkingDocumentWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenWorkingDocumentWindowOptions): WorkingDocumentWindowHandle => {
+    const instanceId = instanceIdFor(opts.conversationId);
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        instanceId,
+        data: { conversationId: opts.conversationId },
+      }),
+    );
+    return {
+      instanceId,
+      close: () =>
+        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+    };
+  };
 }
 
 export function useOpenWorkingDocumentWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenWorkingDocumentWindowOptions): WorkingDocumentWindowHandle => {
-      const instanceId = instanceIdFor(opts.conversationId);
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: { conversationId: opts.conversationId },
-        }),
-      );
-      return {
-        instanceId,
-        close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createWorkingDocumentWindowOpener(store), [store]);
 }
 
 /**

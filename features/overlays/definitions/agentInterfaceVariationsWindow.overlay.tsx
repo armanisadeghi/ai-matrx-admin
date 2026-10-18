@@ -11,8 +11,9 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -26,24 +27,27 @@ export interface AgentInterfaceVariationsWindowHandle {
   close: () => void;
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createAgentInterfaceVariationsWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenAgentInterfaceVariationsWindowOptions = {}): AgentInterfaceVariationsWindowHandle => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          agentId: opts.agentId,
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenAgentInterfaceVariationsWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenAgentInterfaceVariationsWindowOptions = {}): AgentInterfaceVariationsWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            agentId: opts.agentId,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createAgentInterfaceVariationsWindowOpener(store), [store]);
 }
 
 /**

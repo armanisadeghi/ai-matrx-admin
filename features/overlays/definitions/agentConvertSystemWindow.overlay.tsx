@@ -11,8 +11,9 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { OverlayWire } from "./overlay-types";
@@ -32,27 +33,30 @@ export interface AgentConvertSystemWindowHandle {
   close: () => void;
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createAgentConvertSystemWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenAgentConvertSystemWindowOptions = {}): AgentConvertSystemWindowHandle => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          agentId: opts.agentId,
+          mandateId: opts.mandateId,
+          mandateKey: opts.mandateKey,
+          mandateLabel: opts.mandateLabel,
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenAgentConvertSystemWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenAgentConvertSystemWindowOptions = {}): AgentConvertSystemWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            agentId: opts.agentId,
-            mandateId: opts.mandateId,
-            mandateKey: opts.mandateKey,
-            mandateLabel: opts.mandateLabel,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createAgentConvertSystemWindowOpener(store), [store]);
 }
 
 /**

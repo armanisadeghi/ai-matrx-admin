@@ -48,7 +48,7 @@ import { alchemyOrganizationId } from "./alchemy-organization";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { supabase } from "@/utils/supabase/client";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
-import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.action";
 import { useOpenHtmlPreviewBridge } from "@/features/overlays/definitions/htmlPreview.overlay";
 import { toast } from "@/lib/toast";
 import { createMatrxTransferActions } from "@ai-matrx/agents/content-transfer";

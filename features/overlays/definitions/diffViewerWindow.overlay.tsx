@@ -10,8 +10,9 @@
  * - `<DiffViewerWindowController />` — declarative wrapper.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { DiffEngine, DiffView } from "@ai-matrx/diff/react";
 import type { OverlayWire } from "./overlay-types";
@@ -36,36 +37,39 @@ export interface DiffViewerWindowHandle {
   close: () => void;
 }
 
-export function useOpenDiffViewerWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenDiffViewerWindowOptions): DiffViewerWindowHandle => {
-      const instanceId = opts.instanceId ?? `${OVERLAY_ID}-${Date.now()}`;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
-            windowInstanceId: instanceId,
-            original: opts.original,
-            modified: opts.modified,
-            originalLabel: opts.originalLabel ?? "Original",
-            modifiedLabel: opts.modifiedLabel ?? "Modified",
-            title: opts.title ?? null,
-            engine: opts.engine ?? "auto",
-            language: opts.language ?? null,
-            defaultView: opts.defaultView ?? "split",
-          },
-        }),
-      );
-      return {
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createDiffViewerWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenDiffViewerWindowOptions): DiffViewerWindowHandle => {
+    const instanceId = opts.instanceId ?? `${OVERLAY_ID}-${Date.now()}`;
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
         instanceId,
-        close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch],
-  );
+        data: {
+          windowInstanceId: instanceId,
+          original: opts.original,
+          modified: opts.modified,
+          originalLabel: opts.originalLabel ?? "Original",
+          modifiedLabel: opts.modifiedLabel ?? "Modified",
+          title: opts.title ?? null,
+          engine: opts.engine ?? "auto",
+          language: opts.language ?? null,
+          defaultView: opts.defaultView ?? "split",
+        },
+      }),
+    );
+    return {
+      instanceId,
+      close: () =>
+        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+    };
+  };
+}
+
+export function useOpenDiffViewerWindow() {
+  const store = useAppStore();
+  return useMemo(() => createDiffViewerWindowOpener(store), [store]);
 }
 
 export function DiffViewerWindowController(

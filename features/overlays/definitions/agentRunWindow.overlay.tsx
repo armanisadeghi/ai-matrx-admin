@@ -11,10 +11,11 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
@@ -91,58 +92,60 @@ export interface AgentRunWindowHandle {
   close: () => void;
 }
 
-export function useOpenAgentRunWindow() {
-  const dispatch = useAppDispatch();
-  const store = useAppStore();
-  return useCallback(
-    (opts: OpenAgentRunWindowOptions = {}): AgentRunWindowHandle => {
-      const instanceId =
-        opts.instanceId ??
-        `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const state = store.getState();
-      const userId = selectUserId(state);
-      const organizationId = selectOrganizationId(state);
-      const resourceIdentity = opts.initialResourceIdentity ?? (userId && organizationId ? { userId, organizationId } : null);
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
-            initialAgentId: opts.initialAgentId,
-            initialSelectedConversationId: opts.initialSelectedConversationId,
-            initialAgentName: opts.initialAgentName,
-            initialDraftText: opts.initialDraftText,
-            initialVariableValues: opts.initialVariableValues,
-            initialResources: opts.initialResources,
-            initialToolsOpen: opts.initialToolsOpen ?? false,
-            initialResourceIdentity: resourceIdentity,
-            initialAutoRun: opts.initialAutoRun,
-            mandateKey: opts.mandateKey ?? undefined,
-            surfaceName: opts.surfaceName ?? undefined,
-            // ONE PRESS, ONE RUN. A seeded window (draft / variables / auto-run)
-            // consumes its seed exactly once per open; a remount of the same
-            // instance (HMR, tray restore, a host re-render) must NOT mint a
-            // fresh conversation and re-fire the run. A new press mints a new
-            // nonce, which is what makes "refine again" a deliberate act.
-            seedNonce:
-              opts.initialAutoRun ||
-              opts.initialDraftText ||
-              (opts.initialVariableValues &&
-                Object.keys(opts.initialVariableValues).length > 0) ||
-              (opts.initialResources && opts.initialResources.length > 0)
-                ? Date.now()
-                : undefined,
-          },
-        }),
-      );
-      return {
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createAgentRunWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenAgentRunWindowOptions = {}): AgentRunWindowHandle => {
+    const instanceId =
+      opts.instanceId ??
+      `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const state = store.getState();
+    const userId = selectUserId(state);
+    const organizationId = selectOrganizationId(state);
+    const resourceIdentity = opts.initialResourceIdentity ?? (userId && organizationId ? { userId, organizationId } : null);
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
         instanceId,
-        close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch, store],
-  );
+        data: {
+          initialAgentId: opts.initialAgentId,
+          initialSelectedConversationId: opts.initialSelectedConversationId,
+          initialAgentName: opts.initialAgentName,
+          initialDraftText: opts.initialDraftText,
+          initialVariableValues: opts.initialVariableValues,
+          initialResources: opts.initialResources,
+          initialToolsOpen: opts.initialToolsOpen ?? false,
+          initialResourceIdentity: resourceIdentity,
+          initialAutoRun: opts.initialAutoRun,
+          mandateKey: opts.mandateKey ?? undefined,
+          surfaceName: opts.surfaceName ?? undefined,
+          // ONE PRESS, ONE RUN. A seeded window (draft / variables / auto-run)
+          // consumes its seed exactly once per open; a remount of the same
+          // instance (HMR, tray restore, a host re-render) must NOT mint a
+          // fresh conversation and re-fire the run. A new press mints a new
+          // nonce, which is what makes "refine again" a deliberate act.
+          seedNonce:
+            opts.initialAutoRun ||
+            opts.initialDraftText ||
+            (opts.initialVariableValues &&
+              Object.keys(opts.initialVariableValues).length > 0) ||
+            (opts.initialResources && opts.initialResources.length > 0)
+              ? Date.now()
+              : undefined,
+        },
+      }),
+    );
+    return {
+      instanceId,
+      close: () =>
+        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+    };
+  };
+}
+
+export function useOpenAgentRunWindow() {
+  const store = useAppStore();
+  return useMemo(() => createAgentRunWindowOpener(store), [store]);
 }
 
 /**

@@ -16,9 +16,10 @@
  * common-docs/systems/architecture/execution-runtime/AI-WATCH.md
  */
 
-import { useCallback } from "react";
+import { useMemo } from "react";
 
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -65,14 +66,17 @@ export function watchAiRunAction(target: string | WatchAiRunOptions = {}) {
 }
 
 /** The one call: `useWatchAiRun()(requestId | options)`. */
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createWatchAiRunOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (target: string | WatchAiRunOptions = {}) => {
+    dispatch(watchAiRunAction(target));
+  };
+}
+
 export function useWatchAiRun() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (target: string | WatchAiRunOptions = {}) => {
-      dispatch(watchAiRunAction(target));
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createWatchAiRunOpener(store), [store]);
 }
 
 export type AiWatchWindowDefinitionData = Record<string, unknown>;

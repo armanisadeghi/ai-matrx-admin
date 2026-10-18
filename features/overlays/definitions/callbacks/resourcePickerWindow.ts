@@ -9,7 +9,8 @@
  * they ride a callback group (same contract as `referencePicker`).
  */
 
-import { callbackManager } from "@ai-matrx/summon/handles";
+// The light path on `./open`: registering and reading a payload never loads the registry.
+import { peekHandle, registerHandleEntry, unregisterHandleEntry } from "@ai-matrx/summon/open";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { ResourcePickerViewId } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 
@@ -32,10 +33,10 @@ export function createResourcePickerWindowCallbackGroup(
 ): { callbackGroupId: string; dispose: () => void } {
   // MATRX-EXCEPTION: stored as a non-callable payload, retrieved via `get`,
   // never `trigger`ed — the same convention as `createReferencePickerCallbackGroup`.
-  const callbackGroupId = callbackManager.register(group as unknown as () => void);
+  const callbackGroupId = registerHandleEntry(group);
   return {
     callbackGroupId,
-    dispose: () => callbackManager.unregister(callbackGroupId),
+    dispose: () => unregisterHandleEntry(callbackGroupId),
   };
 }
 
@@ -43,11 +44,11 @@ export function getResourcePickerWindowCallbackGroup(
   callbackGroupId: string | null | undefined,
 ): ResourcePickerWindowCallbackGroup | null {
   if (!callbackGroupId) return null;
-  return callbackManager.get<ResourcePickerWindowCallbackGroup>(callbackGroupId) ?? null;
+  return peekHandle<ResourcePickerWindowCallbackGroup>(callbackGroupId) ?? null;
 }
 
 export function disposeResourcePickerWindowCallbackGroup(
   callbackGroupId: string | null | undefined,
 ): void {
-  if (callbackGroupId) callbackManager.unregister(callbackGroupId);
+  if (callbackGroupId) unregisterHandleEntry(callbackGroupId);
 }

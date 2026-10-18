@@ -23,12 +23,16 @@ import { useCallback } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
-import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
-import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
+// The chat host's window openers: the app registers them LAZY (ChatHostAdapter), so this hook keeps
+// no opener module in first load; the first open loads the one opener chunk.
+import {
+  useOpenAgentRunWindow,
+  useOpenNotesWindow,
+  useOpenPickListManagerWindow,
+  useOpenTaskEditorWindow,
+} from "@ai-matrx/chat/host/window-openers";
 import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
-import { useOpenPickListManagerWindow } from "@/features/overlays/definitions/pickListManagerWindow.overlay";
 import { useOpenSiteQuickViewWindow } from "@/features/overlays/definitions/siteQuickViewWindow.overlay";
-import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import { useOpenDetail } from "@ai-matrx/detail/react";
 
 import { getItemConfig } from "./registry";

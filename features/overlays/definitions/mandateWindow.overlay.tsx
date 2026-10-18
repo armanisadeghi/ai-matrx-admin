@@ -13,8 +13,9 @@
  * note written there records where it came from.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { UntypedOverlayWire } from "./overlay-types";
@@ -43,27 +44,30 @@ export interface MandateWindowHandle {
   close: () => void;
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createMandateWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenMandateWindowOptions = {}): MandateWindowHandle => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          initialMandateKey: opts.initialMandateKey,
+          mandateKeys: opts.mandateKeys,
+          surfaceName: opts.surfaceName ?? undefined,
+          initialView: opts.initialView,
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenMandateWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenMandateWindowOptions = {}): MandateWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            initialMandateKey: opts.initialMandateKey,
-            mandateKeys: opts.mandateKeys,
-            surfaceName: opts.surfaceName ?? undefined,
-            initialView: opts.initialView,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createMandateWindowOpener(store), [store]);
 }
 
 /** Declarative form — opens on mount, closes on unmount. */

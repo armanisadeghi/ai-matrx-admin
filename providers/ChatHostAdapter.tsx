@@ -46,7 +46,7 @@
 // handed to the package (`store`), which keeps its `chatHost` slice synced.
 
 import { thisMachineLocalModels } from "@/features/ai-models/local/this-machine-local-models";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { ChatProvider } from "@ai-matrx/chat/host/react";
 import { useNextNavigation } from "@ai-matrx/chat/next/navigation";
 import type {
@@ -68,7 +68,7 @@ import type {
 } from "@ai-matrx/chat/host";
 import { supabase } from "@/utils/supabase/client";
 import { asMatrxPackageClient } from "@/lib/supabase/matrxPackageClient";
-import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
 import { selectAccessToken } from "@/lib/redux/selectors/userSelectors";
 import {
@@ -100,44 +100,8 @@ import { requireOrganizationForChat } from "@/lib/organization/chat-org-port";
 import { toast, recordToast } from "@/lib/toast";
 import { createAppChatDiagnostics } from "@/lib/diagnostics/chat-diagnostics-port";
 import { getAgentCatalog } from "@/lib/agents/catalog";
-import { useOpenAgentAdminFindUsagesWindow } from "@/features/overlays/definitions/agentAdminFindUsagesWindow.overlay";
-import { useOpenAgentShortcutQuickCreateWindow } from "@/features/overlays/definitions/agentAdminShortcutWindow.overlay";
-import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
-import { useOpenAgentConvertSystemWindow } from "@/features/overlays/definitions/agentConvertSystemWindow.overlay";
-import { useOpenAgentCreateAppWindow } from "@/features/overlays/definitions/agentCreateAppWindow.overlay";
-import { useOpenAgentDataStorageWindow } from "@/features/overlays/definitions/agentDataStorageWindow.overlay";
-import { useOpenAgentFindUsagesWindow } from "@/features/overlays/definitions/agentFindUsagesWindow.overlay";
-import { useOpenAgentImportWindow } from "@/features/overlays/definitions/agentImportWindow.overlay";
-import { useOpenAgentInterfaceVariationsWindow } from "@/features/overlays/definitions/agentInterfaceVariationsWindow.overlay";
-import { useOpenAgentMemoryWindow } from "@/features/overlays/definitions/agentMemoryWindow.overlay";
-import { useOpenAgentOptimizerWindow } from "@/features/overlays/definitions/agentOptimizerWindow.overlay";
-import { useOpenAgentRunHistoryWindow } from "@/features/overlays/definitions/agentRunHistoryWindow.overlay";
-import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
-import { useOpenAgentSettingsWindow } from "@/features/overlays/definitions/agentSettingsWindow.overlay";
-import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
-import { useOpenChatDebugWindow } from "@/features/overlays/definitions/chatDebugWindow.overlay";
-import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
-import { useOpenLiveIntegrationsWindow } from "@/features/overlays/definitions/liveIntegrationsWindow.overlay";
-import { useOpenGmailComposeWindow } from "@/features/overlays/definitions/gmailComposeWindow.overlay";
-import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
-import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
-import { useOpenFullScreenMarkdownEditorBridge } from "@/features/overlays/definitions/fullScreenEditor.overlay";
-import { openImageViewer } from "@/features/overlays/definitions/imageViewer.overlay";
-import { useOpenShortcutEditorWindow } from "@/features/overlays/definitions/shortcutEditorWindow.overlay";
-import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
-import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
-import { useOpenPromptPreviewWindow } from "@/features/overlays/definitions/promptPreviewWindow.overlay";
-import { useOpenRunControlsWindow } from "@/features/overlays/definitions/runControlsWindow.overlay";
-import { useOpenSaveTemplateDialog } from "@/features/overlays/definitions/saveTemplateDialog.overlay";
-import { useOpenScraperWindow } from "@/features/overlays/definitions/scraperWindow.overlay";
-import { useOpenPickListManagerWindow } from "@/features/overlays/definitions/pickListManagerWindow.overlay";
-import { useOpenSurfaceContextInspector } from "@/features/overlays/definitions/surfaceContextInspector.overlay";
-import { useOpenSurfaceContextWindow } from "@/features/overlays/definitions/surfaceContextWindow.overlay";
-import { useOpenSystemInstructionWindow } from "@/features/overlays/definitions/systemInstructionWindow.overlay";
-import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
-import { useOpenTopicalMapWindow } from "@/features/overlays/definitions/topicalMapWindow.overlay";
-import { useOpenWorkingDocumentWindow } from "@/features/overlays/definitions/workingDocumentWindow.overlay";
+import { createLazyChatWindowOpeners } from "@/features/overlays/chat-window-opener-specs";
 import { submitFeedback } from "@/actions/feedback.actions";
 import PageHeaderPortal from "@/features/shell/components/header/PageHeaderPortal";
 import PageHeaderRightPortal from "@/features/shell/components/header/PageHeaderRightPortal";
@@ -409,54 +373,28 @@ const appNotify: ChatNotifyPort = {
     void recordToast[level](ref, message, toastOptions(options)),
 };
 
-/** The app's opener for every host window the package opens (P18). */
+/**
+ * The app's opener for every host window the package opens (P18). The overlay openers are LAZY
+ * (features/overlays/chat-window-opener-specs.ts): first load carries their ids only, and the
+ * first open imports the one opener chunk. The canvas-hosted openers stay hooks (they read the
+ * canvas context).
+ */
 function useAppWindowOpeners(): Partial<ChatWindowOpeners> {
-  const dispatch = useAppDispatch();
-  const watchAiRun = useWatchAiRun();
+  const store = useAppStore();
+  const lazy = useMemo(() => createLazyChatWindowOpeners(store), [store]);
   const canWatchAi = useCanWatchAi();
+  const openContextPreviewPanel = useOpenContextPreview();
+  const openQuickChatSheet = useOpenQuickChat();
+  const openScratchpadPanel = useOpenScratchpadPanel();
+  const openWorkingDocumentPanel = useOpenConversationDocuments();
   return {
-    openGmailComposeWindow: useOpenGmailComposeWindow(),
-    openLiveRunWindow: useOpenLiveRunWindow(),
+    ...lazy,
     // Watch AI exists only for system admins in debug mode; absent opener = no button.
-    openAiWatchWindow: canWatchAi ? watchAiRun : undefined,
-    openFullScreenMarkdownEditor: useOpenFullScreenMarkdownEditorBridge(),
-    openImageViewer: (opts) => openImageViewer(dispatch, opts),
-    openShortcutEditorWindow: useOpenShortcutEditorWindow(),
-    openAgentAdminFindUsagesWindow: useOpenAgentAdminFindUsagesWindow(),
-    openAgentContentWindow: useOpenAgentContentWindow(),
-    openAgentConvertSystemWindow: useOpenAgentConvertSystemWindow(),
-    openAgentCreateAppWindow: useOpenAgentCreateAppWindow(),
-    openAgentDataStorageWindow: useOpenAgentDataStorageWindow(),
-    openAgentFindUsagesWindow: useOpenAgentFindUsagesWindow(),
-    openAgentImportWindow: useOpenAgentImportWindow(),
-    openAgentInterfaceVariationsWindow: useOpenAgentInterfaceVariationsWindow(),
-    openAgentMemoryWindow: useOpenAgentMemoryWindow(),
-    openAgentOptimizerWindow: useOpenAgentOptimizerWindow(),
-    openAgentRunHistoryWindow: useOpenAgentRunHistoryWindow(),
-    openAgentRunWindow: useOpenAgentRunWindow(),
-    openAgentSettingsWindow: useOpenAgentSettingsWindow(),
-    openAgentShortcutQuickCreateWindow: useOpenAgentShortcutQuickCreateWindow(),
-    openAuthGateDialog: useOpenAuthGateDialog(),
-    openChatDebugWindow: useOpenChatDebugWindow(),
-    openContextPreviewPanel: useOpenContextPreview(),
-    openDiffViewerWindow: useOpenDiffViewerWindow(),
-    openLiveIntegrationsWindow: useOpenLiveIntegrationsWindow(),
-    openMandateWindow: useOpenMandateWindow(),
-    openNotesWindow: useOpenNotesWindow(),
-    openPromptPreviewWindow: useOpenPromptPreviewWindow(),
-    openQuickChatSheet: useOpenQuickChat(),
-    openRunControlsWindow: useOpenRunControlsWindow(),
-    openSaveTemplateDialog: useOpenSaveTemplateDialog(),
-    openScraperWindow: useOpenScraperWindow(),
-    openScratchpadPanel: useOpenScratchpadPanel(),
-    openPickListManagerWindow: useOpenPickListManagerWindow(),
-    openSurfaceContextInspector: useOpenSurfaceContextInspector(),
-    openSurfaceContextWindow: useOpenSurfaceContextWindow(),
-    openSystemInstructionWindow: useOpenSystemInstructionWindow(),
-    openTaskEditorWindow: useOpenTaskEditorWindow(),
-    openTopicalMapWindow: useOpenTopicalMapWindow(),
-    openWorkingDocumentPanel: useOpenConversationDocuments(),
-    openWorkingDocumentWindow: useOpenWorkingDocumentWindow(),
+    openAiWatchWindow: canWatchAi ? lazy.openAiWatchWindow : undefined,
+    openContextPreviewPanel,
+    openQuickChatSheet,
+    openScratchpadPanel,
+    openWorkingDocumentPanel,
   };
 }
 

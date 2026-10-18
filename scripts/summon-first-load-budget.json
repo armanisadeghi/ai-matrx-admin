@@ -18,7 +18,7 @@
   ],
   "routes": {
     "(core)/notes": 45750,
-    "(core)/dashboard": 44148,
-    "(public)/pricing": 43459
+    "(core)/dashboard": 43687,
+    "(public)/pricing": 39886
   }
 }

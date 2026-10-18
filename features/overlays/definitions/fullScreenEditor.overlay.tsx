@@ -22,8 +22,9 @@
  *     self-handles via `editMessage` (plain "Edit content").
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createFullScreenEditorCallbackGroup,
@@ -78,73 +79,75 @@ export interface FullScreenMarkdownEditorBridgeHandle {
   close: () => void;
 }
 
-export function useOpenFullScreenMarkdownEditorBridge() {
-  const dispatch = useAppDispatch();
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createFullScreenMarkdownEditorBridgeOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (
+    opts: OpenFullScreenMarkdownEditorBridgeOptions = {},
+  ): FullScreenMarkdownEditorBridgeHandle => {
+    const instanceId =
+      opts.instanceId ??
+      `fullScreenEditor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  return useCallback(
-    (
-      opts: OpenFullScreenMarkdownEditorBridgeOptions = {},
-    ): FullScreenMarkdownEditorBridgeHandle => {
-      const instanceId =
-        opts.instanceId ??
-        `fullScreenEditor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Register a callback group only when the caller wants to be told about
+    // the save. Plain "edit content" callers pass conversationId+messageId
+    // and let the bridge self-handle — no group needed.
+    let callbackGroupId: string | null = null;
+    if (opts.onSave) {
+      const group = createFullScreenEditorCallbackGroup({
+        onSave: opts.onSave,
+        onEvent: opts.onEvent,
+      });
+      callbackGroupId = group.callbackGroupId;
+    } else if (opts.onAction) {
+      const group = createFullScreenEditorCallbackGroup({
+        onAction: opts.onAction,
+        onEvent: opts.onEvent,
+      });
+      callbackGroupId = group.callbackGroupId;
+    }
 
-      // Register a callback group only when the caller wants to be told about
-      // the save. Plain "edit content" callers pass conversationId+messageId
-      // and let the bridge self-handle — no group needed.
-      let callbackGroupId: string | null = null;
-      if (opts.onSave) {
-        const group = createFullScreenEditorCallbackGroup({
-          onSave: opts.onSave,
-          onEvent: opts.onEvent,
-        });
-        callbackGroupId = group.callbackGroupId;
-      } else if (opts.onAction) {
-        const group = createFullScreenEditorCallbackGroup({
-          onAction: opts.onAction,
-          onEvent: opts.onEvent,
-        });
-        callbackGroupId = group.callbackGroupId;
-      }
+    try {
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          instanceId,
+          data: {
+            content: opts.content,
+            mode: opts.mode,
+            conversationId: opts.conversationId,
+            messageId: opts.messageId,
+            callbackGroupId,
+            tabs: opts.tabs,
+            initialTab: opts.initialTab,
+            analysisData: opts.analysisData,
+            title: opts.title,
+            description: opts.description,
+            showSaveButton: opts.showSaveButton,
+            showCopyButton: opts.showCopyButton,
+            primaryActions: opts.primaryActions,
+          },
+        }),
+      );
+    } catch (error) {
+      disposeFullScreenEditorCallbackGroup(callbackGroupId);
+      throw error;
+    }
 
-      try {
-        dispatch(
-          openOverlay({
-            overlayId: OVERLAY_ID,
-            instanceId,
-            data: {
-              content: opts.content,
-              mode: opts.mode,
-              conversationId: opts.conversationId,
-              messageId: opts.messageId,
-              callbackGroupId,
-              tabs: opts.tabs,
-              initialTab: opts.initialTab,
-              analysisData: opts.analysisData,
-              title: opts.title,
-              description: opts.description,
-              showSaveButton: opts.showSaveButton,
-              showCopyButton: opts.showCopyButton,
-              primaryActions: opts.primaryActions,
-            },
-          }),
-        );
-      } catch (error) {
+    return {
+      instanceId,
+      callbackGroupId,
+      close: () => {
+        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
         disposeFullScreenEditorCallbackGroup(callbackGroupId);
-        throw error;
-      }
+      },
+    };
+  };
+}
 
-      return {
-        instanceId,
-        callbackGroupId,
-        close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
-          disposeFullScreenEditorCallbackGroup(callbackGroupId);
-        },
-      };
-    },
-    [dispatch],
-  );
+export function useOpenFullScreenMarkdownEditorBridge() {
+  const store = useAppStore();
+  return useMemo(() => createFullScreenMarkdownEditorBridgeOpener(store), [store]);
 }
 
 /**

@@ -15,10 +15,15 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useRef } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { callbackManager } from "@ai-matrx/summon/handles";
+import { useEffect, useMemo, useState } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
+import {
+  closeOverlay,
+  openOverlay,
+  registerHandleEntry,
+  unregisterHandleEntry,
+} from "@ai-matrx/summon/open";
 import type { GmailDraftedBy } from "@/features/crm/gmail/types";
 import type { OverlayWire } from "./overlay-types";
 
@@ -49,28 +54,22 @@ export interface GmailComposeWindowHandle {
   close: () => void;
 }
 
-export function useOpenGmailComposeWindow() {
-  const dispatch = useAppDispatch();
-  const callbackIds = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    const ids = callbackIds.current;
-    return () => {
-      for (const id of ids) callbackManager.unregister(id);
-      ids.clear();
-    };
-  }, []);
-
-  return (
-    options: OpenGmailComposeWindowOptions,
-  ): GmailComposeWindowHandle => {
+/**
+ * The opener as a plain function of the store (no hook): what the lazy chat opener set calls.
+ * `track` hears every sent-callback id it registers (the hook unregisters them on unmount);
+ * `close()` always unregisters its own.
+ */
+export function createGmailComposeWindowOpener(
+  store: AppStore,
+  track?: { add(id: string): void; delete(id: string): void },
+) {
+  const dispatch = store.dispatch;
+  return (options: OpenGmailComposeWindowOptions): GmailComposeWindowHandle => {
     let sentCallbackId: string | null = null;
     if (options.onSent) {
       const handler = options.onSent;
-      sentCallbackId = callbackManager.register<GmailComposeSentEvent>(
-        (event) => handler(event),
-      );
-      callbackIds.current.add(sentCallbackId);
+      sentCallbackId = registerHandleEntry((event: GmailComposeSentEvent) => handler(event));
+      track?.add(sentCallbackId);
     }
 
     dispatch(
@@ -95,13 +94,27 @@ export function useOpenGmailComposeWindow() {
     return {
       close: () => {
         if (sentCallbackId) {
-          callbackManager.unregister(sentCallbackId);
-          callbackIds.current.delete(sentCallbackId);
+          unregisterHandleEntry(sentCallbackId);
+          track?.delete(sentCallbackId);
         }
         dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
       },
     };
   };
+}
+
+export function useOpenGmailComposeWindow() {
+  const store = useAppStore();
+  const [callbackIds] = useState(() => new Set<string>());
+
+  useEffect(() => {
+    return () => {
+      for (const id of callbackIds) unregisterHandleEntry(id);
+      callbackIds.clear();
+    };
+  }, [callbackIds]);
+
+  return useMemo(() => createGmailComposeWindowOpener(store, callbackIds), [store, callbackIds]);
 }
 
 /**

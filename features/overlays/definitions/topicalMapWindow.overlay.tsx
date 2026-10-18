@@ -16,9 +16,10 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
-import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
@@ -53,37 +54,39 @@ export function topicalMapWindowInstanceId(mapId: string): string {
   return mapId || TOPICAL_MAP_PICKER_INSTANCE_ID;
 }
 
-export function useOpenTopicalMapWindow() {
-  const dispatch = useAppDispatch();
-  const store = useAppStore();
-  return useCallback(
-    (opts: OpenTopicalMapWindowOptions): TopicalMapWindowHandle => {
-      const instanceId = topicalMapWindowInstanceId(opts.mapId);
-      const open = selectOpenInstances(store.getState(), OVERLAY_ID);
-      const existing = open.find((inst) => inst.instanceId === instanceId);
-      const data = {
-        stackIndex: existing ? undefined : open.length,
-        mapId: opts.mapId,
-        screen: opts.screen ?? "outline",
-        siteId: opts.siteId ?? null,
-      };
-      if (existing) {
-        // Already floating: surface it. A screen the caller named is applied
-        // by re-dispatching the instance data, which the window observes.
-        if (opts.screen) {
-          dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
-        }
-        dispatch(restoreWindow(instanceId));
-        dispatch(focusWindow(instanceId));
-      } else {
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createTopicalMapWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenTopicalMapWindowOptions): TopicalMapWindowHandle => {
+    const instanceId = topicalMapWindowInstanceId(opts.mapId);
+    const open = selectOpenInstances(store.getState(), OVERLAY_ID);
+    const existing = open.find((inst) => inst.instanceId === instanceId);
+    const data = {
+      stackIndex: existing ? undefined : open.length,
+      mapId: opts.mapId,
+      screen: opts.screen ?? "outline",
+      siteId: opts.siteId ?? null,
+    };
+    if (existing) {
+      // Already floating: surface it. A screen the caller named is applied
+      // by re-dispatching the instance data, which the window observes.
+      if (opts.screen) {
         dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
       }
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch, store],
-  );
+      dispatch(restoreWindow(instanceId));
+      dispatch(focusWindow(instanceId));
+    } else {
+      dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
+    }
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+    };
+  };
+}
+
+export function useOpenTopicalMapWindow() {
+  const store = useAppStore();
+  return useMemo(() => createTopicalMapWindowOpener(store), [store]);
 }
 
 /** Declarative form. Opens on mount, closes on unmount. */

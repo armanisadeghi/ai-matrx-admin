@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
-import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.action";
 import { callApi } from "@/lib/api/call-api";
 import { handToOwnBrowser } from "@/lib/extension-bridge/handToOwnBrowser";
 import { closeOverlay } from "@ai-matrx/summon/open";

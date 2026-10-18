@@ -33,7 +33,7 @@ import { formatDurationMs } from "@ai-matrx/kit/format";
 import { supabase } from "@/utils/supabase/client";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.action";
 import { AppletRunOutput } from "@/features/applets-host/AppletRunOutput";
 import { AppletDataRefusedNotice } from "@/features/applets-host/AppletDataRefusedNotice";
 import { AppletGuestKeepLine, guestKeepLineShown } from "@/features/applets-host/AppletGuestKeepLine";

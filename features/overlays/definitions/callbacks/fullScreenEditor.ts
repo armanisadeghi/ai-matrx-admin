@@ -26,7 +26,12 @@
  * (e.g. opening the fork-vs-overwrite dialog for "Edit & resubmit").
  */
 
-import { callbackManager } from "@ai-matrx/summon/handles";
+// Registration is the light path on `./open` (no registry in first load); the emit loads the
+// registry on the first save.
+import { newHandleId, registerHandleEntry, removeHandleGroup } from "@ai-matrx/summon/open";
+
+const loadHandles = () => import("@ai-matrx/summon/handles");
+
 
 // ─── Event surface ───────────────────────────────────────────────────────────
 
@@ -77,7 +82,7 @@ export function createFullScreenEditorCallbackGroup(
   if ((handlers.onSave ? 1 : 0) + (handlers.onAction ? 1 : 0) !== 1) {
     throw new Error("A full-screen editor callback group requires exactly one save owner");
   }
-  const callbackGroupId = callbackManager.createGroup();
+  const callbackGroupId = newHandleId();
   if (handlers.retainAfterSuccess) retainedSaveGroups.add(callbackGroupId);
 
   const requireThenable = (value: unknown): Promise<void> => {
@@ -113,10 +118,7 @@ export function createFullScreenEditorCallbackGroup(
     });
   };
 
-  callbackManager.registerWithContext<FullScreenEditorEvent>(
-    fanOut,
-    { groupId: callbackGroupId },
-  );
+  registerHandleEntry(fanOut, { groupId: callbackGroupId });
 
   return {
     callbackGroupId,
@@ -128,7 +130,7 @@ export function createFullScreenEditorCallbackGroup(
 export function disposeFullScreenEditorCallbackGroup(callbackGroupId: string | null | undefined): void {
   if (callbackGroupId) {
     retainedSaveGroups.delete(callbackGroupId);
-    callbackManager.removeGroup(callbackGroupId);
+    removeHandleGroup(callbackGroupId);
   }
 }
 
@@ -149,9 +151,12 @@ export function emitFullScreenEditorSave(
   if (!callbackGroupId) {
     return Promise.reject(new Error("This editor no longer has a save target"));
   }
-  return callbackManager.triggerGroupCommand<FullScreenEditorEvent>(
-    callbackGroupId,
-    { type: "save", content, action },
-    { removeAfterSuccess: !retainedSaveGroups.has(callbackGroupId) },
+  const removeAfterSuccess = !retainedSaveGroups.has(callbackGroupId);
+  return loadHandles().then(({ callbackManager }) =>
+    callbackManager.triggerGroupCommand<FullScreenEditorEvent>(
+      callbackGroupId,
+      { type: "save", content, action },
+      { removeAfterSuccess },
+    ),
   );
 }

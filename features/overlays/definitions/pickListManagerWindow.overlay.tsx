@@ -10,8 +10,9 @@
  *   open, unmount to close.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -27,27 +28,30 @@ export interface PickListManagerWindowHandle {
   close: () => void;
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createPickListManagerWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (
+    opts: OpenPickListManagerWindowOptions = {},
+  ): PickListManagerWindowHandle => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          title: opts.title,
+          forcedListId: opts.forcedListId ?? null,
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenPickListManagerWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      opts: OpenPickListManagerWindowOptions = {},
-    ): PickListManagerWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            title: opts.title,
-            forcedListId: opts.forcedListId ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createPickListManagerWindowOpener(store), [store]);
 }
 
 export function PickListManagerWindowController(
