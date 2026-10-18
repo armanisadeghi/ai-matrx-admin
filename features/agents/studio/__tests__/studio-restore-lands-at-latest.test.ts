@@ -26,3 +26,20 @@ it("puts a reopened transcript at its latest turn", () => {
 it("does nothing without a transcript", () => {
   expect(() => pinToLatest(null)()).not.toThrow();
 });
+
+it("follows history that mounts after the first placement (the inner nodes are replaced)", () => {
+  jest.useFakeTimers();
+  let height = 1417;
+  const root = document.createElement("div");
+  const scroller = document.createElement("div");
+  scroller.className = "overflow-y-auto";
+  root.appendChild(scroller);
+  Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => height });
+  const stop = pinToLatest(root);
+  expect(scroller.scrollTop).toBe(1417);
+  height = 4540;
+  jest.advanceTimersByTime(300);
+  expect(scroller.scrollTop).toBe(4540);
+  stop();
+  jest.useRealTimers();
+});
