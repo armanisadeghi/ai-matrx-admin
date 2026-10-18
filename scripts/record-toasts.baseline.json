@@ -273,6 +273,11 @@
       "reason": "A clipboard read failure is device guidance, not a persisted record notification; attaching a fabricated record would be misleading.",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-05"
+    },
+    "features/agents/studio/components/ExamplesStart.tsx::`${file.name} did not open`": {
+      "reason": "pre-existing; names a local text file the person picked from disk, not a platform record — there is no record for recordToast to carry",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-17"
     }
   }
 }
