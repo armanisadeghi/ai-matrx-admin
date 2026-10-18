@@ -33,6 +33,13 @@ function percent(rate: number | null): string {
   return rate === null ? "—" : `${Math.round(rate * 100)}%`;
 }
 
+/** A battle's winner for the runs list; "—" on a plain test run. */
+export function battleWinnerText(r: TestRunView): string {
+  if (r.pairwiseRounds === 0) return "—";
+  if (!r.battle?.settled) return "Judging";
+  return r.battle.winnerLabel ?? "Even";
+}
+
 export function RunsTable({
   runs,
   seat,
@@ -61,6 +68,22 @@ export function RunsTable({
         const meta = runStatusMeta(r.status);
         return <Badge tone={meta.tone}>{meta.label}</Badge>;
       },
+    },
+    {
+      id: "kind",
+      header: "Kind",
+      accessorFn: (r) => (r.pairwiseRounds > 0 ? "Battle" : "Test"),
+      filter: "select",
+      width: 90,
+      cell: (r) => (r.pairwiseRounds > 0 ? <Badge tone="info">Battle</Badge> : "Test"),
+    },
+    {
+      id: "winner",
+      header: "Winner",
+      accessorFn: (r) => battleWinnerText(r),
+      filter: "select",
+      width: 150,
+      cell: (r) => battleWinnerText(r),
     },
     {
       id: "results",

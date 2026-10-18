@@ -20,10 +20,14 @@ import { useEffect, useRef, useState } from "react";
 import { RecordList } from "@ai-matrx/design-system/record-list";
 import { FlaskConical, Lightbulb, Send, Swords } from "lucide-react";
 import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 import { Badge, Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { selectAgentById, selectAgentIsDirty } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
+import { selectActiveModels } from "@ai-matrx/agents/models";
+import { useModelOptions, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
+import { defaultDebriefModelId } from "@ai-matrx/chat/agents/debrief/debrief";
 import { debriefKey, getDebrief, setDebrief, useDebrief } from "@ai-matrx/chat/agents/debrief/debrief-store";
 import { parseAgentDebrief, type DebriefProposal } from "@ai-matrx/chat/agents/debrief/debrief-proposals";
 import { DebriefProposalCards } from "@ai-matrx/chat/agents/debrief/DebriefProposalCards";
@@ -337,7 +341,8 @@ function VersionsTab({ agentId }: { agentId: string }) {
           items={rows}
           getKey={(r) => String(r.version_number)}
           title={(r) => `Version ${r.version_number}`}
-          meta={(r) => new Date(r.changed_at).toLocaleString()}
+          meta={(r) => formatDistanceToNow(new Date(r.changed_at), { addSuffix: true })}
+          subtitle={(r) => (r.change_note?.trim() ? r.change_note.trim() : undefined)}
           href={(r) => `/agents/${agentId}/v/${r.version_number}`}
           size="sm"
           sourceFeature="agent"
@@ -370,6 +375,11 @@ function DebriefTab({
   );
   const key = runConversationId && messageId ? debriefKey(runConversationId, messageId) : "";
   const debrief = useDebrief(key);
+  // The model the debrief reads the run with: the strongest non-gated Claude unless the person picks one.
+  useModelOptions();
+  const records = useModelRecords(selectActiveModels);
+  const [pickedModel, setPickedModel] = useState<string | null>(null);
+  const model = pickedModel ?? debrief?.model ?? defaultDebriefModelId(records);
   // The debrief runs on its own fork: Watch AI and the Builder follow that conversation too.
   const forkId = debrief?.forkConversationId ?? null;
   useEffect(() => {
@@ -426,11 +436,25 @@ function DebriefTab({
           variant={parsed || working ? "outline" : "primary"}
           icon={<Lightbulb />}
           disabled={working}
-          onClick={() => setDebrief(key, { status: "choosing" })}
+          onClick={() => setDebrief(key, { status: "choosing", model })}
         >
           {hasRun ? "Debrief again" : "Debrief the latest answer"}
         </Button>
-        {!debrief ? <span className="min-w-0 truncate text-xs text-muted-foreground">Opens under the answer</span> : null}
+        <div className="min-w-0 flex-1" data-testid="studio-debrief-model">
+          <ModelListDropdown
+            aria-label="Debrief model"
+            modelOnly
+            inputModalities={[]}
+            outputModalities={["text"]}
+            triggerVariant="settings"
+            value={model}
+            onValueChange={(next: string) => {
+              setPickedModel(next);
+              if (debrief?.status === "choosing") setDebrief(key, { model: next });
+            }}
+            disabled={working}
+          />
+        </div>
       </TabHead>
       {working ? <Waiting text="Reading the run" /> : null}
       {debrief?.status === "done" && !parsed ? (
@@ -438,7 +462,7 @@ function DebriefTab({
           <span className="text-foreground">
             {debrief.text.trim() ? "The debrief had no proposals to read" : "The model sent no answer"}
           </span>
-          <Button variant="outline" onClick={() => setDebrief(key, { status: "choosing" })} data-testid="studio-debrief-retry">
+          <Button variant="outline" onClick={() => setDebrief(key, { status: "choosing", model })} data-testid="studio-debrief-retry">
             Retry
           </Button>
         </ResultCard>
@@ -446,7 +470,7 @@ function DebriefTab({
       {debrief?.status === "error" ? (
         <ResultCard tone="warning">
           <span className="text-foreground">{debrief.error || "The debrief did not finish"}</span>
-          <Button variant="outline" onClick={() => setDebrief(key, { status: "choosing" })} data-testid="studio-debrief-retry">
+          <Button variant="outline" onClick={() => setDebrief(key, { status: "choosing", model })} data-testid="studio-debrief-retry">
             Retry
           </Button>
         </ResultCard>

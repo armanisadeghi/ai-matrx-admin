@@ -155,6 +155,12 @@ export interface TestRunView {
   spentCents: number | null;
   archivedAt: string | null;
   maxCostCents: number | null;
+  /** The setups' keys → labels (a battle names its sides here). */
+  setupLabels: Record<string, string>;
+  /** Pairwise judge rounds the run holds; > 0 makes it a battle. */
+  pairwiseRounds: number;
+  /** A battle's winner, filled by `fetchAgentRuns` (null on a plain run or when not read). */
+  battle: { settled: boolean; winnerLabel: string | null } | null;
 }
 
 /** `agent.test_result`. */

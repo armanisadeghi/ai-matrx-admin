@@ -14,6 +14,7 @@
  * present and shown as unknown when absent.
  */
 
+import { pairwiseVerdict } from "./battle";
 import { createClient } from "@/utils/supabase/client";
 import type { Database } from "@/types/database.types";
 import { isJsonObject } from "@/types/json";
@@ -161,7 +162,19 @@ export function toRunView(row: RunRow): TestRunView {
     spentCents: num(row.spent_cents),
     maxCostCents: num(row.max_cost_cents),
     archivedAt: row.archived_at,
+    setupLabels: parseSetupLabels(row.setups),
+    pairwiseRounds: isJsonObject(row.counts) ? (num(row.counts.pairwise) ?? 0) : 0,
+    battle: null,
   };
+}
+
+function parseSetupLabels(raw: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!Array.isArray(raw)) return out;
+  for (const s of raw) {
+    if (isJsonObject(s) && str(s.key)) out[str(s.key)] = str(s.label) || str(s.key);
+  }
+  return out;
 }
 
 function errorText(raw: unknown): string | null {
@@ -330,7 +343,52 @@ export async function fetchAgentRuns(
   else if (archive === "archived") query = query.not("archived_at", "is", null);
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []).map(toRunView);
+  return withBattleWinners((data ?? []).map(toRunView));
+}
+
+/** Each battle run gets its winner (from its pairwise rows), so a list can tag and name it. */
+export async function withBattleWinners(runs: TestRunView[]): Promise<TestRunView[]> {
+  const battles = runs.filter((r) => r.pairwiseRounds > 0);
+  if (battles.length === 0) return runs;
+  const { data, error } = await createClient()
+    .schema("agent")
+    .from("test_result")
+    .select("*")
+    .in("test_run_id", battles.map((r) => r.id))
+    .eq("door", "pairwise");
+  if (error) throw error;
+  const byRun = new Map<string, TestResultView[]>();
+  for (const row of data ?? []) {
+    const view = toResultView(row);
+    byRun.set(view.testRunId, [...(byRun.get(view.testRunId) ?? []), view]);
+  }
+  return runs.map((r) => {
+    if (r.pairwiseRounds === 0) return r;
+    const v = pairwiseVerdict(byRun.get(r.id) ?? []);
+    if (!v) return { ...r, battle: { settled: false, winnerLabel: null } };
+    const key = v.wins > v.losses ? v.challenger : v.losses > v.wins ? v.baseline : null;
+    return { ...r, battle: { settled: v.settled, winnerLabel: key ? (r.setupLabels[key] ?? key) : null } };
+  });
+}
+
+/** The agent's newest battle run (pairwise rows) with its setups, for a tab to show on load. */
+export async function fetchLatestAgentBattle(
+  agentId: string,
+): Promise<{ run: TestRunView; setups: BattleSetup[] } | null> {
+  const { data, error } = await createClient()
+    .schema("agent")
+    .from("test_run")
+    .select("*")
+    .contains("agent_ids", [agentId])
+    .eq("purpose", "user")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(30);
+  if (error) throw error;
+  const row = (data ?? []).find((r) => isJsonObject(r.counts) && (num(r.counts.pairwise) ?? 0) > 0);
+  if (!row) return null;
+  const setups = Array.isArray(row.setups) ? (row.setups as unknown as BattleSetup[]) : [];
+  return { run: toRunView(row), setups };
 }
 
 /** Platform runs across every agent (admin page). */
