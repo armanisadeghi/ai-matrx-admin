@@ -1,8 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-
-import { SYNC_SOURCES, syncSentence } from "../SourceSyncBar";
+import { SYNC_SOURCES, syncSentence } from "../sourceSync";
 
 describe("a table brought in from Airtable or GitHub has a Sync now", () => {
   it("knows both sources and each one's aidream door", () => {

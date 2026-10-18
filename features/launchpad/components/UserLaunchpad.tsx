@@ -11,6 +11,7 @@ import { QuickActions } from "@/features/dashboard/components/QuickActions";
 import { PinnedSection } from "@/features/dashboard/components/PinnedSection";
 import ShellIcon from "@/features/shell/components/ShellIcon";
 import { resolveShellIconName } from "@/features/shell/shellIconMap";
+import { PrimitiveTile } from "@ai-matrx/icons/domain";
 import { iconColorMap } from "@/features/shell/constants/nav-data";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { cn } from "@/lib/utils";
@@ -432,14 +433,18 @@ function LaunchpadDestinationCard({
         external={destination.external}
         className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-            iconColorMap[destination.color ?? "slate"] ?? iconColorMap.slate,
-          )}
-        >
-          <ShellIcon name={destination.iconName} size={17} strokeWidth={2} />
-        </span>
+        {destination.identity ? (
+          <PrimitiveTile primitive={destination.identity} size="lg" />
+        ) : (
+          <span
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+              iconColorMap[destination.color ?? "slate"] ?? iconColorMap.slate,
+            )}
+          >
+            <ShellIcon name={destination.iconName} size={17} strokeWidth={2} />
+          </span>
+        )}
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1 text-sm font-medium text-foreground">
             <span className="truncate">{destination.label}</span>

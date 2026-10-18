@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import ShellIcon from "@/features/shell/components/ShellIcon";
-import { iconColorMap } from "@/features/shell/constants/nav-data";
+import { PrimitiveTile } from "@ai-matrx/icons/domain";
 import { cn } from "@/lib/utils";
 import { QUICK_ACTIONS } from "../dashboard.config";
 
@@ -37,14 +36,7 @@ export function QuickActions({
               layout === "grid" && "min-w-0 px-2.5",
             )}
           >
-            <span
-              className={cn(
-                "flex h-6 w-6 items-center justify-center rounded-lg",
-                iconColorMap[a.color] ?? iconColorMap.slate,
-              )}
-            >
-              <ShellIcon name={a.iconName} size={14} strokeWidth={2} />
-            </span>
+            <PrimitiveTile primitive={a.identity} size="md" />
             <span className="min-w-0 truncate">{a.label}</span>
           </Link>
         ))}

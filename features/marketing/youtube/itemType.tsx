@@ -117,11 +117,6 @@ export const WEB_YOUTUBE_VIDEO_ITEM_TYPE: ItemTypeConfig = {
   type: YOUTUBE_VIDEO_TYPE,
   label: "YouTube video",
   icon: MonitorPlay,
-  accent: {
-    text: "text-red-600 dark:text-red-400",
-    bg: "bg-red-500/10",
-    ring: "ring-red-500/20",
-  },
   // No bespoke window exists, so it opens the Detail primitive — window by
   // default, docked or page per the person's own setting.
   open: { kind: "web_youtube_video" },

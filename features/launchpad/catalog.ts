@@ -1,3 +1,4 @@
+import type { Identity } from "@ai-matrx/icons/domain";
 import { QUICK_ACTIONS } from "@/features/dashboard/dashboard.config";
 import {
   isNavActionChild,
@@ -7,7 +8,7 @@ import {
   settingsItem,
   type ShellNavItem,
 } from "@/features/shell/constants/nav-data";
-import type { ShellIconName } from "@/features/shell/shellIconMap";
+import { resolveShellIconName, type ShellIconName } from "@/features/shell/shellIconMap";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 import { USER_LAUNCHPAD_PATH } from "./constants";
 
@@ -18,6 +19,8 @@ export interface LaunchpadDestination {
   description?: string;
   iconName: ShellIconName;
   color?: string;
+  /** The destination's ONE identity (colour + icon) when it has one; wins over `color`. */
+  identity?: Identity;
   groupLabel: string;
   external?: boolean;
   kind: "area" | "destination" | "quick-start";
@@ -174,8 +177,8 @@ const quickStartDestinations: LaunchpadDestination[] = QUICK_ACTIONS.map(
     id: action.href,
     label: action.label,
     href: action.href,
-    iconName: action.iconName,
-    color: action.color,
+    iconName: resolveShellIconName(action.identity.iconName),
+    identity: action.identity,
     groupLabel: "Start something",
     kind: "quick-start",
   }),

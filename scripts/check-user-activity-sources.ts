@@ -14,6 +14,10 @@
  *      every other source ok:true.
  *   2. PAGING — walks three pages via next_before: newest first within a page, every row at or
  *      before the cursor, no item key twice, no source failing.
+ *   3. TIE — plants 7 admin audit rows for the test admin in ONE transaction (one created_at, so more
+ *      rows than the 3-row page share one instant), walks the 'admin' source 3 rows at a time on the
+ *      composite cursor (next_before, next_before_key), and is green only when all 7 come back exactly
+ *      once (N1: the old cursor stepped 1 µs past the instant and dropped 4). Rolled back.
  *
  *   --self-test   prove the judge goes red on a feed that threw / hid the break, green on a good one
  */
@@ -22,7 +26,7 @@ import { connectDirect, loadDbEnv } from "./lib/direct-db";
 
 const TEST_ADMIN_EMAIL = "admin@admin.com";
 const BROKEN = "feedback";
-const SOURCE_COUNT = 12;
+const SOURCE_COUNT = 13;
 
 interface Item {
   at: string;
@@ -37,6 +41,7 @@ interface Source {
 interface Page {
   items: Item[];
   next_before: string | null;
+  next_before_key?: string | null;
   sources: Source[];
 }
 
@@ -54,7 +59,7 @@ export function judgeBreak(result: Page | Error): string[] {
 
 function selfTest(): number {
   const ok = (kind: string): Source => ({ kind, ok: true });
-  const kinds = ["admin", "org_admin", "support", "sign_in", "account", "conversation", "run", "notification", "sms", "billing", "error"];
+  const kinds = ["admin", "org_admin", "support", "sign_in", "account", "conversation", "run", "notification", "sms", "billing", "error", "contact"];
   const good: Page = { items: [], next_before: null, sources: [...kinds.map(ok), { kind: BROKEN, ok: false, error: "planted: feedback" }] };
   const hidden: Page = { items: [], next_before: null, sources: [...kinds.map(ok), ok(BROKEN)] };
   const cases: Array<[string, Page | Error, boolean]> = [
@@ -89,7 +94,7 @@ async function main(): Promise<number> {
   const db = await connectDirect(env, "check-user-activity");
   const failures: string[] = [];
   try {
-    await db.query("begin read only");
+    await db.query("begin"); // rolled back in finally; only the tie step writes
     const who = await db.query<{ id: string }>("select id from auth.users where email = $1", [TEST_ADMIN_EMAIL]);
     const userId = who.rows[0]?.id;
     if (!userId) throw new Error(`no ${TEST_ADMIN_EMAIL} user`);
@@ -113,6 +118,32 @@ async function main(): Promise<number> {
       if (!page.next_before) break;
       before = page.next_before;
     }
+
+    // 3. TIE (writes 7 audit rows inside a savepoint, rolled back with everything else).
+    await db.query("savepoint tie");
+    const planted = await db.query<{ id: string }>(
+      "select admin._audit_user_action('update', $1, null, null, 'activity tie guard', '{}'::jsonb, null) as id from generate_series(1, 7)",
+      [userId],
+    );
+    const want = new Set(planted.rows.map((r) => `admin:${r.id}`));
+    const got: string[] = [];
+    let cur: { before: string | null; key: string | null } = { before: null, key: null };
+    for (let n = 0; n < 40; n++) {
+      const r = await db.query<{ p: Page }>(
+        "select admin.user_activity($1, $2, array['admin'], 3, $3) as p",
+        [userId, cur.before, cur.key],
+      );
+      const page = r.rows[0].p;
+      got.push(...page.items.map((i) => i.key).filter((k) => want.has(k)));
+      if (!page.next_before || want.size === new Set(got).size) break;
+      cur = { before: page.next_before, key: page.next_before_key ?? null };
+    }
+    const missing = [...want].filter((k) => !got.includes(k));
+    const twice = got.filter((k, i) => got.indexOf(k) !== i);
+    if (missing.length) failures.push(`tie: ${missing.length} of 7 same-instant rows never paged in`);
+    if (twice.length) failures.push(`tie: ${twice.length} same-instant row(s) repeated`);
+    console.log(`tie: ${new Set(got).size}/7 same-instant rows paged in, ${twice.length} repeated`);
+    await db.query("rollback to savepoint tie");
 
     // 1. PLANTED BREAK.
     await db.query("select set_config('matrx.test_break_activity_source', $1, true)", [BROKEN]);

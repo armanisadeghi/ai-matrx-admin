@@ -9,21 +9,19 @@
 // ╚══════════════════════════════════════════════════════════════════════════╝
 
 import type { DiscoverItem } from "./constants/discover";
-import type { ShellIconName } from "@/features/shell/shellIconMap";
+import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES as I, type Identity } from "@ai-matrx/icons/domain";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // START SOMETHING  —  the fixed "create / launch" row at the top of the page.
 //
-// To change it: add / remove / reorder entries below. `iconName` is any Lucide
-// name registered in `features/shell/shellIconMap.ts`; `color` is any key in
-// `iconColorMap` (sky, indigo, blue, amber, emerald, rose, violet, purple, …).
+// To change it: add / remove / reorder entries below. `identity` is the
+// place's ONE colour + icon from `@ai-matrx/icons/domain` (never a local colour).
 // ─────────────────────────────────────────────────────────────────────────────
 export interface QuickAction {
   id: string; // stable id (use the href)
   label: string;
   href: string;
-  iconName: ShellIconName;
-  color: string;
+  identity: Identity;
 }
 
 export const QUICK_ACTIONS: QuickAction[] = [
@@ -32,50 +30,43 @@ export const QUICK_ACTIONS: QuickAction[] = [
     id: "/make",
     label: "Make something",
     href: "/make",
-    iconName: "LayoutGrid",
-    color: "cyan",
+    identity: P.make,
   },
   {
     id: "/chat/new",
     label: "New Chat",
     href: "/chat/new",
-    iconName: "MessageCircle",
-    color: "indigo",
+    identity: I.chats,
   },
   {
     id: "/agents/new",
     label: "New Agent",
     href: "/agents/new",
-    iconName: "Webhook",
-    color: "blue",
+    identity: P.agent_studio,
   },
   {
     id: "/files/all",
     label: "Upload Files",
     href: "/files/all",
-    iconName: "FolderOpen",
-    color: "amber",
+    identity: I.files,
   },
   {
     id: "/research/topics/new",
     label: "New Research",
     href: "/research/topics/new",
-    iconName: "FlaskConical",
-    color: "purple",
+    identity: I.research,
   },
   {
     id: "/transcripts/new",
     label: "New Transcript",
     href: "/transcripts/new",
-    iconName: "Mic",
-    color: "rose",
+    identity: I.transcripts,
   },
   {
     id: "/notes",
     label: "New Note",
     href: "/notes",
-    iconName: "NotebookPen",
-    color: "amber",
+    identity: I.notes,
   },
 ];
 

@@ -6,7 +6,7 @@
  * Lifecycle the user experiences:
  *   1. The block is recognized → a pretty card appears INSTANTLY (even mid-stream,
  *      from a partial JSON scan).
- *   2. The `type` resolves → the card adopts that type's icon + accent and, for
+ *   2. The `type` resolves → the card adopts that type's icon + identity colour and, for
  *      recognized + enrichable types, kicks off a DB fetch immediately.
  *   3. Enrichment lands → the authoritative name/about replace the agent's guess
  *      and detail rows smoothly grow into view.
@@ -21,6 +21,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Loader2, AlertCircle } from "lucide-react";
 
+import { PrimitiveTile } from "@ai-matrx/icons/domain";
 import { cn } from "@/lib/utils";
 
 import { getItemConfig } from "./registry";
@@ -71,6 +72,10 @@ const ItemPresentationBlock: React.FC<ItemPresentationBlockProps> = ({
   // already has the final shape, so the swap to the real card is seamless.
   const awaitingType = !payload.type && isStreamActive;
 
+  // The type's ONE identity colour (icons/domain), mixed over transparent for washes and rings.
+  const identity = config.identity;
+  const tint = identity ? (pct: number) => `color-mix(in oklab, ${identity.color} ${pct}%, transparent)` : null;
+
   const handleClick = () => {
     if (canOpen) open(payload.type, payload.id, { name, about });
   };
@@ -101,37 +106,37 @@ const ItemPresentationBlock: React.FC<ItemPresentationBlockProps> = ({
         className={cn(
           "group relative w-full max-w-xl overflow-hidden rounded-xl border bg-card text-left",
           "border-border/70 ring-1 ring-inset transition-all duration-200",
-          config.accent.ring,
+          tint ? null : "ring-border",
           canOpen &&
             "cursor-pointer hover:-translate-y-0.5 hover:border-border hover:shadow-md",
         )}
+        style={tint ? { ["--tw-ring-color" as string]: tint(20) } : undefined}
       >
-        {/* subtle accent wash behind the icon */}
+        {/* subtle identity wash behind the icon */}
         <div
           className={cn(
             "pointer-events-none absolute inset-y-0 left-0 w-24 opacity-60",
-            config.accent.bg,
+            tint ? null : "bg-muted",
             "[mask-image:linear-gradient(to_right,black,transparent)]",
           )}
+          style={tint ? { backgroundColor: tint(10) } : undefined}
         />
 
         <div className="relative flex items-start gap-3 p-3.5">
-          {/* Icon chip */}
-          <div
-            className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset",
-              config.accent.bg,
-              config.accent.ring,
-            )}
-          >
-            {awaitingType ? (
-              <Loader2
-                className={cn("h-5 w-5 animate-spin", config.accent.text)}
-              />
-            ) : (
-              <Icon className={cn("h-5 w-5", config.accent.text)} />
-            )}
-          </div>
+          {/* Icon chip: the type's identity tile, else the neutral chip */}
+          {identity && !awaitingType ? (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+              <PrimitiveTile primitive={identity} size="lg" />
+            </span>
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted ring-1 ring-inset ring-border">
+              {awaitingType ? (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              ) : (
+                <Icon className="h-5 w-5 text-muted-foreground" />
+              )}
+            </div>
+          )}
 
           {/* Main column */}
           <div className="min-w-0 flex-1">
@@ -150,10 +155,9 @@ const ItemPresentationBlock: React.FC<ItemPresentationBlockProps> = ({
               <span
                 className={cn(
                   "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 ring-inset",
-                  config.accent.bg,
-                  config.accent.text,
-                  config.accent.ring,
+                  tint ? "text-foreground" : "bg-muted text-muted-foreground ring-border",
                 )}
+                style={tint ? { backgroundColor: tint(14), ["--tw-ring-color" as string]: tint(30) } : undefined}
               >
                 {config.label}
               </span>

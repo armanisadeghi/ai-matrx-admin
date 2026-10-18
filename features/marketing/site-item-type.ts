@@ -162,11 +162,6 @@ export const WEB_SITE_ITEM_TYPE: ItemTypeConfig = {
   // `Globe` is the icon the entity registry already gives `web_site`, so the
   // record, the reference chip and the marketing lists agree.
   icon: Globe,
-  accent: {
-    text: "text-sky-600 dark:text-sky-400",
-    bg: "bg-sky-500/10",
-    ring: "ring-sky-500/20",
-  },
   // 🚨 THE DISCRIMINANT THAT WAS MISSING — without it every door above is
   // absent or dead. It routes to the site Quick view (see above).
   open: { kind: "web_site" },

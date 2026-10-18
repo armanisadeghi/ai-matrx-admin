@@ -5,6 +5,7 @@
  */
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { ALL_IDENTITIES } from "@ai-matrx/icons/domain";
 import { MEET_MATRX_GROUPS } from "../meetMatrx";
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 
@@ -56,7 +57,9 @@ describe("Meet Matrx", () => {
     expect(items.filter((i) => i.external).map((i) => [i.name, i.href])).toEqual([["Workflow Studio", WORKFLOWS_APP_URL]]);
   });
 
-  it("every piece wears its own hue", () => {
-    expect(new Set(items.map((i) => i.tone)).size).toBe(items.length);
+  it("every piece wears an official identity, each its own", () => {
+    const owned = new Set<unknown>(ALL_IDENTITIES);
+    expect(items.filter((i) => !owned.has(i.identity)).map((i) => i.name)).toEqual([]);
+    expect(new Set(items.map((i) => i.identity)).size).toBe(items.length);
   });
 });

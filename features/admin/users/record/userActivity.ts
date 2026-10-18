@@ -3,7 +3,8 @@
 // sources (admin + org-admin actions, support sessions, sign-ins, account closure, conversations,
 // runs, feedback, notifications, texts, billing, errors); a source that fails comes back in
 // `sources` with its error instead of failing the page. `next_before` is INCLUSIVE (rows at or before
-// it), so page edges never drop a same-instant row; `appendActivityPage` drops any repeat by key.
+// it); when more rows than a page share one instant, `next_before_key` pages through that instant by
+// key (migration 20261018171000), so no row is ever dropped. `appendActivityPage` drops any repeat by key.
 //
 // Doors: the SQL returns {type,id,user_id?,href?}; `activityRecordHref` maps each type to its ONE
 // canonical address (no route strings in SQL). Rows show titles and statuses only, never content
@@ -32,6 +33,7 @@ export const ACTIVITY_KINDS = [
   "sms",
   "billing",
   "error",
+  "contact",
 ] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
@@ -39,7 +41,7 @@ export const ACTIVITY_KIND_LABEL: Record<ActivityKind, string> = {
   admin: "Admin",
   org_admin: "Org admin",
   support: "Support",
-  sign_in: "Sign-ins",
+  sign_in: "Live sessions",
   account: "Account",
   conversation: "Conversations",
   run: "Runs",
@@ -48,6 +50,7 @@ export const ACTIVITY_KIND_LABEL: Record<ActivityKind, string> = {
   sms: "Texts",
   billing: "Billing",
   error: "Errors",
+  contact: "Messages",
 };
 
 export function isActivityKind(value: string): value is ActivityKind {
@@ -80,6 +83,8 @@ export interface ActivitySource {
 export interface ActivityPage {
   items: ActivityItem[];
   next_before: string | null;
+  /** With next_before, the composite cursor: set only when one instant spans pages (rows after this key). */
+  next_before_key: string | null;
   sources: ActivitySource[];
 }
 
@@ -115,7 +120,7 @@ export function parseActivityPage(json: Json): ActivityPage {
     if (!isJsonObject(raw) || typeof raw.kind !== "string") continue;
     sources.push({ kind: raw.kind, ok: raw.ok === true, error: str(raw.error) });
   }
-  return { items, next_before: str(json.next_before), sources };
+  return { items, next_before: str(json.next_before), next_before_key: str(json.next_before_key), sources };
 }
 
 export async function fetchActivityPage(
@@ -123,12 +128,14 @@ export async function fetchActivityPage(
   before: string | null,
   kinds: readonly ActivityKind[] | null,
   limit = 50,
+  beforeKey: string | null = null,
 ): Promise<ActivityPage> {
   const { data, error } = await createClient()
     .schema("admin")
     .rpc("user_activity", {
       p_user: userId,
       ...(before ? { p_before: before } : {}),
+      ...(before && beforeKey ? { p_before_key: beforeKey } : {}),
       ...(kinds ? { p_kinds: [...kinds] } : {}),
       p_limit: limit,
     });
@@ -149,6 +156,7 @@ export function appendActivityPage(loaded: ActivityPage, next: ActivityPage): Ac
   return {
     items: [...loaded.items, ...next.items.filter((i) => !seen.has(i.key))],
     next_before: next.next_before,
+    next_before_key: next.next_before_key,
     sources: kinds.map((kind) => failed.get(kind) ?? { kind, ok: true, error: null }),
   };
 }
@@ -222,6 +230,9 @@ export function activityRecordHref(record: ActivityRecord | null, personId: stri
       return isVisibleUserTab("security") ? userRecordHref(personId, "security") : null;
     case "billing":
     case "coupon":
+    case "free_period_grant":
+    case "usage_reset":
+    case "user_plan":
       return userRecordHref(record.user_id ?? personId, "billing");
     default:
       return null;

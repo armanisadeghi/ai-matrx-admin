@@ -17,7 +17,9 @@ import { readTaskGuardrailRow, readTaskGuardrailRows, writeTaskGuardrails } from
 import type { Json } from "@/types/database.types";
 import type { AutomationKind } from "@/features/scheduling/service/automationCosts";
 
-export type GuardrailKind = "sch_task" | "workflow_trigger" | "agent_schedule";
+/** ``run_subject``: an automatic run with no schedule / trigger record (aidream 2026-10-18) —
+ * (organization, caller, workflow | mandate | agent | feature), limits from the knobs. */
+export type GuardrailKind = "sch_task" | "workflow_trigger" | "agent_schedule" | "run_subject";
 
 export const LIMIT_KEYS = [
   "max_turns",

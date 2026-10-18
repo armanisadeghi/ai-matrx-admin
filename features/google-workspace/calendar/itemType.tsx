@@ -132,11 +132,6 @@ export const CALENDAR_EVENT_ITEM_TYPE: ItemTypeConfig = {
   // agent-emitted calendar item card could not open. Opens through the Detail
   // primitive (`refineDetail` below), same as every non-bespoke record type.
   open: { kind: "calendar_event" },
-  accent: {
-    text: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-500/10",
-    ring: "ring-blue-500/20",
-  },
   // The address the generic machinery reads (the entity registry and the doors);
   // the TYPED read in the refinement above is what actually runs.
   detailSource: {

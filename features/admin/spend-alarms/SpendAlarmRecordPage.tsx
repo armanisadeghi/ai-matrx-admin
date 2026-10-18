@@ -44,6 +44,7 @@ import { MuteDialog } from "@/features/admin/attention/MuteDialog";
 import { muteLabel } from "@/features/admin/attention/item-mute";
 import { AlarmSourcesList } from "./AlarmSourcesList";
 import { HeldRunsSection } from "@/features/admin/held-runs/HeldRunsSection";
+import { PausedAutomationSection } from "./PausedAutomationSection";
 import { Button } from "@ai-matrx/design-system/controls";
 import {
   SPEND_ALARMS_PATH,
@@ -505,6 +506,12 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                     ? "Sources skipped instead"
                     : "Sources"
               } />
+
+            {record.refs.subject_kind === "run_subject" && record.refs.subject_ref ? (
+              <PausedAutomationSection kind="run_subject" subjectId={String(record.refs.subject_ref)} onResumed={reload} />
+            ) : record.refs.trigger_id ? (
+              <PausedAutomationSection kind="workflow_trigger" subjectId={String(record.refs.trigger_id)} onResumed={reload} />
+            ) : null}
 
             <HeldRunsSection alarmId={id} />
 

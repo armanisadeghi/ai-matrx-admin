@@ -32,6 +32,7 @@ describe("parseActivityPage", () => {
         "junk",
       ],
       next_before: "2026-10-18T04:00:00Z",
+      next_before_key: null,
       sources: [{ kind: "admin", ok: true }, { kind: "sms", ok: false, error: "boom" }],
     });
     expect(page.items.map((i) => i.key)).toEqual(["a:1"]);
@@ -52,6 +53,7 @@ describe("appendActivityPage", () => {
   const first: ActivityPage = {
     items: [item("c:1", "2026-10-18T05:00:00Z"), item("c:2", "2026-10-18T04:00:00Z")],
     next_before: "2026-10-18T04:00:00Z",
+    next_before_key: null,
     sources: [
       { kind: "conversation", ok: true, error: null },
       { kind: "sms", ok: false, error: "boom" },
@@ -62,6 +64,7 @@ describe("appendActivityPage", () => {
     const next: ActivityPage = {
       items: [item("c:2", "2026-10-18T04:00:00Z"), item("c:3", "2026-10-18T03:00:00Z")],
       next_before: null,
+      next_before_key: null,
       sources: [
         { kind: "conversation", ok: true, error: null },
         { kind: "sms", ok: true, error: null },

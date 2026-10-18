@@ -7,14 +7,14 @@
  *
  * Names are the canonical vocabulary (common-docs platform/vocabulary/FEATURE.md) — never coin or
  * rename one here. Pitches are 3–7 plain words (guarded in __tests__). Each piece links to its real
- * home; Knowledge's pitch speaks for ALL of a person's or company's information (notes, files, chats, research,
+ * home. Each piece wears its ONE identity (colour + icon) from `@ai-matrx/icons/domain` — the same
+ * tile it wears on the welcome grid, the dashboard and in chat; never a local colour. Knowledge's pitch speaks for ALL of a person's or company's information (notes, files, chats, research,
  * scrapes, code, tasks — not just files) that every agent can reach and never forgets (Arman, 2026-10-18). The stage itself is `@ai-matrx/design-system/intro-stage` (one UI system).
  */
 import type { ReactNode } from "react";
-import { Database, LayoutGrid, Library, Network, Plug, Puzzle, Workflow } from "lucide-react";
 import { IntroStage, type IntroGroup } from "@ai-matrx/design-system/intro-stage";
+import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES } from "@ai-matrx/icons/domain";
 import AppLink from "@/components/navigation/AppLink";
-import { AGENT_ICON, INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 
 export const MEET_MATRX_PATH = "/meet-matrx";
@@ -27,9 +27,9 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
     label: "The studios",
     size: "feature",
     items: [
-      { id: "agent-studio", name: "Agent Studio", pitch: "Turn your know\u2011how into an agent", icon: <AGENT_ICON />, href: "/agents/new/studio", tone: 1, diagram: "single" },
-      { id: "orchestra-studio", name: "Orchestra Studio", pitch: "Agents working together, led by a Conductor", icon: <Network />, href: "/agents/orchestra-studio", tone: 7, diagram: "ensemble" },
-      { id: "workflow-studio", name: "Workflow Studio", pitch: "Your process, run step by step", icon: <Workflow />, href: WORKFLOWS_APP_URL, external: true, tone: 9, diagram: "sequence" },
+      { id: "agent-studio", name: "Agent Studio", pitch: "Turn your know\u2011how into an agent", href: "/agents/new/studio", identity: P.agent_studio, diagram: "single" },
+      { id: "orchestra-studio", name: "Orchestra Studio", pitch: "Agents working together, led by a Conductor", href: "/agents/orchestra-studio", identity: P.orchestra_studio, diagram: "ensemble" },
+      { id: "workflow-studio", name: "Workflow Studio", pitch: "Your process, run step by step", href: WORKFLOWS_APP_URL, external: true, identity: P.workflow_studio, diagram: "sequence" },
     ],
   },
   {
@@ -37,12 +37,12 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
     label: "The building blocks",
     size: "compact",
     items: [
-      { id: "mandates", name: "Mandates", pitch: "Name the job. Choose who does it.", icon: <INTELLIGENCE_ICON />, href: "/mandates", tone: 4 },
-      { id: "applets", name: "Applets", pitch: "Package your AI for anyone to use", icon: <Puzzle />, href: "/applets", tone: 8 },
-      { id: "boards", name: "Boards", pitch: "All your work on one canvas", icon: <LayoutGrid />, href: "/board", tone: 3 },
-      { id: "custom-data", name: "Custom data", pitch: "Your own tables, shaped your way", icon: <Database />, href: "/data", tone: 6 },
-      { id: "knowledge", name: "Knowledge", pitch: "Everything in one place. Agents never forget.", icon: <Library />, href: "/knowledge/hub", tone: 5 },
-      { id: "tools", name: "Tools & Connectors", pitch: "Plug agents into the apps you use", icon: <Plug />, href: "/agent-connections", tone: 2 },
+      { id: "mandates", name: "Mandates", pitch: "Name the job. Choose who does it.", href: "/mandates", identity: P.mandates },
+      { id: "applets", name: "Applets", pitch: "Package your AI for anyone to use", href: "/applets", identity: P.applets },
+      { id: "boards", name: "Boards", pitch: "All your work on one canvas", href: "/board", identity: P.boards },
+      { id: "custom-data", name: "Custom data", pitch: "Your own tables, shaped your way", href: "/data", identity: PRIMITIVE_IDENTITIES.data },
+      { id: "knowledge", name: "Knowledge", pitch: "Everything in one place. Agents never forget.", href: "/knowledge/hub", identity: PRIMITIVE_IDENTITIES.knowledge },
+      { id: "tools", name: "Tools & Connectors", pitch: "Plug agents into the apps you use", href: "/agent-connections", identity: P.tools },
     ],
   },
 ];

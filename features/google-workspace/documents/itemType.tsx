@@ -22,6 +22,7 @@
  *   * the body + Append composer, as the record type's own section.
  */
 
+import { PRIMITIVE_IDENTITIES } from "@ai-matrx/icons/domain";
 import { FileText } from "lucide-react";
 
 import type { ItemTypeConfig } from "@/features/item-presentation/registry";
@@ -258,11 +259,7 @@ export const GOOGLE_DOCUMENT_ITEM_TYPE: ItemTypeConfig = {
   // agent-emitted Google item card could not open. Opens through the Detail
   // primitive (`refineDetail` below), same as every non-bespoke record type.
   open: { kind: "google_document" },
-  accent: {
-    text: "text-sky-600 dark:text-sky-400",
-    bg: "bg-sky-500/10",
-    ring: "ring-sky-500/20",
-  },
+  identity: PRIMITIVE_IDENTITIES.docs,
   // The card's own read, so an item card an agent emits shows the real title and
   // the real owner instead of the model's guess. Same row, same masking view.
   enrich: async (_client, id): Promise<EnrichedItem> => {

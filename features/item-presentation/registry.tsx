@@ -4,7 +4,7 @@
  * Item Presentation — the registry.
  *
  * THE platform primitive. One entry per item type. Adding a new presentable
- * item = one entry here (icon, accent, how to enrich it from the DB, how to
+ * item = one entry here (icon, identity, how to enrich it from the DB, how to
  * open it). The renderer and the enrichment hook are generic — they read this
  * map and never special-case a type inline.
  *
@@ -14,32 +14,24 @@
 
 import type { ComponentType } from "react";
 import {
-  Webhook,
   AppWindow,
-  StickyNote,
-  CheckSquare,
   FolderKanban,
   Layers,
   Tag,
   Box,
   Image as ImageIcon,
-  Mic,
   Video,
   AudioLines,
-  File as FileIcon,
-  MessagesSquare,
   Table2,
   ListChecks,
-  BookOpen,
-  FileText,
   MessageSquare,
   Mail,
   Boxes,
   Contact,
-  LayoutTemplate,
 } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ENTITY_TYPE_METADATA } from "@ai-matrx/associations";
+import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES as I, type Identity } from "@ai-matrx/icons/domain";
 
 import type { EnrichedItem, ItemType, KnownItemType } from "./types";
 import type { DetailRecordType } from "@ai-matrx/detail";
@@ -67,11 +59,11 @@ export interface ItemTypeConfig {
   /** Lucide icon component. */
   icon: ComponentType<{ className?: string }>;
   /**
-   * Accent classes for the icon chip. Uses semantic-ish Tailwind tokens so it
-   * reads well in light + dark. `text` is the icon color, `bg` the chip bg,
-   * `ring` the subtle border/glow.
+   * The type's ONE identity (colour + icon) from `@ai-matrx/icons/domain`, when it
+   * is one of the platform's primitives or pieces. Its colour tints the card and
+   * the detail header; a type with none wears the neutral card. Never a local colour.
    */
-  accent: { text: string; bg: string; ring: string };
+  identity?: Identity;
   /**
    * Pull authoritative data from the DB for this id. Returns `notFound: true`
    * when the row is missing. NEVER throws — the hook wraps it, but keep each
@@ -311,12 +303,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   agent: {
     type: "agent",
     label: "Agent",
-    icon: Webhook,
-    accent: {
-      text: "text-violet-600 dark:text-violet-400",
-      bg: "bg-violet-500/10",
-      ring: "ring-violet-500/20",
-    },
+    icon: P.agent_studio.icon,
+    identity: P.agent_studio,
     open: { kind: "agent" },
     // 🚨 NEW-9 — the SAME canonical table the enrichment below reads. A type with
     // no `detailSource` took the honest-absent path, so `/detail/agent/<id>` — a
@@ -348,11 +336,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "app",
     label: "App",
     icon: AppWindow,
-    accent: {
-      text: "text-sky-600 dark:text-sky-400",
-      bg: "bg-sky-500/10",
-      ring: "ring-sky-500/20",
-    },
     open: { kind: "app" },
     detailSource: {
       table: "definition",
@@ -375,12 +358,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   research_template: {
     type: "research_template",
     label: "Research Template",
-    icon: LayoutTemplate,
-    accent: {
-      text: "text-violet-600 dark:text-violet-400",
-      bg: "bg-violet-500/10",
-      ring: "ring-violet-500/20",
-    },
+    icon: I.research.icon,
+    identity: I.research,
     open: { kind: "research_template" },
     detailSource: {
       table: "rs_template",
@@ -397,12 +376,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   note: {
     type: "note",
     label: "Note",
-    icon: StickyNote,
-    accent: {
-      text: "text-amber-600 dark:text-amber-400",
-      bg: "bg-amber-500/10",
-      ring: "ring-amber-500/20",
-    },
+    icon: I.notes.icon,
+    identity: I.notes,
     open: { kind: "note" },
     // NEW-9 — `workbench.notes`, the table the enrichment below already reads.
     detailSource: {
@@ -427,12 +402,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   task: {
     type: "task",
     label: "Task",
-    icon: CheckSquare,
-    accent: {
-      text: "text-emerald-600 dark:text-emerald-400",
-      bg: "bg-emerald-500/10",
-      ring: "ring-emerald-500/20",
-    },
+    icon: I.tasks.icon,
+    identity: I.tasks,
     open: { kind: "task" },
     detailSource: {
       table: "tasks",
@@ -462,11 +433,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "project",
     label: "Project",
     icon: FolderKanban,
-    accent: {
-      text: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-500/10",
-      ring: "ring-blue-500/20",
-    },
     open: { kind: "project" },
     detailSource: {
       table: "projects",
@@ -493,11 +459,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "scope_type",
     label: "Scope Type",
     icon: Layers,
-    accent: {
-      text: "text-fuchsia-600 dark:text-fuchsia-400",
-      bg: "bg-fuchsia-500/10",
-      ring: "ring-fuchsia-500/20",
-    },
     open: { kind: "scope_type" },
     enrich: async (_s, id) => {
       // A scope type is a Table: read it with the records client, loaded only when a scope type is enriched.
@@ -519,11 +480,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "scope",
     label: "Scope",
     icon: Tag,
-    accent: {
-      text: "text-pink-600 dark:text-pink-400",
-      bg: "bg-pink-500/10",
-      ring: "ring-pink-500/20",
-    },
     open: { kind: "scope" },
     enrich: async (_s, id) => {
       const { scopeDoors } = await import("@/features/scopes/service/scopeDoors");
@@ -542,11 +498,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "context_item",
     label: "Context Item",
     icon: Box,
-    accent: {
-      text: "text-indigo-600 dark:text-indigo-400",
-      bg: "bg-indigo-500/10",
-      ring: "ring-indigo-500/20",
-    },
     open: { kind: "context_item" },
     // A context field is a column of its scope type's Table, read by id in whichever of the
     // person's organizations holds it (`client.scopes.field`); a refusal is the card's error.
@@ -574,11 +525,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "image",
     label: "Image",
     icon: ImageIcon,
-    accent: {
-      text: "text-rose-600 dark:text-rose-400",
-      bg: "bg-rose-500/10",
-      ring: "ring-rose-500/20",
-    },
     open: { kind: "file" },
     detailSource: FILE_DETAIL_SOURCE,
     enrich: (s, id) => enrichFile(s, id),
@@ -587,11 +533,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "video",
     label: "Video",
     icon: Video,
-    accent: {
-      text: "text-red-600 dark:text-red-400",
-      bg: "bg-red-500/10",
-      ring: "ring-red-500/20",
-    },
     open: { kind: "file" },
     detailSource: FILE_DETAIL_SOURCE,
     enrich: (s, id) => enrichFile(s, id),
@@ -600,11 +541,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "audio",
     label: "Audio",
     icon: AudioLines,
-    accent: {
-      text: "text-orange-600 dark:text-orange-400",
-      bg: "bg-orange-500/10",
-      ring: "ring-orange-500/20",
-    },
     open: { kind: "file" },
     detailSource: FILE_DETAIL_SOURCE,
     enrich: (s, id) => enrichFile(s, id),
@@ -612,12 +548,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   file: {
     type: "file",
     label: "File",
-    icon: FileIcon,
-    accent: {
-      text: "text-slate-600 dark:text-slate-300",
-      bg: "bg-slate-500/10",
-      ring: "ring-slate-500/20",
-    },
+    icon: I.files.icon,
+    identity: I.files,
     open: { kind: "file" },
     detailSource: FILE_DETAIL_SOURCE,
     enrich: (s, id) => enrichFile(s, id),
@@ -625,12 +557,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   session: {
     type: "session",
     label: "Session",
-    icon: MessagesSquare,
-    accent: {
-      text: "text-teal-600 dark:text-teal-400",
-      bg: "bg-teal-500/10",
-      ring: "ring-teal-500/20",
-    },
+    icon: I.chats.icon,
+    identity: I.chats,
     // 🚨 DELIBERATELY SOURCELESS, and the only one left after NEW-9's census
     // (VERIFY-U-P1-R3): there is no single canonical "session" table — war-room,
     // studio, window and quiz sessions all qualify — so a detail cannot know
@@ -650,12 +578,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   transcript: {
     type: "transcript",
     label: "Transcript",
-    icon: Mic,
-    accent: {
-      text: "text-rose-600 dark:text-rose-400",
-      bg: "bg-rose-500/10",
-      ring: "ring-rose-500/20",
-    },
+    icon: I.transcripts.icon,
+    identity: I.transcripts,
     open: { kind: "transcript" },
     detailSource: {
       table: "transcripts",
@@ -680,11 +604,7 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     entityToken: "table",
     label: "Table",
     icon: Table2,
-    accent: {
-      text: "text-cyan-600 dark:text-cyan-400",
-      bg: "bg-cyan-500/10",
-      ring: "ring-cyan-500/20",
-    },
+    identity: I.data,
     open: { kind: "table" },
     refineDetail: CUSTOM_TABLE_DETAIL,
     enrich: storeEnrich((_client, id) => readCustomTable(id)),
@@ -693,11 +613,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "pick_list",
     label: "Pick list",
     icon: ListChecks,
-    accent: {
-      text: "text-lime-600 dark:text-lime-400",
-      bg: "bg-lime-500/10",
-      ring: "ring-lime-500/20",
-    },
     open: { kind: "pick_list" },
     refineDetail: STORE_LIST_DETAIL,
     enrich: storeEnrich(readStoreList),
@@ -709,11 +624,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     entityToken: "pick_list",
     label: "Pick list",
     icon: ListChecks,
-    accent: {
-      text: "text-lime-600 dark:text-lime-400",
-      bg: "bg-lime-500/10",
-      ring: "ring-lime-500/20",
-    },
     open: { kind: "pick_list" },
     refineDetail: STORE_LIST_DETAIL,
     enrich: storeEnrich(readStoreList),
@@ -723,11 +633,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     entityToken: "pick_list",
     label: "Pick list",
     icon: ListChecks,
-    accent: {
-      text: "text-lime-600 dark:text-lime-400",
-      bg: "bg-lime-500/10",
-      ring: "ring-lime-500/20",
-    },
     open: { kind: "pick_list" },
     refineDetail: STORE_LIST_DETAIL,
     enrich: storeEnrich(readStoreList),
@@ -735,12 +640,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   workbook: {
     type: "workbook",
     label: "Workbook",
-    icon: BookOpen,
-    accent: {
-      text: "text-green-600 dark:text-green-400",
-      bg: "bg-green-500/10",
-      ring: "ring-green-500/20",
-    },
+    icon: I.workbooks.icon,
+    identity: I.workbooks,
     open: { kind: "workbook" },
     detailSource: {
       table: "udt_workbooks",
@@ -765,12 +666,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     // workbench.udt_documents — same table as the `udt_document` token.
     entityToken: "udt_document",
     label: "Document",
-    icon: FileText,
-    accent: {
-      text: "text-stone-600 dark:text-stone-300",
-      bg: "bg-stone-500/10",
-      ring: "ring-stone-500/20",
-    },
+    icon: I.docs.icon,
+    identity: I.docs,
     open: { kind: "document" },
     detailSource: {
       table: "udt_documents",
@@ -793,12 +690,8 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   conversation: {
     type: "conversation",
     label: "Chat",
-    icon: MessagesSquare,
-    accent: {
-      text: "text-sky-600 dark:text-sky-400",
-      bg: "bg-sky-500/10",
-      ring: "ring-sky-500/20",
-    },
+    icon: I.chats.icon,
+    identity: I.chats,
     entityToken: "conversation",
     // Opens the floating Chat window on this conversation (agentRunWindow's
     // initialSelectedConversationId) — the reference chip's "Open conversation"
@@ -814,11 +707,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "message",
     label: "Message",
     icon: MessageSquare,
-    accent: {
-      text: "text-purple-600 dark:text-purple-400",
-      bg: "bg-purple-500/10",
-      ring: "ring-purple-500/20",
-    },
     open: { kind: "message" },
     // 'message' = a chat/conversation message; chat.message is canonical
     // (dm_messages/sms_messages are distinct comms entities). See FOUND_DEFECTS D8.
@@ -828,11 +716,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "email",
     label: "Email",
     icon: Mail,
-    accent: {
-      text: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-500/10",
-      ring: "ring-blue-500/20",
-    },
     open: { kind: "email" },
     detailSource: {
       table: "emails",
@@ -892,11 +775,6 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     type: "party",
     label: "Contact",
     icon: Contact,
-    accent: {
-      text: "text-teal-600 dark:text-teal-400",
-      bg: "bg-teal-500/10",
-      ring: "ring-teal-500/20",
-    },
     open: { kind: "party" },
     detailSource: {
       table: "party",
@@ -994,11 +872,6 @@ export const FALLBACK_CONFIG: ItemTypeConfig = {
   type: "file" /* placeholder; not used for routing */,
   label: "Item",
   icon: Boxes,
-  accent: {
-    text: "text-zinc-500 dark:text-zinc-400",
-    bg: "bg-zinc-500/10",
-    ring: "ring-zinc-500/20",
-  },
 };
 
 /**

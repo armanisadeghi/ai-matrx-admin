@@ -16,22 +16,9 @@ import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { supabase } from "@/utils/supabase/client";
 
-/** source_kind in custom.synced_source → the words and the aidream door for its Sync now. */
-export const SYNC_SOURCES: Record<string, { name: string; path: string }> = {
-  airtable_base: { name: "Airtable", path: "/airtable-import/sync" },
-  github_issues: { name: "GitHub", path: "/github-sync/sync" },
-};
+import { SYNC_SOURCES, syncSentence, type SyncReport } from "./sourceSync";
 
 interface SourceRow { source_kind: string; synced_at: string | null }
-interface SyncReport { added?: number; updated?: number; archived?: number; conflicts?: unknown[]; notices?: string[] }
-
-/** What one finished sync says, in a sentence. */
-export function syncSentence(name: string, r: SyncReport): string {
-  const parts = [`${r.added ?? 0} added`, `${r.updated ?? 0} updated`];
-  if (r.archived) parts.push(`${r.archived} archived`);
-  const c = r.conflicts?.length ?? 0;
-  return `${name} synced: ${parts.join(", ")}${c ? `, ${c} kept yours (${name}'s version is a comment on the row)` : ""}.`;
-}
 
 export function SourceSyncBar({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
   const [source, setSource] = useState<SourceRow | null>(null);

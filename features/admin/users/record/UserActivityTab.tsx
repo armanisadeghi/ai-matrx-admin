@@ -151,7 +151,7 @@ function ActivityFeed({ userId, filter }: { userId: string; filter: Filter }) {
     setOlderBusy(true);
     setOlderError(null);
     try {
-      const next = await fetchActivityPage(userId, page.next_before, kindsOf(filter));
+      const next = await fetchActivityPage(userId, page.next_before, kindsOf(filter), undefined, page.next_before_key);
       setMore(appendActivityPage(page, next));
     } catch (e) {
       setOlderError(e);

@@ -2,20 +2,9 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Building2,
-  Webhook,
-  MessageCircle,
-  NotebookPen,
-  FolderOpen,
-  Mic,
-  FileSpreadsheet,
-  FileText,
-  ArrowRight,
-  LayoutGrid,
-  Loader2,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { introTileBackground } from "@ai-matrx/design-system/intro-stage";
+import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES as I, type Identity } from "@ai-matrx/icons/domain";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { ONBOARDING_METADATA_KEY } from "@/utils/onboarding";
@@ -34,9 +23,8 @@ interface WelcomeOption {
   label: string;
   description: string;
   href: string;
-  icon: LucideIcon;
-  /** Tailwind gradient stops for the icon tile. */
-  gradient: string;
+  /** The place's ONE identity (colour + icon), from `@ai-matrx/icons/domain`. */
+  identity: Identity;
 }
 
 const OPTIONS: WelcomeOption[] = [
@@ -44,64 +32,55 @@ const OPTIONS: WelcomeOption[] = [
     label: "Make something",
     description: "Forms, tables, booking pages and more",
     href: "/make",
-    icon: LayoutGrid,
-    gradient: "from-cyan-500 to-cyan-700",
+    identity: P.make,
   },
   {
     label: "Organization",
     description: "Set up your team and shared workspace",
     href: "/organizations",
-    icon: Building2,
-    gradient: "from-sky-500 to-sky-700",
+    identity: P.organization,
   },
   {
     label: "Agents",
     description: "Browse and run AI agents built for your work",
     href: "/agents/all",
-    icon: Webhook,
-    gradient: "from-blue-500 to-blue-700",
+    identity: P.agent_studio,
   },
   {
     label: "Chat",
     description: "Start a conversation with an AI assistant",
     href: "/chat/new",
-    icon: MessageCircle,
-    gradient: "from-violet-500 to-violet-700",
+    identity: I.chats,
   },
   {
     label: "Notes",
     description: "Capture ideas and keep them organized",
     href: "/notes",
-    icon: NotebookPen,
-    gradient: "from-amber-500 to-amber-700",
+    identity: I.notes,
   },
   {
     label: "Files",
     description: "Browse and manage your files and documents",
     href: "/files/all",
-    icon: FolderOpen,
-    gradient: "from-cyan-500 to-cyan-700",
+    identity: I.files,
   },
   {
     label: "Transcripts",
     description: "Record, transcribe, and manage audio",
     href: "/transcripts",
-    icon: Mic,
-    gradient: "from-orange-500 to-orange-700",
+    identity: I.transcripts,
   },
   {
     label: "Sheets",
     description: "Spreadsheets your agents can read and fill",
     href: "/workbooks",
-    icon: FileSpreadsheet,
-    gradient: "from-emerald-500 to-emerald-700",
+    identity: I.workbooks,
   },
   {
     label: "Docs",
     description: "Create and collaborate on documents",
     href: "/documents",
-    icon: FileText,
-    gradient: "from-rose-500 to-rose-700",
+    identity: I.docs,
   },
 ];
 
@@ -221,7 +200,7 @@ export function WelcomeClient({
 
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {OPTIONS.map((option) => {
-              const Icon = option.icon;
+              const Icon = option.identity.icon;
               const isTarget = navigatingTo === option.href && busy;
               return (
                 <button
@@ -232,7 +211,9 @@ export function WelcomeClient({
                   className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <span
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[22%] bg-gradient-to-br ${option.gradient} text-white shadow-sm ring-1 ring-white/10`}
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[22%] text-white shadow-sm ring-1 ring-white/10"
+                    style={{ background: introTileBackground(option.identity.color) }}
+                    data-identity={option.identity.id}
                   >
                     {isTarget ? (
                       <Loader2 className="h-6 w-6 animate-spin" />
