@@ -25,6 +25,7 @@ import type {
 import { SURFACE_EXECUTOR_NAMES } from "@ai-matrx/chat/surfaces/executor";
 import { PLATFORM_RESERVED_NAMES } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { notesEditorManifest } from "./notes-editor.manifest";
+import { videoCloneManifest } from "./video-clone.manifest";
 import { agentShortcutsManifest } from "./agent-shortcuts.manifest";
 import { aiWorkManifest } from "./ai-work.manifest";
 import { aiWorkComposerManifest } from "./ai-work-composer.manifest";
@@ -304,6 +305,7 @@ import { quickDataManifest } from "./quick-data.manifest";
  * vocabulary in two. See THE FAMILY DOCTRINE in `.claude/skills/surface-authoring`.
  */
 export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
+  videoCloneManifest,
   agentShortcutsManifest,
   barcodePreviewManifest,
   markdownPdfManifest,
