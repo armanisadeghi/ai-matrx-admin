@@ -17,6 +17,7 @@ import { tileMenuKeys } from "../components/TileMenu";
 import {
   CHAPTER_FALLBACK_ICON,
   autoHeightChange,
+  autoHeightMoves,
   chapterIconName,
   framesNamedByTile,
   sameName,
@@ -133,6 +134,21 @@ describe("a phone reflows the page to its own width", () => {
 });
 
 describe("auto height", () => {
+  it("a tile growing to its content takes its chapter with it (never drifts into the next chapter)", () => {
+    const frames = [
+      { id: "f1", rect: { x: 0, y: 0, w: 1100, h: 120 } },
+      { id: "f2", rect: { x: 0, y: 136, w: 1100, h: 120 } },
+    ];
+    const moves = autoHeightMoves({ x: 8, y: 8, w: 1084, h: 100 }, "t", 1900, frames);
+    expect(moves).toEqual([
+      { id: "t", x: 8, y: 8, w: 1084, h: 1900 },
+      { id: "f1", x: 0, y: 0, w: 1100, h: 8 + 1900 + 8 },
+    ]);
+    // The grown tile's centre is still inside its own chapter.
+    const centreY = 8 + 1900 / 2;
+    expect(centreY).toBeLessThan(moves[1].h!);
+  });
+
   it("writes only a real change of a real measurement", () => {
     expect(autoHeightChange(300, 299.6)).toBeNull(); // rounds to what it already is
     expect(autoHeightChange(301, 300.4)).toBeNull();

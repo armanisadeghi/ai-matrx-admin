@@ -27,7 +27,7 @@ import { useComments } from "@ai-matrx/associations/react";
 import { partKeyOf } from "@ai-matrx/associations";
 import { RecordCommentThread } from "@/features/rich-document/annotations/comment-remarks";
 import type { TileMenuComment } from "../components/TileMenu";
-import { chapterIconName, frameMembers, framesNamedByTile, tileChrome, tileIconHint } from "../engine/tile-chrome";
+import { autoHeightMoves, chapterIconName, frameMembers, framesNamedByTile, tileChrome, tileIconHint } from "../engine/tile-chrome";
 import type { ChapterIcon } from "../components/BoardOutline";
 import { BOARD_TOKEN } from "../persistence/boardsService";
 import { cn } from "@/lib/utils";
@@ -1272,7 +1272,7 @@ function BoardItemTile({
         chrome={tileChrome(layoutMode, { namesItself: type?.namesItself?.(source), autoHeight: type?.autoHeight?.(source) })}
         onAutoHeight={(tid, h) => {
           const now = board.getTile(tid);
-          if (now) board.reflow([{ id: tid, x: now.rect.x, y: now.rect.y, w: now.rect.w, h }]);
+          if (now) board.reflow(autoHeightMoves(now.rect, tid, h, board.read().frames));
         }}
       >
         {(tier) => (
