@@ -12,6 +12,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Plus, X } from "lucide-react";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { EditableLabel } from "@ai-matrx/design-system";
+import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { VariableChip } from "@ai-matrx/rich-content/display/chat-markdown/matrx-variables/VariableChip";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { toast } from "@/lib/toast";
@@ -247,7 +248,9 @@ export function StudioWorkspacePane({
         {ws.approved_result && (
           <section className="flex flex-col gap-1" data-testid="workspace-approved">
             <h3 className="text-xs font-semibold text-foreground">The result you approved</h3>
-            <p className="line-clamp-6 whitespace-pre-wrap text-xs text-muted-foreground">{ws.approved_result.text}</p>
+            <div className="max-h-40 overflow-hidden rounded-md border border-border px-2 py-1.5 text-sm [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+              <RichContent level="full" imagePolicy="ai" source={ws.approved_result.text} />
+            </div>
           </section>
         )}
         {LISTS.map(({ field, title }) =>
