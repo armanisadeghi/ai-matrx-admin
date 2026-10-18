@@ -162,6 +162,17 @@ describe("ChartView passes its view to its data request", () => {
     expect(legend()).toEqual([]);
   });
 
+  // The chart menu's "Data labels" switch reaches records-ui: shares drawn on the slices only when it is on.
+  it("draws data labels only when the chart's switch is on", async () => {
+    await draw("donut", "desc", []);
+    expect(host.querySelectorAll("[data-records-chart-label]").length).toBe(0);
+    await act(async () => {
+      root.render(<ChartView tableId="t1" settings={{ ...settings, sort: "desc", dataLabels: true }} title="Status" filter={{}} sorts={[]} />);
+    });
+    await flush();
+    expect(host.querySelectorAll("[data-records-chart-label]").length).toBeGreaterThan(0);
+  });
+
   // ONE CHART (CHART-CONVERGENCE): the donut is records-ui's ChartBlock, and Spaces hands it what only
   // Spaces knows — the total over every record (an average is the store's, never the groups added up)
   // and each choice's own colour.

@@ -240,6 +240,8 @@ export function ChartView({ tableId, settings, title, overRows, filter, sorts }:
         // The donut was always drawn bare (the block's own title pill names it); bars keep their card.
         {...(settings.type === "donut" ? { variant: "bare" as const } : {})}
         legend={settings.legend !== false}
+        // The chart menu's "Data labels" switch: values on bars and points, shares on donut slices.
+        dataLabels={Boolean(settings.dataLabels)}
         groupColors={colorsOf(data)}
         {...(settings.type === "donut" && settings.centerValue !== false ? { centerValue: true, centerTotal: centerOf(data, settings) } : {})}
         block={{
