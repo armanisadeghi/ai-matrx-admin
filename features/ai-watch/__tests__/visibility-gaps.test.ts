@@ -47,6 +47,13 @@ describe("Watch AI in one place", () => {
   it("AutoWatch enforces it", () => {
     expect(src("features/ai-watch/AutoWatch.tsx")).toMatch(/watchAiCopyToClose\(/);
   });
+  it("AutoWatch never opens the canvas column by itself (a phone: it covers the page; a desktop: it shifts it)", () => {
+    const auto = src("features/ai-watch/AutoWatch.tsx");
+    // The only canvas opens are the ones a notice's button runs.
+    expect(auto).toMatch(/offerInCanvas\(/);
+    expect(auto).not.toMatch(/^\s*openWatchInCanvas\(\);/m);
+    expect(auto).not.toMatch(/^\s*openRunInCanvas\(runId\);/m);
+  });
 });
 
 describe("a kind key never prints in Watch AI", () => {

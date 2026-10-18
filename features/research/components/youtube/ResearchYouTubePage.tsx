@@ -19,7 +19,6 @@ import { useTopicId } from "../../context/ResearchContext";
 import { useResearchKeywords } from "../../hooks/useResearchState";
 import { TopicYouTubeLibrary } from "./TopicYouTubeLibrary";
 import { loadTopicVideoLibrary, type RankedTopicVideo } from "./topicVideoLibrary";
-import { UntrustedCount } from "@ai-matrx/design-system";
 
 export default function ResearchYouTubePage() {
   const dispatch = useAppDispatch();
@@ -185,7 +184,6 @@ export default function ResearchYouTubePage() {
                 label: (
                   <span className="inline-flex items-center gap-1.5">
                     <Library className="size-3.5" />Topic videos
-                    {videos.length > 0 && <UntrustedCount value={videos.length} trustworthy={libraryError == null || videos.length > 0} label="Videos" />}
                   </span>
                 ),
               },

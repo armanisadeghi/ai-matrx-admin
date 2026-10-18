@@ -17,15 +17,12 @@ import { errorSentence, toast } from "@/lib/toast";
 
 import type { SpaceBlock, SpaceDoc, SpaceId, SpaceSummary } from "../contract";
 import { between, byPosition } from "../store/position";
-import { installAgencySample, pageOrganizationId } from "../data/agency-install";
-import { addTravelingSmmSample, findSamplePage, pointCopyAtItsTables } from "../store/sample";
 import { createDatabaseSpacesStore } from "../store-db/create-store";
 import { createLiveSpacesStore, type LiveSpacesStore } from "./live-store";
 import { hasSignedInSession, isRefusal, onSignedIn, type LoadAccess } from "./load-access";
-import { sampleTemplatePlan } from "./template-plan";
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
-import { installTemplateTables, makeTemplatePages, packRunJournal, readSpaceTemplate } from "../templates/use-pack";
+import { installTemplateTables, makeTemplatePages, packRunJournal, readSpaceTemplate, readStarterTemplate } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
 /** The sidebar's open rows (written by SpacesSidebar): the tree's first read loads their children too. */
@@ -90,7 +87,7 @@ interface SpacesContextValue {
   pageEpoch: (id: SpaceId) => number;
   /** The page's screen opens again on its stored content (an outside writer, e.g. the Space Builder, changed it). */
   reopenPage: (id: SpaceId) => void;
-  sample: { adding: boolean; progress: string | null; add: (opts?: { asTemplate?: boolean }) => Promise<void> };
+  sample: { adding: boolean; progress: string | null; add: () => Promise<void> };
   /** I2 / I3 — Spaces marked as templates that the person can open (null = not read yet). */
   templates: {
     ids: string[] | null;
@@ -437,55 +434,23 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
     focusTitle.current = null;
     return true;
   };
-  const addSample = async (opts?: { asTemplate?: boolean }) => {
-    if (sampleProgress) return;
-    setSampleProgress("0");
+  /** "Add a sample": the library's sample template (STARTER_CATALOGUE_ID), used exactly like "Use template". */
+  const addSample = async () => {
+    if (packStage) return;
+    setPackStage("Planning…");
+    let id: string;
     try {
-      const existed = (await findSamplePage(store))?.id ?? null;
-      // The page and its tables share one organization: an existing sample page's own organization;
-      // a new page and its tables go to the write organization (asked for when none is chosen).
-      const root = await addTravelingSmmSample(
-        store,
-        {
-          orgOf: async (id) => {
-            const org = await pageOrganizationId(id);
-            if (!org) throw new Error("We couldn't read the sample page's organization.");
-            return org;
-          },
-          // org-filter: write-target a new sample page and its tables are filed in the active organization
-          writeOrg: () => ensureOrgId(orgRef.current),
-          install: (orgId) => installAgencySample(orgId, dispatch, setSampleProgress),
-          createRoot: async (orgId, title) => {
-            const doc = await createDatabaseSpacesStore(orgId).create({ parentId: null, title });
-            store.notifyTree();
-            return doc;
-          },
-        },
-        (done, total) => setSampleProgress(`${done}/${total}`),
-      );
-      const plan = sampleTemplatePlan(Boolean(opts?.asTemplate), existed, root.id);
-      if (plan.kind === "copy") {
-        const copyId = await copyTemplate(plan.of, root.title, orgRef.current);
-        // A copy filed in another organization reads that organization's own agency tables.
-        const copyOrg = await pageOrganizationId(copyId);
-        if (copyOrg && copyOrg !== (await pageOrganizationId(plan.of))) {
-          setSampleProgress("Making tables…");
-          await pointCopyAtItsTables(store, copyId, await installAgencySample(copyOrg, dispatch, setSampleProgress));
-        }
-        showCopy(copyId, root.title, plan.of);
-      } else {
-        // The page may have been opened while it was being made: it opens again on the finished content.
-        reopenWith(root);
-        open(plan.id);
-      }
+      id = (await readStarterTemplate()).id;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "We couldn't add the sample.", {
-          duration: Infinity,
-          action: { label: "Try again", onClick: () => void addSample(opts) },
-        });
-    } finally {
-      setSampleProgress(null);
+      setPackStage(null);
+      toast.error(err instanceof Error && err.message ? err.message : `We couldn't add the sample: ${errorSentence(err)}`, {
+        duration: Infinity,
+        action: { label: "Try again", onClick: () => void addSample() },
+      });
+      return;
     }
+    setPackStage(null);
+    await applyPack(id);
   };
   const refreshTemplates = () => {
     void listTemplateIds().then(
@@ -640,7 +605,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
     takeFresh,
     pageEpoch,
     reopenPage: (id) => setEpochs((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 })),
-    sample: { adding: sampleProgress !== null, progress: sampleProgress, add: addSample },
+    sample: { adding: sampleProgress !== null || packStage !== null, progress: packStage ?? sampleProgress, add: addSample },
     templates: { ids: templateIds, error: templatesError, refresh: refreshTemplates, setTemplate: markTemplate, use: applyTemplate },
     packs: { stage: packStage, use: applyPack },
     summaries: visible,

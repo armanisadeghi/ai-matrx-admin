@@ -186,6 +186,8 @@ export const assistantMessageManifest: SurfaceManifest = {
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
+  // A child of matrx-user/chat in the database; edits one answer, renders no block controls.
+  systemNotes: [],
   description:
     "Read-only rendered conversation thread (the chat message display). Right-click a message or content block to act on it. Read side of matrx-user/chat.",
   readiness: "verified",

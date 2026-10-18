@@ -11,8 +11,8 @@ import { resolveObjectOrganization } from "@/features/unified-data/objectOrganiz
 import { createClient } from "@/utils/supabase/client";
 
 import type { SpaceBlock, SpaceDoc, SpaceId, SpacesStore } from "../contract";
-import { pageOrganizationId } from "../data/agency-install";
-import { saveOnCurrent } from "../store/sample";
+import { pageOrganizationId } from "../data/install-host";
+import { saveOnCurrent } from "../store/save-on-current";
 
 type TableSource = { kind: "table"; tableId: string; viewId?: string };
 

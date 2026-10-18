@@ -21,9 +21,9 @@ async function main() {
   type EngineBlock = import("../convert").EngineBlock;
 
   const ctx: NotionMarkdownContext = {
-    idSeed: "notion:page/traveling-smm-os",
-    resolvePage: (ref) => (ref.includes("Clients-OS") ? { spaceId: "space-clients-os", childOfThisPage: true } : null),
-    resolvePerson: (_ref, name) => (name === "Cora Reyes" ? "user-cora" : null),
+    idSeed: "notion:page/studio-home",
+    resolvePage: (ref) => (ref.includes("Client-Hub") ? { spaceId: "space-client-hub", childOfThisPage: true } : null),
+    resolvePerson: (_ref, name) => (name === "Dana Okafor" ? "user-dana" : null),
     resolveFile: (url, kind) => (url.includes("youtube.com") ? { url } : { fileId: `file-${kind}-${url.split("/").pop()}` }),
     resolveDatabase: (ref) => (ref.includes("Client-Database") ? { tableId: "table-clients", viewId: ref.includes("v=") ? "view-active" : undefined } : null),
   };
@@ -31,12 +31,12 @@ async function main() {
   const EVERY_CONSTRUCT = [
     "# Clients",
     "Plain text with **bold**, *italic*, ~~strike~~, `code` and a [link](https://later.com).",
-    'Ask <mention-user url="user://cora">Cora Reyes</mention-user> to update <mention-page url="https://www.notion.so/Clients-OS-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Clients OS</mention-page> by <mention-date start="2026-10-15"/>.',
+    'Ask <mention-user url="user://dana">Dana Okafor</mention-user> to update <mention-page url="https://www.notion.so/Client-Hub-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Client Hub</mention-page> by <mention-date start="2026-10-15"/>.',
     "Target CPL is $\\frac{spend}{leads}$ under $40.",
     "$$",
     "ROAS = \\frac{Revenue}{Ad\\ Spend}",
     "$$",
-    "- [ ] Revise captions for Viva",
+    "- [ ] Revise the brochure copy",
     "- [x] Send Meli the voice notes",
     "> Done is better than perfect",
     "---",
@@ -53,8 +53,8 @@ async function main() {
     "\t\t<td>Offer bought</td>",
     "\t</tr>",
     "\t<tr>",
-    "\t\t<td>Bella Vista Resort</td>",
-    "\t\t<td>**Momentum** package</td>",
+    "\t\t<td>Harbor Dental</td>",
+    "\t\t<td>**Standard** package</td>",
     "\t</tr>",
     "</table>",
     "<table_of_contents/>",
@@ -83,7 +83,7 @@ async function main() {
       props: {
         headerRow: true,
         headerColumn: true,
-        rows: [{ cells: [[{ text: "Client" }], [{ text: "Status" }]] }, { cells: [[{ text: "Cora" }], [{ text: "Active" }]] }],
+        rows: [{ cells: [[{ text: "Client" }], [{ text: "Status" }]] }, { cells: [[{ text: "Dana" }], [{ text: "Active" }]] }],
         cellStyles: [[null, { background: "green" }], [{ color: "orange" }, null]],
       },
     },

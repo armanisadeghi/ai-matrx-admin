@@ -17,7 +17,7 @@
 // `useGoogleCapabilities`, and the exchange from `useConnectGoogle`. Nothing
 // here re-reads a table or re-derives a scope mapping.
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
@@ -43,6 +43,8 @@ import type {
   ConnectorAccount,
   ConnectorCapabilityRollout,
 } from "./health";
+import { accountHealth, anyProductConnected } from "./health";
+import { rememberConnectorHint } from "./connectedHint";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
 import {
   googleActivityByProduct,
@@ -333,6 +335,24 @@ export function useGoogleConnectorState(
     resourceCountByAccount[resource.connection_id] =
       (resourceCountByAccount[resource.connection_id] ?? 0) + 1;
   }
+
+  // Every surface that reads the real state leaves this device's hint behind, so the new-chat card
+  // can decide whether to offer itself without a read (`./connectedHint`, owner ruling 2026-10-17).
+  const hintUserId = useAppSelector(selectUserId);
+  const settledOk = inventory.isSuccess && capabilities.isSuccess;
+  const hintConnected = settledOk
+    ? accounts.some((account) =>
+        anyProductConnected(accountHealth({ provider: GOOGLE_CONNECTOR_PROVIDER, account, rollout })),
+      )
+    : false;
+  const hintBlocked = settledOk && accounts.length > 0 && accounts.every((account) => account.blocked === true);
+  useEffect(() => {
+    if (!settledOk) return;
+    rememberConnectorHint(GOOGLE_CONNECTOR_PROVIDER.id, hintUserId, {
+      connected: hintConnected,
+      blocked: hintBlocked,
+    });
+  }, [settledOk, hintConnected, hintBlocked, hintUserId]);
 
   const refetch = useCallback(async () => {
     const [latest, refreshedCatalog] = await Promise.all([

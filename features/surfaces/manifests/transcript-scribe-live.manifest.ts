@@ -368,6 +368,8 @@ export const transcriptScribeLiveManifest: SurfaceManifest = {
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "browser-realtime",
+  // A child of matrx-user/chat in the database; live speech renders no block controls.
+  systemNotes: [],
   description:
     "Scribe session screen — Live tab. xAI Realtime voice agent talking against the working document. Browser↔model direct WebSocket; bypasses the Python streaming backend.",
   readiness: "partial",

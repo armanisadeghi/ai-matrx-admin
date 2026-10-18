@@ -1,10 +1,10 @@
 /**
- * First-paint contract V6: the "Connect Google" card on a new chat must not read
- * `integration_connections` / resources / the capability catalog at first paint. It reads once,
- * together, when the person first engages the page, and shows (or stays away) from that answer.
- * A page nobody touches reads nothing at all (late idle is not engagement, 2026-10-17). The
- * person's organizations are asked BY ID for the organizations the connections name — never the
- * scope tree.
+ * Owner ruling 2026-10-17: "There is no need to read google at all! Not until someone actually
+ * engages it." The new-chat "Connect Google" card makes ZERO reads (connections, resources,
+ * capability catalog, organizations, scope tree) at first paint, on late idle, and on engagement
+ * with the PAGE. It decides whether to offer itself from this device's hint; engaging THE CARD
+ * opens one batched read. Organizations, when a connection is organization-owned, are asked BY ID —
+ * never the scope tree.
  * Asserted on the REAL host and the REAL query hooks; only the network service and the card's
  * chrome are stand-ins.
  */
@@ -53,7 +53,7 @@ jest.mock("@/features/organizations/organizationsIAmIn", () => ({
   liveOrganizationIdsAmong: (ids: readonly string[]) => mockLiveOrganizationIdsAmong(ids),
 }));
 jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({
-  useOpenConnectorConsentDialog: () => jest.fn(),
+  useOpenConnectorConsentDialog: () => mockOpenConsent,
 }));
 // The adapter's other imports (consent runner) are not under test.
 jest.mock("@/features/connectors/google-adapter", () => {
@@ -62,9 +62,14 @@ jest.mock("@/features/connectors/google-adapter", () => {
   );
   return actual;
 });
+const mockOpenConsent = jest.fn();
 jest.mock("@/features/connectors/ConnectorPromptCard", () => ({
-  ConnectorPromptCard: ({ loading, connected }: { loading?: boolean; connected: boolean }) =>
-    loading || connected ? null : <div data-testid="connect-google-card">Connect Google</div>,
+  ConnectorPromptCard: ({ connected, blocked, onConnect }: { connected: boolean; blocked?: boolean; onConnect: () => void }) =>
+    connected || blocked ? null : (
+      <div data-testid="connect-google-card">
+        <button type="button" onClick={onConnect}>Connect Google</button>
+      </div>
+    ),
 }));
 
 let mockLateIdle = false;
@@ -72,12 +77,25 @@ jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => mockLateIdle }
 
 import { ConnectorPromptHost } from "@/features/connectors/ConnectorPromptHost";
 import { engageForTest, resetFirstEngagement } from "@/lib/boot/firstEngagement";
+import { readConnectorHint, rememberConnectorHint } from "@/features/connectors/connectedHint";
+import { GOOGLE_CONNECTOR_PROVIDER } from "@/features/connectors/provider-config";
 
-beforeEach(() => resetFirstEngagement());
+const USER = "11111111-1111-4111-8111-111111111111";
+
+beforeEach(() => {
+  resetFirstEngagement();
+  window.localStorage.clear();
+  listInventory.mockClear();
+  listCapabilities.mockClear();
+  mockSelectOrganizationIds.mockClear();
+  mockLiveOrganizationIdsAmong.mockClear();
+  mockOpenConsent.mockClear();
+  mockLateIdle = false;
+});
 
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 20)); });
 
-it("reads nothing and draws nothing at first paint; one engagement reads once and shows the card", async () => {
+async function mount() {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -89,66 +107,69 @@ it("reads nothing and draws nothing at first paint; one engagement reads once an
     );
   });
   await settle();
+  return { container, root };
+}
+
+function expectNoReads() {
   expect(listInventory).not.toHaveBeenCalled();
   expect(listCapabilities).not.toHaveBeenCalled();
   expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
-  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
+  expect(mockLiveOrganizationIdsAmong).not.toHaveBeenCalled();
+}
 
-  // Untrusted moves and scrolls are never engagement (jsdom events are untrusted, like a script's).
-  await act(async () => {
-    window.dispatchEvent(new Event("pointermove"));
-    window.dispatchEvent(new Event("wheel"));
-    window.dispatchEvent(new Event("pointerdown"));
-  });
-  await settle();
-  expect(listInventory).not.toHaveBeenCalled();
+it("first paint, late idle and engaging the PAGE read nothing; the offer shows from the device's hint", async () => {
+  mockLateIdle = true;
+  const { container, root } = await mount();
+  expectNoReads();
+  expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
 
   await act(async () => engageForTest());
+  await settle();
+  expectNoReads();
+  await act(async () => root.unmount());
+});
+
+it("engaging THE CARD (focus inside it) opens ONE batched read; a second touch reads nothing more", async () => {
+  const { container, root } = await mount();
+  const button = container.querySelector("button")!;
+  await act(async () => button.focus());
   await settle();
   expect(listInventory).toHaveBeenCalledTimes(1);
   expect(listCapabilities).toHaveBeenCalledTimes(1);
-  // Only personal connections came back: the person's organizations (the scope tree) are never read.
-  expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
   expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
+  // The read leaves the device's hint behind.
+  expect(readConnectorHint(GOOGLE_CONNECTOR_PROVIDER.id, USER)).toEqual({ connected: false, blocked: false });
 
-  // A second engagement is a no-op: the reads already happened.
-  await act(async () => engageForTest());
+  button.blur();
+  await act(async () => button.focus());
   await settle();
   expect(listInventory).toHaveBeenCalledTimes(1);
   await act(async () => root.unmount());
 });
 
-it("a page nobody touches reads nothing: late idle is not engagement", async () => {
-  listInventory.mockClear();
-  listCapabilities.mockClear();
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-  mockLateIdle = true;
-  await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost /></QueryClientProvider>));
-  await settle();
-  expect(listInventory).not.toHaveBeenCalled();
-  expect(listCapabilities).not.toHaveBeenCalled();
+it("the Connect press opens the consent dialog at once (no waiting for a read)", async () => {
+  const { container, root } = await mount();
+  await act(async () => container.querySelector("button")!.click());
+  expect(mockOpenConsent).toHaveBeenCalledTimes(1);
+  await act(async () => root.unmount());
+});
+
+it("a device that already learned she is connected draws no card and reads nothing", async () => {
+  rememberConnectorHint(GOOGLE_CONNECTOR_PROVIDER.id, USER, { connected: true, blocked: false });
+  const { container, root } = await mount();
+  expectNoReads();
   expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
-  mockLateIdle = false;
   await act(async () => root.unmount());
 });
 
 it("an organization-owned connection asks membership by id for ITS organization — never the scope tree", async () => {
-  mockSelectOrganizationIds.mockClear();
-  mockLiveOrganizationIdsAmong.mockClear();
   listInventory.mockImplementationOnce(async () => ({
     connections: [{ id: "c1", owner_type: "organization", owner_user_id: null, organization_id: "o1", provider: "google", scopes: [], status: "active", metadata: {}, capability_health: {} }],
     resources: [],
   }) as never);
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-  mockLateIdle = false;
-  await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost /></QueryClientProvider>));
-  await settle();
+  const { container, root } = await mount();
   expect(mockLiveOrganizationIdsAmong).not.toHaveBeenCalled();
-  await act(async () => engageForTest());
+  await act(async () => container.querySelector("button")!.focus());
   await settle();
   expect(mockLiveOrganizationIdsAmong).toHaveBeenCalledTimes(1);
   expect(mockLiveOrganizationIdsAmong).toHaveBeenCalledWith(["o1"]);
@@ -156,32 +177,12 @@ it("an organization-owned connection asks membership by id for ITS organization 
   await act(async () => root.unmount());
 });
 
-it("ZERO LAYOUT SHIFT: the late card arrives in a fixed area; the in-flow anchor is zero-height before and after", async () => {
-  listInventory.mockClear();
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-  mockLateIdle = false;
-  const tree = () => (
-    <QueryClientProvider client={new QueryClient()}>
-      <ConnectorPromptHost />
-    </QueryClientProvider>
-  );
-  await act(async () => root.render(tree()));
-  await settle();
-  const anchorBefore = container.querySelector("[data-connector-prompt-anchor]");
-  expect(anchorBefore).not.toBeNull();
-  expect(anchorBefore!.className).toContain("h-0");
-  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
-
-  await act(async () => engageForTest());
-  await settle();
+it("ZERO LAYOUT SHIFT: the card sits in a fixed area; the in-flow anchor is zero-height", async () => {
+  const { container, root } = await mount();
+  const anchor = container.querySelector("[data-connector-prompt-anchor]");
+  expect(anchor).not.toBeNull();
+  expect(anchor!.className).toContain("h-0");
   const card = container.querySelector("[data-testid=connect-google-card]");
-  expect(card).not.toBeNull();
-  const anchorAfter = container.querySelector("[data-connector-prompt-anchor]");
-  expect(anchorAfter).toBe(anchorBefore);
-  expect(anchorAfter!.className).toContain("h-0");
-  // The card's nearest positioned wrapper is fixed: out of flow, so nothing around it moves.
   expect(card!.closest(".fixed")).not.toBeNull();
   await act(async () => root.unmount());
 });

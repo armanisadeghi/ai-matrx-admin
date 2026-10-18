@@ -3,12 +3,13 @@
 // features/spaces/data/SourcePicker.tsx — "Linked view of database": choose the records a data block
 // shows. Built-in modules (tasks, projects, deals, employees — read as the person), the person's real
 // tables (every table they can see, across all their organizations — the data home's own list) and the
-// agency sample — picking one installs the agency's real tables in the PAGE's organization, as "Add the
-// sample" does (once; a second pick reuses them; the active organization only when the page is unsaved). The lists are never filtered by the active organization (access ladder).
+// sample template's tables (templates/use-pack.ts `readStarterTemplate`) — picking one installs that
+// template's real tables in the PAGE's organization, as "Use template" does (once; a second pick reuses
+// them; the active organization only when the page is unsaved). The lists are never filtered by the active organization (access ladder).
 
 import { Button, RegionSkeleton, SearchField } from "@ai-matrx/design-system/controls";
 import { CircleCheckBig, Contact, Database, FlaskConical, FolderKanban, Handshake, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
@@ -16,8 +17,10 @@ import { useTablesEverywhere } from "@/features/unified-data/hub/useTablesEveryw
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
-import { installAgencySample, pageOrganizationId, type AgencyToken } from "./agency-install";
-import { AGENCY_SPEC } from "./agency-spec";
+import { allTables } from "@ai-matrx/records/templates";
+
+import { installTemplateTables, readStarterTemplate, type SpaceTemplateFull } from "../templates/use-pack";
+import { pageOrganizationId } from "./install-host";
 import { BUILT_IN_SOURCES } from "./sources";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -36,21 +39,33 @@ function Lists({ query, onPick, spaceId }: { query: string; onPick: (s: PickedSo
   const tables = useTablesEverywhere();
   const q = query.trim().toLowerCase();
   const real = tables.rows.filter((t) => !q || `${t.table_name} ${t.organization_name}`.toLowerCase().includes(q));
-  const sample = AGENCY_SPEC.tables.filter((t) => !q || t.name.toLowerCase().includes(q));
+  const [starter, setStarter] = useState<SpaceTemplateFull | null>(null);
+  useEffect(() => {
+    let live = true;
+    readStarterTemplate().then(
+      (t) => live && setStarter(t),
+      (err: unknown) => live && setFailed(err instanceof Error ? err.message : "The sample tables could not be listed."),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  const sample = (starter ? allTables(starter.spec) : []).filter((t) => !q || (t.name ?? t.token).toLowerCase().includes(q));
   // org-filter: write-target a sample picked on an unsaved page installs in the active organization
   const activeOrg = useAppSelector(selectActiveOrganizationId);
   const dispatch = useAppDispatch();
   const [installing, setInstalling] = useState<string | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
-  const pickSample = async (token: AgencyToken | "offer") => {
+  const pickSample = async (token: string, name: string) => {
+    if (!starter) return;
     setInstalling(token);
     setFailed(null);
     try {
-      // The page and its tables share one organization (the same rule as "Add the sample").
+      // The page and its tables share one organization (the same rule as "Use template").
       const orgId = (spaceId ? await pageOrganizationId(spaceId) : null) ?? (await ensureOrgId(null));
-      const made = (await installAgencySample(orgId, dispatch))[token];
+      const made = (await installTemplateTables(starter, orgId, dispatch))[token];
       if (!made) throw new Error("This organization's sample has no such table yet.");
-      onPick({ tableId: made.tableId, name: made.name });
+      onPick({ tableId: made.tableId, name });
     } catch (err) {
       setFailed(err instanceof Error ? err.message : "The sample could not be added.");
     } finally {
@@ -87,17 +102,17 @@ function Lists({ query, onPick, spaceId }: { query: string; onPick: (s: PickedSo
           <span className="truncate type-secondary text-muted-foreground">{t.organization_name}</span>
         </Button>
       ))}
-      <div className="px-3 pt-3 pb-1 type-secondary text-muted-foreground">Sample agency</div>
+      {sample.length ? <div className="px-3 pt-3 pb-1 type-secondary text-muted-foreground">Sample: {starter?.space.title}</div> : null}
       {sample.map((t) => (
         <Button
           variant="quiet"
           icon={installing === t.token ? <Loader2 size={15} className="animate-spin" /> : <FlaskConical size={15} />}
           key={t.token}
           disabled={installing !== null}
-          onClick={() => void pickSample(t.token as AgencyToken | "offer")}
+          onClick={() => void pickSample(t.token, t.name ?? t.token)}
         >
-          <span className="flex-1 truncate text-left">{t.name}</span>
-          <span className="type-secondary text-muted-foreground">{t.rows.length} rows</span>
+          <span className="flex-1 truncate text-left">{t.name ?? t.token}</span>
+          <span className="type-secondary text-muted-foreground">{t.rows?.length ?? 0} rows</span>
         </Button>
       ))}
       {failed ? <div className="px-3 py-2 type-body text-destructive">{failed}<ErrorAlchemyMenu /></div> : null}

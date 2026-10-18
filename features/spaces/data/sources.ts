@@ -1,8 +1,8 @@
 // features/spaces/data/sources.ts — where a database or chart block's records come from.
 //
 // Two kinds of source, both read through the record store's one client:
-//  - the sample agency in memory (`props.sample = AGENCY_SAMPLE_ID`): `templatePreview` installs
-//    data/agency-spec.ts into memory — read-only; drawn only by the template gallery's preview;
+//  - a template pack's tables in memory (`props.sample` names the world): `templatePreview` installs the
+//    pack's spec into memory — read-only; drawn only by the template gallery's preview;
 //  - a real custom table (no `props.sample`): read live as the table's own organization.
 // Blocks are filters only: what a person may open is the database's answer, never this code's.
 
@@ -10,23 +10,8 @@ import { templatePreview, type TemplatePreview } from "@ai-matrx/records/memory"
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 
 import type { SpaceDataSource } from "../contract";
-import type { AgencyTables, AgencyToken } from "./agency-install";
-import { AGENCY_SAMPLE_ID, AGENCY_SPEC } from "./agency-spec";
-
-/** The day the sample's dates are read against (its rows carry absolute 2026 dates). */
-const SAMPLE_TODAY = "2026-10-05";
 
 const worlds = new Map<string, TemplatePreview>();
-
-/** The agency sample, installed into memory once per page load. */
-export function agencySample(): TemplatePreview {
-  let w = worlds.get(AGENCY_SAMPLE_ID);
-  if (!w) {
-    w = templatePreview(AGENCY_SPEC, { today: SAMPLE_TODAY });
-    worlds.set(AGENCY_SAMPLE_ID, w);
-  }
-  return w;
-}
 
 /** A template pack's tables in memory (the gallery preview), made once per id per page load. Read-only. */
 export function registerSampleWorld(id: string, spec: TemplateSpec): TemplatePreview {
@@ -41,22 +26,7 @@ export function registerSampleWorld(id: string, spec: TemplateSpec): TemplatePre
 /** The in-memory world a block's `props.sample` names, or null (a real table, or a world this tab never made). */
 export function sampleWorld(id: string | undefined | null): TemplatePreview | null {
   if (!id) return null;
-  if (id === AGENCY_SAMPLE_ID) return agencySample();
   return worlds.get(id) ?? null;
-}
-
-/** The sample table a token names ("client", "nps_survey", "client_win", "task"). */
-export function sampleTable(token: string): { id: string; name: string } {
-  const t = agencySample().tables.find((x) => x.token === token);
-  if (!t) throw new Error(`spaces: the agency sample has no table "${token}"`);
-  return { id: t.id, name: t.name };
-}
-
-/** The agency's tables in the in-memory preview — for the template gallery's read-only preview only
- *  ("Add the sample" installs real tables: data/agency-install.ts). */
-export function previewAgencyTables(): AgencyTables {
-  const one = (token: AgencyToken) => ({ tableId: sampleTable(token).id, name: sampleTable(token).name, sample: AGENCY_SAMPLE_ID });
-  return { client: one("client"), nps_survey: one("nps_survey"), client_win: one("client_win"), task: one("task") };
 }
 
 /** One layout a database block can show. `chart` draws the Notion chart view over the same records. */
@@ -127,7 +97,7 @@ export interface DatabaseBlockProps {
   source: SpaceDataSource;
   inline: boolean;
   title?: string;
-  /** The sample world this table lives in; absent = a real custom table. */
+  /** The in-memory preview world this table lives in (template gallery); absent = a real custom table. */
   sample?: string;
   /** Linked view of database (F9): shows the source's name with an arrow. */
   linked?: boolean;
@@ -156,8 +126,6 @@ export function readDatabaseProps(p: Record<string, unknown>): DatabaseBlockProp
     aiFields: readAiFields(p.aiFields),
   };
 }
-
-export { AGENCY_SAMPLE_ID };
 
 export const newViewId = () => `view-${crypto.randomUUID().slice(0, 8)}`;
 

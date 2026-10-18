@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1471,
+  "routeCount": 1474,
   "routes": [
     {
       "pattern": "/",
@@ -1362,6 +1362,16 @@
       "pattern": "/administration/users",
       "status": "live",
       "source": "app/(admin)/administration/users/page.tsx"
+    },
+    {
+      "pattern": "/administration/users/[id]",
+      "status": "live",
+      "source": "app/(admin)/administration/users/[id]/page.tsx"
+    },
+    {
+      "pattern": "/administration/users/[id]/[tab]",
+      "status": "live",
+      "source": "app/(admin)/administration/users/[id]/[tab]/page.tsx"
     },
     {
       "pattern": "/administration/users/acquisition",
@@ -5989,6 +5999,11 @@
       "pattern": "/organizations/[orgId]/settings/mandates/[mandateKey]",
       "status": "live",
       "source": "app/(core)/organizations/[orgId]/settings/mandates/[mandateKey]/page.tsx"
+    },
+    {
+      "pattern": "/organizations/[orgId]/settings/payments",
+      "status": "live",
+      "source": "app/(core)/organizations/[orgId]/settings/payments/page.tsx"
     },
     {
       "pattern": "/organizations/[orgId]/settings/scopes",

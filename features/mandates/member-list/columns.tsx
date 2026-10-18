@@ -11,7 +11,6 @@
 import { Badge } from "@/components/ui/badge";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import {
-  DATE_FILTER_OPTIONS,
   DATE_SORT_WORDS,
   Muted,
   TextCell,
@@ -208,8 +207,7 @@ export function memberMandateColumns(options: MemberColumnOptions = {}): Spec[] 
       column: {
         id: "updatedAt",
         header: "Updated",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         width: 100,
         cell: (row) => timeCell(row.updatedAt),
       },
@@ -277,8 +275,7 @@ export function memberMandateColumns(options: MemberColumnOptions = {}): Spec[] 
       column: {
         id: "createdAt",
         header: "Created",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         width: 100,
         cell: (row) => timeCell(row.createdAt),
       },

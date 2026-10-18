@@ -28,6 +28,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
+import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
@@ -67,7 +68,9 @@ export function usePendingApprovalCount(options: {
   const organizationId = useAppSelector(selectActiveOrganizationId);
   // The shell's header badge mounts on every page: both counts wait for the idle flush.
   const shellIdle = useIdleReady();
-  const idleReady = options.ready ?? shellIdle;
+  // …and for the person to engage the page (owner rule 2026-10-17): an untouched page reads no badge.
+  const engaged = useHasEngaged();
+  const idleReady = (options.ready ?? shellIdle) && engaged;
   const includeStore = options.includeStore ?? true;
   // The badge stands for the `/approvals` mount, so it counts that mount's kinds.
   const scope: ApprovalScope = {

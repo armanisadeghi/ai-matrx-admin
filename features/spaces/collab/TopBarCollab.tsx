@@ -14,7 +14,7 @@ import { useState } from "react";
 
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 
-import { pageOrganizationId } from "../data/agency-install";
+import { pageOrganizationId } from "../data/install-host";
 import { PersonAvatar } from "./CommentsPanel";
 import { PublishPanel } from "./PublishPanel";
 import { personColor } from "./space-collab";

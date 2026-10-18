@@ -84,6 +84,8 @@ export const MARKETING_RESERVED_SEGMENTS: ReadonlySet<string> = new Set([
   "websites",
   "api",
   "s",
+  // The empty baseline page (lib/perf/SpeedTestPage.tsx) — never a brand.
+  "speed-test",
 ]);
 
 /** Kebab key from a display name; never reserved, never shorter than 3 chars. */

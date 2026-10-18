@@ -9,7 +9,7 @@ import { createRecordsClient, declareTable, supabaseDataSource, tokenFor, type R
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { createClient } from "@/utils/supabase/client";
 
-import { pageOrganizationId } from "./agency-install";
+import { pageOrganizationId } from "./install-host";
 import { newViewId, type ChartSettings, type SpaceDbView, type SpaceViewLayout } from "./sources";
 import type { PickedSource } from "./SourcePicker";
 

@@ -29,6 +29,9 @@ declare
   v_made    jsonb;
   v_form    uuid;
   v_form2   uuid;
+  v_form3   uuid;
+  v_ref3    text;
+  v_nid     uuid;
   v_key     text;
   v_key2    text;
   v_hold    uuid;
@@ -91,6 +94,18 @@ begin
       null, null, null, null, null, v_home);
   v_form2 := (v_made ->> 'form_id')::uuid;
   perform custom.anon_publish(v_org, v_form2, true);
+
+  -- Page 3: text reminders offered (the owner's switch; off by default).
+  v_made := custom.booking_declare(v_org, v_table, 'Book a text-reminded class',
+      jsonb_build_array(jsonb_build_object('field', 'full_name', 'required', true),
+                        jsonb_build_object('field', 'email', 'required', true)),
+      jsonb_build_object('timezone', 'America/Los_Angeles', 'slot_minutes', 30, 'lead_minutes', 0,
+                         'max_per_day', 20, 'days', 3,
+                         'windows', (select jsonb_agg(jsonb_build_object('weekday', d, 'from', '00:00', 'to', '23:30')) from generate_series(0, 6) d)),
+      jsonb_build_object('booking_messages', jsonb_build_object('sms', jsonb_build_object('on', true))),
+      null, null, null, null, null, v_home);
+  v_form3 := (v_made ->> 'form_id')::uuid;
+  perform custom.anon_publish(v_org, v_form3, true);
 
   -- ══ PAGE 1 ══════════════════════════════════════════════════════════════════════
   perform set_config('role', v_boss, true);   -- server lane by declaration
@@ -237,6 +252,64 @@ begin
    where organization_id = v_org and event_key = 'custom.booking.made' and dedupe_key like format('booking:%s:host:%%', v_ref);
   if v_n <> 0 then raise exception '6: the host was told although the page switched that off'; end if;
   raise notice 'TEST 6 PASSED — owner words, filled tokens, 3h reminder, host off';
+
+  -- ══ PAGE 3: TEXT REMINDERS, ONLY FOR A BOOKER WHO CONSENTED ═════════════════════
+  select s ->> 'key' into v_key from custom.booking_public(v_form3, 3) b, jsonb_array_elements(b.slots) s
+   where not (s ->> 'taken')::boolean order by 1 desc limit 1;
+  select * into v_row from custom.booking_hold(v_form3, v_key, 'https://s.test', 'b3', null);
+  select * into v_row from custom.booking_confirm(v_form3, v_row.hold_id, 'https://s.test', jsonb_build_object('full_name', 'Sam Sms', 'email', 'test@test.com'), 'b3', null, 'ck3');
+  v_ref3 := v_row.booking_ref;
+  -- 7. NO CONSENT, NO TEXT: booked without ticking the box, nothing is queued for SMS.
+  select count(*) into v_n from communication.notification
+   where organization_id = v_org and channel = 'sms' and dedupe_key like format('booking:%s:%%', v_ref3);
+  if v_n <> 0 then raise exception '7: % texts queued for a booker who never consented', v_n; end if;
+  -- 8. THE CONSENT IS RECORDED ON THE BOOKING (when, the words shown) and org-scoped; reminders are queued as texts.
+  begin
+    perform custom.booking_sms_consent(v_ref3, 'not a phone', 'Text me reminders', 'https://s.test');
+    raise exception '8: a non-phone was accepted';
+  exception when sqlstate '22023' then null; end;
+  begin
+    perform custom.booking_sms_consent(v_ref3, '+19496662578', '', 'https://s.test');
+    raise exception '8: consent with no words shown was accepted';
+  exception when sqlstate '22023' then null; end;
+  perform custom.booking_sms_consent(v_ref3, '+1 (949) 666-2578', 'Text me reminders. Msg & data rates may apply. Reply STOP to opt out.', 'https://s.test');
+  select s.metadata -> 'sms_consent' ->> 'text_shown', s.metadata -> 'sms_consent' ->> 'phone', s.metadata -> 'sms_consent' ->> 'at'
+    into v_body, v_code, v_status from custom.anon_submission s where s.organization_id = v_org and s.booking_ref = v_ref3;
+  if v_body not like 'Text me reminders.%' or v_code <> '+19496662578' or v_status is null then
+    raise exception '8: the consent is not on the booking (%, %, %)', v_body, v_code, v_status;
+  end if;
+  if not exists (select 1 from communication.sms_consent c where c.organization_id = v_org and c.phone_number = '+19496662578'
+                    and c.consent_type = 'notifications' and c.status = 'opted_in' and c.opt_in_method = 'web_form' and c.metadata ->> 'source' = 'booking_page') then
+    raise exception '8: no org-scoped consent row';
+  end if;
+  select count(*) into v_n from communication.notification
+   where organization_id = v_org and channel = 'sms' and to_address = '+19496662578' and status = 'render_pending'
+     and dedupe_key like format('booking:%s:remind:%%:sms', v_ref3)
+     and metadata -> 'still_due' ->> 'guard' = 'communication.still_due_booking';
+  if v_n <> 2 then raise exception '8: expected 2 guarded text reminders, found %', v_n; end if;
+  -- 8b. EVERY TEXT NAMES WHO PAYS (the page's publisher), so the dispatcher can gate on the organization's
+  -- points before sending and charge after, through the one SMS charging path.
+  select count(*) into v_n from communication.notification
+   where organization_id = v_org and channel = 'sms' and dedupe_key like format('booking:%s:remind:%%:sms', v_ref3)
+     and metadata -> 'charge' ->> 'user_id' = c_admin::text and metadata -> 'charge' ->> 'feature' = 'booking reminder';
+  if v_n <> 2 then raise exception '8b: % text reminders name who pays', v_n; end if;
+  -- 9. THE ORG-SCOPED CONSENT IS WHAT THE GATE READS: with it the gate does not refuse for consent; without it, it does.
+  select n.id into v_nid from communication.notification n
+   where n.organization_id = v_org and n.channel = 'sms' and n.dedupe_key like format('booking:%s:remind:%%:sms', v_ref3) limit 1;
+  if (select g.refusal from communication.sms_notification_gate(v_nid) g) in ('not_consented', 'not_consented_for_organization') then
+    raise exception '9: the gate refuses a consenting booker';
+  end if;
+  update communication.sms_consent set status = 'opted_out', opted_out_at = now()
+   where organization_id = v_org and phone_number = '+19496662578';
+  if (select g.refusal from communication.sms_notification_gate(v_nid) g) is distinct from 'opted_out' then
+    raise exception '9: the gate did not honour an opt-out';
+  end if;
+  -- 10. A page that does not offer texts refuses the consent door.
+  begin
+    perform custom.booking_sms_consent(v_ref, '+19496662578', 'Text me reminders', 'https://s.test');
+    raise exception '10: a page that never offered texts took consent';
+  exception when sqlstate '22023' then null; end;
+  raise notice 'TEST 7-10 PASSED — texts only with recorded, org-scoped consent; gate honours it and opt-out';
 
   raise notice 'booking_notify_green.sql: ALL PASSED';
 end

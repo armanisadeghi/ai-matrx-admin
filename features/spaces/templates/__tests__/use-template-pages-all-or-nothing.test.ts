@@ -4,7 +4,7 @@
 // is moved to Trash by the next run before it starts — never two sets.
 
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
-jest.mock("../../data/agency-install", () => ({ runHostSteps: jest.fn(), upgradeCountsText: jest.fn() }));
+jest.mock("../../data/install-host", () => ({ runHostSteps: jest.fn(), upgradeCountsText: jest.fn() }));
 jest.mock("../../data/sources", () => ({ registerSampleWorld: jest.fn() }));
 jest.mock("@/lib/toast", () => ({ toast: { warning: jest.fn(), success: jest.fn() }, errorSentence: (e: unknown) => String(e) }));
 

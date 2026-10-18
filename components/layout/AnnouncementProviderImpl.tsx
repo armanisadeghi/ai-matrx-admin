@@ -13,7 +13,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { readActiveAnnouncements } from "@/lib/announcements/readActiveAnnouncements";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useEngagedLateReady } from "@/lib/boot/engagedLate";
 import { SystemAnnouncement } from "@/types/feedback.types";
 import SystemAnnouncementBanner from "./SystemAnnouncementBanner";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -26,7 +26,7 @@ export default function AnnouncementProviderImpl() {
   );
 
   // The load law: nothing here is needed for first paint, so the read waits for the page to settle.
-  const settled = useLateIdleReady();
+  const settled = useEngagedLateReady(); // settled AND engaged (2026-10-17)
   useEffect(() => {
     if (!settled) return;
     let cancelled = false;

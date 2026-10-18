@@ -7,7 +7,7 @@ import { createRecordsClient, declareTable, supabaseDataSource, tokenFor } from 
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { createClient } from "@/utils/supabase/client";
 
-import { pageOrganizationId } from "./agency-install";
+import { pageOrganizationId } from "./install-host";
 import type { PickedSource } from "./SourcePicker";
 
 /** Notion's new database: one title property, "Name". The property editor adds the rest. */

@@ -229,7 +229,7 @@ function VideoRow({
     video.view_count != null ? `${formatYouTubeCount(video.view_count)} views` : null,
     video.like_count != null ? `${formatYouTubeCount(video.like_count)} likes` : null,
     video.comment_count != null ? `${formatYouTubeCount(video.comment_count)} comments` : null,
-    video.published_at ? formatRelativeTime(video.published_at, { style: "long" }) : null,
+    video.published_at ? formatRelativeTime(video.published_at, { style: "intl" }) : null,
   ].filter(Boolean);
 
   return (
@@ -295,21 +295,27 @@ function VideoRow({
           )}
         </div>
         {description && (
-          <div className="type-body text-muted-foreground">
-            <p className={cn("whitespace-pre-line break-words", !expanded && "line-clamp-2")}>{description}</p>
+          <p className={cn("whitespace-pre-line break-words type-body text-muted-foreground", !expanded && "line-clamp-2")}>
+            {description}
+          </p>
+        )}
+        {(topKeyword || longDescription) && (
+          <div className="flex min-h-7 items-center justify-between gap-3">
+            {topKeyword ? (
+              <p className="min-w-0 truncate type-secondary text-muted-foreground">
+                {topKeyword.rank != null ? `#${topKeyword.rank} for ` : "Found for "}
+                <span className="text-foreground">“{topKeyword.keyword}”</span>
+                {otherKeywords > 0 && ` and ${otherKeywords} more`}
+              </p>
+            ) : (
+              <span />
+            )}
             {longDescription && (
               <Button type="button" variant="link" onClick={() => setExpanded((open) => !open)}>
                 {expanded ? "Less" : "More"}
               </Button>
             )}
           </div>
-        )}
-        {topKeyword && (
-          <p className="truncate type-secondary text-muted-foreground">
-            {topKeyword.rank != null ? `#${topKeyword.rank} for ` : "Found for "}
-            <span className="text-foreground">“{topKeyword.keyword}”</span>
-            {otherKeywords > 0 && ` and ${otherKeywords} more`}
-          </p>
         )}
       </div>
 

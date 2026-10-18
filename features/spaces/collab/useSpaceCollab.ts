@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { ensureEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
 
 import type { SpaceDoc } from "../contract";
-import { pageOrganizationId } from "../data/agency-install";
+import { pageOrganizationId } from "../data/install-host";
 import { SpaceCollabSession, trace, type SpaceMeta } from "./space-collab";
 import type { SpaceRoom } from "./useSpaceRoom";
 

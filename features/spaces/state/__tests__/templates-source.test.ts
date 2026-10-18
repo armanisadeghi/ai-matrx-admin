@@ -21,7 +21,7 @@ jest.mock("@/utils/supabase/client", () => ({
     },
   },
 }));
-jest.mock("../../data/agency-install", () => ({ pageOrganizationId: async () => null }));
+jest.mock("../../data/install-host", () => ({ pageOrganizationId: async () => null }));
 
 import { listTemplateIds, setTemplate } from "../templates";
 

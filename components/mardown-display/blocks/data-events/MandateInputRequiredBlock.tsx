@@ -135,7 +135,6 @@ export default function MandateInputRequiredBlock({
       ) : null}
       <div className="mt-3 flex justify-end">
         <Button
-          size="sm"
           onClick={() => void submit()}
           disabled={!requestId || phase.kind === "sending"}
         >

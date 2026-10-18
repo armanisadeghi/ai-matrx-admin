@@ -197,13 +197,13 @@ const Slideshow = (
       )}
 
       <div
-        className={`w-full border border-border ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-4" : inCanvasLayout ? "h-full overflow-hidden" : "rounded-2xl overflow-hidden shadow-xl border-border"}`}
+        className={`w-full border border-border ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-4" : inCanvasLayout ? "h-full overflow-hidden" : "rounded-xl overflow-hidden"}`}
       >
         <div
           className={`bg-textured ${isFullScreen ? "h-full w-full max-w-7xl max-h-[95dvh] rounded-2xl overflow-hidden" : inCanvasLayout ? "h-full w-full" : "w-full"} flex flex-col`}
         >
           {/* Header with Controls */}
-          <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+          <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-card">
             <div className="flex items-center gap-2 min-w-0">
               <div className="hidden min-w-0 items-center gap-1.5 overflow-x-auto scrollbar-none sm:flex">
                 {slides.map((_, index) => (
@@ -311,12 +311,7 @@ const Slideshow = (
                     isFullScreen ? "Exit full screen" : "Expand to full screen"
                   }
                   onClick={() => setIsFullScreen(!isFullScreen)}
-                  className={
-                    isFullScreen
-                      ? undefined
-                      : "bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700"
-                  }
-                  variant={isFullScreen ? "outline" : "default"}
+                  variant="outline"
                 />
               )}
               {host.actions}
@@ -389,24 +384,16 @@ const Slideshow = (
           )}
 
           {/* Bottom Navigation Bar with Arrow Buttons */}
-          <div className="flex-shrink-0 px-4 py-3 border-t border-border bg-gray-50 dark:bg-gray-800">
+          <div className="flex-shrink-0 px-3 py-2 border-t border-border bg-card">
             <div className="flex items-center justify-between gap-3">
               <Button variant="quiet" icon={<ChevronLeft />} onClick={goToPrevious} disabled={currentSlide === 0}>
                 <span>Previous</span>
               </Button>
 
-              <button
-                onClick={goToNext}
-                disabled={currentSlide === slides.length - 1}
-                className={`min-h-11 px-3 py-1 rounded-lg font-medium transition-all flex items-center gap-2 sm:min-h-0 ${
-                  currentSlide === slides.length - 1
-                    ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed text-gray-400 dark:text-gray-600"
-                    : "bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md"
-                } ${isFullScreen ? "text-base" : "text-sm"}`}
-              >
+              <Button variant="primary" onClick={goToNext} disabled={currentSlide === slides.length - 1}>
                 <span>Next</span>
-                <ChevronRight className="h-4 w-4" />
-              </button>
+                <ChevronRight />
+              </Button>
             </div>
           </div>
 

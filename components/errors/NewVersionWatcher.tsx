@@ -27,7 +27,7 @@
 // boot script from ever reloading a live session.
 
 import { useEffect, useRef } from "react";
-import { whenLateIdle } from "@/lib/boot/lateIdle";
+import { whenEngagedLate } from "@/lib/boot/engagedLate";
 import { noteHardNavigationReason } from "@/lib/diagnostics/hardNavigationTrace";
 import { toast } from "@/lib/toast";
 import { readAppConfigKey } from "@/lib/config-attestation/appConfig";
@@ -155,9 +155,9 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
       }
     };
     const settle = new AbortController();
-    // Nothing is read on mount: the first checks wait for the page to settle.
+    // Nothing is read on mount: the first checks wait for the page to settle AND be engaged (2026-10-17).
     lastCheckRef.current = Date.now();
-    const settled = whenLateIdle(undefined, settle.signal);
+    const settled = whenEngagedLate(undefined, settle.signal);
     void settled.then((ok) => {
       if (ok) void checkMinimumVersion();
     });

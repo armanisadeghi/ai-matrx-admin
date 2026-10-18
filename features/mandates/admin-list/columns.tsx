@@ -16,7 +16,6 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/lib/toast";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import {
-  DATE_FILTER_OPTIONS,
   DATE_SORT_WORDS,
   Muted,
   TextCell,
@@ -737,8 +736,7 @@ export const ADMIN_MANDATE_COLUMNS: Spec[] = [
     column: {
       id: "updatedAt",
       header: "Updated",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 100,
       cell: (row) => timeCell(row.updatedAt),
     },
@@ -818,8 +816,7 @@ export const ADMIN_MANDATE_COLUMNS: Spec[] = [
     column: {
       id: "createdAt",
       header: "Created",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 100,
       cell: (row) => timeCell(row.createdAt),
     },

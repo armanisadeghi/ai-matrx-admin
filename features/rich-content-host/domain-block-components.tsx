@@ -202,6 +202,7 @@ import SearchResultsBlock from "@/components/mardown-display/blocks/data-events/
 import SearchErrorBlock from "@/components/mardown-display/blocks/data-events/SearchErrorBlock";
 import FunctionResultBlock from "@/components/mardown-display/blocks/data-events/FunctionResultBlock";
 import WorkflowStepBlock from "@/components/mardown-display/blocks/data-events/WorkflowStepBlock";
+import MandateInputRequiredBlock from "@/components/mardown-display/blocks/data-events/MandateInputRequiredBlock";
 import CategorizationResultBlock from "@/components/mardown-display/blocks/data-events/CategorizationResultBlock";
 import FetchResultsBlock from "@/components/mardown-display/blocks/data-events/FetchResultsBlock";
 import { PodcastCompleteBlock as PodcastCompleteBlockLazy } from "@/components/mardown-display/blocks/data-events/PodcastBlock";
@@ -1240,6 +1241,13 @@ const DOMAIN_BLOCK_COMPONENTS = {
   ) => (
     <LazyBlockWrapper>
       <FunctionResultBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  MandateInputRequiredBlock: (
+    props: React.ComponentProps<typeof MandateInputRequiredBlock>,
+  ) => (
+    <LazyBlockWrapper>
+      <MandateInputRequiredBlock {...props} />
     </LazyBlockWrapper>
   ),
   WorkflowStepBlock: (

@@ -29,6 +29,7 @@ import {
 } from "@/lib/redux/slices/appContextSlice";
 import { useNeedsYou } from "@/features/capture-ladder/useNeedsYou";
 import { shellSectionFailed, useShellCounts } from "@/lib/boot/shellCounts";
+import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import {
   NEEDS_YOU_SOURCE_KEY,
   produceNeedsYouAssist,
@@ -53,7 +54,9 @@ export function NeedsYouAssistProducer(): null {
   // This section failing opens the queue anyway (the old read); the other sections never do.
   const waiting = shellSectionFailed(shell, "needsYou") || (shell.data?.needsYou ?? 0) > 0;
   const [opened, setOpened] = useState(false);
-  if (!opened && (waiting || hasRowToRetire)) setOpened(true);
+  // The queue waits for the person to engage the page (owner rule 2026-10-17).
+  const engaged = useHasEngaged();
+  if (!opened && engaged && (waiting || hasRowToRetire)) setOpened(true);
   const { state, handoffs } = useNeedsYou({ enabled: opened });
 
   // One sweep in flight at a time, and only when the queue actually changed.

@@ -1,6 +1,6 @@
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: async () => "org" }));
-jest.mock("../agency-install", () => ({ pageOrganizationId: async () => "org" }));
+jest.mock("../install-host", () => ({ pageOrganizationId: async () => "org" }));
 
 import { planTableDatabase } from "../table-to-database";
 

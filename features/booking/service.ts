@@ -92,6 +92,8 @@ export interface PublicBooking {
     thank_you?: { title: string; body?: string | null } | null;
     submit_label?: string | null;
     questions?: BookingQuestion[];
+    /** The owner's switches. Only `sms.on` matters to the public page: it offers "Text me reminders". */
+    booking_messages?: { sms?: { on?: boolean } } | null;
   };
   fields: Array<Record<string, unknown>>;
   honeypot_key: string | null;
@@ -219,6 +221,35 @@ export async function confirmBooking(args: {
       message: null,
     }
   );
+}
+
+/** What `custom.booking_sms_consent` answers. */
+export interface SmsConsentOutcome {
+  recorded: boolean;
+  queued?: number;
+  why?: string;
+  say?: string;
+}
+
+/**
+ * RECORD A BOOKER'S CONSENT TO TEXT REMINDERS, right after the booking is confirmed. The booking ref is
+ * the booker's own unguessable capability; the store records the number, the exact words shown and
+ * the time on the booking, and only then queues any text. The words are what the page actually showed.
+ */
+export async function recordSmsConsent(args: {
+  ref: string;
+  phone: string;
+  textShown: string;
+  origin: string;
+}): Promise<SmsConsentOutcome> {
+  const { data, error } = await storeDoors().rpc("booking_sms_consent", {
+    p_booking_ref: args.ref,
+    p_phone: args.phone,
+    p_text_shown: args.textShown,
+    p_origin: args.origin,
+  });
+  if (error) throw carried(error);
+  return (Array.isArray(data) ? data[0] : data) as SmsConsentOutcome;
 }
 
 /** What `custom.booking_manage` answers about one person's own appointment. */

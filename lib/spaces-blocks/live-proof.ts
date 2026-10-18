@@ -57,23 +57,23 @@ async function refusal(run: () => Promise<unknown>): Promise<string | null> {
 
 function snapshotOf(md: string, seed: string): SpaceSnapshot {
   const { blocks } = notionMarkdownToBlocks(md, { idSeed: seed });
-  const snap: SpaceSnapshot = { v: 1, settings: DEFAULT_PAGE_SETTINGS, icon: { icon: "TreePalm" }, cover: null, blocks };
+  const snap: SpaceSnapshot = { v: 1, settings: DEFAULT_PAGE_SETTINGS, icon: { icon: "Folder" }, cover: null, blocks };
   const problems = validateSnapshot(snap);
   if (problems.length) throw new Error(`invalid snapshot: ${problems.join("; ")}`);
   return snap;
 }
 
 const ROOT_MD = [
-  "# The Traveling SMM™ OS",
+  "# Studio Home",
   '<callout icon="📌" color="gray_bg">',
-  "\tEvery client gets a Loom recap on Fridays.",
+  "\tEvery client gets a recap on Fridays.",
   "</callout>",
-  "## Scaling to $30K Months",
+  "## Goals this quarter",
   "- [x] Hire a second editor",
-  '- [ ] Launch the Momentum campaign {color="orange"}',
+  '- [ ] Launch the spring newsletter {color="orange"}',
   "<details>",
   "<summary>Scripts</summary>",
-  "\t1. Hook: I fly around the world filming hotels.",
+  "\t1. Opening: what the client asked for",
   "</details>",
 ].join("\n");
 
@@ -82,8 +82,8 @@ async function main() {
   const second = await signedIn("test@test.com", process.env.SPACES_PROOF_SECOND_PASSWORD ?? process.env.AI_ADMIN_PASSWORD!);
   const run = crypto.randomUUID().slice(0, 8);
   const rootKey = `notion:page/proof-${run}-root`;
-  const childKey = `notion:page/proof-${run}-clients-os`;
-  const otherKey = `notion:page/proof-${run}-90-day-plan`;
+  const childKey = `notion:page/proof-${run}-client-hub`;
+  const otherKey = `notion:page/proof-${run}-quarter-plan`;
   const made = new Set<string>();
   const payloadCount = async (id: string) =>
     (await admin.db.schema("content").from("space_payload").select("content_version", { count: "exact", head: true }).eq("document_id", id)).count ?? -1;
@@ -102,7 +102,7 @@ async function main() {
 
   try {
     const rootSnap = snapshotOf(ROOT_MD, rootKey);
-    const base = { p_organization_id: orgId, p_external_key: rootKey, p_title: "The Traveling SMM™ OS", p_snapshot: rootSnap };
+    const base = { p_organization_id: orgId, p_external_key: rootKey, p_title: "Studio Home", p_snapshot: rootSnap };
     const first = await upsert(admin.db, base);
     made.add(first.space_id);
     check("first import creates the Space", first.created && first.content_changed, `${first.space_id} v${first.version} cv${first.content_version}`);
@@ -121,30 +121,30 @@ async function main() {
     const child = await upsert(admin.db, {
       p_organization_id: orgId,
       p_external_key: childKey,
-      p_title: "Clients OS",
+      p_title: "Client Hub",
       p_parent_external_key: rootKey,
-      p_snapshot: snapshotOf("- Bella Vista Resort\n- Casa Mar Boutique Hotel", childKey),
+      p_snapshot: snapshotOf("- Harbor Dental\n- Northside Bakery", childKey),
     });
     made.add(child.space_id);
     check("child import is placed under its parent by key", child.placement === "placed" && (await parentOf(child.space_id))?.target_id === first.space_id, child.placement);
     const childAgain = await upsert(admin.db, {
       p_organization_id: orgId,
       p_external_key: childKey,
-      p_title: "Clients OS",
+      p_title: "Client Hub",
       p_parent_external_key: rootKey,
-      p_snapshot: snapshotOf("- Bella Vista Resort\n- Casa Mar Boutique Hotel", childKey),
+      p_snapshot: snapshotOf("- Harbor Dental\n- Northside Bakery", childKey),
     });
     check("re-import of the child changes nothing", childAgain.placement === "unchanged" && !childAgain.content_changed && childAgain.space_id === child.space_id);
 
-    const other = await upsert(admin.db, { p_organization_id: orgId, p_external_key: otherKey, p_title: "90 Day Plan", p_snapshot: snapshotOf("## Month 1", otherKey) });
+    const other = await upsert(admin.db, { p_organization_id: orgId, p_external_key: otherKey, p_title: "Quarter Plan", p_snapshot: snapshotOf("## Month 1", otherKey) });
     made.add(other.space_id);
     const moved = await upsert(admin.db, {
       p_organization_id: orgId,
       p_external_key: childKey,
-      p_title: "Clients OS",
+      p_title: "Client Hub",
       p_parent_id: other.space_id,
       p_position: 2048,
-      p_snapshot: snapshotOf("- Bella Vista Resort\n- Casa Mar Boutique Hotel", childKey),
+      p_snapshot: snapshotOf("- Harbor Dental\n- Northside Bakery", childKey),
     });
     const edge = await parentOf(child.space_id);
     check("move parent: the one sub_page edge moves", moved.placement === "moved" && edge?.target_id === other.space_id && edge?.position === 2048, `${moved.placement} -> ${edge?.target_id} @${edge?.position}`);
@@ -183,7 +183,7 @@ async function main() {
     const rowBody = await upsert(admin.db, {
       p_organization_id: orgId,
       p_external_key: rowBodyKey,
-      p_title: "Bella Vista Resort — onboarding notes",
+      p_title: "Harbor Dental — onboarding notes",
       p_row_record_id: rowId,
       p_snapshot: snapshotOf("## Kickoff\n- [ ] Collect brand assets\n- [ ] Book the first shoot", rowBodyKey),
     });

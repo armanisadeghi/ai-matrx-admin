@@ -133,6 +133,7 @@ const PROTOCOL_ITEMS: ReadonlyMap<string, string> = new Map([
   ["matrx_file", "file-reference envelope resolved via the universal file handler — transport, not content"],
   ["function_result", "generic tool-result envelope — the payload's typing is owned by tool_io contracts"],
   ["workflow_step", "workflow progress event"],
+  ["mandate_input_required", "a paused mandate run asking a person for input — the answer form posts to the run's answer door; protocol, not content"],
   ["search_error", "search failure event"],
   ["structured_input_warning", "structured-input validation warning event"],
   ["value_store_stored", "value-store write acknowledgement event"],

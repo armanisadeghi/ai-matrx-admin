@@ -12,31 +12,31 @@
 // Google's GIS bundle into the new-chat screen would cost every visit a script
 // nobody asked for.
 
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { ConnectorPromptCard } from "./ConnectorPromptCard";
 import { accountHealth, anyProductConnected } from "./health";
 import { useGoogleConnectorState } from "./google-adapter";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
-import { useHasEngaged } from "@/lib/boot/firstEngagement";
+import { readConnectorHint } from "./connectedHint";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 
 /**
- * FIRST-PAINT CONTRACT (V6, owner 2026-10-16: connections are never part of the first paint).
+ * ZERO READS UNTIL THE CARD ITSELF IS ENGAGED (owner ruling 2026-10-17: "There is no need to read
+ * google at all! Not until someone actually engages it.").
  *
- * The card only decides to show after it knows whether any Google account is connected, and that
- * is two reads (`integration_connections` + resources, and the capability catalog). Nothing on a
- * new-chat first paint needs them, so the card renders NOTHING until the person engages the page:
- * the first TRUSTED pointer press, key press or touch (the shared engagement tier, lib/boot/firstEngagement;
- * a pointer move or scroll is not engagement). Then ONE pair of reads
- * runs together and the card shows if it should. (Trade-off: the card can appear a moment after
- * the person starts interacting, never at first paint. Focus is not an engagement here: the
- * new-chat composer takes focus by itself.)
+ * The card decides whether to offer itself from what this device already knows — the last Google
+ * answer any surface saw (`./connectedHint`) — so a new chat makes no Google read, no scope-tree
+ * read, no organization read. Engaging THE CARD (pointer over it, focus inside it, a touch) opens
+ * the one batched state read, so by the time the press lands the answer is usually there; the
+ * Connect press opens the consent dialog at once (it shares the same cached reads). If the read
+ * says she is already connected (or every account is blocked) the card steps away, and the read
+ * itself leaves the device's hint behind (`useGoogleConnectorState`), so it is not offered again.
  *
- * ENGAGEMENT ONLY (owner contract 2026-10-17: nothing else until engaged). A person who only reads
- * the page never engages, so the card never reads and never shows for her — there is no loading
- * state to get stuck in, because until the answer lands (and while it is in flight or has failed)
- * the host draws nothing: no skeleton, no placeholder box, no layout to shift. (Before 2026-10-17
- * the late idle tier also opened the read; that cost every untouched new chat 2–6 reads.)
+ * Engaging the PAGE is not engaging the card (2026-10-17: the page-engagement trigger still cost
+ * every typed "hello" two to six reads).
  */
 export function ConnectorPromptHost({
   className,
@@ -50,15 +50,19 @@ export function ConnectorPromptHost({
   variant?: "float" | "card" | "bare";
 }) {
   const provider = GOOGLE_CONNECTOR_PROVIDER;
-  const ready = useHasEngaged();
-  const state = useGoogleConnectorState({ enabled: ready });
+  const userId = useAppSelector(selectUserId);
+  const [engaged, setEngaged] = useState(false);
+  const [hint, setHint] = useState(() => readConnectorHint(provider.id, userId));
+  useEffect(() => setHint(readConnectorHint(provider.id, userId)), [provider.id, userId]);
+  const state = useGoogleConnectorState({ enabled: engaged });
   const openConsent = useOpenConnectorConsentDialog();
 
-  const connected = state.accounts.some((account) =>
-    anyProductConnected(
-      accountHealth({ provider, account, rollout: state.rollout }),
-    ),
-  );
+  const known = engaged && !state.isLoading && !state.isError;
+  const connected = known
+    ? state.accounts.some((account) =>
+        anyProductConnected(accountHealth({ provider, account, rollout: state.rollout })),
+      )
+    : (hint?.connected ?? false);
 
   /**
    * Every account this person has is BLOCKED — nothing can be approved, so the
@@ -66,46 +70,51 @@ export function ConnectorPromptHost({
    * (V17-1). A person with no account at all still gets the offer: the fault is
    * per account, and a first connect may be exactly what works.
    */
-  const blocked =
-    state.accounts.length > 0 &&
-    state.accounts.every((account) => account.blocked === true);
+  const blocked = known
+    ? state.accounts.length > 0 && state.accounts.every((account) => account.blocked === true)
+    : (hint?.blocked ?? false);
 
-  // A read that FAILED is not "not connected": while the answer is unknown the card stays away
-  // rather than offering to connect something that may already be connected.
-  const showing = ready && !state.isLoading && !state.isError;
+  const engage = () => {
+    if (!engaged) setEngaged(true);
+  };
 
-  const card = showing ? (
-    <ConnectorPromptCard
-      provider={provider}
-      connected={connected}
-      blocked={blocked}
-      onConnect={() => openConsent()}
-      variant={variant === "bare" ? "bare" : "card"}
-      className={
-        variant === "float"
-          ? cn(
-              "pointer-events-auto bg-card shadow-lg dark:shadow-none",
-              className,
-            )
-          : className
-      }
-    />
-  ) : null;
+  const card = (
+    <div
+      className="contents"
+      onPointerOver={engage}
+      onFocusCapture={engage}
+      onTouchStart={engage}
+    >
+      <ConnectorPromptCard
+        provider={provider}
+        connected={connected}
+        blocked={blocked}
+        onConnect={() => {
+          engage();
+          openConsent();
+        }}
+        variant={variant === "bare" ? "bare" : "card"}
+        className={
+          variant === "float"
+            ? cn("pointer-events-auto bg-card shadow-lg dark:shadow-none", className)
+            : className
+        }
+      />
+    </div>
+  );
 
   if (variant !== "float") return card;
 
   // A zero-height anchor (its -mt-4 cancels the slot's flex gap, so the column measures exactly as
-  // with an empty slot) holds the card in a fixed area: appearing late moves nothing.
+  // with an empty slot) holds the card in a fixed area: appearing moves nothing.
   return (
     <div
       data-connector-prompt-anchor=""
       className="pointer-events-none relative -mt-4 h-0"
     >
-      {card ? (
-        <div className="fixed inset-x-4 bottom-4 z-20 mx-auto max-w-[480px]">
-          {card}
-        </div>
-      ) : null}
+      <div className="fixed inset-x-4 bottom-4 z-20 mx-auto max-w-[480px]">
+        {card}
+      </div>
     </div>
   );
 }

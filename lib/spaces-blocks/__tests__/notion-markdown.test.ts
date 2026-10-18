@@ -1,4 +1,4 @@
-// Notion-flavored Markdown → Space blocks, proved on realistic agency pages (the Traveling SMM™ OS).
+// Notion-flavored Markdown → Space blocks, proved on a realistic small-studio page written in our own words.
 // Every output is run through the stored-schema validator: a converter result the editor could not
 // store fails here, not in someone's workspace.
 
@@ -8,17 +8,17 @@ import type { RichSpan, SpaceBlock } from "../types";
 import { DEFAULT_PAGE_SETTINGS } from "../types";
 
 const PAGES: Record<string, string> = {
-  "https://www.notion.so/Clients-OS-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6": "space-clients-os",
-  "https://www.notion.so/90-Day-Plan-2b3c4d5e6f7a48b9c0d1e2f3a4b5c6d7": "space-90-day-plan",
+  "https://www.notion.so/Client-Hub-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6": "space-client-hub",
+  "https://www.notion.so/Quarter-Plan-2b3c4d5e6f7a48b9c0d1e2f3a4b5c6d7": "space-quarter-plan",
   "https://www.notion.so/Scripts-3c4d5e6f7a8b49c0d1e2f3a4b5c6d7e8": "space-scripts",
-  "Clients OS 1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6.md": "space-clients-os",
+  "Client Hub 1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6.md": "space-client-hub",
 };
 const LINKED_ELSEWHERE = new Set(["https://www.notion.so/Scripts-3c4d5e6f7a8b49c0d1e2f3a4b5c6d7e8"]);
 
 const ctx: NotionMarkdownContext = {
-  idSeed: "notion:page/traveling-smm-os",
+  idSeed: "notion:page/studio-home",
   resolvePage: (ref) => (PAGES[ref] ? { spaceId: PAGES[ref], childOfThisPage: !LINKED_ELSEWHERE.has(ref) } : null),
-  resolvePerson: (_ref, name) => (name === "Cora Reyes" ? "user-cora" : null),
+  resolvePerson: (_ref, name) => (name === "Dana Okafor" ? "user-dana" : null),
   resolveFile: (url, kind) => {
     if (url.includes("not-uploaded")) return null;
     if (url.includes("youtube.com")) return { url };
@@ -58,7 +58,7 @@ describe("headings", () => {
     const { blocks } = convert(
       [
         '## Other To Dos {toggle="true" color="gray_bg"}',
-        "\tRenew the Later.com plan",
+        "\tRenew the scheduling tool plan",
         "\t- Send Q3 invoices",
         "<details>",
         "<summary>### AI Process</summary>",
@@ -78,25 +78,25 @@ describe("lists", () => {
     const { blocks } = convert(
       [
         "- Active clients",
-        "\t- Bella Vista Resort",
-        "\t\t- Reels 3x per week",
-        "    - Casa Mar Boutique Hotel",
+        "\t- Harbor Dental",
+        "\t\t- Newsletter twice a month",
+        "    - Northside Bakery",
         "1. Audit the account",
         "2. Build the content calendar",
-        "- [ ] Film the rooftop pool b-roll",
-        "\t- [x] Book the drone operator",
+        "- [ ] Photograph the new storefront",
+        "\t- [x] Book the photographer",
         "- [x] Send the onboarding questionnaire",
       ].join("\n"),
     );
     expect(blocks.map((b) => b.type)).toEqual(["bulleted", "numbered", "numbered", "todo", "todo"]);
-    expect(blocks[0].children?.map(text)).toEqual(["Bella Vista Resort", "Casa Mar Boutique Hotel"]);
-    expect(text(blocks[0].children?.[0].children?.[0])).toBe("Reels 3x per week");
+    expect(blocks[0].children?.map(text)).toEqual(["Harbor Dental", "Northside Bakery"]);
+    expect(text(blocks[0].children?.[0].children?.[0])).toBe("Newsletter twice a month");
     expect(blocks[3]).toMatchObject({ props: { checked: false } });
     expect(blocks[3].children?.[0]).toMatchObject({ type: "todo", props: { checked: true } });
     expect(blocks[4]).toMatchObject({ props: { checked: true } });
   });
 
-  it("keeps a colored to-do (the orange items of the 90 Day Plan)", () => {
+  it("keeps a colored to-do (the orange items of the Quarter Plan)", () => {
     const b = only('- [ ] Post the client win on LinkedIn {color="orange"}');
     expect(b).toMatchObject({ type: "todo", color: "orange", props: { checked: false } });
     expect(text(b)).toBe("Post the client win on LinkedIn");
@@ -106,10 +106,10 @@ describe("lists", () => {
 describe("toggles, quotes, callouts, dividers", () => {
   it("toggle via <details> and via the older ▶ form", () => {
     const { blocks } = convert(
-      ["<details>", "<summary>Hiring</summary>", "\tPost the editor role on OnlineJobs.ph", "</details>", "▶ Finances", "\tReconcile Stripe payouts"].join("\n"),
+      ["<details>", "<summary>Hiring</summary>", "\tPost the designer role", "</details>", "▶ Finances", "\tReconcile Stripe payouts"].join("\n"),
     );
     expect(blocks.map((b) => [b.type, text(b), b.children?.map(text)])).toEqual([
-      ["toggle", "Hiring", ["Post the editor role on OnlineJobs.ph"]],
+      ["toggle", "Hiring", ["Post the designer role"]],
       ["toggle", "Finances", ["Reconcile Stripe payouts"]],
     ]);
   });
@@ -165,26 +165,26 @@ describe("code and equations", () => {
 describe("structure", () => {
   it("columns become a columnList with equal widths", () => {
     const b = only(
-      ["<columns>", "\t<column>", "\t\t### CLIENTS", '\t\t<page url="https://www.notion.so/Clients-OS-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Clients OS</page>', "\t</column>", "\t<column>", "\t\t### 90 Day Plan", "\t</column>", "</columns>"].join("\n"),
+      ["<columns>", "\t<column>", "\t\t### CLIENTS", '\t\t<page url="https://www.notion.so/Client-Hub-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Client Hub</page>', "\t</column>", "\t<column>", "\t\t### Quarter Plan", "\t</column>", "</columns>"].join("\n"),
     );
     expect(b.type).toBe("columnList");
     expect(b.children?.map((c) => [c.type, c.props?.width])).toEqual([
       ["column", 0.5],
       ["column", 0.5],
     ]);
-    expect(b.children?.[0].children?.[1]).toMatchObject({ type: "page", props: { spaceId: "space-clients-os" } });
+    expect(b.children?.[0].children?.[1]).toMatchObject({ type: "page", props: { spaceId: "space-client-hub" } });
   });
 
   it("child page, link to page, and an unresolved page that says so", () => {
     const { blocks, warnings } = convert(
       [
-        '<page url="https://www.notion.so/90-Day-Plan-2b3c4d5e6f7a48b9c0d1e2f3a4b5c6d7">90 Day Plan</page>',
+        '<page url="https://www.notion.so/Quarter-Plan-2b3c4d5e6f7a48b9c0d1e2f3a4b5c6d7">Quarter Plan</page>',
         '<page url="https://www.notion.so/Scripts-3c4d5e6f7a8b49c0d1e2f3a4b5c6d7e8">Scripts</page>',
         '<page url="https://www.notion.so/Archive-ffff">Old Archive</page>',
       ].join("\n"),
     );
     expect(blocks.map((b) => [b.type, b.props?.spaceId])).toEqual([
-      ["page", "space-90-day-plan"],
+      ["page", "space-quarter-plan"],
       ["linkToPage", "space-scripts"],
       ["text", undefined],
     ]);
@@ -194,8 +194,8 @@ describe("structure", () => {
   });
 
   it("export child page link (.md) and database link (.csv)", () => {
-    const { blocks } = convert("[Clients OS](Clients%20OS%201a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6.md)\n[Client Database](Client%20Database%20abc.csv)");
-    expect(blocks[0]).toMatchObject({ type: "page", props: { spaceId: "space-clients-os" } });
+    const { blocks } = convert("[Client Hub](Client%20Hub%201a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6.md)\n[Client Database](Client%20Database%20abc.csv)");
+    expect(blocks[0]).toMatchObject({ type: "page", props: { spaceId: "space-client-hub" } });
     expect(blocks[1]).toMatchObject({ type: "database", props: { source: { kind: "table", tableId: "table-clients" }, inline: false } });
   });
 
@@ -219,8 +219,8 @@ describe("structure", () => {
         "\t\t<td>Offer bought</td>",
         "\t</tr>",
         "\t<tr>",
-        "\t\t<td>Bella Vista Resort</td>",
-        "\t\t<td>**Momentum** package</td>",
+        "\t\t<td>Harbor Dental</td>",
+        "\t\t<td>**Standard** package</td>",
         "\t</tr>",
         "</table>",
         "| Script | Hook |",
@@ -230,7 +230,7 @@ describe("structure", () => {
     );
     expect(blocks[0]).toMatchObject({ type: "table", props: { headerRow: true, headerColumn: false } });
     const rows = blocks[0].props?.rows as Array<{ cells: RichSpan[][] }>;
-    expect(rows[1].cells[1]).toEqual([{ text: "Momentum", bold: true }, { text: " package" }]);
+    expect(rows[1].cells[1]).toEqual([{ text: "Standard", bold: true }, { text: " package" }]);
     expect((blocks[1].props?.rows as Array<{ cells: RichSpan[][] }>).map((r) => r.cells.map((c) => c[0]?.text))).toEqual([
       ["Script", "Hook"],
       ["Day in the life", "You won't believe this office"],
@@ -275,14 +275,14 @@ describe("media, bookmark, embed", () => {
 describe("rich text", () => {
   it("bold, italic, strike, underline, code, colors, links", () => {
     const b = only(
-      'Post **3 reels** a *week*, ~~daily stories~~, <span underline="true">always</span> tag `@bellavista`, <span color="red">never</span> <span color="blue_bg">miss</span> the [brief](https://docs.google.com/brief).',
+      'Post **3 posts** a *week*, ~~daily stories~~, <span underline="true">always</span> tag `@harbordental`, <span color="red">never</span> <span color="blue_bg">miss</span> the [brief](https://docs.google.com/brief).',
     );
     const by = (t: string) => b.text?.find((s) => s.text === t);
-    expect(by("3 reels")).toEqual({ text: "3 reels", bold: true });
+    expect(by("3 posts")).toEqual({ text: "3 posts", bold: true });
     expect(by("week")).toEqual({ text: "week", italic: true });
     expect(by("daily stories")).toEqual({ text: "daily stories", strike: true });
     expect(by("always")).toEqual({ text: "always", underline: true });
-    expect(by("@bellavista")).toEqual({ text: "@bellavista", code: true });
+    expect(by("@harbordental")).toEqual({ text: "@harbordental", code: true });
     expect(by("never")).toEqual({ text: "never", color: "red" });
     expect(by("miss")).toEqual({ text: "miss", background: "blue" });
     expect(by("brief")).toEqual({ text: "brief", link: "https://docs.google.com/brief" });
@@ -290,10 +290,10 @@ describe("rich text", () => {
 
   it("mentions of pages, people and dates; unresolved ones keep their words", () => {
     const b = only(
-      'Ask <mention-user url="user://cora">Cora Reyes</mention-user> to update <mention-page url="https://www.notion.so/Clients-OS-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Clients OS</mention-page> by <mention-date start="2026-10-15"/>; cc <mention-user url="user://x">Zunayed</mention-user>.',
+      'Ask <mention-user url="user://dana">Dana Okafor</mention-user> to update <mention-page url="https://www.notion.so/Client-Hub-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Client Hub</mention-page> by <mention-date start="2026-10-15"/>; cc <mention-user url="user://x">Zunayed</mention-user>.',
     );
-    expect(b.text?.find((s) => s.mention?.kind === "person")).toEqual({ text: "Cora Reyes", mention: { kind: "person", userId: "user-cora" } });
-    expect(b.text?.find((s) => s.mention?.kind === "space")).toEqual({ text: "Clients OS", mention: { kind: "space", spaceId: "space-clients-os" } });
+    expect(b.text?.find((s) => s.mention?.kind === "person")).toEqual({ text: "Dana Okafor", mention: { kind: "person", userId: "user-dana" } });
+    expect(b.text?.find((s) => s.mention?.kind === "space")).toEqual({ text: "Client Hub", mention: { kind: "space", spaceId: "space-client-hub" } });
     expect(b.text?.find((s) => s.mention?.kind === "date")).toEqual({ text: "2026-10-15", mention: { kind: "date", iso: "2026-10-15" } });
     expect(text(b)).toContain("@Zunayed");
   });
@@ -318,11 +318,11 @@ describe("nothing dropped silently", () => {
   });
 });
 
-describe("the whole Traveling SMM™ OS page", () => {
+describe("a whole studio home page", () => {
   const PAGE = [
     "<columns>",
     "\t<column>",
-    '\t\t<page url="https://www.notion.so/Clients-OS-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Clients OS</page>',
+    '\t\t<page url="https://www.notion.so/Client-Hub-1a2b3c4d5e6f47a8b9c0d1e2f3a4b5c6">Client Hub</page>',
     '\t\t## CLIENTS {color="gray_bg"}',
     '\t\t<callout icon="📌">',
     "\t\t\tPin new clients here within 24 hours of the signed contract.",
@@ -332,19 +332,19 @@ describe("the whole Traveling SMM™ OS page", () => {
     '\t\t<database url="https://www.notion.so/Client-Database-9f8e?v=abc" inline="true">Client Database</database>',
     "\t</column>",
     "</columns>",
-    "# 90 Day Plan",
-    '<page url="https://www.notion.so/90-Day-Plan-2b3c4d5e6f7a48b9c0d1e2f3a4b5c6d7">90 Day Plan</page>',
-    "## Scaling to $30K Months",
+    "# Quarter Plan",
+    '<page url="https://www.notion.so/Quarter-Plan-2b3c4d5e6f7a48b9c0d1e2f3a4b5c6d7">Quarter Plan</page>',
+    "## Goals this quarter",
     "- [x] Hire a second editor",
-    "- [ ] Raise retainer to $2,500 for new clients",
+    "- [ ] Raise the standard rate for new clients",
     "\t- [ ] Update the proposal template",
-    '- [ ] Launch the Momentum campaign {color="orange"}',
-    "Read the [Hormozi offer breakdown](https://www.acquisition.com/) before the sales call.",
+    '- [ ] Launch the spring newsletter {color="orange"}',
+    "Read the [pricing guide](https://example.com/pricing) before the sales call.",
     "<details>",
     "<summary>Scripts</summary>",
-    "\t1. Hook: “I fly around the world filming hotels.”",
-    "\t2. Value: three reasons guests book from Reels",
-    "\t3. CTA: comment TRAVEL for the guide",
+    "\t1. Opening: what the client asked for",
+    "\t2. Middle: three options with prices",
+    "\t3. Close: the next step and a date",
     "</details>",
     "---",
   ].join("\n");
@@ -353,10 +353,10 @@ describe("the whole Traveling SMM™ OS page", () => {
     const first = convert(PAGE);
     const again = convert(PAGE);
     expect(again.blocks).toEqual(first.blocks);
-    const snapshot = { v: 1, settings: DEFAULT_PAGE_SETTINGS, icon: notionMediaToSpace("🌴", ctx, "icon"), cover: notionMediaToSpace("https://images.unsplash.com/palms.jpg", ctx, "cover"), blocks: first.blocks };
+    const snapshot = { v: 1, settings: DEFAULT_PAGE_SETTINGS, icon: notionMediaToSpace("📁", ctx, "icon"), cover: notionMediaToSpace("https://images.unsplash.com/desk.jpg", ctx, "cover"), blocks: first.blocks };
     expect(validateSnapshot(snapshot)).toEqual([]);
-    expect(snapshot.icon).toEqual({ emoji: "🌴" });
-    expect(snapshot.cover).toEqual({ fileId: "file-image-palms.jpg" });
+    expect(snapshot.icon).toEqual({ emoji: "📁" });
+    expect(snapshot.cover).toEqual({ fileId: "file-image-desk.jpg" });
     expect(first.blocks.map((b) => b.type)).toEqual(["columnList", "heading", "page", "heading", "todo", "todo", "todo", "text", "toggle", "divider"]);
     expect(first.blocks[8].children?.map((c) => c.type)).toEqual(["numbered", "numbered", "numbered"]);
   });

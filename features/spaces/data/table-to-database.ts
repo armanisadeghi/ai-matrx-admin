@@ -9,7 +9,7 @@ import { createRecordsClient, declareTable, supabaseDataSource, tokenFor } from 
 import { createClient } from "@/utils/supabase/client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
-import { pageOrganizationId } from "./agency-install";
+import { pageOrganizationId } from "./install-host";
 import { adoptPageDatabase } from "./new-database";
 import type { PickedSource } from "./SourcePicker";
 

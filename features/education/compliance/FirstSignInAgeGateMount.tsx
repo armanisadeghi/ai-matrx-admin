@@ -58,7 +58,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useEngagedLateReady } from "@/lib/boot/engagedLate";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { coppaService } from "./coppaService";
@@ -117,7 +117,8 @@ export function FirstSignInAgeGateMount() {
   // Asked already this tab session (or on the portal): the `edu_coppa_gate` read is never made.
   const userId = useAppSelector(selectUser)?.id ?? null;
   const [askedAtMount] = useState(alreadyAskedThisSession);
-  const settled = useLateIdleReady();
+  // Settled AND engaged (2026-10-17): a page nobody touches never reads the gate.
+  const settled = useEngagedLateReady();
   const declared = declaredInThisBrowser(userId);
   const gate = useAiComplianceGate({
     declarationVariant: "first_run",

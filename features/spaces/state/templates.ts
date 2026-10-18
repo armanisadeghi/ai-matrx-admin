@@ -8,7 +8,7 @@
 // These doors belong in the store-db adapter (owner's folder); until it carries them they live here
 // (NEEDS row). No permission logic: the database decides.
 
-import { pageOrganizationId } from "../data/agency-install";
+import { pageOrganizationId } from "../data/install-host";
 import { supabase } from "@/utils/supabase/client";
 
 const ROLE = "labeled";

@@ -254,7 +254,7 @@ export default function OutputsStudio() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-4">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 space-y-6">
         <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
           <PackageOpen className="h-3.5 w-3.5 text-primary" />
           <span className="type-secondary font-medium text-foreground/80">
@@ -281,14 +281,14 @@ export default function OutputsStudio() {
         )}
 
         {hasReport && reportCounts && (reportCounts.open > 0 || reportCounts.notes > 0) && (
-          <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/50 bg-card/40 px-3 py-2">
+          <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5">
             <span className="type-meta text-muted-foreground">With the report</span>
             <ReadingSetSwitches counts={reportCounts} value={reportAnnotations} onChange={setReportAnnotations} />
           </div>
         )}
 
         {reportLoading && (
-          <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-card/40 px-3 py-2.5 type-secondary text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 type-secondary text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin shrink-0" />
             <span>Loading the research report…</span>
           </div>
@@ -371,7 +371,7 @@ export default function OutputsStudio() {
 
         {/* The topic's AFTER — the sites, plan pages, and canonical pages
             consuming this research (forward half of research lineage). */}
-        <div className="rounded-xl border border-border/50 bg-card/40 px-3 py-2.5">
+        <div className="rounded-xl border border-border bg-card px-4 py-3">
           <ResearchUsedBy token="research_topic" id={topicId} />
         </div>
       </div>
@@ -408,8 +408,8 @@ function DomainReportsCard({
       : "";
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/40 overflow-hidden">
-      <div className="flex items-start gap-2 px-3 py-2.5 border-b border-border/50">
+    <div className="rounded-xl border border-border bg-card">
+      <div className="flex items-start gap-2 px-4 py-3 border-b border-border">
         <ListTree className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
         <div className="min-w-0">
           <div className="type-secondary font-medium text-foreground">
@@ -423,13 +423,13 @@ function DomainReportsCard({
           </div>
         </div>
       </div>
-      <div className="divide-y divide-border/50">
+      <div className="divide-y divide-border">
         {DOMAIN_OUTPUTS.map((def) => {
           const existing = assetsFor(outputs, def.outputKind);
           return (
             <div
               key={def.slug}
-              className="px-3 py-2 hover:bg-accent/40 transition-colors"
+              className="px-4 py-2.5"
             >
               {def.agentPending ? (
                 <div className="flex items-center gap-2" aria-disabled="true">
@@ -477,52 +477,27 @@ function DomainReportsCard({
               </div>
               )}
               {existing.length > 0 && (
-                <div className="mt-1.5 space-y-1">
-                  {existing.map((a) => (
-                    <button
-                      key={a.id}
-                      onClick={() =>
-                        setViewing((v) => (v?.id === a.id ? null : a))
-                      }
-                      className="w-full flex items-center gap-2 rounded-lg border border-border/40 bg-background/40 px-2.5 py-1.5 text-left hover:bg-accent/40 transition-colors"
-                    >
-                      <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="type-meta font-medium truncate flex-1">
-                        {a.title}
-                      </span>
-                      <span className="type-meta text-muted-foreground tabular-nums shrink-0">
-                        {new Date(a.created_at).toLocaleDateString()}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                <GeneratedList
+                  className="mt-2"
+                  assets={existing}
+                  icon={FileText}
+                  activeId={viewing?.id ?? null}
+                  onPick={(a) => setViewing((v) => (v?.id === a.id ? null : a))}
+                />
               )}
             </div>
           );
         })}
       </div>
       {viewing && (
-        <div className="border-t border-border/50">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50">
-            <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
-            <span className="type-secondary font-medium flex-1 truncate">
-              {viewing.title}
-            </span>
-            <button
-              onClick={() => setViewing(null)}
-              className="text-[10px] text-muted-foreground hover:text-foreground"
-            >
-              Close
-            </button>
-          </div>
-          <div className="px-3 py-3 max-h-[460px] overflow-y-auto">
-            <RichContent level="full" imagePolicy="ai" source={viewingMarkdown} />
-            <div className="flex justify-end mt-2">
-              <RichDocumentActions
-                content={viewingMarkdown}
-                source={{ type: "raw", title: viewing.title }}
-              />
-            </div>
+        <div className="border-t border-border px-4 py-4 space-y-3">
+          <ViewingHeader title={viewing.title} onClose={() => setViewing(null)} />
+          <RichContent level="full" imagePolicy="ai" source={viewingMarkdown} />
+          <div className="flex justify-end">
+            <RichDocumentActions
+              content={viewingMarkdown}
+              source={{ type: "raw", title: viewing.title }}
+            />
           </div>
         </div>
       )}
@@ -646,8 +621,8 @@ function PodcastOutputCard({
   };
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden">
-      <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-border/50">
+    <div className="rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
         <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
           <Mic className="h-4 w-4 text-primary" />
         </div>
@@ -670,7 +645,7 @@ function PodcastOutputCard({
         )}
       </div>
 
-      <div className="p-3.5 space-y-3">
+      <div className="px-4 py-4 space-y-5">
         {/* Options */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <div className="flex items-center gap-1.5">
@@ -786,19 +761,12 @@ function PodcastOutputCard({
         )}
 
         {state.status === "done" && (
-          <div className="rounded-lg border border-green-500/30 bg-green-500/[0.06] px-3 py-2.5 space-y-2">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
-              <span className="type-secondary font-medium text-foreground/90 flex-1 truncate">
-                {state.title || "Episode ready"}
-              </span>
-              <button
-                onClick={reset}
-                className="text-[10px] text-muted-foreground hover:text-foreground"
-              >
-                New
-              </button>
-            </div>
+          <div className="space-y-2">
+            <ViewingHeader
+              title={state.title || "Episode ready"}
+              onClose={reset}
+              closeLabel="New"
+            />
             {state.audioUrl && (
               <audio controls src={state.audioUrl} className="w-full h-9" />
             )}
@@ -819,11 +787,9 @@ function PodcastOutputCard({
             (cover, audio, composed video, every still + clip) from the
             persisted index, so a refresh shows everything it produced. */}
         {existing.length > 0 && (
-          <div className="space-y-2 pt-1">
-            <span className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
-              Generated episodes
-            </span>
-            <div className="space-y-2">
+          <div className="space-y-2">
+            <SectionLabel>Generated episodes</SectionLabel>
+            <div className="rounded-lg border border-border divide-y divide-border">
               {existing.map((a) => (
                 <PersistedEpisode key={a.id} asset={a} />
               ))}
@@ -856,8 +822,8 @@ function PersistedEpisode({ asset }: { asset: OutputAsset }) {
     clips.length;
 
   return (
-    <div className="rounded-lg border border-border/40 bg-background/40 overflow-hidden">
-      <div className="flex items-center gap-2.5 px-2.5 py-2">
+    <div>
+      <div className="flex items-center gap-2.5 px-3 py-2.5">
         {cover ? (
           <img
             src={cover}
@@ -908,7 +874,7 @@ function PersistedEpisode({ asset }: { asset: OutputAsset }) {
 
       {/* Audio is always shown when present — it's the episode's core artifact. */}
       {media.audio_url && (
-        <div className="px-2.5 pb-2">
+        <div className="px-3 pb-3">
           <SessionMediaElement
             as="audio"
             sessionSource="podcast"
@@ -921,7 +887,7 @@ function PersistedEpisode({ asset }: { asset: OutputAsset }) {
       )}
 
       {showMedia && mediaCount > 0 && (
-        <div className="border-t border-border/40 px-2.5 py-2.5 space-y-3">
+        <div className="border-t border-border px-3 py-3 space-y-3">
           {media.official_video_url && (
             <div className="space-y-1.5">
               <span className="inline-flex items-center gap-1 type-meta font-semibold uppercase tracking-wide text-muted-foreground">
@@ -1128,56 +1094,30 @@ function BlogOutputCard({
         )}
 
         {!blogRun.isRunning && viewing && (
-          <div className="rounded-lg border border-border/50 bg-card/40 overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50">
-              <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
-              <span className="type-secondary font-medium flex-1 truncate">
-                {viewing.title}
-              </span>
-              <button
-                onClick={() => setViewing(null)}
-                className="text-[10px] text-muted-foreground hover:text-foreground"
-              >
-                Close
-              </button>
-            </div>
-            <div className="px-3 py-3 max-h-[460px] overflow-y-auto">
-              <RichContent level="full" imagePolicy="ai" source={viewingMarkdown} />
-              <div className="flex justify-end mt-2">
-                <RichDocumentActions
-                  content={viewingMarkdown}
-                  source={{ type: "raw", title: viewing.title }}
-                />
-              </div>
+          <div className="space-y-3">
+            <ViewingHeader title={viewing.title} onClose={() => setViewing(null)} />
+            <RichContent level="full" imagePolicy="ai" source={viewingMarkdown} />
+            <div className="flex justify-end">
+              <RichDocumentActions
+                content={viewingMarkdown}
+                source={{ type: "raw", title: viewing.title }}
+              />
             </div>
           </div>
         )}
 
         {existing.length > 0 && (
-          <div className="space-y-1.5 pt-1">
-            <span className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
-              Generated articles
-            </span>
-            <div className="space-y-1">
-              {existing.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => {
-                    setViewing(a);
-                    setError(null);
-                  }}
-                  className="w-full flex items-center gap-2 rounded-lg border border-border/40 bg-background/40 px-2.5 py-1.5 text-left hover:bg-accent/40 transition-colors"
-                >
-                  <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="type-meta font-medium truncate flex-1">
-                    {a.title}
-                  </span>
-                  <span className="type-meta text-muted-foreground tabular-nums shrink-0">
-                    {new Date(a.created_at).toLocaleDateString()}
-                  </span>
-                </button>
-              ))}
-            </div>
+          <div className="space-y-2">
+            <SectionLabel>Generated articles</SectionLabel>
+            <GeneratedList
+              assets={existing}
+              icon={FileText}
+              activeId={viewing?.id ?? null}
+              onPick={(a) => {
+                setViewing(a);
+                setError(null);
+              }}
+            />
           </div>
         )}
       </>
@@ -1206,8 +1146,8 @@ function OutputCardShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden">
-      <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-border/50">
+    <div className="rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
         <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-primary-ink">
           {icon}
         </div>
@@ -1227,7 +1167,87 @@ function OutputCardShell({
         )}
         <MandateAgentPicker mandateKey={mandateKey} className="shrink-0" />
       </div>
-      <div className="p-3.5 space-y-3">{children}</div>
+      <div className="px-4 py-4 space-y-5">{children}</div>
+    </div>
+  );
+}
+
+/** Small uppercase label above a group inside a card. */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
+      {children}
+    </div>
+  );
+}
+
+/** The row above an open output: what it is, and how to put it away. A plain
+ *  row — never a box — so the output under it keeps its own frame. */
+function ViewingHeader({
+  title,
+  meta,
+  onClose,
+  closeLabel = "Close",
+}: {
+  title: string;
+  meta?: string;
+  onClose: () => void;
+  closeLabel?: string;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+      <span className="flex-1 truncate type-secondary font-medium text-foreground">
+        {title}
+      </span>
+      {meta && (
+        <span className="shrink-0 type-meta tabular-nums text-muted-foreground">
+          {meta}
+        </span>
+      )}
+      <Button variant="quiet" icon={<X />} onClick={onClose}>
+        {closeLabel}
+      </Button>
+    </div>
+  );
+}
+
+/** Previously generated outputs as one divided list; the open one is marked. */
+function GeneratedList({
+  assets,
+  icon: Icon,
+  activeId,
+  onPick,
+  className,
+}: {
+  assets: OutputAsset[];
+  icon: React.ComponentType<{ className?: string }>;
+  activeId: string | null;
+  onPick: (asset: OutputAsset) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("rounded-lg border border-border divide-y divide-border overflow-hidden", className)}>
+      {assets.map((a) => (
+        <button
+          key={a.id}
+          type="button"
+          onClick={() => onPick(a)}
+          aria-current={a.id === activeId ? "true" : undefined}
+          className={cn(
+            "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-accent",
+            a.id === activeId && "bg-accent",
+          )}
+        >
+          <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span className="flex-1 truncate type-meta font-medium text-foreground">
+            {a.title}
+          </span>
+          <span className="shrink-0 type-meta tabular-nums text-muted-foreground">
+            {new Date(a.created_at).toLocaleDateString()}
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
@@ -1394,62 +1414,38 @@ function SlidesOutputCard({
       )}
 
       {!slidesRun.isRunning && viewing && deck && (
-        <div className="rounded-lg border border-border/50 bg-card/40 overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50">
-            <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
-            <span className="type-secondary font-medium flex-1 truncate">
-              {viewing.title}
-            </span>
-            <span className="type-meta text-muted-foreground tabular-nums">
-              {/* read-gate-exempt: slide count of the deck asset the person opened or this run produced; viewing is only set to a delivered asset */}
-              {deck.slides?.length ?? 0} slides
-            </span>
-            <button
-              onClick={() => setViewing(null)}
-              className="text-[10px] text-muted-foreground hover:text-foreground"
-            >
-              Close
-            </button>
-          </div>
+        <div className="space-y-3">
+          <ViewingHeader
+            title={viewing.title}
+            onClose={() => setViewing(null)}
+            // read-gate-exempt: slide count of the deck asset the person opened or this run produced; viewing is only set to a delivered asset
+            meta={`${deck.slides?.length ?? 0} slides`}
+          />
           {/* ONE shape, ONE component: the saved deck replays through the
               canonical route (envelope → `applyIrKindRoute` → the presentation
-              renderer), exactly what the live run showed. */}
-          <div className="relative p-2">
-            <KindInstanceRender
-              kind="presentation_deck"
-              value={deck}
-              showRoutingNote={false}
-              variant="bare"
-            />
-          </div>
+              renderer), exactly what the live run showed. It carries its own
+              frame, so nothing here wraps it. */}
+          <KindInstanceRender
+            kind="presentation_deck"
+            value={deck}
+            showRoutingNote={false}
+            variant="bare"
+          />
         </div>
       )}
 
       {existing.length > 0 && (
-        <div className="space-y-1.5 pt-1">
-          <span className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
-            Generated decks
-          </span>
-          <div className="space-y-1">
-            {existing.map((a) => (
-              <button
-                key={a.id}
-                onClick={() => {
-                  setViewing(a);
-                  setError(null);
-                }}
-                className="w-full flex items-center gap-2 rounded-lg border border-border/40 bg-background/40 px-2.5 py-1.5 text-left hover:bg-accent/40 transition-colors"
-              >
-                <Presentation className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="type-meta font-medium truncate flex-1">
-                  {a.title}
-                </span>
-                <span className="type-meta text-muted-foreground tabular-nums shrink-0">
-                  {new Date(a.created_at).toLocaleDateString()}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="space-y-2">
+          <SectionLabel>Generated decks</SectionLabel>
+          <GeneratedList
+            assets={existing}
+            icon={Presentation}
+            activeId={viewing?.id ?? null}
+            onPick={(a) => {
+              setViewing(a);
+              setError(null);
+            }}
+          />
         </div>
       )}
     </OutputCardShell>
@@ -1603,53 +1599,31 @@ function SeoOutputCard({
       )}
 
       {!seoRun.isRunning && viewing && seo && (
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600 dark:text-green-400" />
-            <span className="flex-1 truncate type-secondary font-medium">
-              {viewing.title}
-            </span>
-            <button
-              onClick={() => setViewing(null)}
-              className="text-[10px] text-muted-foreground hover:text-foreground"
-            >
-              Close
-            </button>
-          </div>
-          {/* ONE component for the shape — the same one the live run rendered. */}
+        <div className="space-y-3">
+          <ViewingHeader title={viewing.title} onClose={() => setViewing(null)} />
+          {/* ONE component for the shape — the same one the live run rendered.
+              It draws its own frame, so the instance render adds none. */}
           <KindInstanceRender
             kind="seo_package"
             value={seo}
             showRoutingNote={false}
+            variant="bare"
           />
         </div>
       )}
 
       {existing.length > 0 && (
-        <div className="space-y-1.5 pt-1">
-          <span className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
-            Generated packages
-          </span>
-          <div className="space-y-1">
-            {existing.map((a) => (
-              <button
-                key={a.id}
-                onClick={() => {
-                  setViewing(a);
-                  setError(null);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg border border-border/40 bg-background/40 px-2.5 py-1.5 text-left transition-colors hover:bg-accent/40"
-              >
-                <SearchIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                <span className="flex-1 truncate type-meta font-medium">
-                  {a.title}
-                </span>
-                <span className="shrink-0 type-meta tabular-nums text-muted-foreground">
-                  {new Date(a.created_at).toLocaleDateString()}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="space-y-2">
+          <SectionLabel>Generated packages</SectionLabel>
+          <GeneratedList
+            assets={existing}
+            icon={SearchIcon}
+            activeId={viewing?.id ?? null}
+            onPick={(a) => {
+              setViewing(a);
+              setError(null);
+            }}
+          />
         </div>
       )}
     </OutputCardShell>

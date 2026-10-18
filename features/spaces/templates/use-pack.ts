@@ -21,9 +21,9 @@ import { errorSentence, toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 
 import type { SpaceDoc, SpaceId, SpacesStore } from "../contract";
-import { runHostSteps, upgradeCountsText } from "../data/agency-install";
+import { runHostSteps, upgradeCountsText } from "../data/install-host";
 import { registerSampleWorld } from "../data/sources";
-import { saveOnCurrent } from "../store/sample";
+import { saveOnCurrent } from "../store/save-on-current";
 
 /** One card of `custom.space_templates`. */
 export interface SpaceTemplateCard {
@@ -77,6 +77,21 @@ export function readSpaceTemplate(id: string): Promise<SpaceTemplateFull> {
     full.set(id, p);
   }
   return p;
+}
+
+/**
+ * The built-in sample — the Spaces home's "Add a sample" and the source picker's sample tables: one of
+ * our own clean-room library packs (Projects & Tasks), installed through the same door as "Use
+ * template". Never a customer's or a stranger's page.
+ */
+export const STARTER_CATALOGUE_ID = "SP0002";
+
+/** The sample template, read whole (its newest platform version). */
+export async function readStarterTemplate(): Promise<SpaceTemplateFull> {
+  const cards = (await listSpaceTemplates(null)).filter((c) => c.catalogue_id === STARTER_CATALOGUE_ID && c.scope === "platform");
+  const card = cards.sort((a, b) => b.version - a.version)[0];
+  if (!card) throw new Error("The sample template is not in the library.");
+  return readSpaceTemplate(card.id);
 }
 
 /** The world id a template's preview tables live in. */

@@ -1,10 +1,10 @@
 "use client";
 
 // features/spaces/workspace/SpacesHome.tsx — /spaces opens the last Space visited, else the first one;
-// with no Spaces yet it offers a new page or the Traveling SMM™ OS sample.
+// with no Spaces yet it offers a new page or the library's sample template (Projects & Tasks).
 
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
-import { FileText, Plus, TreePalm } from "lucide-react";
+import { FileText, LayoutTemplate, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -65,13 +65,11 @@ export function SpacesHome() {
             </Button>
             <Button
               variant="outline"
-              icon={<TreePalm size={16} />}
+              icon={<LayoutTemplate size={16} />}
               disabled={sample.adding}
               onClick={() => void sample.add()}
             >
-              {sample.adding
-                ? `Adding… ${sample.progress ?? ""}`
-                : "Add the Traveling SMM™ OS sample"}
+              {sample.adding ? `Adding… ${sample.progress ?? ""}` : "Add a sample"}
             </Button>
           </div>
         }

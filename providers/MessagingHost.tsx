@@ -104,7 +104,7 @@ import { toastErrorAlreadyCaptured } from "@/lib/toast";
 import { captureMessagingError } from "@/lib/diagnostics/captureMessagingError";
 import { diagnosticToastCopy } from "@/lib/toast/diagnostic-copy";
 import { whenPrimaryContentShown } from "@/lib/boot/primaryContent";
-import { whenLateIdle } from "@/lib/boot/lateIdle";
+import { whenEngagedLate } from "@/lib/boot/engagedLate";
 
 // SHELL-DEDUPE: the engine asks the member's conversation list and soft expiries once per engine
 // start; an engine restart a moment after boot (the organization question answering) must share
@@ -120,9 +120,9 @@ const messagingClient = withSharedRpcReads(supabase, {
  * ever arrives. The package's incremental observer refresh backfills missed
  * messages on an interval and window focus, only while the browser is in that lane.
  */
-/** The badge's count waits for the page to finish (`lib/boot`): never part of a first paint. */
+/** The badge's count waits for the page to finish AND be engaged (`lib/boot/engagedLate`, 2026-10-17). */
 function messagingBadgeWhen(): Promise<boolean> {
-  return whenPrimaryContentShown().then(() => whenLateIdle());
+  return whenPrimaryContentShown().then(() => whenEngagedLate());
 }
 
 export interface MessagingHostProps {

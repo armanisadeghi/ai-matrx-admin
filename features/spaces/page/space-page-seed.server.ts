@@ -35,7 +35,7 @@ import type { SpaceBlock, SpaceDoc } from "../contract";
 import { activeView, chartTileSpecs, DEFAULT_CHART, ENTITY_PAGE, entityChartBy, entityRowsArgs, entityShownColumns, hasListFilter } from "../data/first-reads";
 import { viewSpec } from "../data/view-spec";
 import { usesThisRow } from "../data/this-row";
-import { AGENCY_SAMPLE_ID, readDatabaseProps, type DatabaseBlockProps, type SpaceDbView } from "../data/sources";
+import { readDatabaseProps, type DatabaseBlockProps, type SpaceDbView } from "../data/sources";
 import { SupabaseSpacesStore } from "../store-db/supabase-store";
 import { linkedPageIds } from "./linked-pages";
 import type { SeededBacklink, SpaceLinks } from "./space-links";

@@ -42,14 +42,20 @@ interface ConfirmAnswer {
   message?: string | null;
   /** PAYMENTS-CONNECT: Stripe Checkout on the organization's own account, when the page asks for payment. */
   payment_url?: string | null;
+  /** BOOKING-NOTIFY: how "Text me reminders" went; `say` is present only when it did not. */
+  sms?: { recorded: boolean; say?: string } | null;
 }
+
+/** THE WORDS A BOOKER IS SHOWN BESIDE "Text me reminders", and the exact words stored as their consent. */
+const TEXT_CONSENT_WORDS =
+  "By ticking this you agree to get text reminders about this appointment. Message and data rates may apply. Reply STOP to opt out.";
 
 type Stage =
   | { kind: "picking" }
   | { kind: "holding"; slotKey: string }
   | { kind: "details"; slot: BookingSlot; holdId: string; expiresAt: string | null }
   | { kind: "sending"; slot: BookingSlot; holdId: string; expiresAt: string | null }
-  | { kind: "booked"; slot: BookingSlot; ref: string | null }
+  | { kind: "booked"; slot: BookingSlot; ref: string | null; textNote?: string | null }
   | { kind: "sent"; message: string };
 
 /**
@@ -67,6 +73,12 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [decoy, setDecoy] = useState("");
   const [missing, setMissing] = useState<string[]>([]);
+  // "TEXT ME REMINDERS" (BOOKING-NOTIFY): offered only when the owner switched texts on. Consent is the
+  // tick AND the number, and the words recorded are the words this page showed.
+  const offersTexts = page.presentation?.booking_messages?.sms?.on === true;
+  const [textMe, setTextMe] = useState(false);
+  const [textPhone, setTextPhone] = useState("");
+  const [textRefused, setTextRefused] = useState<string | null>(null);
   // A REFUSAL BELONGS BESIDE ITS QUESTION. Until 2026-09-21 an answer of the
   // wrong shape travelled all the way to the store, which said "Vehicle Year
   // takes a number, and it was given a string" — true, and printed above a
@@ -204,12 +216,22 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
     }
 
     setStage({ kind: "sending", slot: stage.slot, holdId: stage.holdId, expiresAt: stage.expiresAt });
+    if (offersTexts && textMe && !/^\+?[\d\s().-]{7,}$/.test(textPhone.trim())) {
+      setTextRefused("Add the number to text, with its area code, or untick Text me reminders.");
+      setStage({ kind: "details", slot: stage.slot, holdId: stage.holdId, expiresAt: stage.expiresAt });
+      return;
+    }
+    setTextRefused(null);
     const values: Record<string, unknown> = { ...coerced };
     if (page.honeypot_key) values[page.honeypot_key] = decoy;
     const answer = await fetch(`/api/bookings/${page.form_id}/confirm`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ holdId: stage.holdId, values }),
+      body: JSON.stringify({
+        holdId: stage.holdId,
+        values,
+        ...(offersTexts && textMe ? { smsConsent: { phone: textPhone.trim(), textShown: TEXT_CONSENT_WORDS } } : {}),
+      }),
     })
       .then((r) => r.json() as Promise<ConfirmAnswer>)
       .catch<ConfirmAnswer>(() => ({
@@ -223,7 +245,7 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
       return;
     }
     if (answer.state === "booked") {
-      setStage({ kind: "booked", slot: stage.slot, ref: answer.booking_ref ?? null });
+      setStage({ kind: "booked", slot: stage.slot, ref: answer.booking_ref ?? null, textNote: answer.sms?.say ?? null });
       return;
     }
     if (answer.state === "held") {
@@ -248,6 +270,7 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
           {whenText(stage.slot.at, zone)}
           {thanks?.body ? ` — ${thanks.body}` : ""}
         </p>
+        {stage.textNote ? <p className="type-body text-muted-foreground">{stage.textNote}</p> : null}
         {stage.ref ? (
           // THE LINK IS SHOWN, NOT ONLY EMAILED. An email can be lost and a
           // confirmation page is the one moment we know the person is looking.
@@ -339,6 +362,32 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
             </label>
           );
         })}
+
+        {offersTexts ? (
+          <div className="flex flex-col gap-1.5">
+            <label className="flex items-center gap-2 type-body">
+              <input type="checkbox" checked={textMe} disabled={busy} onChange={(e) => setTextMe(e.target.checked)} />
+              Text me reminders
+            </label>
+            {textMe ? (
+              <>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  aria-label="Number to text"
+                  placeholder="+1 949 555 0100"
+                  value={textPhone}
+                  disabled={busy}
+                  onChange={(e) => setTextPhone(e.target.value)}
+                  className="rounded border bg-background px-2 py-1 type-body"
+                />
+                <span className="type-secondary text-muted-foreground">{TEXT_CONSENT_WORDS}</span>
+              </>
+            ) : null}
+            {textRefused ? <span className="type-secondary text-destructive">{textRefused}</span> : null}
+          </div>
+        ) : null}
 
         {missing.length > 0 ? (
           <p className="type-body text-destructive">

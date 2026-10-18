@@ -3,7 +3,7 @@ import { writeNewEntityRow } from "../entity-row-add";
 import { copyTemplate } from "../../state/templates";
 
 const pageOrg = jest.fn();
-jest.mock("../agency-install", () => ({ pageOrganizationId: (id: string) => pageOrg(id) }));
+jest.mock("../install-host", () => ({ pageOrganizationId: (id: string) => pageOrg(id) }));
 const rpc = jest.fn();
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({}),

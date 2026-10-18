@@ -425,6 +425,14 @@ const PROTOCOL_BLOCK_DISPATCH = {
     );
   },
 
+  mandate_input_required: ({ block, index }) => (
+    // A paused job: the server's sentence + the inputs it needs, answered in place.
+    <BlockComponents.MandateInputRequiredBlock
+      key={index}
+      data={block.serverData ?? {}}
+    />
+  ),
+
   search_error: ({ block, index }) => {
     // Python sends: { error: string; metadata?: Record<string, unknown> }
     const sd = block.serverData ?? {};

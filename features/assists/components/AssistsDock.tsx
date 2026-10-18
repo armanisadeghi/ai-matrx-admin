@@ -57,6 +57,7 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { shellSectionFailed, useShellCounts } from "@/lib/boot/shellCounts";
+import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAccessToken,
@@ -145,8 +146,11 @@ export default function AssistsDock() {
   const shellAssists = assistsFailed ? 1 : (shell.data?.assists ?? null);
   const shellAt = shell.dataUpdatedAt;
   const lastShellAt = useRef<number | null>(null);
+  // The list waits for the person to engage the page (owner rule 2026-10-17): the count alone
+  // never opens a read on a page nobody touches.
+  const engaged = useHasEngaged();
   useEffect(() => {
-    if (!authReady || !userId || !accessToken || shellAssists === null) return;
+    if (!engaged || !authReady || !userId || !accessToken || shellAssists === null) return;
     const firstCount = lastShellAt.current === null;
     if (lastShellAt.current === shellAt) return;
     lastShellAt.current = shellAt;
@@ -156,7 +160,7 @@ export default function AssistsDock() {
     }
     if (firstCount) return;
     if (shellAssists > 0 || pending.length > 0) void dispatch(fetchMyAssists({ userId, force: true }));
-  }, [dispatch, authReady, userId, accessToken, loaded, shellAssists, shellAt, pending.length]);
+  }, [dispatch, engaged, authReady, userId, accessToken, loaded, shellAssists, shellAt, pending.length]);
 
   useEffect(() => {
     if (!loaded || !preferencesReady) return;
