@@ -11,6 +11,11 @@ import { createRoot, type Root } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+// ProTextarea needs the app store (mic, agents); this test is about the decision, so a plain box stands in.
+jest.mock("@/components/official/ProTextarea", () => ({
+  ProTextarea: (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea {...props} />,
+}));
+
 import InlineDecisionBlock from "../InlineDecisionBlock";
 
 const decision = {
