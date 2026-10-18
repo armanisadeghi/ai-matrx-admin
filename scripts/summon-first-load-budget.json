@@ -15,8 +15,8 @@
     "^summon/window/"
   ],
   "routes": {
-    "(core)/notes": 147337,
-    "(core)/dashboard": 144429,
-    "(public)/pricing": 115998
+    "(core)/notes": 102243,
+    "(core)/dashboard": 99311,
+    "(public)/pricing": 70841
   }
 }
