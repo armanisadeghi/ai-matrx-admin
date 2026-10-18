@@ -1,4 +1,4 @@
-import { noteWasEdited } from "../UserNotesTab";
+import { noteWasEdited } from "../noteEdited";
 
 describe("noteWasEdited", () => {
   const base = { created_at: "2026-10-18T10:00:00Z", updated_at: "2026-10-18T10:00:00Z", metadata: {} };

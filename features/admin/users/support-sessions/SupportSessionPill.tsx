@@ -7,10 +7,11 @@
 // is closed there and this window signs out. Floats over the page; never moves content.
 
 import { useEffect, useState } from "react";
-import { Clock, LifeBuoy, Loader2, Plus, X } from "lucide-react";
+import { Clock, LifeBuoy, Plus, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { performLocalSignOut } from "@/features/shell/auth/useSignOut";
@@ -176,7 +177,7 @@ export default function SupportSessionPill() {
         </span>
         <Button
           variant="outline"
-          icon={busy === "extend" ? <Loader2 className="animate-spin" /> : <Plus />}
+          icon={busy === "extend" ? <Spinner size="xs" className="text-current" /> : <Plus />}
           disabled={busy !== null}
           onClick={() => void extend()}
         >
@@ -184,7 +185,7 @@ export default function SupportSessionPill() {
         </Button>
         <Button
           variant="outline"
-          icon={busy === "end" ? <Loader2 className="animate-spin" /> : <X />}
+          icon={busy === "end" ? <Spinner size="xs" className="text-current" /> : <X />}
           disabled={busy !== null}
           onClick={() => void end()}
         >

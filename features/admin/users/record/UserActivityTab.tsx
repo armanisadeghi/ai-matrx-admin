@@ -7,7 +7,7 @@
 // The kind chips re-read the server with that kind only; "Load older" walks next_before. A source
 // that could not be read is named in an inline notice, never silently missing.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Bell,
@@ -128,11 +128,15 @@ function ActivityRow({ item, personId }: { item: ActivityItem; personId: string 
 }
 
 // Keyed on person + filter + refresh by the tab, so every switch mounts fresh (skeleton, no old rows).
-function ActivityFeed({ userId, filter }: { userId: string; filter: Filter }) {
+function ActivityFeed({ userId, filter, shareForAi }: { userId: string; filter: Filter; shareForAi: (data: unknown) => void }) {
   const { data: first, loading, error } = useRecordLoad(firstPageFor(filter), userId, 0);
   const [more, setMore] = useState<ActivityPage | null>(null);
   const [olderBusy, setOlderBusy] = useState(false);
   const [olderError, setOlderError] = useState<unknown>(null);
+  const shown = more ?? first;
+  useEffect(() => {
+    if (shown) shareForAi({ filter, activity: shown.items });
+  }, [shown, filter, shareForAi]);
 
   if (loading) return <RegionSkeleton shape="rows" count={8} twoLine aria-label="Loading activity" />;
   if (error || !first) {
@@ -207,7 +211,7 @@ function ActivityFeed({ userId, filter }: { userId: string; filter: Filter }) {
   );
 }
 
-export function UserActivityTab({ userId, version: pageVersion }: UserTabBodyProps) {
+export function UserActivityTab({ userId, version: pageVersion, shareForAi }: UserTabBodyProps) {
   const [filter, setFilter] = useState<Filter>("all");
   const [version, setVersion] = useState(0);
   return (
@@ -218,7 +222,7 @@ export function UserActivityTab({ userId, version: pageVersion }: UserTabBodyPro
           Refresh
         </Button>
       </div>
-      <ActivityFeed key={`${userId}|${filter}|${pageVersion}|${version}`} userId={userId} filter={filter} />
+      <ActivityFeed key={`${userId}|${filter}|${pageVersion}|${version}`} userId={userId} filter={filter} shareForAi={shareForAi} />
     </div>
   );
 }

@@ -384,7 +384,7 @@ function summarize(value: unknown): string {
   return keys.length ? keys.join(", ") : "{}";
 }
 
-export function UserPreferencesView({ userId }: { userId: string }) {
+export function UserPreferencesView({ userId, onData }: { userId: string; /** What the view loaded, for the record page's Copy for AI. */ onData?: (data: { preferences: Record<string, unknown>; exists: boolean; updated_at: string | null }) => void }) {
   const router = useRouter();
   const [rows, setRows] = useState<ModuleRow[]>([]);
   const [meta, setMeta] = useState<{
@@ -421,6 +421,7 @@ export function UserPreferencesView({ userId }: { userId: string }) {
           exists: json.exists !== false,
           updated_at: json.updated_at ?? null,
         });
+        onData?.({ preferences: prefs, exists: json.exists !== false, updated_at: json.updated_at ?? null });
       })
       .catch(
         (e) => active && setError(e instanceof Error ? e.message : "Failed"),
