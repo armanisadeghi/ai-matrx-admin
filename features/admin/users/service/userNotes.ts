@@ -9,7 +9,7 @@
 //
 // Writes are filed in the writer's declared ADMIN organization (lib/organizations/adminOrganization.ts);
 // off the admin lane, the active organization (ensureOrgId). The database refuses a system organization.
-// Edit / pin / delete stay on the Notes service (NotesAPI) — the note is an ordinary note.
+// Pin goes through admin.set_user_note_pinned (row security refuses a non-author's update). Edit / delete stay on the Notes service (NotesAPI) — the note is an ordinary note.
 
 import { createClient } from "@/utils/supabase/client";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
@@ -62,4 +62,14 @@ export async function addUserNote(input: {
   });
   if (error) throw new Error(error.message);
   return data;
+}
+
+/** Pin or unpin a note about a person — any platform admin, any shared note (admin.set_user_note_pinned). */
+export async function setUserNotePinned(noteId: string, userId: string, pinned: boolean): Promise<void> {
+  const { error } = await createClient().schema("admin").rpc("set_user_note_pinned", {
+    p_note: noteId,
+    p_user: userId,
+    p_pinned: pinned,
+  });
+  if (error) throw new Error(error.message);
 }

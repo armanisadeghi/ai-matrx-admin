@@ -23,9 +23,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createClient } from "@/utils/supabase/client";
 import * as NotesAPI from "@/features/notes/service/notesApi";
-import { isJsonObject } from "@/types/json";
 import { AdminUserRef } from "../components/AdminUserRef";
-import { addUserNote, readUserNotes, type NoteShownTo } from "../service/userNotes";
+import { addUserNote, readUserNotes, setUserNotePinned, type NoteShownTo } from "../service/userNotes";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
 import { personTitle } from "./userOverview";
 import { useRecordLoad } from "./useRecordLoad";
@@ -161,8 +160,7 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
 
   async function togglePin(note: PersonNote) {
     try {
-      const base = isJsonObject(note.metadata) ? note.metadata : {};
-      await NotesAPI.update(note.id, { metadata: { ...base, pinned: !note.pinned } });
+      await setUserNotePinned(note.id, userId, !note.pinned);
       reload();
     } catch (e) {
       toast.error(`Pin not saved: ${e instanceof Error ? e.message : String(e)}`);

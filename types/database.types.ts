@@ -656,6 +656,10 @@ export type Database = {
         Args: { p_enabled: boolean; p_note?: string; p_user: string }
         Returns: Json
       }
+      set_user_note_pinned: {
+        Args: { p_note: string; p_pinned: boolean; p_user: string }
+        Returns: undefined
+      }
       support_session_abort: { Args: { p_id: string }; Returns: undefined }
       support_session_activate: {
         Args: { p_auth_session_id: string; p_id: string }

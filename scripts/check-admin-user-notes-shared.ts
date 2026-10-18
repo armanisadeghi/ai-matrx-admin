@@ -118,6 +118,29 @@ async function main() {
       if (!aSees.has(shared) || !aSees.has(onlyMe)) failures.push("admin A does not see both of their own notes");
       console.log(`admin.user_notes: B sees shared=${bSees.has(shared)} only_me=${bSees.has(onlyMe)}; A sees shared=${aSees.has(shared)} only_me=${aSees.has(onlyMe)}`);
     }
+
+    // Pin door: B pins A's shared note -> succeeds; B pins A's only-me -> refused.
+    await as(ADMIN_B);
+    const pin = async (note: string) => {
+      await db.query("savepoint p");
+      try {
+        await db.query(`select admin.set_user_note_pinned($1::uuid, $2::uuid, true)`, [note, PERSONA]);
+        await db.query("release savepoint p");
+        return null;
+      } catch (e) {
+        await db.query("rollback to savepoint p");
+        return e instanceof Error ? e.message : String(e);
+      }
+    };
+    const sharedPin = await pin(shared);
+    const onlyMePin = await pin(onlyMe);
+    if (sharedPin) failures.push(`admin B could not pin admin A's shared note: ${sharedPin}`);
+    if (!onlyMePin) failures.push("admin B pinned admin A's only-me note (must be refused)");
+    if (!sharedPin) {
+      const r = await db.query<{ pinned: boolean }>(`select pinned from admin.user_notes($1::uuid) where id = $2::uuid`, [PERSONA, shared]);
+      if (!r.rows[0]?.pinned) failures.push("the shared note is not pinned after B's pin");
+    }
+    console.log(`pin: B on A's shared => ${sharedPin ?? "ok"}; B on A's only-me => ${onlyMePin ?? "ACCEPTED"}`);
   } finally {
     await db.query("rollback").catch(() => undefined);
     await db.end();
