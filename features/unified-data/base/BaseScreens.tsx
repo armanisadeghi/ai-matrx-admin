@@ -216,7 +216,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
   const [identity, setIdentity] = useState<BaseIdentity | null>(null);
   const [extras, setExtras] = useState<Extras>({ pages: [], automations: [] });
   const [error, setError] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "snapshots" | "airtable" | "sheets">(null);
+  const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "move" | "snapshots" | "airtable" | "sheets">(null);
 
   const load = useCallback(async () => {
     try {
@@ -256,6 +256,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
           <ActivityFeedButton subjectId={homeId} organizationId={org} />
           <Button variant="quiet" onClick={() => setDialog("edit")}>{identity ? "Edit" : "Name this base"}</Button>
           <Button variant="quiet" onClick={() => setDialog("duplicate")} data-base-duplicate="">Duplicate</Button>
+          <Button variant="quiet" onClick={() => setDialog("move")} data-base-move="">Move to another workspace</Button>
           <Button variant="quiet" onClick={() => setDialog("snapshots")} data-base-snapshots="">Snapshots</Button>
           <Button variant="quiet" onClick={() => setDialog("airtable")} data-base-airtable="">From Airtable</Button>
           <Button variant="quiet" onClick={() => setDialog("sheets")} data-base-sheets="">From Google Sheets</Button>
@@ -289,6 +290,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
 
       <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { await saveBase(org, homeId, v); setDialog(null); await load(); }} />
       <DuplicateDialog open={dialog === "duplicate"} onClose={() => setDialog(null)} name={name} tables={tables} organizationId={org} identity={identity} />
+      <MoveBaseDialog open={dialog === "move"} onClose={() => setDialog(null)} homeId={homeId} name={name} organizationId={org} tableCount={tables.length} />
       <SnapshotsDialog open={dialog === "snapshots"} onClose={() => setDialog(null)} homeId={homeId} organizationId={org} name={name} tables={tables} identity={identity} onNeedIdentity={async () => (await saveBase(org, homeId, { name })) } />
       <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
       <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
@@ -323,6 +325,43 @@ function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: bo
 }
 
 // ── duplicate ───────────────────────────────────────────────────────────────────────────────
+
+/** Moves the whole base (its Home, every table with its pages and automations) into another workspace the person belongs to: `custom.base_move`. */
+function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCount }: { open: boolean; onClose: () => void; homeId: string; name: string; organizationId: string; tableCount: number }) {
+  const client = useRecordsClient();
+  const router = useRouter();
+  const destinations = useAppSelector(selectOrganizationsList).filter((o) => o.id !== organizationId);
+  const [to, setTo] = useState<string>("");
+  const [phase, setPhase] = useState<{ kind: "ask" } | { kind: "moving" } | { kind: "refused"; text: string }>({ kind: "ask" });
+  const go = async () => {
+    setPhase({ kind: "moving" });
+    const res = await client.baseMove({ home_id: homeId, to_organization_id: to });
+    if (!res.ok) { setPhase({ kind: "refused", text: res.error.message }); return; }
+    // The base now answers in the other workspace: reload so its page resolves there.
+    router.refresh();
+    window.location.assign(`/data/bases/${homeId}`);
+  };
+  return (
+    <Dialog open={open} onOpenChange={(o) => (!o && phase.kind !== "moving" ? (setPhase({ kind: "ask" }), onClose()) : undefined)}>
+      <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-base-move-dialog="">
+        <DialogTitle>Move {name}</DialogTitle>
+        {phase.kind === "moving" ? <Words>Moving the base…</Words> : (
+          <>
+            <label className="flex items-center justify-between gap-2 text-sm"><span>Workspace</span>
+              <select className="h-7 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-sm" value={to} onChange={(e) => setTo(e.target.value)} aria-label="Workspace" data-base-move-to="">
+                <option value="">Choose a workspace</option>
+                {destinations.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+              </select>
+            </label>
+            <Words>{`${tableCount} tables, with their records, pages and automations, move together.`}</Words>
+            {phase.kind === "refused" ? <p className="text-sm text-destructive" data-base-move-refused="">{phase.text}</p> : null}
+            <div className="flex justify-end gap-2"><Button variant="quiet" onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!to} onClick={() => void go()} data-base-move-go="">Move base</Button></div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function DuplicateDialog({ open, onClose, name, tables, organizationId, identity }: { open: boolean; onClose: () => void; name: string; tables: HomeTable[]; organizationId: string; identity: BaseIdentity | null }) {
   const port = useBasePort();
