@@ -155,7 +155,7 @@ export function BackgroundRunCard({ runId, hint }: { runId: string; hint: Backgr
             <Skeleton motion="shimmer" shape="line" width="1/3" aria-label="Waiting for the first step" />
           ) : (
             <span className="type-secondary min-w-0 flex-1 truncate text-foreground">
-              {view.phase === "waiting" ? "Waiting for a worker" : detail ?? (view.phase === "finished" ? "Done" : "")}
+              {view.phase === "waiting" ? "Waiting for a worker" : detail ?? ""}
             </span>
           )}
           {counted && view.phase === "working" ? (
