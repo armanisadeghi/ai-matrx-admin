@@ -36,7 +36,7 @@ function percent(rate: number | null): string {
 /** A battle's winner for the runs list; "—" on a plain test run. */
 export function battleWinnerText(r: TestRunView): string {
   if (r.pairwiseRounds === 0) return "—";
-  if (!r.battle?.settled) return r.status === "cancelled" || r.status === "failed" ? "—" : "Judging";
+  if (!r.battle?.settled) return "Judging";
   return r.battle.winnerLabel ?? "Even";
 }
 

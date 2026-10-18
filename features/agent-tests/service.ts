@@ -385,7 +385,7 @@ export async function fetchLatestAgentBattle(
     .order("created_at", { ascending: false })
     .limit(30);
   if (error) throw error;
-  const row = (data ?? []).find((r) => r.status !== "cancelled" && isJsonObject(r.counts) && (num(r.counts.pairwise) ?? 0) > 0);
+  const row = (data ?? []).find((r) => isJsonObject(r.counts) && (num(r.counts.pairwise) ?? 0) > 0);
   if (!row) return null;
   const setups = Array.isArray(row.setups) ? (row.setups as unknown as BattleSetup[]) : [];
   return { run: toRunView(row), setups };
