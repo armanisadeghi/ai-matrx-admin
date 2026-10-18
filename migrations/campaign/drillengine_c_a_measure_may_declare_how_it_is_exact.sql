@@ -2,7 +2,7 @@
 -- total read for an ungrouped question, exact to the hour) and raw_of + raw_within_hours (the whole question read from
 -- the records relation, counted distinct, for a window at most that long); any other question showing it SAYS it is
 -- not exact. platform._drill_run_declared answers it; platform.drill_definition_problems judges the declaration.
--- APPLIED LIVE 2026-10-18 (with the JSON-null comparison fix folded in). Test: scripts/campaign-tests/
+-- APPLIED LIVE 2026-10-18 (with the JSON-null comparison fix and per-hour-first routing folded in). Test: scripts/campaign-tests/
 -- drillengine_window_and_hours_red_green.sql R1-R4 (red before, green after; 17/17).
 -- lane: DRILL-ENGINE
 -- lock: platform
@@ -88,6 +88,10 @@ begin
             where x -> 'exact' ? 'raw_of' and (v_plan -> 'show') ? (x ->> 'key') loop
     v_wf := (v_plan -> 'params' ->> 'wf')::timestamptz;
     v_wt := least(coalesce((v_plan -> 'params' ->> 'wt')::timestamptz, now()), now());
+    -- an ungrouped question a per-hour total answers (exact to the hour, and cheap) never reads the records
+    continue when m -> 'exact' ? 'per_hour' and jsonb_array_length(coalesce(v_plan -> 'by', '[]')) = 0 and v_plan ->> 'across' is null
+                  and coalesce(p_question -> 'where', '{}'::jsonb) in ('{}'::jsonb, 'null'::jsonb)
+                  and coalesce(p_question -> 'having', 'null'::jsonb) in ('null'::jsonb, '[]'::jsonb, '{}'::jsonb);
     if v_def -> '_c' ? 'records' and jsonb_typeof(v_plan -> 'compare') is distinct from 'object' and v_wf is not null
        and v_wt - v_wf <= make_interval(hours => (m -> 'exact' ->> 'raw_within_hours')::integer) then
       v_d2 := coalesce(v_d2, v_def);
