@@ -32,25 +32,6 @@ export function toItemOrder(sort: string): ExportItemOrder {
     : DEFAULT_EXPORT_ITEM_ORDER;
 }
 
-/** Relative "how recently" buckets — the same idea as DATE_FILTER_OPTIONS. */
-export const OCCURRED_FILTER_OPTIONS = [
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "90d", label: "Last 90 days" },
-  { value: "1y", label: "Last year" },
-  { value: "3y", label: "Last 3 years" },
-  { value: "5y", label: "Last 5 years" },
-];
-
-const DAYS_PER_BUCKET: Record<string, number> = {
-  "7d": 7,
-  "30d": 30,
-  "90d": 90,
-  "1y": 365,
-  "3y": 365 * 3,
-  "5y": 365 * 5,
-};
-
 /** Length buckets, in characters — "longest first" deserves a filter to match. */
 export const LENGTH_FILTER_OPTIONS = [
   { value: "lt200", label: "Under 200 characters" },
@@ -95,14 +76,12 @@ function booleanValue(value: EntityFilterValue | undefined): boolean | undefined
 /**
  * Filter bag + search → the items endpoint's query params.
  *
- * `now` is injected so the relative date buckets are testable and so one page
- * read and the bulk verb that follows it resolve "last 30 days" to the SAME
- * instant rather than to two timestamps a few seconds apart.
+ * The date range arrives already resolved to instants by the table, so the page
+ * read and the bulk verb that follows it carry the SAME bounds.
  */
 export function toItemFilter(
   filters: EntityFilters,
   search: string,
-  now: Date = new Date(),
 ): ExportItemFilter {
   const filter: ExportItemFilter = {};
 
@@ -139,12 +118,14 @@ export function toItemFilter(
   const hasAttachment = booleanValue(filters.attachment_count);
   if (hasAttachment !== undefined) filter.has_attachment = hasAttachment;
 
-  const occurredBucket = textValue(filters.occurred_at);
-  const days = occurredBucket ? DAYS_PER_BUCKET[occurredBucket] : undefined;
-  if (days !== undefined) {
-    filter.occurred_after = new Date(
-      now.getTime() - days * 24 * 60 * 60 * 1000,
-    ).toISOString();
+  // The table's date range (bounds already resolved): since inclusive, until exclusive. The server's
+  // `occurred_before` is inclusive, so the exclusive bound goes over as one millisecond earlier.
+  const occurred = filters.occurred_at;
+  if (occurred?.kind === "date") {
+    if (occurred.since) filter.occurred_after = occurred.since;
+    if (occurred.until) {
+      filter.occurred_before = new Date(new Date(occurred.until).getTime() - 1).toISOString();
+    }
   }
 
   const lengthBucket = textValue(filters.char_count);
@@ -164,9 +145,8 @@ export function toItemFilter(
  */
 export function toItemFilterFromBulk(
   bulk: EntityBulkFilter,
-  now: Date = new Date(),
 ): ExportItemFilter {
-  return toItemFilter(bulk.filters, bulk.search, now);
+  return toItemFilter(bulk.filters, bulk.search);
 }
 
 /** A person-readable restatement of a filter, for a confirmation sentence. */
@@ -188,7 +168,7 @@ export function describeItemFilter(filter: ExportItemFilter): string {
   if (filter.has_attachment === false) parts.push("with no attachment");
   if (filter.min_chars !== undefined) parts.push(`at least ${filter.min_chars.toLocaleString()} characters`);
   if (filter.max_chars !== undefined) parts.push(`at most ${filter.max_chars.toLocaleString()} characters`);
-  if (filter.occurred_after) parts.push("within the chosen dates");
+  if (filter.occurred_after || filter.occurred_before) parts.push("within the chosen dates");
   if (filter.q) parts.push(`matching "${filter.q}"`);
   return parts.length > 0 ? parts.join(", ") : "with no filter applied";
 }

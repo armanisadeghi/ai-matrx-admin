@@ -29,7 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { directionLabel } from "../format";
 import type { ExportItem } from "../types";
-import { LENGTH_FILTER_OPTIONS, OCCURRED_FILTER_OPTIONS } from "./itemQuery";
+import { LENGTH_FILTER_OPTIONS } from "./itemQuery";
 
 const DIRECTION_ACCENT: Record<string, string> = {
   outbound:
@@ -198,9 +198,7 @@ export const EXPORT_ITEM_COLUMNS: EntityColumnSpec<ExportItem>[] = [
       id: "occurred_at",
       accessorKey: "occurred_at",
       header: "When",
-      filter: "select",
-      filterSingle: true,
-      filterOptions: OCCURRED_FILTER_OPTIONS,
+      filter: "date",
       defaultSortDirection: "desc",
       width: 120,
       cell: (row) => timeCell(row.occurred_at),
