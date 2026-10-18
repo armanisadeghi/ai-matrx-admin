@@ -114,3 +114,18 @@ test("no native radios: two decisions on one page never share a group", () => {
   render(jest.fn());
   expect(container.querySelectorAll('input[type="radio"]').length).toBe(0);
 });
+
+test("a choice the host cannot place brings the block back for a retry", () => {
+  const onResolve = jest.fn(() => {
+    throw new Error("host could not replace the block");
+  });
+  render(onResolve);
+  click(row("Choose Email List"));
+  expect(() => act(() => { jest.advanceTimersByTime(400); })).toThrow("host could not replace the block");
+  act(() => {}); // flush the restore the failed placement scheduled
+  expect((container.firstElementChild as HTMLElement).className).not.toContain("opacity-0");
+  onResolve.mockImplementation(() => undefined);
+  click(row("Choose Communities"));
+  act(() => { jest.advanceTimersByTime(400); });
+  expect(onResolve).toHaveBeenLastCalledWith("d1", "<decision/>", "Start in niche communities.", "Communities");
+});
