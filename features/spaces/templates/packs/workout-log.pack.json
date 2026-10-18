@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 4,
+  "version": 5,
   "title": "Workout Log",
   "description": "Log sessions, exercises and sets with totals, personal bests and body metrics.",
   "forWho": "Lifters and runners",
@@ -1231,7 +1231,8 @@
                   }
                 }
               ]
-            }
+            },
+            "default": true
           }
         ]
       },
@@ -1669,7 +1670,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

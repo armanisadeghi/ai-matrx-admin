@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 4,
+  "version": 5,
   "title": "Incident Postmortems",
   "description": "Log incidents, write blameless postmortems and track the actions that prevent repeats.",
   "forWho": "Engineering and operations teams",
@@ -413,7 +413,8 @@
                   ]
                 }
               ]
-            }
+            },
+            "default": true
           }
         ]
       },
@@ -1445,7 +1446,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

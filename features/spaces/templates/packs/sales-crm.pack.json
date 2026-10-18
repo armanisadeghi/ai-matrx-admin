@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 4,
+  "version": 5,
   "title": "Sales CRM",
   "description": "Deals on a pipeline board, a contact book, and every call or email logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -1333,7 +1333,8 @@
                   ]
                 }
               ]
-            }
+            },
+            "default": true
           }
         ]
       }
@@ -1797,7 +1798,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

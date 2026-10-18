@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0103",
-  "version": 4,
+  "version": 5,
   "title": "OKRs & Goals",
   "description": "Objectives and key results with live progress rollups, weekly check-ins, cycle review.",
   "forWho": "Leadership teams setting quarterly goals",
@@ -808,7 +808,8 @@
                   ]
                 }
               ]
-            }
+            },
+            "default": true
           }
         ]
       }
@@ -1112,7 +1113,7 @@
         "Wrenhall Avenue"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
