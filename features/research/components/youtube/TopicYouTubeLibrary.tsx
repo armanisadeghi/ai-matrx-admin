@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, CalendarDays, Eye, MessageCircle, ThumbsUp, Users } from "lucide-react";
-import { Chip, SearchField, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import { CalendarDays, Eye, MessageCircle, ThumbsUp, Users } from "lucide-react";
+import { Button, Chip, SearchField, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InfoHint } from "@/components/official/InfoHint";
@@ -18,7 +18,7 @@ import {
   youTubeEngagementRate,
 } from "@/features/marketing/discovery/youtube/formatters";
 import { VIDEO_SIGNAL_LABELS, type VideoSignal } from "../../videoRanking";
-import { videoReadState, type RankedTopicVideo, type VideoReadState } from "./topicVideoLibrary";
+import { videoReadState, type RankedTopicVideo } from "./topicVideoLibrary";
 
 const SORTS = ["best", "views", "newest", "longest", "engagement"] as const;
 type Sort = (typeof SORTS)[number];
@@ -33,13 +33,6 @@ const SORT_OPTIONS: { value: Sort; label: string }[] = [
   { value: "engagement", label: "Most engaging" },
 ];
 
-const READ_CHIP: Record<VideoReadState, { label: string; tone: "success" | "info" | "warning" | "destructive" | "neutral" }> = {
-  analyzed: { label: "Analyzed", tone: "success" },
-  partial: { label: "Partly analyzed", tone: "info" },
-  analyzing: { label: "Analyzing", tone: "info" },
-  failed: { label: "Analysis failed", tone: "destructive" },
-  found: { label: "Found", tone: "neutral" },
-};
 
 function engagementOf({ video }: RankedTopicVideo): number {
   return youTubeEngagementRate(video.like_count, video.comment_count, video.view_count) ?? -1;
@@ -144,10 +137,11 @@ export function TopicYouTubeLibrary({
         <Select aria-label="Sort" value={sort} options={SORT_OPTIONS} onValueChange={(next) => setSort(next)} />
       </div>
 
+      {/* read-gate-exempt: filters over videos already loaded; the parent page owns the read and its failure */}
       {shown.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">No videos match these filters.</p>
       ) : (
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3 min-[1900px]:grid-cols-4">
           {shown.map((entry, index) => (
             <VideoLibraryCard
               key={entry.video.youtube_video_id}
@@ -185,7 +179,10 @@ function VideoLibraryCard({
 }) {
   const { video, importance, score, rank } = entry;
   const [expanded, setExpanded] = useState(false);
-  const read = READ_CHIP[videoReadState(video)];
+  // maxresdefault does not exist for every video; hqdefault always does, and
+  // object-cover in a 16:9 frame crops its letterbox bars away.
+  const fallbackThumbnail = `https://i.ytimg.com/vi/${video.youtube_video_id}/hqdefault.jpg`;
+  const [thumbnail, setThumbnail] = useState(video.thumbnail_url ?? fallbackThumbnail);
   const engagement = youTubeEngagementRate(video.like_count, video.comment_count, video.view_count);
   const description = video.description?.trim() ?? "";
   const longDescription = description.length > 220 || description.split("\n").length > 4;
@@ -197,20 +194,30 @@ function VideoLibraryCard({
       className={`flex flex-col overflow-hidden rounded-xl border bg-card ${selected ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
     >
       <Link href={href} className="group relative block aspect-video w-full overflow-hidden bg-muted">
-        {video.thumbnail_url && (
+        {thumbnail && (
           <Image
-            src={video.thumbnail_url}
+            src={thumbnail}
+            onError={() => setThumbnail(fallbackThumbnail)}
+            // A missing size comes back as YouTube's 120px grey placeholder, not an error.
+            onLoad={(event) => {
+              if (event.currentTarget.naturalWidth <= 120 && thumbnail !== fallbackThumbnail) {
+                setThumbnail(fallbackThumbnail);
+              }
+            }}
+            // YouTube's CDN already serves sized thumbnails; resizing them again
+            // only adds a hop (and hung locally on one sddefault image).
+            unoptimized
             alt=""
             fill
             loading={eagerImage ? "eager" : "lazy"}
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, (max-width: 1536px) 33vw, 25vw"
             className="object-cover transition duration-300 group-hover:scale-[1.02]"
           />
         )}
+        {/* ui-exception: badges sit on a photo, so ink is fixed white on a dark scrim (YouTube's own convention). */}
         <span className="absolute left-2 top-2 rounded-md bg-black/80 px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
           #{rank}
         </span>
-        {video.duration_seconds != null && (
+        {video.duration && (
           <span className="absolute bottom-2 right-2 rounded-md bg-black/80 px-1.5 py-0.5 text-xs font-medium tabular-nums text-white">
             {formatYouTubeDuration(video.duration)}
           </span>
@@ -235,7 +242,7 @@ function VideoLibraryCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 rounded-lg bg-muted/40 px-2 py-2 text-center">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-lg bg-muted/40 px-3 py-2">
           <Metric icon={<Eye className="size-3.5" />} value={formatYouTubeCount(video.view_count)} label="views" />
           <Metric icon={<ThumbsUp className="size-3.5" />} value={formatYouTubeCount(video.like_count)} label="likes" />
           <Metric icon={<MessageCircle className="size-3.5" />} value={formatYouTubeCount(video.comment_count)} label="comments" />
@@ -260,9 +267,9 @@ function VideoLibraryCard({
           <div className="text-sm leading-relaxed text-muted-foreground">
             <p className={`whitespace-pre-line break-words ${expanded ? "" : "line-clamp-4"}`}>{description}</p>
             {longDescription && (
-              <button type="button" onClick={() => setExpanded((open) => !open)} className="mt-1 type-meta font-medium text-foreground hover:underline">
+              <Button type="button" variant="quiet" onClick={() => setExpanded((open) => !open)} className="mt-1">
                 {expanded ? "Show less" : "Show more"}
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -275,13 +282,7 @@ function VideoLibraryCard({
           </div>
         )}
 
-        <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-          <Chip label={read.label} tone={read.tone} />
-          <Link href={href} className="inline-flex items-center gap-1 type-meta font-medium text-foreground hover:underline">
-            <ArrowUpRight className="size-3.5" />
-            Open
-          </Link>
-        </div>
+        <div className="mt-auto" />
         <YouTubeResearchActions videoId={video.youtube_video_id} initialStatus={video.processing_status} showAnalysis={false} />
       </div>
     </article>
@@ -290,12 +291,10 @@ function VideoLibraryCard({
 
 function Metric({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
   return (
-    <div className="min-w-0">
-      <div className="flex items-center justify-center gap-1 text-sm font-semibold tabular-nums text-foreground">
-        <span className="text-muted-foreground">{icon}</span>
-        {value}
-      </div>
-      <div className="type-meta text-muted-foreground">{label}</div>
+    <div className="flex min-w-0 items-center gap-1.5">
+      <span className="shrink-0 text-muted-foreground">{icon}</span>
+      <span className="text-sm font-semibold tabular-nums text-foreground">{value}</span>
+      <span className="truncate type-meta text-muted-foreground">{label}</span>
     </div>
   );
 }
