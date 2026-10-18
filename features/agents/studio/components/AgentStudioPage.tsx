@@ -82,7 +82,7 @@ import {
   type StudioState,
 } from "../studio-state";
 import { STUDIO_ASSISTANT_MANDATE, STUDIO_SURFACE_NAME, buildFromWorkspace, checkMissedInputs } from "../workspace-api";
-import { codeApprove, type WorkspaceInput } from "../workspace";
+import { approvalText, codeApprove, type WorkspaceInput } from "../workspace";
 import { StudioWorkspacePane, useStudioWorkspace } from "./StudioWorkspacePane";
 import { useStudioBuilderFeed } from "../studio-builder-feed";
 import { StudioStart } from "./StudioStart";
@@ -155,7 +155,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   /** Mode 1's "Run again": the last run's own inputs, re-sent on a fresh conversation. */
   const [rerunSeed, setRerunSeed] = useState<{ variables: Record<string, string>; userInput: string } | null>(null);
   const [phase, setPhase] = useState<MakePhase>({ kind: "idle" });
-  const [paneTab, setPaneTab] = useState<"assistant" | "agent" | "controls">("assistant");
+  /** Phone tabs open on the most useful pane: the agent and its run once there is an agent, else the assistant. */
+  const [paneTab, setPaneTab] = useState<"assistant" | "agent" | "controls">(
+    mode.id === "improve" || state.agentId ? "agent" : "assistant",
+  );
   /** Two-pane layout: which one the side column shows beside the agent. */
   const [side, setSide] = useState<"assistant" | "controls">("assistant");
   /** The controls' tab, held here so a layout change (which re-parents the panes) keeps it. */
@@ -374,7 +377,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     try {
       setPhase({ kind: "approving" });
       const ids = selectOrderedMessageIds(chatId)(store.getState());
-      await edit((w) => codeApprove(w, approved.text, ids.indexOf(approved.id) + 1 || null));
+      // The deliverable the person approved, never the chat reply around it (2026-10-18).
+      await edit((w) => codeApprove(w, approvalText(w, approved.text), ids.indexOf(approved.id) + 1 || null));
       setPhase({ kind: "checking" });
       let suggestions: WorkspaceInput[] = [];
       try {
@@ -607,7 +611,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     // Three columns: who/where | the stage steps, centered on the page | the actions. A name that
     // loads late or a longer label never moves the steps or the actions (no layout shift).
     <div
-      className="grid h-10 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-border px-2"
+      className={`grid h-10 shrink-0 items-center gap-2 border-b border-border px-2 ${
+        // On a phone the actions take their full width first (the main button was cut to "Make a…" at 390).
+        isMobile ? "grid-cols-[auto_minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
+      }`}
       data-testid="studio-header"
       data-assist-dock-slot="header"
     >
@@ -639,6 +646,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           <Button
             variant="primary"
             data-testid="studio-make-agent"
+            className="shrink-0 whitespace-nowrap"
             disabled={!state.chatId || making}
             onClick={() => void makeThisAnAgent()}
           >

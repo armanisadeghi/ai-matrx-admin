@@ -26,6 +26,7 @@ import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-s
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { StudioTurnModel } from "./StudioTurnModel";
 import { PaneBar } from "./PaneBar";
+import { pinToLatest } from "../pin-to-latest";
 
 /**
  * Which conversation each launched run (agent/mandate + runKey) opened, kept ABOVE the component. A mount
@@ -107,6 +108,13 @@ export function StudioRun({
   const store = useAppStore();
   const [shown, setShown] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** A conversation reopened from the URL (a reload): it lands on the LATEST turn, not the first message. */
+  const [restored, setRestored] = useState<string | null>(null);
+  const frame = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!restored || restored !== shown) return;
+    return pinToLatest(frame.current);
+  }, [restored, shown]);
   const startedFor = useRef<string | null>(null);
   const unhook = useRef<(() => void) | null>(null);
   useEffect(() => () => unhook.current?.(), []);
@@ -180,6 +188,7 @@ export function StudioRun({
           }
           rememberLaunchedRun(key, openId);
           hookUp(openId);
+          setRestored(openId);
           setShown(openId);
           onConversation?.(openId);
         })
@@ -200,7 +209,7 @@ export function StudioRun({
   }
   if ((!agentId && !mandateKey) || !shown) return <RegionSkeleton />;
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div ref={frame} className="flex h-full min-h-0 flex-col">
       {mandateKey || !turnModelBar ? null : (
         <PaneBar>
           <StudioTurnModel conversationId={shown} />
@@ -210,3 +219,4 @@ export function StudioRun({
     </div>
   );
 }
+

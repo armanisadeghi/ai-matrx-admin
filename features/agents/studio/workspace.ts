@@ -40,6 +40,8 @@ export interface StudioWorkspace {
   goal: string | null;
   deliverable: string | null;
   output_form: unknown;
+  /** The result itself, as the assistant last gave it (no lead-in, no follow-up): what "This is the one" approves. */
+  draft?: string | null;
   inputs: WorkspaceInput[];
   approved_result: { turn?: number | null; text: string; by: WorkspaceBy } | null;
   steps: string[];
@@ -61,6 +63,7 @@ export function emptyWorkspace(): StudioWorkspace {
     goal: null,
     deliverable: null,
     output_form: null,
+    draft: null,
     inputs: [],
     approved_result: null,
     steps: [],
@@ -110,7 +113,53 @@ export function workspaceIsEmpty(ws: StudioWorkspace): boolean {
 // ── the person's edits (every one marks `by: "person"`; the server then refuses the assistant's overwrite) ──
 
 export function personSetText(ws: StudioWorkspace, field: TextField, value: string): StudioWorkspace {
-  return { ...ws, [field]: value, by: { ...ws.by, [field]: "person" } };
+  return withName({ ...ws, [field]: value, by: { ...ws.by, [field]: "person" } });
+}
+
+// ── the name follows from the goal (code, never a question; same rule as aidream workspace.name_from_goal) ──
+
+const NAME_CUT = /(?:[.;:!?](?:\s|$)|\n| — | - | \((?=.)| (?:for|so that|so|by|which|that|because|when|while) )/;
+
+/** A short name read off the goal's first clause; null for an empty goal. */
+export function nameFromGoal(goal: string | null | undefined): string | null {
+  const text = (goal ?? "").split(/\s+/).filter(Boolean).join(" ");
+  if (!text) return null;
+  const cut = NAME_CUT.exec(text);
+  let head = cut && text.slice(0, cut.index).split(" ").length >= 3 ? text.slice(0, cut.index) : text;
+  if (head.length > 60) head = head.slice(0, 60).replace(/ [^ ]*$/, "");
+  head = head.replace(/^[ ,;:\-—]+|[ ,;:\-—]+$/g, "");
+  return head ? head[0].toUpperCase() + head.slice(1) : null;
+}
+
+/** Fill an empty name from the goal, marked `code` (a name the person wrote is never replaced). */
+export function withName(ws: StudioWorkspace): StudioWorkspace {
+  if ((ws.title ?? "").trim() || ws.by.title === "person") return ws;
+  const derived = nameFromGoal(ws.goal);
+  return derived ? { ...ws, title: derived, by: { ...ws.by, title: "code" } } : ws;
+}
+
+// ── what "This is the one" approves: the deliverable, never the chat around it ──
+
+/**
+ * The deliverable inside a chat answer: the block between horizontal rules (the lead-in above and the
+ * follow-up below dropped), else the largest fenced block, else the whole answer.
+ */
+export function deliverableFrom(answer: string): string {
+  const text = answer.trim();
+  const parts = text.split(/\n[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*\n/);
+  if (parts.length >= 3) {
+    const inner = parts.slice(1, -1).map((p) => p.trim()).filter(Boolean);
+    if (inner.length > 0) return inner.reduce((a, b) => (b.length > a.length ? b : a));
+  }
+  const fenced = [...text.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1].trim()).filter(Boolean);
+  if (fenced.length > 0) return fenced.reduce((a, b) => (b.length > a.length ? b : a));
+  return text;
+}
+
+/** The text the press approves: the assistant's recorded draft, else the deliverable inside the latest answer. */
+export function approvalText(ws: StudioWorkspace | null, latestAnswer: string): string {
+  const draft = (ws?.draft ?? "").trim();
+  return draft || deliverableFrom(latestAnswer);
 }
 
 export function personSetInput(
