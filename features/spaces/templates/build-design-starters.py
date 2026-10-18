@@ -24,7 +24,7 @@ CONTRAST. Text roles reach 4.5:1 on what they are read on, Lines roles (border, 
 light AND dark; `--check` prints every promised pair and nothing is written while one fails. The pack
 checker enforces the declared `reads_on` pairs for every design pack.
 
-Run:   python3 features/spaces/templates/build-design-starters.py          # writes the eleven packs
+Run:   python3 features/spaces/templates/build-design-starters.py          # writes the ten starters (--with-base: SP0363 too)
        python3 features/spaces/templates/build-design-starters.py --check  # contrast table only
 Then:  pnpm spaces:templates:check <files>; bump VERSION on every published change.
 Clean-room: our own words and values; fonts are open-licence Google fonts or system fonts.
@@ -874,7 +874,8 @@ def main():
         return 1
     if check_only:
         return 0
-    for s in ALL:
+    # The base board (SP0363) is written only with --with-base: its owner lands its Cover by hand.
+    for s in ALL if "--with-base" in sys.argv else STARTERS:
         p = PACKS / (s.get("file") or f"design-starter-{s['slug']}.pack.json")
         p.write_text(json.dumps(build(s), indent=2, ensure_ascii=False) + "\n")
         print("wrote", p.name)
