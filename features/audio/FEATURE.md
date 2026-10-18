@@ -63,6 +63,20 @@ A keyboard-first surface must be able to say "press V and start talking into thi
 
 ---
 
+## THE PUBLIC TRANSCRIPTION GRANT — the same voice stack for a person with no account (2026-10-18)
+
+A public page declares the capability it already holds with `<TranscriptionGrantProvider type capability>`
+(`components/TranscriptionGrantProvider.tsx`). While it is mounted, `transcribeAudioFile` (and so the one
+recorder, `useVoiceCapture`, `useRecordAndTranscribe`, `ProTextarea`'s mic, `VoiceInputButton`) sends each
+clip to aidream `POST /audio/grant/transcribe` with a grant minted straight from the database door
+`platform.mint_transcription_grant` (`services/transcriptionGrant.ts`) — no session, no fingerprint, no
+organization header; the server bills the capability's organization and applies the `media.transcription`
+`public_*` knobs. A spent grant is renewed once; every other refusal throws `TranscriptionGrantRefusal` with
+the server's sentence. The full-recording fallback transcribes the blob directly instead of uploading it
+(nothing is stored under a grant). First surface: the public form (`/f/<id>`), whose long-text questions
+draw `ProTextarea` with the mic on and agent actions off (`features/forms/publicAnswerTextBox.tsx`).
+Design: `common-docs/systems/media/media-capture/FEATURE.md` § Public transcription grant.
+
 ## Purpose
 
 Three sibling features that together form the audio pipeline:
@@ -320,6 +334,7 @@ Unit tests cover `sinkAwarePlayer`, `captureLock`, the speech API boundary, and 
 
 ## Change log
 
+- `2026-10-18` — **Voice for people without an account: the public transcription grant.** Added `services/transcriptionGrant.ts` and `components/TranscriptionGrantProvider.tsx`; `transcribeAudioFile` and `uploadAndTranscribeFull` route through the grant while a public page declares a capability. The public form runner mounts it with the form id and lends records-ui a `textBox` that is `ProTextarea` with the mic on. `types/database.types.ts` gained `platform.mint_transcription_grant` in generator form (the CLI regeneration needs the Supabase access token, absent in this session).
 - `2026-09-17` — **Audio ceilings became knobs; transcription stopped spending silently.** The 100 MB / 60-minute literals in `features/audio/constants.ts` are gone: thirteen `platform.feature_knob` rows under `media.transcription` (`migrations/audio_transcription_limits_knobs.sql`, applied and verified live) now carry the upload lane (24 h / 5 GB), the separate browser-recording lane (4 h / 512 MB / warn at 3 h 40 m), the dictation cadence and chunk timeout, the retry policy, and the two estimate rates — all read through the new `features/audio/limits.ts`, all organization-overridable, none user-overridable. Added `features/audio/transcriptionSpendGate.ts`: length + estimated cost + estimated time, confirmed before transcription runs on anything over ten minutes, wired into both `CreateTranscriptModal` lanes and `transcript-studio`'s `AudioImportDialog`. Refusals now name the actual limit and the remedy. Guard: `features/audio/__tests__/audio-limits-are-knobs.test.ts`, proven failing then passing.
 
 - `2026-09-17` — **iPhone voice input refused under the TTS playback category — fixed at the mic owner.** The Error Inspector captured "Voice input failed — AudioSession category is not compatible with audio capture." on `/chat`: `unlock.ts` declares `navigator.audioSession.type = "playback"` on the first gesture (2026-08-30 silent-switch fix) and WebKit refuses every `getUserMedia({audio})` under it; `getErrorSolution` then filed it as `UNKNOWN_ERROR` with the raw WebKit sentence. Fix in the package that owns the microphone (`@ai-matrx/browser-audio` 0.4.0): the mic manager switches to `"play-and-record"` right before its own capture and restores the host's category when the mic stops. Here: `camera-stream-manager.ts` calls `prepareAudioSessionForCapture()` before its combined camera + mic prompt (the one audio capture the singleton does not perform), and `getErrorSolution` names the refusal `AUDIO_SESSION_INCOMPATIBLE` with a remedy. Guards: package `mic-stream.test.ts` § audio session category sequencing; `microphone-diagnostics.test.ts`.

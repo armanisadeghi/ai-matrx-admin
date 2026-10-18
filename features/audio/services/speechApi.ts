@@ -4,6 +4,7 @@ import type { TranscriptionOptions, TranscriptionResult } from "../types";
 import { CATALOG_VOICES } from "@/features/audio/service/engines";
 import { textToSpeech, transcribeFile, transcribeUpload, transcribeUrl, voicePreviewRoute } from "@ai-matrx/api/audio";
 import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
+import { activeTranscriptionCapability, transcribeWithGrant } from "./transcriptionGrant";
 
 type TranscriptionWire = components["schemas"]["aidream__services__audio__speech__TranscriptionResponse"];
 type SpeechWire = components["schemas"]["SpeechResponse"];
@@ -52,6 +53,13 @@ export async function transcribeAudioFile(
   const form = new FormData();
   form.append("file", file);
   if (options?.language) form.append("language", options.language);
+  // A PUBLIC SURFACE'S GRANT (TranscriptionGrantProvider): the visitor may have no account, so the
+  // clip goes under the page's capability, billed to its organization, on the default model.
+  const capability = activeTranscriptionCapability();
+  if (capability) {
+    form.delete("model");
+    return normalizeTranscription(await transcribeWithGrant(capability, form, request));
+  }
   if (options?.model) form.append("model", options.model);
   const data = await transcribeUpload(serverApi, { body: form }, callOptionsFrom(request));
   return normalizeTranscription(data);

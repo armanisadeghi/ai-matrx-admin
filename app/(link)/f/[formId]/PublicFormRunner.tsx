@@ -39,11 +39,16 @@ import { PaymentNotice, type PaymentNoticeProps } from "@/features/payments/Paym
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { TranscriptionGrantProvider } from "@/features/audio/components/TranscriptionGrantProvider";
+import { publicAnswerTextBox } from "@/features/forms/publicAnswerTextBox";
 
 
 /** Authored form text → the static inline level (phrasing, valid inside the package's <p>). */
 const FORM_TEXT_HOST: RecordsUiHost = {
   renderText: (text) => <RichContentStaticInline source={text} />,
+  // A long-text question is a SPOKEN OR TYPED answer: the platform's writing box with its mic,
+  // transcribed under this form's public transcription grant (mounted below), no agent actions.
+  textBox: publicAnswerTextBox,
 };
 
 /**
@@ -482,6 +487,7 @@ export function PublicFormRunner({
           retry={paymentRefused.recordId ? { subjectId: form.form_id, recordId: paymentRefused.recordId, back: `/f/${form.form_id}` } : null}
         />
       ) : null}
+      <TranscriptionGrantProvider type="anon_form" capability={form.form_id}>
       <RecordsUiProvider value={FORM_TEXT_HOST}>
         <div className={placeChecked ? undefined : "invisible"} aria-busy={!placeChecked} data-form-place-checked={placeChecked ? "" : undefined}>
         <FormRunner
@@ -494,6 +500,7 @@ export function PublicFormRunner({
         />
         </div>
       </RecordsUiProvider>
+      </TranscriptionGrantProvider>
 
       {!sent && save.kind !== "idle" ? (
         <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground" aria-live="polite">

@@ -1335,9 +1335,9 @@ export function SmartAddBrand({
             },
             basics_sources: factPlan.basicsSources,
             facts_kept: factPlan.rows.length,
-            facts_runs: [...new Set(facts.map((f) => f.run_id).filter((id): id is string => Boolean(id)))],
-            // Every round of this session: a round still running lands its late findings on this brand (server).
-            runs: runIds,
+            // Every round of this session, the rounds that held facts included: a round still running lands its
+            // late findings on this brand (server). The ONE key for a brand's rounds.
+            runs: [...new Set([...runIds, ...facts.map((f) => f.run_id).filter((id): id is string => Boolean(id))])],
           },
         },
         websiteUrl: basics.websiteUrl,

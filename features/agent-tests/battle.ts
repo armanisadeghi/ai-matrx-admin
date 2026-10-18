@@ -118,8 +118,8 @@ export interface CasePairVerdict {
   winner: string | null;
   /** Pairwise rounds (repeats) the judge gave each side, and the ties. */
   judge: { challenger: number; baseline: number; ties: number; pending: number };
-  /** The judge's one-line rationales, one per decided round. */
-  rationales: string[];
+  /** The judge's one-line reasons, one per decided round. */
+  reasons: string[];
   /** True when the person's own votes decided this case (they outrank the judge). */
   byVote: boolean;
 }
@@ -184,7 +184,7 @@ export function pairwiseVerdict(
   const cases = caseIds.map<CasePairVerdict>((caseId) => {
     const mine = pairs.filter((r) => r.caseId === caseId && (r.pairwise?.challenger ?? r.setupKey) === challenger);
     const judge = { challenger: 0, baseline: 0, ties: 0, pending: 0 };
-    const rationales: string[] = [];
+    const reasons: string[] = [];
     for (const r of mine) {
       if (r.status !== "done") {
         judge.pending += 1;
@@ -194,7 +194,7 @@ export function pairwiseVerdict(
       if (w === challenger) judge.challenger += 1;
       else if (w === baseline) judge.baseline += 1;
       else judge.ties += 1;
-      if (r.pairwise?.reason) rationales.push(r.pairwise.reason);
+      if (r.pairwise?.reason) reasons.push(r.pairwise.reason);
     }
     // The person's votes on this case's answers: +1 / -1 per answer, summed per side.
     let voteScore = 0;
@@ -211,7 +211,7 @@ export function pairwiseVerdict(
     else if (judge.challenger > judge.baseline) winner = challenger;
     else if (judge.baseline > judge.challenger) winner = baseline;
     else winner = "tie";
-    return { caseId, winner, judge, rationales, byVote };
+    return { caseId, winner, judge, reasons, byVote };
   });
   const settled = cases.every((c) => c.winner !== null);
   const wins = cases.filter((c) => c.winner === challenger).length;
