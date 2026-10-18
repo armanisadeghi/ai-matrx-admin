@@ -29,6 +29,10 @@
 // DEV ONLY (next.config.js wires the loader for PHASE_DEVELOPMENT_SERVER). A build never gets it:
 // a release must still fail on the real error.
 //
+// WHO CALLS IT (2026-10-18): the one checker process (scripts/matrx-pending-checker.mjs) judges every
+// changed file with `rescuePendingImports`; the loader then runs ONLY on the files it lists
+// (scripts/lib/matrx-pending-rescue-state.cjs) — no longer on every file mentioning @ai-matrx/.
+//
 // NO TYPESCRIPT HERE. This runs in every Turbopack loader worker; the first version loaded the
 // compiler there and drove the shared preview past its 48 GB watchdog (2026-10-08). Statements are
 // found with line-anchored patterns, runtime exports are read from the shipped ESM text, and

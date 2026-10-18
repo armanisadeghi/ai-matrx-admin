@@ -634,7 +634,8 @@ export function BoardTile({
             // A frozen tile keeps its state and DOM but runs nothing: effects,
             // store subscriptions, channels and timers are torn down until it
             // is needed again (React's Activity, Chrome's tab freezing).
-            <Activity mode={sleeps && life !== "live" && !focused ? "hidden" : "visible"}>
+            // An auto-height tile never sleeps: in page layout it IS the page (a frozen body is an empty card).
+            <Activity mode={sleeps && !chrome.autoHeight && life !== "live" && !focused ? "hidden" : "visible"}>
               <TileNavigationBoundary>
                 {/* One tile's crash stays in that tile: the board and every other
                     tile keep working, and this one offers a retry. */}

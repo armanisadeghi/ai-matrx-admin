@@ -54,6 +54,8 @@ export function pageScene<T extends BoardTileBase>(board: BoardStore<T>) {
 
 /** The page column for this view: the view's own width when it is narrower than the column (a phone), else the default. */
 function pageColumnFor(store: BoardCameraStore): number | undefined {
+  // A view not measured yet (0 wide: first frame, a hidden pane) keeps the column; it is not a phone.
+  if (store.getSize().w <= 0) return undefined;
   const w = Math.floor(store.pageViewWidth());
   return w < PAGE_COLUMN_W ? w : undefined;
 }
@@ -88,6 +90,8 @@ export function usePageLayout<T extends BoardTileBase>({
     snapshotRef.current = snapshot;
     orderRef.current = storedOrder;
   });
+  /** The chapter each tile was placed in: kept between re-flows so a growing tile stays in its chapter. */
+  const membersRef = useRef<ReadonlyMap<string, string> | undefined>(undefined);
   /** The chapter order the next page arrangement applies (set on the switch into page layout). */
   const entryOrder = useRef<readonly string[] | null>(null);
 
@@ -150,7 +154,8 @@ export function usePageLayout<T extends BoardTileBase>({
       timer = null;
       if (pressing) return; // the press's end runs it
       column = pageColumnFor(store);
-      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, { columnW: column });
+      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, { columnW: column, members: membersRef.current });
+      membersRef.current = plan.members;
       entryOrder.current = null;
       if (plan.moves.length) board.reflow(plan.moves);
       store.setPageLock({ column: plan.column });
@@ -208,7 +213,8 @@ export function usePageLayout<T extends BoardTileBase>({
     const j = i + dir;
     if (i < 0 || j < 0 || j >= order.length) return;
     [order[i], order[j]] = [order[j], order[i]];
-    const plan = planPageLayout(pageScene(board), order, { columnW: store ? pageColumnFor(store) : undefined });
+    const plan = planPageLayout(pageScene(board), order, { columnW: store ? pageColumnFor(store) : undefined, members: membersRef.current });
+    membersRef.current = plan.members;
     if (plan.moves.length) board.reflow(plan.moves);
     const moved = board.read().frames.find((f) => f.id === id);
     if (moved && store) store.pageScrollTo(moved.rect.y - PAGE_LABEL_ROOM);

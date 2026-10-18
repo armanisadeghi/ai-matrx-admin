@@ -58,6 +58,7 @@ export {
   TableDuplicateDialog,
   TablePage,
   TableRenameDialog,
+  TableTokensProvider,
   TableSettings,
   TablesHome,
   TemplatePreview,

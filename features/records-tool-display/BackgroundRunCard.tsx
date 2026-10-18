@@ -39,7 +39,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatElapsed, useElapsedSince } from "@/lib/progress/elapsed";
 import {
   IMPORT_STAGES,
-  QUIET_AFTER_MS,
+  quietNote,
   RATCHET_START,
   STATUS_WORD,
   advanceRatchet,
@@ -62,16 +62,22 @@ const BADGE_TONE: Record<BackgroundRunPhase, BadgeTone> = {
   opening: "neutral",
   waiting: "neutral",
   working: "primary",
+  needs_you: "neutral",
+  paused: "neutral",
   finished: "success",
   stopped: "destructive",
+  cancelled: "neutral",
 };
 
 const BAR_TONE: Record<BackgroundRunPhase, ProgressTone> = {
   opening: "default",
   waiting: "default",
   working: "default",
+  needs_you: "default",
+  paused: "default",
   finished: "success",
   stopped: "destructive",
+  cancelled: "default",
 };
 
 /** Losses listed before the rest is left to the report table. */
@@ -102,7 +108,8 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
   const view = readBackgroundRun(run, hint);
   const isImport = view.kind === "import";
   const isWorkflow = view.kind === "workflow";
-  const over = view.phase === "finished" || view.phase === "stopped";
+  const over = view.phase === "finished" || view.phase === "stopped" || view.phase === "cancelled";
+  const parked = view.phase === "needs_you" || view.phase === "paused";
   // Generic stages for a workflow with no named stage list: one per step it has started.
   const steps = isWorkflow ? workflowStages(run) : [];
   const stages = isImport ? IMPORT_STAGES : steps;
@@ -133,7 +140,7 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
     ? 100
     : metered && ratchet.stageIndex >= 0
       ? Math.round(ratchet.fraction * 100)
-      : view.phase === "stopped" ? 0 : null;
+      : view.phase === "stopped" || view.phase === "cancelled" || parked ? 0 : null;
   const detail = view.sample?.detail ?? null;
 
   return (
@@ -151,7 +158,7 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
           icon={<Eye />}
           onClick={() => openRunWindow({ runId, workflowName: title })}
         >
-          Open run
+          {view.phase === "needs_you" ? "Answer" : "Open run"}
         </Button>
       </header>
 
@@ -175,7 +182,7 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
             <Skeleton motion="shimmer" shape="line" width="1/3" aria-label="Waiting for the first step" />
           ) : (
             <span className="type-secondary min-w-0 flex-1 truncate text-foreground">
-              {view.phase === "waiting" ? "Waiting for a worker" : detail ?? ""}
+              {view.phase === "waiting" ? "Waiting for a worker" : view.phase === "needs_you" ? view.ask ?? detail ?? "" : detail ?? ""}
             </span>
           )}
           {counted && view.phase === "working" ? (
@@ -186,11 +193,7 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
         </div>}
         {!over ? (
           <p className="type-meta h-4 text-muted-foreground" aria-live="polite">
-            {view.readFailure
-              ? view.readFailure
-              : view.phase === "working" && quietMs >= QUIET_AFTER_MS
-                ? `Still working · last moved ${formatElapsed(quietMs)} ago`
-                : ""}
+            {quietNote(view, quietMs, formatElapsed)}
           </p>
         ) : null}
       </div>

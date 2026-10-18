@@ -54,7 +54,7 @@ export function battleScore(
 ): { scores: SetupScore[]; winner: string | null; settled: boolean } {
   const scores = setupKeys.map<SetupScore>((key) => ({ key, pass: 0, fail: 0, other: 0, pending: 0 }));
   for (const r of results) {
-    if (r.door === "parity") continue;
+    if (r.door === "parity" || r.door === PAIRWISE_DOOR) continue;
     const s = scores.find((x) => x.key === r.setupKey);
     if (!s) continue;
     if (!r.verdict) s.pending += 1;
@@ -98,9 +98,141 @@ export interface SetupJudgeScore {
 /** What the cheap judge decided, per setup (PLAN §3). Results the checks settled are not counted. */
 export function judgeScore(results: readonly TestResultView[], setupKeys: readonly string[]): SetupJudgeScore[] {
   return setupKeys.map((key) => {
-    const mine = results.filter((r) => r.setupKey === key && r.door !== "parity" && r.judgeVerdictId);
+    const mine = results.filter((r) => r.setupKey === key && r.door !== "parity" && r.door !== PAIRWISE_DOOR && r.judgeVerdictId);
     const holds = mine.filter((r) => r.verdict === "pass_judged").length;
     const format = mine.filter((r) => r.verdict === "fail_format").length;
     return { key, judged: mine.length, holds, format, other: mine.length - holds - format };
   });
+}
+
+// --------------------------------------------------------------------------------------------- //
+// Which answer is better — the battle's real verdict (server `agent_tests/pairwise.py`)
+// --------------------------------------------------------------------------------------------- //
+
+/** One answer's vote by the person: +1 good, -1 bad (per result id). */
+export type BattleVotes = Readonly<Record<string, "up" | "down">>;
+
+export interface CasePairVerdict {
+  caseId: string;
+  /** The setup that won this case, `tie`, or null while it is still being judged. */
+  winner: string | null;
+  /** Pairwise rounds (repeats) the judge gave each side, and the ties. */
+  judge: { challenger: number; baseline: number; ties: number; pending: number };
+  /** The judge's one-line rationales, one per decided round. */
+  rationales: string[];
+  /** True when the person's own votes decided this case (they outrank the judge). */
+  byVote: boolean;
+}
+
+export interface PairwiseVerdict {
+  /** False until every pairwise row is judged. */
+  settled: boolean;
+  baseline: string;
+  challenger: string;
+  cases: CasePairVerdict[];
+  wins: number;
+  losses: number;
+  ties: number;
+  /** One-sided sign-test p over the decided cases (ties excluded): how likely a lead this big is by chance. */
+  p: number;
+  /** "clear" only when the lead would happen by chance at most 1 time in 8 (3–0, 4–0, 5–1 …). */
+  confidence: "clear" | "leans" | "even";
+}
+
+/** The pairwise verdict rows of a run (door `pairwise`). */
+export function pairRows(results: readonly TestResultView[]): TestResultView[] {
+  return results.filter((r) => r.door === PAIRWISE_DOOR);
+}
+
+/** The answers of a run: every row except the verdicts between answers. */
+export function answerRows(results: readonly TestResultView[]): TestResultView[] {
+  return results.filter((r) => r.door !== PAIRWISE_DOOR);
+}
+
+export const PAIRWISE_DOOR = "pairwise";
+/** A lead is "clear" when chance alone would give it at most this often. */
+export const CLEAR_WIN_P = 0.125;
+
+/** P(X ≥ k) for X ~ Binomial(n, ½): the one-sided sign test. */
+export function signTestP(k: number, n: number): number {
+  if (n <= 0) return 1;
+  let sum = 0;
+  let c = 1; // C(n, 0)
+  for (let i = 0; i <= n; i++) {
+    if (i >= k) sum += c;
+    c = (c * (n - i)) / (i + 1);
+  }
+  return sum / 2 ** n;
+}
+
+/**
+ * The battle's verdict from its pairwise rows and the person's votes. Per case: the side that won
+ * more judged rounds (repeats); the person's votes on that case's answers outrank the judge when
+ * they prefer one side. Overall: cases won, lost, tied, and how sure — "clear" only when the lead
+ * passes a sign test at p ≤ 1/8, so one lucky case never reads as a win.
+ */
+export function pairwiseVerdict(
+  results: readonly TestResultView[],
+  votes: BattleVotes = {},
+): PairwiseVerdict | null {
+  const pairs = pairRows(results);
+  if (pairs.length === 0) return null;
+  const challenger = pairs[0].pairwise?.challenger ?? pairs[0].setupKey;
+  const baseline = pairs[0].pairwise?.baseline ?? LIVE_KEY;
+  const answers = answerRows(results).filter((r) => r.door !== "parity");
+  const caseIds = [...new Set(pairs.map((r) => r.caseId))];
+  const cases = caseIds.map<CasePairVerdict>((caseId) => {
+    const mine = pairs.filter((r) => r.caseId === caseId && (r.pairwise?.challenger ?? r.setupKey) === challenger);
+    const judge = { challenger: 0, baseline: 0, ties: 0, pending: 0 };
+    const rationales: string[] = [];
+    for (const r of mine) {
+      if (r.status !== "done") {
+        judge.pending += 1;
+        continue;
+      }
+      const w = r.pairwise?.winner ?? null;
+      if (w === challenger) judge.challenger += 1;
+      else if (w === baseline) judge.baseline += 1;
+      else judge.ties += 1;
+      if (r.pairwise?.reason) rationales.push(r.pairwise.reason);
+    }
+    // The person's votes on this case's answers: +1 / -1 per answer, summed per side.
+    let voteScore = 0;
+    for (const a of answers) {
+      if (a.caseId !== caseId || !votes[a.id]) continue;
+      const v = votes[a.id] === "up" ? 1 : -1;
+      if (a.setupKey === challenger) voteScore += v;
+      else if (a.setupKey === baseline) voteScore -= v;
+    }
+    const byVote = voteScore !== 0;
+    let winner: string | null;
+    if (byVote) winner = voteScore > 0 ? challenger : baseline;
+    else if (judge.pending > 0) winner = null;
+    else if (judge.challenger > judge.baseline) winner = challenger;
+    else if (judge.baseline > judge.challenger) winner = baseline;
+    else winner = "tie";
+    return { caseId, winner, judge, rationales, byVote };
+  });
+  const settled = cases.every((c) => c.winner !== null);
+  const wins = cases.filter((c) => c.winner === challenger).length;
+  const losses = cases.filter((c) => c.winner === baseline).length;
+  const ties = cases.filter((c) => c.winner === "tie").length;
+  const lead = Math.max(wins, losses);
+  const p = wins === losses ? 1 : signTestP(lead, wins + losses);
+  const confidence = wins === losses ? "even" : p <= CLEAR_WIN_P && lead > ties ? "clear" : "leans";
+  return { settled, baseline, challenger, cases, wins, losses, ties, p, confidence };
+}
+
+/** The verdict in one line: "Candidate wins 3–0", "Leans Candidate 2–1 · too close to call". */
+export function pairwiseLine(v: PairwiseVerdict, labelOf: (key: string) => string): string {
+  if (!v.settled) return "Judging";
+  const tiesPart = v.ties ? ` · ${v.ties} ${v.ties === 1 ? "tie" : "ties"}` : "";
+  const leader = v.wins >= v.losses ? v.challenger : v.baseline;
+  const score = `${Math.max(v.wins, v.losses)}–${Math.min(v.wins, v.losses)}`;
+  if (v.confidence === "clear") return `${labelOf(leader)} wins ${score}${tiesPart}`;
+  if (v.confidence === "leans") {
+    const few = v.cases.length < 3 ? "too few cases to call" : "too close to call";
+    return `Leans ${labelOf(leader)} ${score}${tiesPart} · ${few}`;
+  }
+  return `Too close to call · ${score}${tiesPart}`;
 }

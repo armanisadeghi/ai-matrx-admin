@@ -26,6 +26,20 @@ export type OutcomeStatus =
   | "refused_by_validation"
   | "error";
 
+/** A battle's pairwise verdict row (`door='pairwise'`, server `agent_tests/pairwise.py`). */
+export interface PairwiseOutcomeView {
+  baseline: string;
+  challenger: string;
+  /** The winning setup key, `tie`, or null when the judge gave no verdict. */
+  winner: string | null;
+  /** One line naming the real setups. */
+  reason: string | null;
+  model: string | null;
+  /** The judge's own call, for Watch AI. */
+  conversationId: string | null;
+  requestId: string | null;
+}
+
 /** The fact judge's decision as stored on the result's outcome (server `_with_judge`). */
 export interface OutcomeJudgeView {
   verdict: string | null;
@@ -165,6 +179,8 @@ export interface TestResultView {
   verdict: TestVerdict | null;
   verdictReason: string | null;
   outcome: OutcomeView | null;
+  /** Set only on a battle's pairwise verdict row (`door='pairwise'`). */
+  pairwise: PairwiseOutcomeView | null;
   blockedBy: { gate?: string; kind?: string; approvalUrl?: string } | null;
   checks: CheckResultView[];
   judgeVerdictId: string | null;

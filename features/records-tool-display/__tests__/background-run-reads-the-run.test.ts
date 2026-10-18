@@ -20,7 +20,10 @@ import { readRecordsAnswer } from "../readRecordsAnswer";
 import {
   IMPORT_STAGES,
   RATCHET_START,
+  STALLED_AFTER_MS,
+  STATUS_WORD,
   advanceRatchet,
+  quietNote,
   readBackgroundRun,
   readProgressMessage,
   stepLabel,
@@ -278,5 +281,50 @@ describe("a generic workflow run: stages from its steps", () => {
   it("a step's label reads as words", () => {
     expect(stepLabel("data.mapped_sync", "sync")).toBe("Mapped sync");
     expect(stepLabel(null, "my-step")).toBe("My step");
+  });
+});
+
+// ── parked, stalled and cancelled runs (adversarial I8, I9, M1) ──────────────────
+
+describe("a run that is not simply working", () => {
+  it("a run parked on a question is Waiting on you, with its ask", () => {
+    const run = runOf([
+      ...started,
+      event(3, { event: "run_interrupted", node_id: "import", checkpoint_id: "c1", payload: { question: "Which workspace should this go in?" }, ts: "2026-10-17T10:01:00Z" }),
+    ]);
+    const view = readBackgroundRun(run, "import");
+    expect(view.phase).toBe("needs_you");
+    expect(STATUS_WORD[view.phase]).toBe("Waiting on you");
+    expect(view.ask).toBe("Which workspace should this go in?");
+  });
+
+  it("a paused run is never drawn as Working", () => {
+    const paused = readBackgroundRun(runOf([...started, event(3, { event: "run_paused", ts: "2026-10-17T10:01:00Z" })]), "import");
+    expect(paused.phase).toBe("paused");
+    expect(STATUS_WORD[paused.phase]).toBe("Paused");
+  });
+
+  it("a cancel the person made is Cancelled, not a failure", () => {
+    const run = runOf([...started, event(3, { event: "run_cancelled", ts: "2026-10-17T10:01:00Z" })]);
+    const view = readBackgroundRun(run, "import");
+    expect(view.phase).toBe("cancelled");
+    expect(view.stoppedBecause).toBeNull();
+    expect(view.endedAt).not.toBeNull();
+  });
+
+  it("the same states read the same for a generic workflow run", () => {
+    const park = event(3, { event: "run_interrupted", node_id: "import", checkpoint_id: "c1", payload: {}, ts: "2026-10-17T10:01:00Z" });
+    expect(readBackgroundRun(runOf([...started, park]), "workflow").phase).toBe("needs_you");
+    expect(readBackgroundRun(runOf([...started, event(3, { event: "run_cancelled", ts: "2026-10-17T10:01:00Z" })]), "workflow").phase).toBe("cancelled");
+  });
+
+  it("a long quiet says no worker has it, never that it continues by itself", () => {
+    const view = { phase: "working" as const, readFailure: null };
+    const fmt = (ms: number) => `${Math.round(ms / 1000)}s`;
+    expect(quietNote(view, 5_000, fmt)).toBe("");
+    expect(quietNote(view, 60_000, fmt)).toBe("Still working · last moved 60s ago");
+    expect(quietNote(view, STALLED_AFTER_MS, fmt)).toBe("No worker on it · it resumes when one is free");
+    expect(quietNote({ phase: "needs_you", readFailure: null }, STALLED_AFTER_MS * 4, fmt)).toBe("");
+    expect(quietNote({ phase: "working", readFailure: "Could not read the run." }, STALLED_AFTER_MS, fmt)).toBe("Could not read the run.");
   });
 });

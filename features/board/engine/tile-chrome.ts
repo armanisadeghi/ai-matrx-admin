@@ -80,6 +80,28 @@ export function tileChrome(
  * The height an auto-height tile should take, or null to leave it: only a real change (≥ 1 px) of a
  * real measurement (a hidden or skipped body measures 0) moves it, so a re-measure never loops.
  */
+/**
+ * The moves an auto-height write makes: the tile takes its new height, and the frame holding it grows
+ * with it (never shrinks here — page layout re-sizes frames after), so the tile's centre stays inside
+ * its own chapter. Growing a tile alone pushed its centre into the next chapter and the page re-flow
+ * then filed it there.
+ */
+export function autoHeightMoves(
+  rect: Rect,
+  id: string,
+  h: number,
+  frames: readonly { id: string; rect: Rect }[],
+): { id: string; x: number; y: number; w?: number; h?: number }[] {
+  const moves: { id: string; x: number; y: number; w?: number; h?: number }[] = [{ id, x: rect.x, y: rect.y, w: rect.w, h }];
+  const home = frameOf(rect, frames);
+  const f = home ? frames.find((x) => x.id === home) : undefined;
+  if (f) {
+    const bottom = rect.y + h + 8;
+    if (bottom > f.rect.y + f.rect.h) moves.push({ id: f.id, x: f.rect.x, y: f.rect.y, w: f.rect.w, h: bottom - f.rect.y });
+  }
+  return moves;
+}
+
 export function autoHeightChange(current: number, measured: number, min = 48): number | null {
   if (!Number.isFinite(measured) || measured <= 0) return null;
   const next = Math.max(min, Math.ceil(measured));

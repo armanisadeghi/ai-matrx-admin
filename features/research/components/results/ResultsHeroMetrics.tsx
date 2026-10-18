@@ -81,7 +81,9 @@ export function buildHeroMetrics(input: {
       label: "Characters",
       value: input.characters,
       icon: Type,
-      format: "int",
+      // Millions of characters do not fit a sixth-width tile as a full integer
+      // ("3,577,1…" clipped on a 1440px desktop) — 3.6M does.
+      format: "compact",
       accent: "text-cyan-500",
     },
     {
