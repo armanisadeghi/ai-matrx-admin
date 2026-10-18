@@ -10,7 +10,8 @@
 // reads/writes). In Postgres, platform._stamp_test_run() stamps test_run_id + test_expires_at on
 // every insert. A person's ordinary session has no cookie, sends no header, and is never stamped.
 //
-// Twin: aidream `matrx_ai/test_run.py` (same header names). Contract:
+// Twin: aidream `aidream/services/runtime/test_run.py` (same header names). Persona factory:
+// scripts/lib/persona.mjs (tag.test_run_id + the cookie in fixtureSessionCookies). Contract:
 // common-docs/systems/architecture/database/data-lifecycle/projects/junk-data-cleanup/HANDOFF.md § 4 step 2.
 //
 // Plain erasable TypeScript with no imports, so Node scripts can import it directly.

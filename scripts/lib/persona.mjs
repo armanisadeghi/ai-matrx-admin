@@ -22,7 +22,7 @@
 //     // user.id, user.email, user.fullName, user.company
 //   });   // teardown ran in `finally`; the sweeper is the net if the process died first
 
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -126,7 +126,16 @@ export function buildTag({ suite, purpose, ttlHours = DEFAULT_TTL_HOURS, now = n
     // The sign-up welcome's background found search leaves this persona alone (a real, paid search otherwise runs
     // on its first load: features/marketing/smart-add/welcome/foundSearchState.ts).
     ...(skipFoundSearch ? { skip_found_search: true } : {}),
+    // THE TEST STAMP (lib/test-run/marker.ts): every row this persona's test work creates carries this
+    // run id, so platform.archive_test_run(run id) archives it. fixtureSessionCookies sets the cookie.
+    test_run_id: randomUUID(),
   };
+}
+
+/** `{ "X-Matrx-Test-Run": <id> }` for a request made as this persona (PostgREST or the Python server). */
+export function personaTestRunHeaders(user) {
+  const id = user?.tag?.test_run_id;
+  return id ? { "X-Matrx-Test-Run": id } : {};
 }
 
 async function gotrue(target, method, path, body) {
@@ -314,5 +323,9 @@ export async function fixtureSessionCookies(target, user, { host, env = process.
   const value = `base64-${Buffer.from(JSON.stringify(session)).toString("base64url")}`;
   const CHUNK = 3180;
   const parts = value.length <= CHUNK ? [[name, value]] : Array.from({ length: Math.ceil(value.length / CHUNK) }, (_, i) => [`${name}.${i}`, value.slice(i * CHUNK, (i + 1) * CHUNK)]);
-  return parts.map(([n, v]) => ({ name: n, value: v, domain: host, path: "/", httpOnly: false, secure: false, sameSite: "Lax" }));
+  const cookies = parts.map(([n, v]) => ({ name: n, value: v, domain: host, path: "/", httpOnly: false, secure: false, sameSite: "Lax" }));
+  // THE TEST STAMP: the browser forwarder sends this run id on every request the persona's walk makes.
+  const testRunId = account.app_metadata.test_fixture.test_run_id;
+  if (testRunId) cookies.push({ name: "matrx_test_run", value: testRunId, domain: host, path: "/", httpOnly: false, secure: false, sameSite: "Lax" });
+  return cookies;
 }

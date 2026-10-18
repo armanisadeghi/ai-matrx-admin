@@ -41,7 +41,9 @@ test("the company comes from the real use-case templates and a named one is hono
 
 test("the tag carries suite, purpose and a 24 hour expiry by default; only a named persona may have none", () => {
   const now = new Date("2026-10-01T09:00:00Z");
-  assert.deepEqual(buildTag({ suite: "portal/sign-in", purpose: "invited client", now }), {
+  const { test_run_id: runId, ...tag } = buildTag({ suite: "portal/sign-in", purpose: "invited client", now });
+  assert.match(runId, /^[0-9a-f-]{36}$/); // the test stamp's run id
+  assert.deepEqual(tag, {
     suite: "portal/sign-in",
     purpose: "invited client",
     created_at: "2026-10-01T09:00:00.000Z",
