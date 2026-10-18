@@ -27,7 +27,8 @@
 --                               association back, "Restored from trash"
 --   trash_restore_subtasks      trashing a task trashes its subtask at the same instant; restoring brings it back;
 --                               restoring [subtask, task] in that order also succeeds (second pass)
---   kernel_unchanged            custom.entity_row_write md5 is the pre-U3 body; a single word still resolves; a
+--   kernel_unchanged            custom.entity_row_write md5 is the pinned body (re-pinned 2026-10-18 by
+--                               ENTITY-DOORS-EVERY-TABLE: platform.entity_table resolver); a single word still resolves; a
 --                               stale kernel write is still PT409 (the Table API's and HR panels' path)
 begin;
 create temp table _r(k text, v jsonb) on commit drop;
@@ -170,7 +171,7 @@ select k, case k
   when 'ambiguous_word_kernel' then jsonb_build_object('pass', v ->> 'state' = 'MX005' and v #>> '{detail,column}' = 'project_id', 'got', v)
   when 'kernel_single_word' then jsonb_build_object('pass', (v ->> 'ok')::boolean, 'got', v)
   when 'kernel_stale' then jsonb_build_object('pass', v ->> 'state' = 'PT409', 'got', v)
-  when 'kernel_md5' then jsonb_build_object('pass', v #>> '{}' = '5f143bfbe12888bac8be372712b750fd', 'md5', v)
+  when 'kernel_md5' then jsonb_build_object('pass', v #>> '{}' = 'd5838c74646c8b936a44c6edd69d9a63', 'md5', v)
   when 'unknown_key' then jsonb_build_object('pass', v ->> 'state' = 'MX012', 'got', v)
   when 'system_key' then jsonb_build_object('pass', v ->> 'state' = 'MX008', 'got', v)
   when 'no_org' then jsonb_build_object('pass', v ->> 'state' = 'MX002', 'got', v)
