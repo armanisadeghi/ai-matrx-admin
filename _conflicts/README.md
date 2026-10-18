@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-18-122044/pnpm-lock.yaml.held — LOCAL latest 2026-10-18 12:52; GITHUB latest 2026-10-18 12:35; LOCAL lacks 7 of GITHUB's 42 new lines; GITHUB lacks 13 of LOCAL's 48 new lines; recover: git show 26760324d8:'pnpm-lock.yaml' / 872f7c1e21:'pnpm-lock.yaml'
 
 ## Resolution log
 - 2026-10-18 12:15 PDT — Resolved `_conflicts/2026-10-18-115923/` `features/agent-tests/service.ts` + `components/AgentTestTables.tsx`: took LOCAL. Each side differed by one line; LOCAL's is a coherent refinement on top of GITHUB's battle-on-reload work (a cancelled run is never restored as the latest battle; a cancelled/failed unsettled battle shows "—", not "Judging"); GITHUB lacked nothing else; owner: none found (commit 101469e747c carries no session).
