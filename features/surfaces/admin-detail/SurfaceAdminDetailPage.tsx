@@ -1055,6 +1055,18 @@ function ClassificationSection({
             </SelectContent>
           </Select>
         </div>
+        <PropertyRow
+          label="System notes"
+          mono
+          help="Set by the manifest's systemNotes"
+          value={
+            surface.system_notes === null
+              ? "Inherits from parent"
+              : surface.system_notes.length === 0
+                ? "None"
+                : surface.system_notes.join(", ")
+          }
+        />
       </div>
     </section>
   );
