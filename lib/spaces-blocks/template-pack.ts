@@ -40,6 +40,9 @@ export const SPACE_TEMPLATE_CATEGORIES = [
   { key: "finance", label: "Finance" },
   { key: "education", label: "School & learning" },
   { key: "personal", label: "Personal" },
+  { key: "healthcare", label: "Healthcare" },
+  { key: "legal", label: "Legal" },
+  { key: "realestate", label: "Real estate" },
 ] as const;
 export type SpaceTemplateCategory = (typeof SPACE_TEMPLATE_CATEGORIES)[number]["key"];
 
