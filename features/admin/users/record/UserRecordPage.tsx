@@ -8,7 +8,7 @@
 
 import { useRecordLoad } from "./useRecordLoad";
 import { useEffect, useRef, useState, type ComponentType } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
@@ -78,8 +78,18 @@ const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps>>> = 
   security: UserSecurityTab,
 };
 
-export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }) {
+/** The tab segment of `/administration/users/<id>/<tab>`, or undefined on Overview. */
+function tabFromPath(pathname: string, userId: string): string | undefined {
+  const base = `${USERS_HUB_PATH}/${encodeURIComponent(userId)}`;
+  if (!pathname.startsWith(`${base}/`)) return undefined;
+  return decodeURIComponent(pathname.slice(base.length + 1)) || undefined;
+}
+
+export function UserRecordPage({ userId, tab: tabProp }: { userId: string; tab?: string }) {
   const router = useRouter();
+  // Rendered by the [id] layout, so it stays mounted across tabs and reads the tab from the address.
+  const pathname = usePathname();
+  const tab = tabProp ?? tabFromPath(pathname, userId);
   const validId = isUuidShape(userId);
   const [version, setVersion] = useState(0);
   const { data: overview, loading, error: loadError } = useRecordLoad(fetchUserOverview, userId, version, validId);
