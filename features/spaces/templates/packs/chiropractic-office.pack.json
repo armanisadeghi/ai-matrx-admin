@@ -1,0 +1,3185 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0402",
+  "version": 1,
+  "title": "Chiropractic Office",
+  "description": "Inquiries, patients, visits and prepaid packages for a chiropractic office.",
+  "forWho": "Chiropractors and wellness clinics",
+  "icon": {
+    "emoji": "🩻"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "chiropractic",
+    "visits",
+    "packages",
+    "patients"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-chiropractic-office",
+    "catalogueId": "SP0402",
+    "useCase": "Bao Trinh works the front desk at a two-chiropractor office and uses this to return new inquiries the same day, run today's visits and see which prepaid packages are nearly used up or about to expire.",
+    "industry": "healthcare",
+    "vertical": "Chiropractic office",
+    "job": "intake",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Elmgate Chiropractic and Wellness",
+      "describes": "A two-doctor chiropractic office with an in-house massage therapist.",
+      "address": {
+        "line1": "905 Pecan Street",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78701",
+        "country": "US"
+      },
+      "phone": "(512) 555-0120",
+      "website": "elmgatechiro.net",
+      "email": "hello@elmgatechiro.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-chiropractic-office",
+    "tables": [
+      {
+        "token": "inquiry",
+        "name": "Inquiries",
+        "labelSingular": "Inquiry",
+        "labelPlural": "Inquiries",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "phone-incoming",
+        "titleField": "inq_title",
+        "describes": "New patient calls, forms and walk-ins, until they book or drop off.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "inq_title",
+            "label": "Inquiry",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "source",
+            "label": "How they found us",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Google search",
+              "Patient referral",
+              "Workplace event",
+              "Social media",
+              "Physician referral"
+            ],
+            "choiceColors": {
+              "Google search": "blue",
+              "Patient referral": "green",
+              "Workplace event": "amber",
+              "Social media": "violet",
+              "Physician referral": "teal"
+            }
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low back",
+              "Neck",
+              "Headaches",
+              "Sports injury",
+              "Posture",
+              "Wellness"
+            ],
+            "choiceColors": {
+              "Low back": "blue",
+              "Neck": "green",
+              "Headaches": "amber",
+              "Sports injury": "violet",
+              "Posture": "teal",
+              "Wellness": "red"
+            }
+          },
+          {
+            "key": "received_on",
+            "label": "Received",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Called",
+              "Booked",
+              "Lost"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Called": "green",
+              "Booked": "amber",
+              "Lost": "violet"
+            },
+            "statusGroups": {
+              "New": "todo",
+              "Called": "in_progress",
+              "Booked": "done",
+              "Lost": "done"
+            },
+            "required": true,
+            "default": "New"
+          },
+          {
+            "key": "call_by",
+            "label": "Call by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "called_btn",
+            "label": "Mark called",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_called"
+            }
+          },
+          {
+            "key": "booked_btn",
+            "label": "Mark booked",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_booked"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "i01",
+            "values": {
+              "inq_title": "Low back inquiry - Grayson Pell",
+              "source": "Google search",
+              "reason": "Low back",
+              "received_on": "@today-1d",
+              "status": "New",
+              "call_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i02",
+            "values": {
+              "inq_title": "Headache inquiry - Sabine Okafor",
+              "source": "Patient referral",
+              "reason": "Headaches",
+              "received_on": "@today",
+              "status": "New",
+              "call_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i03",
+            "values": {
+              "inq_title": "Sports injury inquiry - Marlon Tseng",
+              "source": "Workplace event",
+              "reason": "Sports injury",
+              "received_on": "@today-3d",
+              "status": "Called",
+              "call_by": "@mon+3d"
+            }
+          },
+          {
+            "key": "i04",
+            "values": {
+              "inq_title": "Neck inquiry - Delphine Arkwright",
+              "source": "Social media",
+              "reason": "Neck",
+              "received_on": "@today-6d",
+              "status": "Called",
+              "call_by": "@today-2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i05",
+            "values": {
+              "inq_title": "Posture inquiry - Ignatius Bello",
+              "source": "Google search",
+              "reason": "Posture",
+              "received_on": "@today-8d",
+              "status": "Booked",
+              "call_by": "@today-6d"
+            }
+          },
+          {
+            "key": "i06",
+            "values": {
+              "inq_title": "Wellness inquiry - Rosalie Vanterpool",
+              "source": "Patient referral",
+              "reason": "Wellness",
+              "received_on": "@today-10d",
+              "status": "Booked",
+              "call_by": "@today-8d"
+            }
+          },
+          {
+            "key": "i07",
+            "values": {
+              "inq_title": "Low back inquiry - Cassius Moreau",
+              "source": "Physician referral",
+              "reason": "Low back",
+              "received_on": "@today-15d",
+              "status": "Lost",
+              "call_by": "@today-13d"
+            }
+          },
+          {
+            "key": "i08",
+            "values": {
+              "inq_title": "Neck inquiry - Annelise Dube",
+              "source": "Google search",
+              "reason": "Neck",
+              "received_on": "@today-2d",
+              "status": "New",
+              "call_by": "@mon+4d"
+            }
+          }
+        ],
+        "before": [
+          [
+            "received_on",
+            "call_by"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Called"
+            ],
+            "filled": [
+              "source"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Booked"
+            ],
+            "filled": [
+              "source"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Inquiry",
+            "values": {
+              "status": "New",
+              "inq_title": "New inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Call notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Offer"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First visit offered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Intake form sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "New patient paperwork explained"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "visit",
+        "name": "Visits",
+        "labelSingular": "Visit",
+        "labelPlural": "Visits",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "visit_title",
+        "describes": "Every initial exam, adjustment and massage, linked to the package it draws from.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "visit_title",
+            "label": "Visit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "patient",
+            "label": "Patient",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "patient",
+            "relationMax": 1
+          },
+          {
+            "key": "package",
+            "label": "Package",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "package",
+            "relationMax": 1
+          },
+          {
+            "key": "provider",
+            "label": "Provider",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "kind",
+            "label": "Visit type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Initial exam",
+              "Adjustment",
+              "Re-exam",
+              "Massage"
+            ],
+            "choiceColors": {
+              "Initial exam": "blue",
+              "Adjustment": "green",
+              "Re-exam": "amber",
+              "Massage": "violet"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "blue",
+              "Checked in": "green",
+              "Completed": "amber",
+              "No-show": "violet",
+              "Cancelled": "teal"
+            },
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Scheduled"
+          },
+          {
+            "key": "front_desk",
+            "label": "Front desk owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "checkin_btn",
+            "label": "Check in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "visit_checkin"
+            }
+          },
+          {
+            "key": "complete_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "visit_complete"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "v01",
+            "values": {
+              "visit_title": "Adjustment - Castellanos",
+              "patient": "p01",
+              "package": "k01",
+              "provider": "tm-gideon",
+              "when_at": "@today 08:30",
+              "kind": "Adjustment",
+              "status": "Checked in",
+              "front_desk": "@installer"
+            }
+          },
+          {
+            "key": "v02",
+            "values": {
+              "visit_title": "Adjustment - Osei",
+              "patient": "p02",
+              "package": "k02",
+              "provider": "tm-noor",
+              "when_at": "@today 09:15",
+              "kind": "Adjustment",
+              "status": "Scheduled",
+              "front_desk": "@installer"
+            }
+          },
+          {
+            "key": "v03",
+            "values": {
+              "visit_title": "Initial exam - Rahimi",
+              "patient": "p04",
+              "provider": "tm-noor",
+              "when_at": "@today 16:00",
+              "kind": "Initial exam",
+              "status": "Scheduled",
+              "front_desk": "@installer"
+            }
+          },
+          {
+            "key": "v04",
+            "values": {
+              "visit_title": "Massage - Lundqvist",
+              "patient": "p05",
+              "package": "k03",
+              "provider": "tm-lucinda",
+              "when_at": "@mon+3d 12:00",
+              "kind": "Massage",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "v05",
+            "values": {
+              "visit_title": "Adjustment - Nwosu",
+              "patient": "p07",
+              "package": "k04",
+              "provider": "tm-gideon",
+              "when_at": "@mon+4d 07:45",
+              "kind": "Adjustment",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "v06",
+            "values": {
+              "visit_title": "Re-exam - Castellanos",
+              "patient": "p01",
+              "package": "k01",
+              "provider": "tm-gideon",
+              "when_at": "@today+6d 08:30",
+              "kind": "Re-exam",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "v07",
+            "values": {
+              "visit_title": "Adjustment - Castellanos (last)",
+              "patient": "p01",
+              "package": "k01",
+              "provider": "tm-gideon",
+              "when_at": "@today-3d 08:30",
+              "kind": "Adjustment",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "v08",
+            "values": {
+              "visit_title": "Adjustment - Osei (last)",
+              "patient": "p02",
+              "package": "k02",
+              "provider": "tm-noor",
+              "when_at": "@today-4d 09:15",
+              "kind": "Adjustment",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "v09",
+            "values": {
+              "visit_title": "Adjustment - Beaumont",
+              "patient": "p03",
+              "provider": "tm-gideon",
+              "when_at": "@today-12d 17:00",
+              "kind": "Adjustment",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "v10",
+            "values": {
+              "visit_title": "Massage - Lundqvist (last)",
+              "patient": "p05",
+              "package": "k03",
+              "provider": "tm-lucinda",
+              "when_at": "@today-9d 12:00",
+              "kind": "Massage",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "v11",
+            "values": {
+              "visit_title": "Adjustment - Nwosu (last)",
+              "patient": "p07",
+              "package": "k04",
+              "provider": "tm-gideon",
+              "when_at": "@today-6d 07:45",
+              "kind": "Adjustment",
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "v12",
+            "values": {
+              "visit_title": "Adjustment - Aoki",
+              "patient": "p08",
+              "provider": "tm-noor",
+              "when_at": "@today-20d 10:00",
+              "kind": "Adjustment",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "v13",
+            "values": {
+              "visit_title": "Adjustment - Osei (earlier)",
+              "patient": "p02",
+              "package": "k02",
+              "provider": "tm-noor",
+              "when_at": "@today-11d 09:15",
+              "kind": "Adjustment",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "v14",
+            "values": {
+              "visit_title": "Adjustment - Castellanos (earlier)",
+              "patient": "p01",
+              "package": "k01",
+              "provider": "tm-gideon",
+              "when_at": "@today-10d 08:30",
+              "kind": "Adjustment",
+              "status": "Completed"
+            }
+          }
+        ],
+        "independentOf": {
+          "patient": "The two sides move on their own schedule and status; neither forces the other.",
+          "package": "The two sides move on their own schedule and status; neither forces the other.",
+          "provider": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Checked in"
+            ],
+            "filled": [
+              "provider"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "provider"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Adjustment visit",
+            "values": {
+              "status": "Scheduled",
+              "visit_title": "New visit"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check-out"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Package visit count updated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next visit booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment or copay collected"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "patient",
+        "name": "Patients",
+        "labelSingular": "Patient",
+        "labelPlural": "Patients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "patient_name",
+        "describes": "Everyone in care, with their provider and visit history.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "patient_name",
+            "label": "Patient",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "In care",
+              "Maintenance",
+              "Discharged"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "In care": "green",
+              "Maintenance": "amber",
+              "Discharged": "violet"
+            },
+            "default": "In care"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "provider",
+            "label": "Provider",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "visit_count",
+            "label": "Visits completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "visits",
+            "pick": "visit_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "pkg_count",
+            "label": "Packages",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "packages",
+            "pick": "pkg_title",
+            "agg": "count"
+          },
+          {
+            "key": "visit_btn",
+            "label": "Book visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "visit",
+              "template": "Adjustment visit",
+              "prefill": {
+                "patient": "@row"
+              }
+            }
+          },
+          {
+            "key": "pkg_btn",
+            "label": "Sell a package",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "package",
+              "template": "Package",
+              "prefill": {
+                "patient": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "p01",
+            "values": {
+              "patient_name": "Ivo Castellanos",
+              "status": "In care",
+              "phone": "(512) 555-0131",
+              "email": "ivo.c@mailbox-demo.net",
+              "provider": "tm-gideon"
+            }
+          },
+          {
+            "key": "p02",
+            "values": {
+              "patient_name": "Marguerite Osei",
+              "status": "In care",
+              "phone": "(512) 555-0132",
+              "email": "marguerite.o@mailbox-demo.net",
+              "provider": "tm-noor"
+            }
+          },
+          {
+            "key": "p03",
+            "values": {
+              "patient_name": "Harlan Beaumont",
+              "status": "Maintenance",
+              "phone": "(512) 555-0133",
+              "email": "harlan.b@mailbox-demo.net",
+              "provider": "tm-gideon"
+            }
+          },
+          {
+            "key": "p04",
+            "values": {
+              "patient_name": "Zainab Rahimi",
+              "status": "New",
+              "phone": "(512) 555-0134",
+              "email": "zainab.r@mailbox-demo.net",
+              "provider": "tm-noor"
+            }
+          },
+          {
+            "key": "p05",
+            "values": {
+              "patient_name": "Pieter Lundqvist",
+              "status": "In care",
+              "phone": "(512) 555-0135",
+              "email": "pieter.l@mailbox-demo.net",
+              "provider": "tm-gideon"
+            }
+          },
+          {
+            "key": "p06",
+            "values": {
+              "patient_name": "Odessa Whitfield",
+              "status": "Discharged",
+              "phone": "(512) 555-0136",
+              "email": "odessa.w@mailbox-demo.net",
+              "provider": "tm-noor"
+            }
+          },
+          {
+            "key": "p07",
+            "values": {
+              "patient_name": "Rafferty Nwosu",
+              "status": "In care",
+              "phone": "(512) 555-0137",
+              "email": "raff.n@mailbox-demo.net",
+              "provider": "tm-gideon"
+            }
+          },
+          {
+            "key": "p08",
+            "values": {
+              "patient_name": "Clementine Aoki",
+              "status": "Maintenance",
+              "phone": "(512) 555-0138",
+              "email": "clem.a@mailbox-demo.net",
+              "provider": "tm-noor"
+            }
+          }
+        ],
+        "independentOf": {
+          "provider": "Anyone on the team can take this on, whenever they joined."
+        },
+        "rowTemplates": [
+          {
+            "name": "New patient",
+            "values": {
+              "status": "New",
+              "patient_name": "New patient"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Paperwork"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Intake form received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consent signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Insurance or self-pay noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Initial exam booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Care plan discussed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "package",
+        "name": "Packages",
+        "labelSingular": "Package",
+        "labelPlural": "Packages",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "ticket",
+        "titleField": "pkg_title",
+        "describes": "Prepaid visit packs, how many visits are used and when they expire.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "pkg_title",
+            "label": "Package",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "patient",
+            "label": "Patient",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "patient",
+            "relationMax": 1
+          },
+          {
+            "key": "visits_total",
+            "label": "Visits included",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "visits_used",
+            "label": "Visits used",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "visits",
+            "pick": "visit_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "visits_left",
+            "label": "Visits left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Visits included} - {Visits used}"
+          },
+          {
+            "key": "price",
+            "label": "Price",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Used up",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Active": "blue",
+              "Used up": "green",
+              "Expired": "amber"
+            },
+            "statusGroups": {
+              "Active": "in_progress",
+              "Used up": "done",
+              "Expired": "done"
+            },
+            "required": true,
+            "default": "Active"
+          },
+          {
+            "key": "pkg_visit_btn",
+            "label": "Add visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "visit",
+              "template": "Adjustment visit",
+              "prefill": {
+                "package": "@row"
+              }
+            }
+          },
+          {
+            "key": "used_btn",
+            "label": "Mark used up",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "package_used"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "k01",
+            "values": {
+              "pkg_title": "12-visit plan - Castellanos",
+              "patient": "p01",
+              "visits_total": 12,
+              "price": 780,
+              "expires_on": "@today+75d",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "k02",
+            "values": {
+              "pkg_title": "12-visit plan - Osei",
+              "patient": "p02",
+              "visits_total": 12,
+              "price": 780,
+              "expires_on": "@mon+5d",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "k03",
+            "values": {
+              "pkg_title": "Massage 5-pack - Lundqvist",
+              "patient": "p05",
+              "visits_total": 5,
+              "price": 375,
+              "expires_on": "@today+20d",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "k04",
+            "values": {
+              "pkg_title": "8-visit plan - Nwosu",
+              "patient": "p07",
+              "visits_total": 8,
+              "price": 560,
+              "expires_on": "@today+9d",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "k05",
+            "values": {
+              "pkg_title": "12-visit plan - Whitfield",
+              "patient": "p06",
+              "visits_total": 12,
+              "price": 780,
+              "expires_on": "@today-40d",
+              "status": "Used up"
+            }
+          },
+          {
+            "key": "k06",
+            "values": {
+              "pkg_title": "6-visit plan - Aoki",
+              "patient": "p08",
+              "visits_total": 6,
+              "price": 420,
+              "expires_on": "@today-15d",
+              "status": "Expired"
+            }
+          }
+        ],
+        "independentOf": {
+          "patient": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Used up"
+            ],
+            "filled": [
+              "visits_total"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Package",
+            "values": {
+              "status": "Active",
+              "pkg_title": "New package"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Packages are prepaid. Record payment and explain the expiry date at the desk."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sale"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment taken"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Expiry date explained"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each visit links to one patient.",
+        "fromTable": "visit",
+        "fromField": "patient",
+        "toTable": "patient",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "visits"
+      },
+      {
+        "describes": "Each visit links to one package.",
+        "fromTable": "visit",
+        "fromField": "package",
+        "toTable": "package",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "visits"
+      },
+      {
+        "describes": "Each visit links to one team member.",
+        "fromTable": "visit",
+        "fromField": "provider",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "visits_given"
+      },
+      {
+        "describes": "Each patient links to one team member.",
+        "fromTable": "patient",
+        "fromField": "provider",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "assigned_patients"
+      },
+      {
+        "describes": "Each package links to one patient.",
+        "fromTable": "package",
+        "fromField": "patient",
+        "toTable": "patient",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "packages"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-gideon",
+            "values": {
+              "full_name": "Dr. Gideon Whitcombe, DC",
+              "role": "Chiropractor",
+              "work_email": "gideon@elmgatechiro.net",
+              "mobile": "(512) 555-0121",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-noor",
+            "values": {
+              "full_name": "Dr. Noor Haddad, DC",
+              "role": "Chiropractor",
+              "work_email": "noor@elmgatechiro.net",
+              "mobile": "(512) 555-0122",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-lucinda",
+            "values": {
+              "full_name": "Lucinda Pryce, LMT",
+              "role": "Massage therapist",
+              "work_email": "lucinda@elmgatechiro.net",
+              "mobile": "(512) 555-0123",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-bao",
+            "values": {
+              "full_name": "Bao Trinh",
+              "role": "Front desk",
+              "work_email": "bao@elmgatechiro.net",
+              "mobile": "(512) 555-0124",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "new_inquiry",
+        "name": "Request a first visit",
+        "describes": "How someone asks to become a patient.",
+        "audience": "staff",
+        "table": "inquiry",
+        "fields": [
+          {
+            "fieldKey": "inq_title",
+            "ask": "What is your name and what brings you in?",
+            "required": true
+          },
+          {
+            "fieldKey": "reason",
+            "ask": "Main reason for the visit?"
+          },
+          {
+            "fieldKey": "source",
+            "ask": "How did you hear about us?"
+          }
+        ],
+        "submitLabel": "Request a visit",
+        "confirmation": "Thank you. The office will call within one business day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "inquiry_called",
+        "table": "inquiry",
+        "name": "Mark called",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Called"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inquiry_booked",
+        "table": "inquiry",
+        "name": "Mark booked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Booked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "visit_checkin",
+        "table": "visit",
+        "name": "Check in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked in"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "visit_complete",
+        "table": "visit",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "package_used",
+        "table": "package",
+        "name": "Mark used up",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Used up"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_inquiry",
+        "name": "All inquiries",
+        "table": "inquiry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "inquiry_board",
+        "name": "By status",
+        "table": "inquiry",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "inquiry_cal",
+        "name": "Calendar",
+        "table": "inquiry",
+        "kind": "calendar",
+        "dateField": "call_by",
+        "allDay": true
+      },
+      {
+        "token": "inquiry_today",
+        "name": "Today",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "call_by": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Called"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_week",
+        "name": "This week",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "call_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Called"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_over",
+        "name": "Overdue",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "call_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Called"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_mine",
+        "name": "My inquiries",
+        "table": "inquiry",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_visit",
+        "name": "All visits",
+        "table": "visit",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "visit_board",
+        "name": "By status",
+        "table": "visit",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "visit_cal",
+        "name": "Calendar",
+        "table": "visit",
+        "kind": "calendar",
+        "dateField": "when_at",
+        "allDay": false
+      },
+      {
+        "token": "visit_today",
+        "name": "Today",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "visit_week",
+        "name": "This week",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "visit_next7",
+        "name": "Next 7 days",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "visit_mine",
+        "name": "My visits",
+        "table": "visit",
+        "kind": "grid",
+        "me": [
+          "front_desk"
+        ]
+      },
+      {
+        "token": "all_patient",
+        "name": "All patients",
+        "table": "patient",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_package",
+        "name": "All packages",
+        "table": "package",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "package_board",
+        "name": "By status",
+        "table": "package",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "package_cal",
+        "name": "Calendar",
+        "table": "package",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true
+      },
+      {
+        "token": "package_week",
+        "name": "This week",
+        "table": "package",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Active"
+        }
+      },
+      {
+        "token": "package_next30",
+        "name": "Next 30 days",
+        "table": "package",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "filters": {
+          "status": "Active"
+        }
+      },
+      {
+        "token": "package_over",
+        "name": "Overdue",
+        "table": "package",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Active"
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Office assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "package",
+          "describes": "Every package with visits included, used and expiry."
+        },
+        {
+          "name": "related_tables",
+          "table": "patient",
+          "describes": "The patients who bought each package."
+        }
+      ],
+      "question": {
+        "ask": "How many packages are still active?",
+        "whyItMatters": "The front desk reminds those patients before their packages expire.",
+        "expect": {
+          "table": "package",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Active"
+          },
+          "answer": 4,
+          "unit": "packages"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open inquiries.",
+        "action": {
+          "kind": "open",
+          "surface": "inquiry_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "inquiry_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open visits.",
+        "action": {
+          "kind": "open",
+          "surface": "visit_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "visit_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open patients.",
+        "action": {
+          "kind": "open",
+          "surface": "all_patient"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_patient",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "elmgatechiro.net",
+        "mailbox-demo.net"
+      ],
+      "fictionalStreets": [
+        "Pecan Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "chiropractic-office",
+      "parent": null,
+      "title": "Chiropractic Office",
+      "icon": {
+        "emoji": "🩻"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your chiropractic office on one page. Start with Inquiries to call back today, then Visits for the day's schedule, and keep an eye on Packages so nobody loses prepaid visits. Operational tracking only; clinical notes stay in your clinical system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-inquiry"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-package"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-new-patient"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-daily"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Inquiries by source",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Inquiries by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "visit",
+                      "view": "all_visit"
+                    },
+                    "inline": true,
+                    "title": "Visits by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Visits by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inquiries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inquiry",
+              "view": "inquiry_board"
+            },
+            "inline": true,
+            "title": "Inquiries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "call_by": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Called"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "call_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Called"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "call_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Called"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "call_by"
+              },
+              {
+                "id": "vall",
+                "name": "All inquiries",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "call_by",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Visits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit",
+              "view": "visit_board"
+            },
+            "inline": true,
+            "title": "Visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_at"
+              },
+              {
+                "id": "vall",
+                "name": "All visits",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "front_desk"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "package",
+              "view": "package_board"
+            },
+            "inline": true,
+            "title": "Packages",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "vall",
+                "name": "All packages",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "expires_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "chiropractic-office",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Inquiries by source",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Inquiries by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "visit",
+                      "view": "all_visit"
+                    },
+                    "inline": true,
+                    "title": "Visits by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Visits by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "visit",
+                      "view": "all_visit"
+                    },
+                    "inline": true,
+                    "title": "Visits by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Visits by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "package",
+                      "view": "all_package"
+                    },
+                    "inline": true,
+                    "title": "Package value by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Package value by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "patient",
+                      "view": "all_patient"
+                    },
+                    "inline": true,
+                    "title": "Patients by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Patients by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inquiries to call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inquiry",
+              "view": "all_inquiry"
+            },
+            "inline": true,
+            "title": "Inquiries to call",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Open inquiries",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Called"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packages in use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "package",
+              "view": "all_package"
+            },
+            "inline": true,
+            "title": "Packages in use",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Active",
+                "layout": "list",
+                "filters": {
+                  "status": "Active"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-inquiry",
+      "parent": "chiropractic-office",
+      "title": "Returning a new inquiry",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A call back inside one business day is the biggest factor in whether someone books."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Say your name and the practice name, then thank them for reaching out."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask what is going on and how long; write it on the inquiry."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer two first-visit times and book one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the intake form by email or text."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the inquiry Booked and add the person under Patients."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If no answer, leave a message and try again the next day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-package",
+      "parent": "chiropractic-office",
+      "title": "Selling and tracking packages",
+      "icon": {
+        "emoji": "🎟️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the sale"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Sell a package on the patient."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter visits included, price and expiry date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Explain that each completed visit uses one."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tracking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Visits left updates itself as visits are marked completed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Packages with two visits left or expiring in 30 days show on the Dashboard."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expired packages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark them Expired and let the provider know before the next visit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-new-patient",
+      "parent": "chiropractic-office",
+      "title": "New patient first visit",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Intake form back and reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Insurance or self-pay confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Initial exam booked with enough time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Welcome and tour of the office"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Consent and privacy forms signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Care plan discussed and next visits booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Patient status moved to In care"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-daily",
+      "parent": "chiropractic-office",
+      "title": "Daily desk routine",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review Visits for today"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call back every inquiry marked New"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm tomorrow's first visits"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Close"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark all visits completed or missed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check packages with two visits left"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update tomorrow's schedule printout"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

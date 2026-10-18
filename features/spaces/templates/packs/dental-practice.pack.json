@@ -3442,10 +3442,8 @@
                 "id": "d2",
                 "name": "Proposed",
                 "layout": "list",
-                "anyOf": {
-                  "status": [
-                    "Proposed"
-                  ]
+                "filters": {
+                  "status": "Proposed"
                 }
               }
             ],

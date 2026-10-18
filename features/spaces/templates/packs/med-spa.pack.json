@@ -1,0 +1,3036 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0403",
+  "version": 1,
+  "title": "Med Spa",
+  "description": "Clients, appointments, memberships with credits and inventory for a med spa.",
+  "forWho": "Medical spas and aesthetic clinics",
+  "icon": {
+    "emoji": "💆"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "med spa",
+    "memberships",
+    "appointments",
+    "clients"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-med-spa",
+    "catalogueId": "SP0403",
+    "useCase": "Cai Whitlow is client concierge at a small med spa and uses this to run today's treatments, watch membership credits and renewals, and know when retail and treatment supplies need reordering or are near their best-before date.",
+    "industry": "healthcare",
+    "vertical": "Med spa",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Aurora Bay Med Spa",
+      "describes": "A boutique med spa offering facials, laser and body treatments with memberships.",
+      "address": {
+        "line1": "31 Marlow Esplanade",
+        "city": "Miami",
+        "region": "FL",
+        "postalCode": "33130",
+        "country": "US"
+      },
+      "phone": "(305) 555-0130",
+      "website": "aurorabaymedspa.net",
+      "email": "hello@aurorabaymedspa.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-med-spa",
+    "tables": [
+      {
+        "token": "appointment",
+        "name": "Appointments",
+        "labelSingular": "Appointment",
+        "labelPlural": "Appointments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "appt_title",
+        "describes": "Treatments booked and completed, with the price and any membership credit used.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "appt_title",
+            "label": "Appointment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "membership",
+            "label": "Membership",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "membership",
+            "relationMax": 1
+          },
+          {
+            "key": "provider",
+            "label": "Provider",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "service",
+            "label": "Service",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Facial",
+              "Laser hair removal",
+              "Microneedling",
+              "Injectables consult",
+              "Body contouring",
+              "Chemical peel"
+            ],
+            "choiceColors": {
+              "Facial": "blue",
+              "Laser hair removal": "green",
+              "Microneedling": "amber",
+              "Injectables consult": "violet",
+              "Body contouring": "teal",
+              "Chemical peel": "red"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Confirmed",
+              "In room",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "blue",
+              "Confirmed": "green",
+              "In room": "amber",
+              "Completed": "violet",
+              "No-show": "teal",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Booked": "todo",
+              "Confirmed": "todo",
+              "In room": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Booked"
+          },
+          {
+            "key": "concierge",
+            "label": "Concierge",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "complete_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "appointment_complete"
+            }
+          },
+          {
+            "key": "room_btn",
+            "label": "In room",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "appointment_room"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "appt_title": "Facial - Ashgrove",
+              "client": "c01",
+              "membership": "m01",
+              "provider": "tm-darius",
+              "when_at": "@today 09:30",
+              "service": "Facial",
+              "price": 165,
+              "status": "In room",
+              "concierge": "@installer"
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "appt_title": "Microneedling - Okoro",
+              "client": "c03",
+              "provider": "tm-darius",
+              "when_at": "@today 11:00",
+              "service": "Microneedling",
+              "price": 320,
+              "status": "Confirmed",
+              "concierge": "@installer"
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "appt_title": "Injectables consult - Castellano",
+              "client": "c06",
+              "provider": "tm-solveig",
+              "when_at": "@today 15:00",
+              "service": "Injectables consult",
+              "price": 0,
+              "status": "Booked",
+              "concierge": "@installer"
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "appt_title": "Chemical peel - Tanaka-Lowe",
+              "client": "c04",
+              "membership": "m02",
+              "provider": "tm-darius",
+              "when_at": "@mon+2d 10:00",
+              "service": "Chemical peel",
+              "price": 210,
+              "status": "Confirmed"
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "appt_title": "Laser session - Halvorsen",
+              "client": "c07",
+              "provider": "tm-solveig",
+              "when_at": "@mon+4d 13:30",
+              "service": "Laser hair removal",
+              "price": 260,
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "appt_title": "Facial - Adekunle",
+              "client": "c08",
+              "membership": "m03",
+              "provider": "tm-darius",
+              "when_at": "@today+5d 12:00",
+              "service": "Facial",
+              "price": 165,
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "a07",
+            "values": {
+              "appt_title": "Facial - Ashgrove (last)",
+              "client": "c01",
+              "membership": "m01",
+              "provider": "tm-darius",
+              "when_at": "@today-30d 09:30",
+              "service": "Facial",
+              "price": 165,
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a08",
+            "values": {
+              "appt_title": "Microneedling - Okoro (last)",
+              "client": "c03",
+              "provider": "tm-darius",
+              "when_at": "@today-45d 11:00",
+              "service": "Microneedling",
+              "price": 320,
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a09",
+            "values": {
+              "appt_title": "Body contouring - Adekunle",
+              "client": "c08",
+              "membership": "m03",
+              "provider": "tm-solveig",
+              "when_at": "@today-14d 14:00",
+              "service": "Body contouring",
+              "price": 480,
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a10",
+            "values": {
+              "appt_title": "Laser session - Halvorsen (first)",
+              "client": "c07",
+              "provider": "tm-solveig",
+              "when_at": "@today-28d 13:30",
+              "service": "Laser hair removal",
+              "price": 260,
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a11",
+            "values": {
+              "appt_title": "Facial - Marchand",
+              "client": "c05",
+              "provider": "tm-darius",
+              "when_at": "@today-120d 10:00",
+              "service": "Facial",
+              "price": 165,
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a12",
+            "values": {
+              "appt_title": "Chemical peel - Tanaka-Lowe (last)",
+              "client": "c04",
+              "membership": "m02",
+              "provider": "tm-darius",
+              "when_at": "@today-35d 10:00",
+              "service": "Chemical peel",
+              "price": 210,
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a13",
+            "values": {
+              "appt_title": "Facial - Adekunle (last)",
+              "client": "c08",
+              "membership": "m03",
+              "provider": "tm-darius",
+              "when_at": "@today-40d 12:00",
+              "service": "Facial",
+              "price": 165,
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a14",
+            "values": {
+              "appt_title": "Facial - Okoro",
+              "client": "c03",
+              "provider": "tm-darius",
+              "when_at": "@today-8d 16:00",
+              "service": "Facial",
+              "price": 165,
+              "status": "No-show"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "membership": "The two sides move on their own schedule and status; neither forces the other.",
+          "provider": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "price"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "In room"
+            ],
+            "filled": [
+              "price"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Appointment",
+            "values": {
+              "status": "Booked",
+              "appt_title": "New appointment"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consultation form on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consent signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Membership credit checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Aftercare sheet given"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rebooking offered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Review request sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "sparkles",
+        "titleField": "client_name",
+        "describes": "Every client, their membership and what they have spent.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lead",
+              "Active",
+              "VIP",
+              "Lapsed"
+            ],
+            "choiceColors": {
+              "Lead": "blue",
+              "Active": "green",
+              "VIP": "amber",
+              "Lapsed": "violet"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "heard",
+            "label": "How they found us",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Instagram",
+              "Friend referral",
+              "Google search",
+              "Event",
+              "Walk-in"
+            ],
+            "choiceColors": {
+              "Instagram": "blue",
+              "Friend referral": "green",
+              "Google search": "amber",
+              "Event": "violet",
+              "Walk-in": "teal"
+            }
+          },
+          {
+            "key": "provider",
+            "label": "Preferred provider",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "visits",
+            "label": "Visits completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "appointments",
+            "pick": "appt_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "spend",
+            "label": "Lifetime spend",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "appointments",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "book_btn",
+            "label": "Book appointment",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "appointment",
+              "template": "Appointment",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "mem_btn",
+            "label": "Start membership",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "membership",
+              "template": "Membership",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Philomena Ashgrove",
+              "status": "VIP",
+              "phone": "(305) 555-0141",
+              "email": "philomena.a@mailbox-demo.net",
+              "heard": "Friend referral",
+              "provider": "tm-solveig"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Dominic Valcourt",
+              "status": "Active",
+              "phone": "(305) 555-0142",
+              "email": "dominic.v@mailbox-demo.net",
+              "heard": "Instagram",
+              "provider": "tm-darius"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Anneliese Okoro",
+              "status": "Active",
+              "phone": "(305) 555-0143",
+              "email": "anneliese.o@mailbox-demo.net",
+              "heard": "Google search",
+              "provider": "tm-darius"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Beatrix Tanaka-Lowe",
+              "status": "Active",
+              "phone": "(305) 555-0144",
+              "email": "bea.tl@mailbox-demo.net",
+              "heard": "Event",
+              "provider": "tm-solveig"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Lucien Marchand",
+              "status": "Lapsed",
+              "phone": "(305) 555-0145",
+              "email": "lucien.m@mailbox-demo.net",
+              "heard": "Walk-in",
+              "provider": "tm-darius"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Ximena Castellano",
+              "status": "Lead",
+              "phone": "(305) 555-0146",
+              "email": "ximena.c@mailbox-demo.net",
+              "heard": "Instagram",
+              "provider": "tm-solveig"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "client_name": "Roderick Halvorsen",
+              "status": "Active",
+              "phone": "(305) 555-0147",
+              "email": "rod.h@mailbox-demo.net",
+              "heard": "Friend referral",
+              "provider": "tm-darius"
+            }
+          },
+          {
+            "key": "c08",
+            "values": {
+              "client_name": "Temitope Adekunle",
+              "status": "VIP",
+              "phone": "(305) 555-0148",
+              "email": "temi.a@mailbox-demo.net",
+              "heard": "Instagram",
+              "provider": "tm-solveig"
+            }
+          }
+        ],
+        "independentOf": {
+          "provider": "Anyone on the team can take this on, whenever they joined."
+        },
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Lead",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Consultation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consultation form sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Goals and preferences noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consent forms signed before treatment"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rebooking offered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "membership",
+        "name": "Memberships",
+        "labelSingular": "Membership",
+        "labelPlural": "Memberships",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "member_title",
+        "describes": "Monthly and annual plans with credits used and renewal dates.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "member_title",
+            "label": "Membership",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "plan",
+            "label": "Plan",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Glow monthly",
+              "Skin reset quarterly",
+              "Body annual"
+            ],
+            "choiceColors": {
+              "Glow monthly": "blue",
+              "Skin reset quarterly": "green",
+              "Body annual": "amber"
+            }
+          },
+          {
+            "key": "monthly_fee",
+            "label": "Monthly fee",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "credits_total",
+            "label": "Credits included",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "credits_used",
+            "label": "Credits used",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "appointments",
+            "pick": "appt_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "credits_left",
+            "label": "Credits left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Credits included} - {Credits used}"
+          },
+          {
+            "key": "renews_on",
+            "label": "Renews",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Paused",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Active": "blue",
+              "Paused": "green",
+              "Cancelled": "amber"
+            },
+            "statusGroups": {
+              "Active": "in_progress",
+              "Paused": "todo",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Active"
+          },
+          {
+            "key": "cancel_btn",
+            "label": "Cancel membership",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "membership_cancel"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "member_title": "Glow monthly - Ashgrove",
+              "client": "c01",
+              "plan": "Glow monthly",
+              "monthly_fee": 149,
+              "credits_total": 4,
+              "renews_on": "@mon+3d",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "member_title": "Skin reset quarterly - Tanaka-Lowe",
+              "client": "c04",
+              "plan": "Skin reset quarterly",
+              "monthly_fee": 89,
+              "credits_total": 3,
+              "renews_on": "@today+25d",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "member_title": "Body annual - Adekunle",
+              "client": "c08",
+              "plan": "Body annual",
+              "monthly_fee": 199,
+              "credits_total": 6,
+              "renews_on": "@today+11d",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "member_title": "Glow monthly - Marchand",
+              "client": "c05",
+              "plan": "Glow monthly",
+              "monthly_fee": 149,
+              "credits_total": 4,
+              "renews_on": "@today-60d",
+              "status": "Cancelled"
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "member_title": "Skin reset quarterly - Valcourt",
+              "client": "c02",
+              "plan": "Skin reset quarterly",
+              "monthly_fee": 89,
+              "credits_total": 3,
+              "renews_on": "@today-2d",
+              "status": "Paused"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Cancelled"
+            ],
+            "filled": [
+              "plan"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Membership",
+            "values": {
+              "status": "Active",
+              "member_title": "New membership"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Explain what a credit covers and when it expires."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sign-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Agreement signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Card on file confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "product",
+        "name": "Inventory",
+        "labelSingular": "Product",
+        "labelPlural": "Inventory",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "product_name",
+        "describes": "Retail and treatment supplies, with what needs reordering or is close to expiring.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Product",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Skincare retail",
+              "Treatment supply",
+              "Disposables",
+              "Aftercare"
+            ],
+            "choiceColors": {
+              "Skincare retail": "blue",
+              "Treatment supply": "green",
+              "Disposables": "amber",
+              "Aftercare": "violet"
+            }
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "expires_on",
+            "label": "Best before",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "stock_check",
+            "label": "Stock check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          }
+        ],
+        "rows": [
+          {
+            "key": "s01",
+            "values": {
+              "product_name": "Vitamin C serum, 30 ml",
+              "category": "Skincare retail",
+              "on_hand": 18,
+              "reorder_at": 8,
+              "expires_on": "@today+210d",
+              "supplier": "Aurelian Beauty Supply"
+            }
+          },
+          {
+            "key": "s02",
+            "values": {
+              "product_name": "Hydrating mask (box of 10)",
+              "category": "Treatment supply",
+              "on_hand": 4,
+              "reorder_at": 5,
+              "expires_on": "@today+25d",
+              "supplier": "Aurelian Beauty Supply"
+            }
+          },
+          {
+            "key": "s03",
+            "values": {
+              "product_name": "Peel solution, 15%",
+              "category": "Treatment supply",
+              "on_hand": 3,
+              "reorder_at": 2,
+              "expires_on": "@today+18d",
+              "supplier": "Calder Clinical Wholesale"
+            }
+          },
+          {
+            "key": "s04",
+            "values": {
+              "product_name": "Microneedling cartridges (box)",
+              "category": "Disposables",
+              "on_hand": 6,
+              "reorder_at": 4,
+              "expires_on": "@today+400d",
+              "supplier": "Calder Clinical Wholesale"
+            }
+          },
+          {
+            "key": "s05",
+            "values": {
+              "product_name": "Mineral SPF 50",
+              "category": "Skincare retail",
+              "on_hand": 22,
+              "reorder_at": 10,
+              "expires_on": "@today+300d",
+              "supplier": "Aurelian Beauty Supply"
+            }
+          },
+          {
+            "key": "s06",
+            "values": {
+              "product_name": "Soothing balm",
+              "category": "Aftercare",
+              "on_hand": 9,
+              "reorder_at": 6,
+              "expires_on": "@today+28d",
+              "supplier": "Aurelian Beauty Supply"
+            }
+          },
+          {
+            "key": "s07",
+            "values": {
+              "product_name": "Disposable headbands (case)",
+              "category": "Disposables",
+              "on_hand": 2,
+              "reorder_at": 3,
+              "expires_on": "@today+700d",
+              "supplier": "Calder Clinical Wholesale"
+            }
+          },
+          {
+            "key": "s08",
+            "values": {
+              "product_name": "Numbing cream",
+              "category": "Treatment supply",
+              "on_hand": 7,
+              "reorder_at": 4,
+              "expires_on": "@today-5d",
+              "supplier": "Calder Clinical Wholesale"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each appointment links to one client.",
+        "fromTable": "appointment",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "appointments"
+      },
+      {
+        "describes": "Each appointment links to one membership.",
+        "fromTable": "appointment",
+        "fromField": "membership",
+        "toTable": "membership",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "appointments"
+      },
+      {
+        "describes": "Each appointment links to one team member.",
+        "fromTable": "appointment",
+        "fromField": "provider",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "appointments_given"
+      },
+      {
+        "describes": "Each client links to one team member.",
+        "fromTable": "client",
+        "fromField": "provider",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "preferred_clients"
+      },
+      {
+        "describes": "Each membership links to one client.",
+        "fromTable": "membership",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "memberships"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-solveig",
+            "values": {
+              "full_name": "Solveig Marchetti, RN",
+              "role": "Lead nurse injector",
+              "work_email": "solveig@aurorabaymedspa.net",
+              "mobile": "(305) 555-0131",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-darius",
+            "values": {
+              "full_name": "Darius Obuya",
+              "role": "Medical aesthetician",
+              "work_email": "darius@aurorabaymedspa.net",
+              "mobile": "(305) 555-0132",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-eloise",
+            "values": {
+              "full_name": "Eloise Fontaine",
+              "role": "Medical director",
+              "work_email": "eloise@aurorabaymedspa.net",
+              "mobile": "(305) 555-0133",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-cai",
+            "values": {
+              "full_name": "Cai Whitlow",
+              "role": "Client concierge",
+              "work_email": "cai@aurorabaymedspa.net",
+              "mobile": "(305) 555-0134",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "consult_request",
+        "name": "Request a consultation",
+        "describes": "How a new client asks for a first consultation.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email?"
+          },
+          {
+            "fieldKey": "heard",
+            "ask": "How did you hear about us?"
+          }
+        ],
+        "submitLabel": "Request consultation",
+        "confirmation": "Thank you. Our concierge will reach out to book your consultation."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "appointment_complete",
+        "table": "appointment",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "appointment_room",
+        "table": "appointment",
+        "name": "In room",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In room"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "membership_cancel",
+        "table": "membership",
+        "name": "Cancel membership",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Cancelled"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_appointment",
+        "name": "All appointments",
+        "table": "appointment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "appointment_board",
+        "name": "By status",
+        "table": "appointment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "appointment_cal",
+        "name": "Calendar",
+        "table": "appointment",
+        "kind": "calendar",
+        "dateField": "when_at",
+        "allDay": false
+      },
+      {
+        "token": "appointment_today",
+        "name": "Today",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Confirmed",
+            "In room"
+          ]
+        }
+      },
+      {
+        "token": "appointment_week",
+        "name": "This week",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Confirmed",
+            "In room"
+          ]
+        }
+      },
+      {
+        "token": "appointment_next7",
+        "name": "Next 7 days",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Confirmed",
+            "In room"
+          ]
+        }
+      },
+      {
+        "token": "appointment_mine",
+        "name": "My appointments",
+        "table": "appointment",
+        "kind": "grid",
+        "me": [
+          "concierge"
+        ]
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_membership",
+        "name": "All memberships",
+        "table": "membership",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "membership_board",
+        "name": "By status",
+        "table": "membership",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "membership_cal",
+        "name": "Calendar",
+        "table": "membership",
+        "kind": "calendar",
+        "dateField": "renews_on",
+        "allDay": true
+      },
+      {
+        "token": "membership_week",
+        "name": "This week",
+        "table": "membership",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Active",
+            "Paused"
+          ]
+        }
+      },
+      {
+        "token": "membership_next30",
+        "name": "Next 30 days",
+        "table": "membership",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Active",
+            "Paused"
+          ]
+        }
+      },
+      {
+        "token": "membership_over",
+        "name": "Overdue",
+        "table": "membership",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Active",
+            "Paused"
+          ]
+        }
+      },
+      {
+        "token": "all_product",
+        "name": "All inventory",
+        "table": "product",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "product_cal",
+        "name": "Calendar",
+        "table": "product",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true
+      },
+      {
+        "token": "product_next30",
+        "name": "Next 30 days",
+        "table": "product",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Spa assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "membership",
+          "describes": "Every membership with credits and renewal date."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The members behind each plan."
+        }
+      ],
+      "question": {
+        "ask": "How many memberships are active?",
+        "whyItMatters": "The concierge reviews active members every month.",
+        "expect": {
+          "table": "membership",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Active"
+          },
+          "answer": 3,
+          "unit": "memberships"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open appointments.",
+        "action": {
+          "kind": "open",
+          "surface": "appointment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "appointment_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "all_client"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_client",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open memberships.",
+        "action": {
+          "kind": "open",
+          "surface": "membership_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "membership_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "aurorabaymedspa.net",
+        "mailbox-demo.net"
+      ],
+      "fictionalStreets": [
+        "Marlow Esplanade"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "med-spa",
+      "parent": null,
+      "title": "Med Spa",
+      "icon": {
+        "emoji": "💆"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your med spa in one place. Start with Appointments for today's treatments, keep Memberships healthy with credits and renewal dates, and check Inventory for items to reorder. Operational tracking only; clinical charting stays in your clinical system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-consult"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-memberships"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-inventory"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-rebook"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Appointments by service",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Appointments by service",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "service",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Revenue by service",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Revenue by service",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "service",
+                          "op": "sum",
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Appointments by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Appointments by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Appointments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "appointment",
+              "view": "appointment_board"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Confirmed",
+                    "In room"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Confirmed",
+                    "In room"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Confirmed",
+                    "In room"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_at"
+              },
+              {
+                "id": "vall",
+                "name": "All appointments",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "concierge"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vall",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "vall"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Memberships"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "membership",
+              "view": "membership_board"
+            },
+            "inline": true,
+            "title": "Memberships",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "renews_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Active",
+                    "Paused"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Active",
+                    "Paused"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "renews_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Active",
+                    "Paused"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "renews_on"
+              },
+              {
+                "id": "vall",
+                "name": "All memberships",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "renews_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inventory"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "all_product"
+            },
+            "inline": true,
+            "title": "Inventory",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "vall",
+                "name": "All inventory",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "expires_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-next30"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "med-spa",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Appointments by service",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Appointments by service",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "service",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Revenue by service",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Revenue by service",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "service",
+                          "op": "sum",
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Appointments by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Appointments by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "membership",
+                      "view": "all_membership"
+                    },
+                    "inline": true,
+                    "title": "Members by plan",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Members by plan",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "plan",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Clients by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "heard",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "product",
+                      "view": "all_product"
+                    },
+                    "inline": true,
+                    "title": "Stock by category",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Stock by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "on_hand"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Memberships to review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "membership",
+              "view": "all_membership"
+            },
+            "inline": true,
+            "title": "Memberships to review",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Active",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Active",
+                    "Paused"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Upcoming appointments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "appointment",
+              "view": "all_appointment"
+            },
+            "inline": true,
+            "title": "Upcoming appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Not yet done",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-consult",
+      "parent": "med-spa",
+      "title": "Consultation to first treatment",
+      "icon": {
+        "emoji": "🧴"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good first visit makes the second one easy to book."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Consultation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the consultation form before the visit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review goals and previous treatments with the client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Have consent forms signed before any treatment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Treatment day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm the person and the treatment on the appointment."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give the aftercare sheet and write the date of the next visit on it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark the appointment Completed so spend and credits update."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-memberships",
+      "parent": "med-spa",
+      "title": "Membership management",
+      "icon": {
+        "emoji": "🎟️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Starting a membership"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Start membership on the client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose the plan, monthly fee and credits included."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the renewal date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check Credits left and tell clients who have unused credits."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Renewals in the next 30 days appear in the Next 30 days view."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pausing and ending"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set status to Paused or Cancelled and note the reason."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-inventory",
+      "parent": "med-spa",
+      "title": "Inventory and expiry",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run this once a week, always on the same day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Count"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update On hand for anything used"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Look at Stock check for items marked Reorder"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expiry"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open Inventory, Next 30 days view"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Move short-dated items to the front"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Retire anything past its best-before date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send one order per supplier and note the date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-rebook",
+      "parent": "med-spa",
+      "title": "Rebooking and win-back",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rebooking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer the next appointment before the client leaves."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mention the membership if they have booked three or more visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Win-back"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Filter Clients by status Lapsed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a short personal message offering a free add-on."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After two tries, leave the client Lapsed and move on."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

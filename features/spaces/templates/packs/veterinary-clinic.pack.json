@@ -1,0 +1,2940 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0404",
+  "version": 1,
+  "title": "Veterinary Clinic",
+  "description": "Owners, pets, appointments and vaccine reminders for a small animal clinic.",
+  "forWho": "Veterinary clinics and animal hospitals",
+  "icon": {
+    "emoji": "🐾"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "veterinary",
+    "pets",
+    "appointments",
+    "vaccines"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-veterinary-clinic",
+    "catalogueId": "SP0404",
+    "useCase": "Felix Oduya works the front desk at a two-vet clinic and uses this to run today's appointments and call every owner whose pet's vaccine is coming due or has lapsed.",
+    "industry": "healthcare",
+    "vertical": "Veterinary clinic",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Maple Hollow Veterinary",
+      "describes": "A two-veterinarian small animal clinic with a technician and a front desk.",
+      "address": {
+        "line1": "620 Tamarack Road",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97205",
+        "country": "US"
+      },
+      "phone": "(503) 555-0120",
+      "website": "maplehollowvet.net",
+      "email": "hello@maplehollowvet.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-veterinary-clinic",
+    "tables": [
+      {
+        "token": "appointment",
+        "name": "Appointments",
+        "labelSingular": "Appointment",
+        "labelPlural": "Appointments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "appt_title",
+        "describes": "Every visit, linked to the pet and the vet.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "appt_title",
+            "label": "Appointment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pet",
+            "label": "Pet",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pet",
+            "relationMax": 1
+          },
+          {
+            "key": "vet",
+            "label": "Veterinarian",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wellness exam",
+              "Vaccination",
+              "Dental cleaning",
+              "Sick visit",
+              "Surgery",
+              "Follow-up"
+            ],
+            "choiceColors": {
+              "Wellness exam": "blue",
+              "Vaccination": "green",
+              "Dental cleaning": "amber",
+              "Sick visit": "violet",
+              "Surgery": "teal",
+              "Follow-up": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Checked in",
+              "In exam",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "blue",
+              "Checked in": "green",
+              "In exam": "amber",
+              "Completed": "violet",
+              "No-show": "teal",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Booked": "todo",
+              "Checked in": "in_progress",
+              "In exam": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Booked"
+          },
+          {
+            "key": "front_desk",
+            "label": "Front desk owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "checkin_btn",
+            "label": "Check in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "appointment_checkin"
+            }
+          },
+          {
+            "key": "complete_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "appointment_complete"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "appt_title": "Wellness exam - Biscuit",
+              "pet": "pt01",
+              "vet": "tm-aurelia",
+              "when_at": "@today 09:00",
+              "reason": "Wellness exam",
+              "status": "In exam",
+              "front_desk": "@installer"
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "appt_title": "Sick visit - Mochi",
+              "pet": "pt02",
+              "vet": "tm-joaquin",
+              "when_at": "@today 10:30",
+              "reason": "Sick visit",
+              "status": "Booked",
+              "front_desk": "@installer"
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "appt_title": "Dental cleaning - Juniper",
+              "pet": "pt03",
+              "vet": "tm-aurelia",
+              "when_at": "@today 13:00",
+              "reason": "Dental cleaning",
+              "status": "Checked in",
+              "front_desk": "@installer"
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "appt_title": "Vaccination - Atlas",
+              "pet": "pt05",
+              "vet": "tm-joaquin",
+              "when_at": "@mon+2d 11:00",
+              "reason": "Vaccination",
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "appt_title": "Follow-up - Juniper",
+              "pet": "pt03",
+              "vet": "tm-aurelia",
+              "when_at": "@mon+4d 15:00",
+              "reason": "Follow-up",
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "appt_title": "Wellness exam - Pickles",
+              "pet": "pt04",
+              "vet": "tm-joaquin",
+              "when_at": "@today+4d 09:30",
+              "reason": "Wellness exam",
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "a07",
+            "values": {
+              "appt_title": "Wellness exam - Noodle",
+              "pet": "pt07",
+              "vet": "tm-aurelia",
+              "when_at": "@today+6d 14:00",
+              "reason": "Wellness exam",
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "a08",
+            "values": {
+              "appt_title": "Vaccination - Mochi (last)",
+              "pet": "pt02",
+              "vet": "tm-joaquin",
+              "when_at": "@today-40d 10:00",
+              "reason": "Vaccination",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a09",
+            "values": {
+              "appt_title": "Surgery - Willow",
+              "pet": "pt06",
+              "vet": "tm-aurelia",
+              "when_at": "@today-12d 08:00",
+              "reason": "Surgery",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a10",
+            "values": {
+              "appt_title": "Follow-up - Willow",
+              "pet": "pt06",
+              "vet": "tm-joaquin",
+              "when_at": "@today-3d 16:00",
+              "reason": "Follow-up",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a11",
+            "values": {
+              "appt_title": "Sick visit - Noodle",
+              "pet": "pt07",
+              "vet": "tm-joaquin",
+              "when_at": "@today-18d 12:00",
+              "reason": "Sick visit",
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "a12",
+            "values": {
+              "appt_title": "Wellness exam - Atlas",
+              "pet": "pt05",
+              "vet": "tm-aurelia",
+              "when_at": "@today-60d 10:00",
+              "reason": "Wellness exam",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a13",
+            "values": {
+              "appt_title": "Wellness exam - Biscuit (last)",
+              "pet": "pt01",
+              "vet": "tm-aurelia",
+              "when_at": "@today-365d 09:00",
+              "reason": "Wellness exam",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a14",
+            "values": {
+              "appt_title": "Vaccination - Ferris",
+              "pet": "pt08",
+              "vet": "tm-joaquin",
+              "when_at": "@today-200d 11:30",
+              "reason": "Vaccination",
+              "status": "Cancelled"
+            }
+          }
+        ],
+        "independentOf": {
+          "pet": "The two sides move on their own schedule and status; neither forces the other.",
+          "vet": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Checked in"
+            ],
+            "filled": [
+              "vet"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "vet"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Appointment",
+            "values": {
+              "status": "Booked",
+              "appt_title": "New appointment"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reason for visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checked at the visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Weight recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vaccines reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before they leave"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next visit or reminder set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Take-home instructions handed over"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "vaccine",
+        "name": "Vaccines",
+        "labelSingular": "Vaccine record",
+        "labelPlural": "Vaccines",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "syringe",
+        "titleField": "vax_title",
+        "describes": "What each pet has had and when the next one is due.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "vax_title",
+            "label": "Vaccine record",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pet",
+            "label": "Pet",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pet",
+            "relationMax": 1
+          },
+          {
+            "key": "vaccine",
+            "label": "Vaccine",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Rabies",
+              "DHPP",
+              "Bordetella",
+              "FVRCP",
+              "Leptospirosis"
+            ],
+            "choiceColors": {
+              "Rabies": "blue",
+              "DHPP": "green",
+              "Bordetella": "amber",
+              "FVRCP": "violet",
+              "Leptospirosis": "teal"
+            }
+          },
+          {
+            "key": "given_on",
+            "label": "Given",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Next due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Current",
+              "Reminder sent",
+              "Booked",
+              "Lapsed"
+            ],
+            "choiceColors": {
+              "Current": "blue",
+              "Reminder sent": "green",
+              "Booked": "amber",
+              "Lapsed": "violet"
+            },
+            "statusGroups": {
+              "Current": "done",
+              "Reminder sent": "in_progress",
+              "Booked": "in_progress",
+              "Lapsed": "todo"
+            },
+            "required": true,
+            "default": "Current"
+          },
+          {
+            "key": "owner",
+            "label": "Reminder owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reminded_btn",
+            "label": "Mark reminded",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "vaccine_reminded"
+            }
+          },
+          {
+            "key": "booked_btn",
+            "label": "Mark booked",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "vaccine_booked"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "x01",
+            "values": {
+              "vax_title": "Rabies - Biscuit",
+              "pet": "pt01",
+              "vaccine": "Rabies",
+              "given_on": "@today-350d",
+              "due_on": "@today+15d",
+              "status": "Reminder sent",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "x02",
+            "values": {
+              "vax_title": "DHPP - Juniper",
+              "pet": "pt03",
+              "vaccine": "DHPP",
+              "given_on": "@today-380d",
+              "due_on": "@today-15d",
+              "status": "Lapsed",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "x03",
+            "values": {
+              "vax_title": "Bordetella - Atlas",
+              "pet": "pt05",
+              "vaccine": "Bordetella",
+              "given_on": "@today-170d",
+              "due_on": "@mon+3d",
+              "status": "Booked"
+            }
+          },
+          {
+            "key": "x04",
+            "values": {
+              "vax_title": "FVRCP - Mochi",
+              "pet": "pt02",
+              "vaccine": "FVRCP",
+              "given_on": "@today-40d",
+              "due_on": "@today+325d",
+              "status": "Current"
+            }
+          },
+          {
+            "key": "x05",
+            "values": {
+              "vax_title": "Rabies - Willow",
+              "pet": "pt06",
+              "vaccine": "Rabies",
+              "given_on": "@today-390d",
+              "due_on": "@today-25d",
+              "status": "Lapsed"
+            }
+          },
+          {
+            "key": "x06",
+            "values": {
+              "vax_title": "Leptospirosis - Noodle",
+              "pet": "pt07",
+              "vaccine": "Leptospirosis",
+              "given_on": "@today-355d",
+              "due_on": "@today+10d",
+              "status": "Reminder sent"
+            }
+          },
+          {
+            "key": "x07",
+            "values": {
+              "vax_title": "Rabies - Atlas",
+              "pet": "pt05",
+              "vaccine": "Rabies",
+              "given_on": "@today-60d",
+              "due_on": "@today+305d",
+              "status": "Current"
+            }
+          },
+          {
+            "key": "x08",
+            "values": {
+              "vax_title": "DHPP - Biscuit",
+              "pet": "pt01",
+              "vaccine": "DHPP",
+              "given_on": "@today-100d",
+              "due_on": "@today+265d",
+              "status": "Current"
+            }
+          },
+          {
+            "key": "x09",
+            "values": {
+              "vax_title": "Bordetella - Noodle",
+              "pet": "pt07",
+              "vaccine": "Bordetella",
+              "given_on": "@today-200d",
+              "due_on": "@today+5d",
+              "status": "Reminder sent"
+            }
+          },
+          {
+            "key": "x10",
+            "values": {
+              "vax_title": "FVRCP - Willow",
+              "pet": "pt06",
+              "vaccine": "FVRCP",
+              "given_on": "@today-370d",
+              "due_on": "@today-5d",
+              "status": "Reminder sent"
+            }
+          }
+        ],
+        "independentOf": {
+          "pet": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "given_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Reminder sent"
+            ],
+            "filled": [
+              "vaccine"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Booked"
+            ],
+            "filled": [
+              "vaccine"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Vaccine record",
+            "values": {
+              "status": "Current",
+              "vax_title": "New vaccine record"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Lot number"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Site given"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reminder"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Owner told when the next one is due"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "pet",
+        "name": "Pets",
+        "labelSingular": "Pet",
+        "labelPlural": "Pets",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "paw-print",
+        "titleField": "pet_name",
+        "describes": "Every patient, with owner, species and visit history.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "pet_name",
+            "label": "Pet",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "owner",
+            "relationMax": 1
+          },
+          {
+            "key": "species",
+            "label": "Species",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Dog",
+              "Cat",
+              "Rabbit",
+              "Bird",
+              "Reptile"
+            ],
+            "choiceColors": {
+              "Dog": "blue",
+              "Cat": "green",
+              "Rabbit": "amber",
+              "Bird": "violet",
+              "Reptile": "teal"
+            }
+          },
+          {
+            "key": "breed",
+            "label": "Breed",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "born_on",
+            "label": "Born",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Inactive",
+              "Remembered"
+            ],
+            "choiceColors": {
+              "Active": "blue",
+              "Inactive": "green",
+              "Remembered": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "visit_count",
+            "label": "Visits completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "appointments",
+            "pick": "appt_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "vax_count",
+            "label": "Vaccines on file",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "vaccines",
+            "pick": "vax_title",
+            "agg": "count"
+          },
+          {
+            "key": "book_btn",
+            "label": "Book visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "appointment",
+              "template": "Appointment",
+              "prefill": {
+                "pet": "@row"
+              }
+            }
+          },
+          {
+            "key": "vax_btn",
+            "label": "Log vaccine",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "vaccine",
+              "template": "Vaccine record",
+              "prefill": {
+                "pet": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pt01",
+            "values": {
+              "pet_name": "Biscuit",
+              "owner": "o01",
+              "species": "Dog",
+              "breed": "Beagle mix",
+              "born_on": "@today-5y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt02",
+            "values": {
+              "pet_name": "Mochi",
+              "owner": "o02",
+              "species": "Cat",
+              "breed": "Domestic shorthair",
+              "born_on": "@today-3y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt03",
+            "values": {
+              "pet_name": "Juniper",
+              "owner": "o03",
+              "species": "Dog",
+              "breed": "Labrador retriever",
+              "born_on": "@today-8y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt04",
+            "values": {
+              "pet_name": "Pickles",
+              "owner": "o04",
+              "species": "Rabbit",
+              "breed": "Holland lop",
+              "born_on": "@today-2y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt05",
+            "values": {
+              "pet_name": "Atlas",
+              "owner": "o05",
+              "species": "Dog",
+              "breed": "German shepherd",
+              "born_on": "@today-1y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt06",
+            "values": {
+              "pet_name": "Willow",
+              "owner": "o06",
+              "species": "Cat",
+              "breed": "Maine coon",
+              "born_on": "@today-11y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt07",
+            "values": {
+              "pet_name": "Noodle",
+              "owner": "o07",
+              "species": "Dog",
+              "breed": "Dachshund",
+              "born_on": "@today-6y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt08",
+            "values": {
+              "pet_name": "Ferris",
+              "owner": "o01",
+              "species": "Bird",
+              "breed": "Cockatiel",
+              "born_on": "@today-4y",
+              "status": "Active"
+            }
+          },
+          {
+            "key": "pt09",
+            "values": {
+              "pet_name": "Maple",
+              "owner": "o03",
+              "species": "Cat",
+              "breed": "Tabby",
+              "born_on": "@today-14y",
+              "status": "Inactive"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Pet",
+            "values": {
+              "status": "Active",
+              "pet_name": "New pet"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Patient profile"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Diet and allergies"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Behavior notes for handlers"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reminders"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vaccine schedule reviewed with owner"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Weight recorded at each visit"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "owner",
+        "name": "Owners",
+        "labelSingular": "Owner",
+        "labelPlural": "Owners",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "owner_name",
+        "describes": "Pet owners, how to reach them and how many pets they have.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "owner_name",
+            "label": "Owner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contact_pref",
+            "label": "Prefers",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Text",
+              "Email",
+              "Phone call"
+            ],
+            "choiceColors": {
+              "Text": "blue",
+              "Email": "green",
+              "Phone call": "amber"
+            },
+            "default": "Text"
+          },
+          {
+            "key": "pet_count",
+            "label": "Pets",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pets",
+            "pick": "pet_name",
+            "agg": "count"
+          },
+          {
+            "key": "pet_btn",
+            "label": "Add pet",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "pet",
+              "template": "Pet",
+              "prefill": {
+                "owner": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "o01",
+            "values": {
+              "owner_name": "Delphine Aberforth",
+              "phone": "(503) 555-0131",
+              "email": "delphine.a@mailbox-demo.net",
+              "contact_pref": "Text"
+            }
+          },
+          {
+            "key": "o02",
+            "values": {
+              "owner_name": "Kofi Mbatha-Reid",
+              "phone": "(503) 555-0132",
+              "email": "kofi.mr@mailbox-demo.net",
+              "contact_pref": "Email"
+            }
+          },
+          {
+            "key": "o03",
+            "values": {
+              "owner_name": "Ingrid Valdez",
+              "phone": "(503) 555-0133",
+              "email": "ingrid.v@mailbox-demo.net",
+              "contact_pref": "Text"
+            }
+          },
+          {
+            "key": "o04",
+            "values": {
+              "owner_name": "Thaddeus Quill",
+              "phone": "(503) 555-0134",
+              "email": "thad.q@mailbox-demo.net",
+              "contact_pref": "Phone call"
+            }
+          },
+          {
+            "key": "o05",
+            "values": {
+              "owner_name": "Mirela Constantin",
+              "phone": "(503) 555-0135",
+              "email": "mirela.c@mailbox-demo.net",
+              "contact_pref": "Text"
+            }
+          },
+          {
+            "key": "o06",
+            "values": {
+              "owner_name": "Barnaby Oyelaran",
+              "phone": "(503) 555-0136",
+              "email": "barnaby.o@mailbox-demo.net",
+              "contact_pref": "Email"
+            }
+          },
+          {
+            "key": "o07",
+            "values": {
+              "owner_name": "Seraphina Holloway",
+              "phone": "(503) 555-0137",
+              "email": "sera.h@mailbox-demo.net",
+              "contact_pref": "Text"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New owner",
+            "values": {
+              "contact_pref": "Text",
+              "owner_name": "New owner"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Registration"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Contact details and emergency contact"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder preference agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment method on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each appointment links to one pet.",
+        "fromTable": "appointment",
+        "fromField": "pet",
+        "toTable": "pet",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "appointments"
+      },
+      {
+        "describes": "Each appointment links to one team member.",
+        "fromTable": "appointment",
+        "fromField": "vet",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "vet_appointments"
+      },
+      {
+        "describes": "Each vaccine record links to one pet.",
+        "fromTable": "vaccine",
+        "fromField": "pet",
+        "toTable": "pet",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "vaccines"
+      },
+      {
+        "describes": "Each pet links to one owner.",
+        "fromTable": "pet",
+        "fromField": "owner",
+        "toTable": "owner",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "pets"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-aurelia",
+            "values": {
+              "full_name": "Dr. Aurelia Pemberton, DVM",
+              "role": "Veterinarian",
+              "work_email": "aurelia@maplehollowvet.net",
+              "mobile": "(503) 555-0121",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-joaquin",
+            "values": {
+              "full_name": "Dr. Joaquin Strand, DVM",
+              "role": "Veterinarian",
+              "work_email": "joaquin@maplehollowvet.net",
+              "mobile": "(503) 555-0122",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-bridget",
+            "values": {
+              "full_name": "Bridget Nakamura, CVT",
+              "role": "Veterinary technician",
+              "work_email": "bridget@maplehollowvet.net",
+              "mobile": "(503) 555-0123",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-felix",
+            "values": {
+              "full_name": "Felix Oduya",
+              "role": "Front desk",
+              "work_email": "felix@maplehollowvet.net",
+              "mobile": "(503) 555-0124",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "new_pet_request",
+        "name": "New patient request",
+        "describes": "How a new owner asks to register a pet.",
+        "audience": "staff",
+        "table": "pet",
+        "fields": [
+          {
+            "fieldKey": "pet_name",
+            "ask": "What is your pet's name?",
+            "required": true
+          },
+          {
+            "fieldKey": "species",
+            "ask": "What kind of animal?"
+          },
+          {
+            "fieldKey": "breed",
+            "ask": "What breed?"
+          },
+          {
+            "fieldKey": "born_on",
+            "ask": "When was your pet born?"
+          }
+        ],
+        "submitLabel": "Request a first visit",
+        "confirmation": "Thank you. The clinic will call to book the first visit."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "appointment_checkin",
+        "table": "appointment",
+        "name": "Check in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked in"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "appointment_complete",
+        "table": "appointment",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "vaccine_reminded",
+        "table": "vaccine",
+        "name": "Mark reminded",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Reminder sent"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "vaccine_booked",
+        "table": "vaccine",
+        "name": "Mark booked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Booked"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_appointment",
+        "name": "All appointments",
+        "table": "appointment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "appointment_board",
+        "name": "By status",
+        "table": "appointment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "appointment_cal",
+        "name": "Calendar",
+        "table": "appointment",
+        "kind": "calendar",
+        "dateField": "when_at",
+        "allDay": false
+      },
+      {
+        "token": "appointment_today",
+        "name": "Today",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in",
+            "In exam"
+          ]
+        }
+      },
+      {
+        "token": "appointment_week",
+        "name": "This week",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in",
+            "In exam"
+          ]
+        }
+      },
+      {
+        "token": "appointment_next7",
+        "name": "Next 7 days",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in",
+            "In exam"
+          ]
+        }
+      },
+      {
+        "token": "appointment_mine",
+        "name": "My appointments",
+        "table": "appointment",
+        "kind": "grid",
+        "me": [
+          "front_desk"
+        ]
+      },
+      {
+        "token": "all_vaccine",
+        "name": "All vaccines",
+        "table": "vaccine",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "vaccine_board",
+        "name": "By status",
+        "table": "vaccine",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "vaccine_cal",
+        "name": "Calendar",
+        "table": "vaccine",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "vaccine_week",
+        "name": "This week",
+        "table": "vaccine",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Reminder sent",
+            "Booked",
+            "Lapsed"
+          ]
+        }
+      },
+      {
+        "token": "vaccine_next30",
+        "name": "Next 30 days",
+        "table": "vaccine",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Reminder sent",
+            "Booked",
+            "Lapsed"
+          ]
+        }
+      },
+      {
+        "token": "vaccine_over",
+        "name": "Overdue",
+        "table": "vaccine",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Reminder sent",
+            "Booked",
+            "Lapsed"
+          ]
+        }
+      },
+      {
+        "token": "vaccine_mine",
+        "name": "My vaccines",
+        "table": "vaccine",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_pet",
+        "name": "All pets",
+        "table": "pet",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_owner",
+        "name": "All owners",
+        "table": "owner",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Clinic assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "vaccine",
+          "describes": "Every vaccine record with due date and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "pet",
+          "describes": "The pets behind each record."
+        }
+      ],
+      "question": {
+        "ask": "How many vaccines have lapsed?",
+        "whyItMatters": "The front desk calls those owners first thing Monday.",
+        "expect": {
+          "table": "vaccine",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Lapsed"
+          },
+          "answer": 2,
+          "unit": "vaccines"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open appointments.",
+        "action": {
+          "kind": "open",
+          "surface": "appointment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "appointment_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open vaccines.",
+        "action": {
+          "kind": "open",
+          "surface": "vaccine_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "vaccine_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open pets.",
+        "action": {
+          "kind": "open",
+          "surface": "all_pet"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_pet",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "mailbox-demo.net",
+        "maplehollowvet.net"
+      ],
+      "fictionalStreets": [
+        "Tamarack Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "veterinary-clinic",
+      "parent": null,
+      "title": "Veterinary Clinic",
+      "icon": {
+        "emoji": "🐾"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your clinic on one page. Start with Appointments for today, then Vaccines to call owners whose reminders are due, and use Pets and Owners for the people and animals behind every visit. Operational tracking only; medical records stay in your clinical system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-reminders"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-checkin"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-triage"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-daily"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by reason",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Visits by reason",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "reason",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Visits by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "vaccine",
+                      "view": "all_vaccine"
+                    },
+                    "inline": true,
+                    "title": "Vaccines by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Vaccines by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Appointments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "appointment",
+              "view": "appointment_board"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in",
+                    "In exam"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in",
+                    "In exam"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in",
+                    "In exam"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_at"
+              },
+              {
+                "id": "vall",
+                "name": "All appointments",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "front_desk"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vaccines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vaccine",
+              "view": "vaccine_board"
+            },
+            "inline": true,
+            "title": "Vaccines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Reminder sent",
+                    "Booked",
+                    "Lapsed"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Reminder sent",
+                    "Booked",
+                    "Lapsed"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Reminder sent",
+                    "Booked",
+                    "Lapsed"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All vaccines",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pet",
+              "view": "all_pet"
+            },
+            "inline": true,
+            "title": "Pets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vall",
+                "name": "All pets",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "vall"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "veterinary-clinic",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by reason",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Visits by reason",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "reason",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Visits by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "vaccine",
+                      "view": "all_vaccine"
+                    },
+                    "inline": true,
+                    "title": "Vaccines by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Vaccines by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "vaccine",
+                      "view": "all_vaccine"
+                    },
+                    "inline": true,
+                    "title": "Vaccines by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Vaccines by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "vaccine",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "pet",
+                      "view": "all_pet"
+                    },
+                    "inline": true,
+                    "title": "Pets by species",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Pets by species",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "species",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "owner",
+                      "view": "all_owner"
+                    },
+                    "inline": true,
+                    "title": "Owners by contact preference",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Owners by contact preference",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "contact_pref",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vaccines to chase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vaccine",
+              "view": "all_vaccine"
+            },
+            "inline": true,
+            "title": "Vaccines to chase",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Not current",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Reminder sent",
+                    "Booked",
+                    "Lapsed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Visits still to come"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "appointment",
+              "view": "all_appointment"
+            },
+            "inline": true,
+            "title": "Visits still to come",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Booked",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-reminders",
+      "parent": "veterinary-clinic",
+      "title": "Vaccine reminder routine",
+      "icon": {
+        "emoji": "💉"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Reminders are how a clinic keeps animals protected and the schedule full."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each Monday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Vaccines and look at the Next 30 days view."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Message each owner by their preferred method and mark the record Reminder sent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When they book, link the visit and mark the record Booked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lapsed records"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call owners with Lapsed records and offer the next opening."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log the call on the record."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-checkin",
+      "parent": "veterinary-clinic",
+      "title": "Check-in and check-out",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check-in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Greet the owner and confirm the pet's name and reason."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Check in so the vet sees who is waiting."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm phone number and preferred reminders."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check-out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the visit Completed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the follow-up or next wellness exam before the owner leaves."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add any vaccines given under Vaccines with the next due date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-triage",
+      "parent": "veterinary-clinic",
+      "title": "Phone triage for sick pets",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A short, consistent script keeps emergencies from waiting. Decisions on care belong to the vet."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to collect"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pet name, species, age and owner's phone."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is happening and for how long."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Whether the pet is eating, drinking and moving as usual."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Routing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the owner describes an emergency, put them through to the vet on duty at once."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Otherwise book the earliest Sick visit and note the call on the appointment."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-daily",
+      "parent": "veterinary-clinic",
+      "title": "Opening and closing",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review today's Appointments"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Print the schedule for exam rooms"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check Vaccines marked Lapsed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Close"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark every visit Completed or No-show"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Book follow-ups before the owner leaves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Return phone messages"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
