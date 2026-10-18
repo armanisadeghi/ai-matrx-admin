@@ -14,11 +14,46 @@ export class SidecarError extends Error {
    * offers no Retry — a button that cannot work is a screen that lies.
    */
   readonly retryable: boolean;
-  constructor(message: string, readonly raw?: unknown, retryable = true) {
+  /** The request carried no identity (an ended or expired session): the remedy is signing in. */
+  readonly signedOut: boolean;
+  constructor(message: string, readonly raw?: unknown, retryable = true, signedOut = false) {
     super(message);
     this.name = "SidecarError";
     this.retryable = retryable;
+    this.signedOut = signedOut;
   }
+}
+
+/** How every signed-out sentence starts, so a kept error string still says which remedy it needs. */
+export const SIGNED_OUT_LEAD = "You're signed out";
+
+export function isSignedOutSentence(text: string | null | undefined): boolean {
+  return typeof text === "string" && text.startsWith(SIGNED_OUT_LEAD);
+}
+
+/**
+ * True when the database refused the request because it carried NO identity — a long-lived tab
+ * whose session ended or failed to refresh sends as `anon`. Measured on live 2026-10-17: a chat
+ * tab 30 minutes old read `permission denied for function cmt_list` (42501), and the sentence said
+ * "Ask the owner to share it", which no owner can fix. `authenticated` holds EXECUTE on every
+ * comment door, so "permission denied for function" from one means the caller was anonymous; an
+ * HTTP 401 says the same thing outright.
+ */
+export function isSignedOutRefusal(e: unknown): boolean {
+  const code = codeOf(e);
+  const status = e && typeof e === "object" ? (e as { status?: unknown }).status : undefined;
+  if (code === "PGRST301" || code === "28000") return true;
+  if (code !== "42501") return false;
+  return status === 401 || /permission denied for function/i.test(textOf(e));
+}
+
+/** The error a write raises when the record it belongs to is not known yet (nothing is sent). */
+export function sourceNotReadyError(what: string): SidecarError {
+  return new SidecarError(
+    `This isn't ready for ${what} yet, so nothing was saved. Your text is kept — try again in a moment.`,
+    undefined,
+    true,
+  );
 }
 
 /** The current text of a comment someone else changed while this person was editing it. */
@@ -81,6 +116,9 @@ export function humanError(action: string, e: unknown): SidecarError {
     // A pair nobody registered: trying again cannot work, so no Retry is offered.
     sentence = `Linking ${kindWords(unknownPair[1])} to ${kindWords(unknownPair[2])} isn't set up yet, so ${action} did not go through. Pick another kind of record, or ask an admin to allow this link.`;
     retryable = false;
+  } else if (isSignedOutRefusal(e)) {
+    // Before the permission branch: an anonymous request is a session to restore, not a share to ask for.
+    return new SidecarError(`${SIGNED_OUT_LEAD}, so ${action} did not go through. Sign in again — your text is kept here.`, e, true, true);
   } else if (code === "42501" || /permission|not allowed|forbidden|cannot comment|may not/i.test(text)) {
     sentence = `You don't have permission for this here, so ${action} did not go through. Ask the owner to share it with you.`;
     retryable = false;

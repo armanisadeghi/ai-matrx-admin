@@ -11,7 +11,8 @@
 
 import { useRef, useState, type MouseEvent } from "react";
 import { newRequestId } from "./useAnnotationSidecar";
-import { EditConflictError } from "./errors";
+import { EditConflictError, isSignedOutSentence } from "./errors";
+import { SignInAgainButton } from "./signed-out";
 import {
   AtSign,
   CalendarDays,
@@ -218,7 +219,7 @@ export function AnnotationPanel({
             message={`Part of this list could not be loaded: ${error}`}
             operation="Load annotations"
             records={[{ type: source.token, id: source.id, label: source.title }]}
-            actions={<Button variant="outline" onClick={() => void api.reload()}>Try again</Button>}
+            actions={<>{isSignedOutSentence(error) && <SignInAgainButton />}<Button variant="outline" onClick={() => void api.reload()}>Try again</Button></>}
           />
         )}
 
@@ -231,7 +232,7 @@ export function AnnotationPanel({
             message={error}
             operation="Load annotations"
             records={[{ type: source.token, id: source.id, label: source.title }]}
-            actions={<Button variant="outline" onClick={() => void api.reload()}>Try again</Button>}
+            actions={<>{isSignedOutSentence(error) && <SignInAgainButton />}<Button variant="outline" onClick={() => void api.reload()}>Try again</Button></>}
           />
         ) : visible.length === 0 ? (
           <p className="px-1 py-8 text-center text-sm text-muted-foreground">
@@ -368,6 +369,7 @@ function ItemCard({ item, active }: { item: ResolvedItem; active: boolean }) {
           }}
           actions={
             <>
+            {item.signedOut && <SignInAgainButton />}
             {item.retryable !== false && (
               <Button icon={<RotateCcw aria-hidden />} variant="outline" onClick={(e) => { e.stopPropagation(); void api.retry(item); }}>Retry
               </Button>

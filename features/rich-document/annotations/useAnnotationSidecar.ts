@@ -65,7 +65,8 @@ import {
   sidecarSnapshot,
   subscribeSidecars,
 } from "./sidecarStore";
-import { humanError } from "./errors";
+import { humanError, sourceNotReadyError } from "./errors";
+import { toast } from "@/lib/toast";
 
 /** One id per draft, reused by every Retry of it (the idempotency key). */
 export function newRequestId(): string {
@@ -85,12 +86,23 @@ function message(e: unknown): string {
   return failure(e).error;
 }
 
-function failure(e: unknown): { error: string; retryable: boolean } {
+function failure(e: unknown): { error: string; retryable: boolean; signedOut?: boolean } {
   // The write path resolves the organization (ensureOrgId); a refusal for want of one is said in
   // words with its remedy, never as the transport's error text.
   if (isOrganizationRequiredError(e)) return { error: organizationRefusalMessage({ act: "saved", subject: "This annotation" }), retryable: true };
   const h = humanError("saving", e);
-  return { error: h.message, retryable: h.retryable };
+  return { error: h.message, retryable: h.retryable, ...(h.signedOut ? { signedOut: true } : {}) };
+}
+
+/**
+ * A write asked for while the record it belongs to is not known yet. NOTHING FAILS SILENTLY:
+ * before 2026-10-17 every write here answered `return false` / `return null` and the person's
+ * comment vanished with the composer already closed. A composer write THROWS (the composer keeps
+ * the text and shows the sentence); a one-click write says it in a toast.
+ */
+function notReady(what: string): false {
+  toast.error(sourceNotReadyError(what).message);
+  return false;
 }
 
 /**
@@ -290,7 +302,7 @@ export function useAnnotationSidecar(
   // ── drafts: pending → confirmed | failed (kept for retry) ──────────────
   const runDraft = useCallback(
     async (draft: AnnotationItem, write: () => Promise<void>) => {
-      setDrafts((d) => [...d.filter((x) => x.key !== draft.key), { ...draft, saveState: "pending", error: undefined, retryable: undefined }]);
+      setDrafts((d) => [...d.filter((x) => x.key !== draft.key), { ...draft, saveState: "pending", error: undefined, retryable: undefined, signedOut: undefined }]);
       if (draft.clientRequestId) ledger.current.createdRequestIds.add(draft.clientRequestId);
       try {
         await write();
@@ -313,7 +325,7 @@ export function useAnnotationSidecar(
   const postComment = useCallback(
     async (input: CommentDraft): Promise<MentionNoticeResult | null> => {
       const src = sourceRef.current;
-      if (!src) return null;
+      if (!src) throw sourceNotReadyError("comments");
       let notice: MentionNoticeResult | null = null;
       if (input.parentId) {
         // A reply is written straight through and THROWS on failure, so the reply composer
@@ -367,7 +379,7 @@ export function useAnnotationSidecar(
   const addHighlight = useCallback(
     async (anchor: TextAnchor | null, color: HighlightColor = DEFAULT_HIGHLIGHT_COLOR, note = "", retryOf?: AnnotationItem) => {
       const src = sourceRef.current;
-      if (!src) return false;
+      if (!src) return notReady("highlights");
       const draft: AnnotationItem = retryOf ?? {
         key: draftKey(),
         kind: anchor ? "highlight" : "note",
@@ -400,13 +412,13 @@ export function useAnnotationSidecar(
       if (item.kind === "highlight" || item.kind === "note") return addHighlight(item.anchor, item.color, item.body, item);
       if (item.kind === "link" && item.link) {
         const src = sourceRef.current;
-        if (!src) return false;
+        if (!src) return notReady("links");
         return runDraft(item, async () => {
           await linkRecord({ source: src, token: item.link!.token, id: item.link!.id, anchor: item.anchor });
         });
       }
       const src = sourceRef.current;
-      if (!src) return false;
+      if (!src) return notReady("comments");
       // Same draft, same request id: the door (or the read-back) finds a write that already landed.
       return runDraft(item, async () => {
         await writeComment(src, item);
@@ -419,7 +431,8 @@ export function useAnnotationSidecar(
   const postOnWholeDocument = useCallback(
     async (item: AnnotationItem) => {
       const src = sourceRef.current;
-      if (!src || (item.kind !== "comment" && item.kind !== "suggestion")) return false;
+      if (!src) return notReady("comments");
+      if (item.kind !== "comment" && item.kind !== "suggestion") return false;
       const whole: AnnotationItem = { ...item, kind: "comment", anchor: null, suggestedText: null, clientRequestId: newRequestId(), firstAttemptAt: now() };
       return runDraft(whole, async () => {
         await writeComment(src, whole);
@@ -471,7 +484,7 @@ export function useAnnotationSidecar(
   const link = useCallback(
     async (token: string, id: string, title: string, anchor: TextAnchor | null) => {
       const src = sourceRef.current;
-      if (!src) return false;
+      if (!src) return notReady("links");
       const draft: AnnotationItem = {
         key: draftKey(),
         kind: "link",
@@ -532,7 +545,7 @@ export function useAnnotationSidecar(
   const editMine = useCallback(
     async (commentId: string, body: string, base: { body: string; version: number | null }, force = false) => {
       const src = sourceRef.current;
-      if (!src) return;
+      if (!src) throw sourceNotReadyError("edits");
       const version = await editComment(src, commentId, body, base, doors, force);
       if (version != null) ledger.current.writtenVersions.set(commentId, version);
       await reload();
@@ -570,6 +583,8 @@ export function useAnnotationSidecar(
 
   return {
     state: { items, loading, error, capabilities } satisfies SidecarState,
+    /** The record is known, so a write can go out (a composer checks this BEFORE it closes). */
+    ready: source != null,
     reload,
     postComment,
     addHighlight,
@@ -599,7 +614,8 @@ export function useAnnotationSidecar(
     recolor: (item: ResolvedItem, color: HighlightColor) =>
       act(async () => {
         const src = sourceRef.current;
-        if (!src || !item.annotationDocumentId) return;
+        if (!src) throw sourceNotReadyError("changes");
+        if (!item.annotationDocumentId) return;
         const siblings = confirmed
           .filter((c) => c.annotationDocumentId === item.annotationDocumentId && c.anchor)
           .map((c) => c.anchor!);
@@ -608,7 +624,7 @@ export function useAnnotationSidecar(
     reattach: (item: ResolvedItem, anchor: TextAnchor) =>
       act(async () => {
         const src = sourceRef.current;
-        if (!src) return;
+        if (!src) throw sourceNotReadyError("changes");
         if ((item.kind === "highlight" || item.kind === "note") && item.annotationDocumentId) {
           const others = confirmed
             .filter((c) => c.annotationDocumentId === item.annotationDocumentId && c.anchor && c.key !== item.key)
