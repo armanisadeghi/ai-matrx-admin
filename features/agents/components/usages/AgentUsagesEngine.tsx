@@ -71,7 +71,7 @@ import {
   rungIdentityOf,
   type ImpactVerdict,
 } from "@/features/mandates/admin/impact";
-import { DIMENSION_ORDER, dimensionMeta, type UsageDimension } from "./dimensions";
+import { DIMENSION_ORDER, dimensionMeta, isSetAside, type UsageDimension } from "./dimensions";
 import { NotifyOwnerDialog, type NotifyTarget } from "./NotifyOwnerDialog";
 import { HistoryDetail, UsageKpiStrip, useHistoryCounts } from "./UsageKpiStrip";
 import { UsageNameCell } from "./UsageNameCell";
@@ -131,9 +131,17 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
     },
   });
 
+  // Battles are counted on their tile but set aside from the default list,
+  // the totals, and every bulk move; opening their tile lists them.
+  const workingRows = rows.filter((row) => !isSetAside(row.dimension));
+  const setAsideCount = DIMENSION_ORDER.filter(isSetAside).reduce(
+    (sum, dimension) => sum + counts[dimension].total,
+    0,
+  );
   const visibleRows = active && active !== "history"
     ? rows.filter((row) => row.dimension === active)
-    : rows;
+    : workingRows;
+  const viewingSetAside = active !== null && active !== "history" && isSetAside(active);
 
   const agentName =
     usageRows[0]?.agentName ??
@@ -146,6 +154,10 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
   const usageCanUpdate = (usage: AgentUsageRow) =>
     usage.managedByCaller && usage.stalePin && usageTypeMeta(usage.usageType).remediable;
 
+  // A battle moves only one at a time, from its own tile, never in bulk.
+  const battleCanMove = (usage: AgentUsageRow) =>
+    viewingSetAside && usage.usageType === "comparison" && usage.managedByCaller && usage.stalePin;
+
   const mandateCanAdvance = (verdict: ImpactVerdict) =>
     batchEligibilityOf(verdict).batchable;
 
@@ -153,7 +165,10 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
     const meta = usageTypeMeta(usage.usageType);
     const ok = await confirm({
       title: `Move this ${meta.label.toLowerCase()} to v${usage.currentVersion}?`,
-      description: `"${usage.label}" runs v${usage.pinnedVersionNumber ?? "?"} today and will be re-pinned to v${usage.currentVersion}, the agent's active version.`,
+      description:
+        usage.usageType === "comparison"
+          ? `"${usage.label}" tests v${usage.pinnedVersionNumber ?? "?"} on purpose. Moving it to v${usage.currentVersion} changes what this battle compares.`
+          : `"${usage.label}" runs v${usage.pinnedVersionNumber ?? "?"} today and will be re-pinned to v${usage.currentVersion}, the agent's active version.`,
       confirmLabel: `Move to v${usage.currentVersion}`,
     });
     if (!ok) return;
@@ -244,10 +259,10 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
 
   // ---- summary line --------------------------------------------------------
 
-  const flagged = rows.filter((row) => row.risk === "red" || row.risk === "orange");
-  const redCount = rows.filter((row) => row.risk === "red").length;
-  const orangeCount = rows.filter((row) => row.risk === "orange").length;
-  const behindCount = rows.filter((row) => row.behind).length;
+  const flagged = workingRows.filter((row) => row.risk === "red" || row.risk === "orange");
+  const redCount = workingRows.filter((row) => row.risk === "red").length;
+  const orangeCount = workingRows.filter((row) => row.risk === "orange").length;
+  const behindCount = workingRows.filter((row) => row.behind).length;
   const updatableUsages = usageRows.filter(usageCanUpdate);
   const safeMandates = verdicts.filter(
     (verdict) =>
@@ -420,13 +435,16 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
         }
         active={active}
         onActiveChange={setActive}
+        isSetAside={isSetAside}
       />
 
       {active === "history" ? <HistoryDetail history={history} /> : null}
 
       <StatusLine
         loading={scanLoading || mandatesLoading}
-        total={rows.length}
+        total={workingRows.length}
+        setAside={setAsideCount}
+        viewingSetAside={viewingSetAside}
         flagged={flagged.length}
         red={redCount}
         orange={orangeCount}
@@ -517,9 +535,13 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
           emptyState={{
             title: active && active !== "history"
               ? `No ${dimensionMeta(active).plural.toLowerCase()} use this agent`
-              : "Nothing uses this agent yet",
+              : setAsideCount > 0
+                ? "Only battles use this agent"
+                : "Nothing uses this agent yet",
             description: active && active !== "history"
               ? "Checked and empty; clear the tile to see all"
+              : setAsideCount > 0
+                ? "Open the Comparisons tile to see them"
               // Every dimension (mandate, shortcut, app, scheduled task, workflow,
               // surface, SMS line, derived agent, code path) was checked.
               : "Checked every dimension; none point at it",
@@ -606,7 +628,7 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
               actions.push({ id: "candidate", icon: FlaskConical, label: "Try as candidate",
                 tooltip: `Run ${row.newestLabel} beside the live one on the next real runs, then decide.`, disabled: busy,
                 onClick: () => setCandidateVerdict(row.verdict ?? null) });
-            } else if (row.kind === "usage" && row.usage && usageCanUpdate(row.usage)) {
+            } else if (row.kind === "usage" && row.usage && (usageCanUpdate(row.usage) || battleCanMove(row.usage))) {
               actions.push({ id: "update", icon: RotateCw, label: `Move to ${row.newestLabel}`,
                 tooltip: `Re-pin this ${dimensionMeta(row.dimension).label.toLowerCase()} to ${row.newestLabel}.`, disabled: busy, loading: updating,
                 onClick: () => { if (row.usage) void updateUsage(row.usage); } });
@@ -640,6 +662,8 @@ function StatusLine({
   red,
   orange,
   behind,
+  setAside,
+  viewingSetAside,
   scanError,
   mandateError,
   withheldSentences,
@@ -651,6 +675,9 @@ function StatusLine({
   red: number;
   orange: number;
   behind: number;
+  /** Battles counted on their tile but left out of the list, totals and moves. */
+  setAside: number;
+  viewingSetAside: boolean;
   scanError: string | null;
   mandateError: string | null;
   withheldSentences: string[];
@@ -699,6 +726,15 @@ function StatusLine({
           </span>
         </span>
       )}
+      {viewingSetAside ? (
+        <span className="type-secondary text-muted-foreground">
+          Battles test versions on purpose; never moved in bulk
+        </span>
+      ) : setAside > 0 ? (
+        <span className="type-secondary text-muted-foreground">
+          {setAside} battle{setAside === 1 ? "" : "s"} set aside
+        </span>
+      ) : null}
       {withheldSentences.map((sentence) => (
         <span key={sentence} className="type-secondary text-muted-foreground" title="Counted, never listed — those pins belong to other people.">
           {sentence}

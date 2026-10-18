@@ -35,6 +35,18 @@ export const DIMENSION_ORDER: readonly UsageDimension[] = [
   ...USAGE_TYPE_ORDER,
 ];
 
+/**
+ * Dimensions SET ASIDE from the default list, the totals and every bulk move.
+ * Battles (comparisons) are built around testing specific versions, so moving
+ * them with everything else would quietly change what the battle tests. Their
+ * tile still counts them, and opening it lists them with a one-at-a-time move.
+ */
+export const SET_ASIDE_DIMENSIONS: ReadonlySet<UsageDimension> = new Set(["comparison"]);
+
+export function isSetAside(dimension: UsageDimension): boolean {
+  return SET_ASIDE_DIMENSIONS.has(dimension);
+}
+
 /** The historical tile — context only, never drift-checked. */
 export const HISTORY_TILE = { label: "History", icon: History } as const;
 
