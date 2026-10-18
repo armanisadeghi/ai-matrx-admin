@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0103",
-  "version": 3,
+  "version": 4,
   "title": "OKRs & Goals",
   "description": "Objectives and key results with live progress rollups, weekly check-ins, cycle review.",
   "forWho": "Leadership teams setting quarterly goals",
@@ -675,6 +675,139 @@
             "values": {
               "kr_name": "New key result",
               "trend": "Up"
+            },
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we are measuring"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The measure in plain words, and why it shows progress on the objective."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Starting point and target"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Where it starts today"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Where it should be by the end of the cycle"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How we update it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where the number comes from and how often the owner refreshes it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Set the starting value"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Set the target"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Choose the weekly check-in day"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "If it slips"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What we will try first, and who can help unblock it."
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -979,7 +1112,7 @@
         "Wrenhall Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

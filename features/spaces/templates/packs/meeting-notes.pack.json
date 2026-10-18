@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0003",
-  "version": 3,
+  "version": 4,
   "title": "Meeting Notes",
   "description": "Every meeting's notes, decisions and action items, with agendas ready to copy.",
   "forWho": "Teams that meet every week and want nothing to slip",
@@ -846,6 +846,120 @@
             "values": {
               "item": "New action item",
               "status": "Open"
+            },
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was agreed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The decision or request from the meeting, in one sentence."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step for the owner"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What you will do first, and who you need to talk to."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Confirm the outcome you are aiming for"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Do the work"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tell the people who were in the meeting"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Due and how we will know"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Due date is in the table above"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What will show it is finished"
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -1204,7 +1318,7 @@
         "Larkspur Bend"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

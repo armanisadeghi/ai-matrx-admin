@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0258",
-  "version": 3,
+  "version": 4,
   "title": "Study Planner & Flashcards",
   "description": "Plan study blocks backwards from exam day and drill flashcards in boxes.",
   "forWho": "Students preparing for exams",
@@ -1020,6 +1020,101 @@
             "name": "New study card",
             "values": {
               "front": "New study card"
+            },
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Front and back"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write the question on the front of the card and the answer on the back, in your own words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why it matters"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One line on where this will come up, such as the exam topic or a mistake you made."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "A way to remember it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "A picture, a rhyme or an example you can recall"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Say the answer out loud before turning the card"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Review again tomorrow, then after a week"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
             }
           }
         ]
@@ -1364,7 +1459,7 @@
         "Foxglove Parade"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

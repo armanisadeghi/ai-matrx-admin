@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 3,
+  "version": 4,
   "title": "Incident Postmortems",
   "description": "Log incidents, write blameless postmortems and track the actions that prevent repeats.",
   "forWho": "Engineering and operations teams",
@@ -299,6 +299,120 @@
             "values": {
               "action_title": "New action item",
               "status": "Open"
+            },
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What happened"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One or two lines: the part of the incident this action is meant to stop from happening again."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step for the owner"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The first concrete thing to do, small enough to start today."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Agree the fix with whoever runs the affected service"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Make the change"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Write down how it was done"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Due and how we will know"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Due date is in the table above"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Proof it worked: the alert, test or review that shows the problem cannot repeat"
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -1331,7 +1445,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

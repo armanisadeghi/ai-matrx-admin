@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 3,
+  "version": 4,
   "title": "Workout Log",
   "description": "Log sessions, exercises and sets with totals, personal bests and body metrics.",
   "forWho": "Lifters and runners",
@@ -1147,6 +1147,90 @@
             "name": "New set",
             "values": {
               "set_name": "New set"
+            },
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The set"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Exercise, reps and weight are in the table above. Add anything the numbers do not show."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How it felt"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Effort from 1 to 10"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Form notes or anything that hurt"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next time"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Add weight or a rep if it felt easy"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Keep the same load if form slipped"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
             }
           }
         ]
@@ -1585,7 +1669,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

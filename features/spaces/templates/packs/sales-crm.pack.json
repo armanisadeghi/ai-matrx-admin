@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 3,
+  "version": 4,
   "title": "Sales CRM",
   "description": "Deals on a pipeline board, a contact book, and every call or email logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -1230,6 +1230,109 @@
             "values": {
               "summary": "New interaction",
               "state": "Done"
+            },
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What happened"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "A few lines on the call, email or meeting: who was there and what was said."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they said they need"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Their main concern"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Anything they asked us to send or confirm"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Send what we promised"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Set the date of the next touch on the contact or deal"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -1694,7 +1797,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
