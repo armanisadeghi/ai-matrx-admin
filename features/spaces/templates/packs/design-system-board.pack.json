@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0363",
-  "version": 4,
+  "version": 5,
   "title": "Design Tokens Board",
   "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
   "forWho": "Product teams keeping one design system",
@@ -173,7 +173,7 @@
             "values": {
               "name": "muted-foreground",
               "group": "Muted",
-              "value": "{\"light\":\"#6b7487\",\"dark\":\"#9aa3b5\"}",
+              "value": "{\"light\":\"#5f6878\",\"dark\":\"#9aa3b5\"}",
               "reads_on": "muted",
               "usage_note": "Hints and captions on a muted fill. Check it on light."
             }
@@ -769,6 +769,150 @@
             }
           }
         ]
+      },
+      {
+        "token": "opacity",
+        "name": "Opacity",
+        "labelSingular": "Opacity",
+        "labelPlural": "Opacities",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "droplet",
+        "titleField": "name",
+        "describes": "How see-through things get: disabled controls, tints and overlays.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1
+              }
+            ],
+            "look": {
+              "id": "opacity"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "opa-01",
+            "values": {
+              "name": "opacity-disabled",
+              "value": 0.45,
+              "usage_note": "A control that cannot be used yet."
+            }
+          },
+          {
+            "key": "opa-02",
+            "values": {
+              "name": "opacity-hover",
+              "value": 0.08,
+              "usage_note": "The tint laid over a row or a quiet button on hover."
+            }
+          },
+          {
+            "key": "opa-03",
+            "values": {
+              "name": "opacity-overlay",
+              "value": 0.5,
+              "usage_note": "The dim behind a dialog."
+            }
+          }
+        ]
+      },
+      {
+        "token": "motion",
+        "name": "Motion",
+        "labelSingular": "Motion",
+        "labelPlural": "Motions",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "zap",
+        "titleField": "name",
+        "describes": "How fast things move and how they ease in and out.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "motion"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "mot-01",
+            "values": {
+              "name": "motion-fast",
+              "value": "{\"duration\":120,\"easing\":\"ease-out\"}",
+              "usage_note": "Hover, press and focus."
+            }
+          },
+          {
+            "key": "mot-02",
+            "values": {
+              "name": "motion-base",
+              "value": "{\"duration\":180,\"easing\":\"cubic-bezier(0.2, 0, 0, 1)\"}",
+              "usage_note": "Menus and popovers opening."
+            }
+          },
+          {
+            "key": "mot-03",
+            "values": {
+              "name": "motion-slow",
+              "value": "{\"duration\":260,\"easing\":\"cubic-bezier(0.2, 0, 0, 1)\"}",
+              "usage_note": "Dialogs and side panels."
+            }
+          }
+        ]
       }
     ],
     "relationships": [],
@@ -924,7 +1068,7 @@
         "Quillan Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {
@@ -936,12 +1080,13 @@
         "title": "Overview",
         "tiles": [
           {
-            "kind": "note",
+            "kind": "cover",
             "title": "Design system",
-            "text": "Design system\n\n## Principles\n- Clear before clever: every screen says what it is for in its first line.\n- One way to do one thing: a colour, a size or a component has one name.\n- Calm by default: colour is for meaning, never for decoration.\n\n## Using tokens\nUse a token by its name, never its value. Change the value here and every screen follows. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\nBuild screens from the components in this system. When one is missing, add it to Components with a short note on where it is needed.\n\n## Accessibility\nText reaches 4.5:1 against what it sits on; large text and icons 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:40px;align-items:center;padding:8px 0 4px}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--primary)}.w{margin:0;font-size:64px;line-height:1;font-weight:700;letter-spacing:-.035em;color:var(--foreground)}.t{margin:18px 0 0;max-width:30ch;font-size:19px;line-height:1.5;color:var(--muted-foreground)}.c{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}.c span{font-size:12px;font-weight:500;padding:4px 10px;border-radius:999px;border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block;border-radius:calc(var(--radius) * 3)}.a{inset:0 22% 22% 0;background:var(--primary)}.b{inset:22% 0 0 22%;background:var(--muted);border:1px solid var(--border)}.d{inset:44% 12% 12% 44%;background:var(--card);border:1px solid var(--border);box-shadow:0 16px 32px -12px #0f172a40}.e{width:22%;height:22%;right:20%;bottom:20%;border-radius:50% !important;background:var(--accent);border:1px solid var(--border)}</style><div class=\"h\"><div><p class=\"k\">Design system</p><h1 class=\"w\">One look,<br>every screen.</h1><p class=\"t\">The colours, type, spacing and components every screen is built from, kept in one place.</p><div class=\"c\"><span>Colors</span><span>Typography</span><span>Spacing</span><span>Components</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
+            "text": "## Principles\n\n- **Clear before clever.** Every screen says what it is for in its first line.\n- **One way to do one thing.** A colour, a size or a component has one name.\n- **Calm by default.** Colour is for meaning, never for decoration.\n\n## Using tokens\n\nUse a token by its name, never its value. Change the value here and every screen follows. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; large text and icons 3:1. Focus is always visible. Nothing is told by colour alone.\n",
             "size": {
               "w": 1020,
-              "h": 620
+              "h": 900
             }
           }
         ]
@@ -1017,6 +1162,36 @@
             "size": {
               "w": 1020,
               "h": 420
+            }
+          }
+        ]
+      },
+      {
+        "title": "Opacity",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Opacity",
+            "table": "opacity",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 352
+            }
+          }
+        ]
+      },
+      {
+        "title": "Motion",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Motion",
+            "table": "motion",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 352
             }
           }
         ]
