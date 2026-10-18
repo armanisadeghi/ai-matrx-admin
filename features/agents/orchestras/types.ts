@@ -94,6 +94,19 @@ export interface OrchestraMember {
   resultMode: OrchestraResultMode;
 }
 
+/**
+ * A PERSON in the Orchestra: a member edge pointing at an org-chart seat
+ * (`agent.position`). The run asks whoever holds the seat when it reaches them
+ * (sequential / parallel / dag only — supervisor refuses it). aidream
+ * `services/orchestras/FEATURE.md` § Seat members.
+ */
+export interface OrchestraSeatMember {
+  edgeId: string;
+  positionId: string;
+  position: number;
+  roleTitle: string | null;
+}
+
 /** Full builder state for a single Orchestra: marker config + ordered members. */
 export interface OrchestraDetail {
   conductorId: string;
@@ -102,6 +115,8 @@ export interface OrchestraDetail {
   label: string | null;
   config: OrchestraConfig;
   members: OrchestraMember[];
+  /** People in the Orchestra, by the seat they hold (position members). */
+  seats: OrchestraSeatMember[];
 }
 
 /** Raw row shape returned by the `orchestra_list()` RPC (snake_case from PG). */

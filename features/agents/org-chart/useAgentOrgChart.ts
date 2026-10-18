@@ -93,6 +93,7 @@ export function useAgentOrgChart(opts: { rootIds?: string[] } = {}) {
     if (e.status === "ready" && e.exists && !isArchivedAgent(id)) {
       orchestras.set(id, {
         members: e.members.filter((m) => !isArchivedAgent(m.agentId)),
+        seats: e.seats,
         accent: e.config.accent,
         mode: e.config.mode,
       });

@@ -135,6 +135,14 @@ export function DecisionPanel({
 
   return (
     <div data-decision-panel onKeyDown={onKeyDown} className="mt-2">
+      {spec.seatNotice ? (
+        <div
+          data-decision-seat
+          className={cn("mb-1.5 type-meta", spec.seatFilled ? "text-muted-foreground" : "text-destructive")}
+        >
+          {spec.seatNotice}
+        </div>
+      ) : null}
       <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
         {spec.items.map((item) => {
           const answer = answers[item.key];
