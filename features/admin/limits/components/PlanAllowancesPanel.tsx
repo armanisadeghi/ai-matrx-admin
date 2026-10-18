@@ -78,6 +78,11 @@ import {
   pointsToUsdLabel,
 } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import {
+  MatrxBatchGrid,
+  type BatchGridChange,
+  type BatchGridColumn,
+} from "@ai-matrx/design-system/data-table";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { isEnterpriseAudience, zeroConfirmation } from "../enterpriseCustom";
 
@@ -223,7 +228,7 @@ function LimitCell({
   };
 
   return (
-    <td className="group px-1.5 py-1 align-top">
+    <div className="group px-0.5 py-0.5">
       <div className="relative">
         {isMicroUsd(column.capability) && (
           <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 type-secondary text-muted-foreground">
@@ -260,11 +265,12 @@ function LimitCell({
       >
         {hint ?? (existing && value.trim() === "" ? "unlimited" : "")}
       </p>
-    </td>
+    </div>
   );
 }
 
 function PlanMatrix({
+  tableId,
   plans,
   columns,
   capabilityByKey,
@@ -273,7 +279,9 @@ function PlanMatrix({
   showCapability,
   onSave,
   onRemove,
+  onPaste,
 }: {
+  tableId: string;
   plans: Plan[];
   columns: MatrixColumn[];
   capabilityByKey: Map<string, Capability>;
@@ -282,142 +290,113 @@ function PlanMatrix({
   showCapability: boolean;
   onSave: (planKey: string, column: MatrixColumn, value: number | null) => Promise<void>;
   onRemove: (planKey: string, column: MatrixColumn) => Promise<void>;
+  /** A pasted / filled block: every accepted cell, written through the same save. */
+  onPaste: (changes: BatchGridChange[]) => Promise<void>;
 }) {
+  // Rows arrive grouped by audience, ranked; the grid draws one section per audience.
   const groups = groupPlansByAudience(plans);
-  return (
-    <div className="overflow-x-auto rounded-md border border-border">
-      <table className="w-full min-w-max border-collapse type-body">
-        <thead className="bg-muted/40">
-          <tr className="border-b border-border">
-            <th className="sticky left-0 z-10 min-w-36 bg-muted/40 px-3 py-2 text-left type-secondary font-medium text-muted-foreground">
-              Plan
-            </th>
-            <th className="min-w-24 whitespace-nowrap px-2 py-2 text-right type-secondary font-medium text-muted-foreground">
-              Price
-            </th>
-            {columns.map((column) => {
-              const cap = capabilityByKey.get(column.capability);
-              return (
-                <th
-                  key={`${column.capability}|${column.period}`}
-                  className="min-w-28 px-1.5 py-2 text-right type-secondary font-medium"
-                >
-                  {showCapability && (
-                    <span className="block truncate font-mono type-meta text-muted-foreground">
-                      {column.capability}
-                    </span>
-                  )}
-                  <span>{periodLabel(column.period)}</span>
-                  {showCapability && cap && !cap.enforced && (
-                    <span className="block type-meta font-normal text-warning">
-                      tracking only
-                    </span>
-                  )}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody>
-          {groups.map((group) => (
-            <GroupRows
-              key={group.audience}
-              label={group.label}
-              plans={group.plans}
-              columns={columns}
-              limitIndex={limitIndex}
-              rate={rate}
-              onSave={onSave}
-              onRemove={onRemove}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+  const audienceLabel = new Map<string, string>();
+  const ordered: Plan[] = [];
+  for (const group of groups) {
+    for (const plan of group.plans) {
+      audienceLabel.set(plan.plan_key, group.label);
+      ordered.push(plan);
+    }
+  }
+  const existingOf = (plan: Plan, column: MatrixColumn) =>
+    limitIndex.get(cellId(plan.plan_key, column.capability, column.period));
 
-function GroupRows({
-  label,
-  plans,
-  columns,
-  limitIndex,
-  rate,
-  onSave,
-  onRemove,
-}: {
-  label: string;
-  plans: Plan[];
-  columns: MatrixColumn[];
-  limitIndex: Map<string, PlanLimit>;
-  rate: number | null;
-  onSave: (planKey: string, column: MatrixColumn, value: number | null) => Promise<void>;
-  onRemove: (planKey: string, column: MatrixColumn) => Promise<void>;
-}) {
+  const gridColumns: BatchGridColumn<Plan>[] = columns.map((column) => {
+    const cap = capabilityByKey.get(column.capability);
+    return {
+      id: `${column.capability}|${column.period}`,
+      header: periodLabel(column.period),
+      width: 140,
+      ...(showCapability
+        ? {
+            helpText: column.capability,
+            caption: (
+              <>
+                <span className="block truncate font-mono">{column.capability}</span>
+                {cap && !cap.enforced ? (
+                  <span className="block text-warning">tracking only</span>
+                ) : null}
+              </>
+            ),
+          }
+        : {}),
+      read: (plan) => {
+        const existing = existingOf(plan, column);
+        return existing ? limitToDisplay(column.capability, existing.limit_value) : "";
+      },
+      // Pasted text reads exactly as typed text does; blank is unlimited.
+      fromText: (text) => limitToStored(column.capability, text),
+      render: (plan) => (
+        <LimitCell
+          key={`${plan.plan_key}|${column.capability}|${column.period}`}
+          plan={plan}
+          column={column}
+          existing={existingOf(plan, column)}
+          rate={rate}
+          onSave={(value) => onSave(plan.plan_key, column, value)}
+          onRemove={() => onRemove(plan.plan_key, column)}
+        />
+      ),
+    };
+  });
+
   return (
-    <>
-      <tr className="border-b border-border bg-muted/20">
-        <td
-          colSpan={columns.length + 2}
-          className="px-3 py-1 type-meta font-semibold uppercase tracking-wide text-muted-foreground"
-        >
-          {label}
-        </td>
-      </tr>
-      {plans.map((plan) => (
-        <tr key={plan.plan_key} className="border-b border-border last:border-b-0">
-          <td className="sticky left-0 z-10 min-w-36 bg-card px-3 py-1.5 align-top">
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium">{plan.name}</span>
-              {plan.is_default && (
-                <Badge variant="secondary">
-                  default
-                </Badge>
-              )}
-            </div>
-            <span className="block font-mono type-meta text-muted-foreground">
-              {plan.plan_key}
+    <MatrxBatchGrid<Plan>
+      tableId={tableId}
+      rows={ordered}
+      getRowId={(plan) => plan.plan_key}
+      group={{ label: (plan) => audienceLabel.get(plan.plan_key) ?? "", rowNoun: "plan" }}
+      rowHeader={{
+        header: "Plan",
+        width: 230,
+        label: (plan) => plan.name,
+        render: (plan) => (
+          <span className="flex min-w-0 items-start gap-2">
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-1.5">
+                <span className="truncate font-medium">{plan.name}</span>
+                {plan.is_default && <Badge variant="secondary">default</Badge>}
+              </span>
+              <span className="block truncate font-mono type-meta text-muted-foreground">
+                {plan.plan_key}
+              </span>
             </span>
-          </td>
-          <td
-            className="min-w-24 whitespace-nowrap px-2 py-1.5 text-right align-top type-secondary tabular-nums text-muted-foreground"
-            title={
-              plan.annual_cents !== null && plan.annual_cents !== plan.monthly_cents
-                ? `Billed yearly: ${planPriceLabel({ monthly_cents: plan.annual_cents, per_seat: plan.per_seat })}`
-                : undefined
-            }
-          >
             <Link
               href="/administration/billing/plans"
-              className="underline-offset-2 hover:text-foreground hover:underline"
+              className="shrink-0 whitespace-nowrap type-secondary tabular-nums text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              title={
+                plan.annual_cents !== null && plan.annual_cents !== plan.monthly_cents
+                  ? `Billed yearly: ${planPriceLabel({ monthly_cents: plan.annual_cents, per_seat: plan.per_seat })}`
+                  : undefined
+              }
             >
               {planPriceLabel(plan)}
             </Link>
-          </td>
-          {isEnterpriseAudience(plan.audience) ? (
-            <td colSpan={columns.length} className="px-3 py-1.5 align-middle type-secondary text-muted-foreground">
-              Custom per organization ·{" "}
-              <Link
-                href="/administration/users/organizations?plan=enterprise"
-                className="text-primary underline-offset-2 hover:underline"
-              >
-                Enterprise organizations
-              </Link>
-            </td>
-          ) : columns.map((column) => (
-            <LimitCell
-              key={`${column.capability}|${column.period}`}
-              plan={plan}
-              column={column}
-              existing={limitIndex.get(cellId(plan.plan_key, column.capability, column.period))}
-              rate={rate}
-              onSave={(value) => onSave(plan.plan_key, column, value)}
-              onRemove={() => onRemove(plan.plan_key, column)}
-            />
-          ))}
-        </tr>
-      ))}
-    </>
+          </span>
+        ),
+      }}
+      columns={gridColumns}
+      onChange={(changes) => onPaste(changes)}
+      band={(plan) =>
+        isEnterpriseAudience(plan.audience) ? (
+          <span className="type-secondary text-muted-foreground">
+            Custom per organization ·{" "}
+            <Link
+              href="/administration/users/organizations?plan=enterprise"
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              Enterprise organizations
+            </Link>
+          </span>
+        ) : null
+      }
+      emptyState={{ title: "No active plans" }}
+    />
   );
 }
 
@@ -514,6 +493,42 @@ export function PlanAllowancesPanel() {
     [],
   );
 
+  // A pasted or filled block: the same rules a typed cell follows (blank over a missing row
+  // writes nothing; a 0 asks first), then one re-read.
+  const pasteSave = useCallback(
+    async (changes: BatchGridChange[]) => {
+      let written = 0;
+      for (const change of changes) {
+        const [capability, period] = change.columnId.split("|");
+        if (!capability || !period) continue;
+        const plan = plans.find((p) => p.plan_key === change.rowId);
+        if (!plan) continue;
+        const existing = limitIndex.get(cellId(plan.plan_key, capability, period));
+        const value = change.value as number | null;
+        if (value === null && !existing) continue;
+        const zero = zeroConfirmation(plan.name, capability, value, existing?.limit_value);
+        if (zero) {
+          const ok = await confirm({
+            ...zero,
+            confirmLabel: "Save 0",
+            cancelLabel: "Skip",
+            variant: "destructive",
+          });
+          if (!ok) continue;
+        }
+        try {
+          await setPlanLimit(plan.plan_key, capability, period, value);
+          written += 1;
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : String(err));
+        }
+      }
+      setLimits(await fetchPlanLimits());
+      if (written > 0) toast.success(`${written} allowance${written === 1 ? "" : "s"} saved`);
+    },
+    [plans, limitIndex],
+  );
+
   const remove = useCallback(async (planKey: string, column: MatrixColumn) => {
     await removePlanLimit(planKey, column.capability, column.period);
     setLimits(await fetchPlanLimits());
@@ -568,6 +583,7 @@ export function PlanAllowancesPanel() {
           </div>
         </div>
         <PlanMatrix
+          tableId="admin-limits-points"
           plans={plans}
           columns={pointsColumns}
           capabilityByKey={capabilityByKey}
@@ -576,6 +592,7 @@ export function PlanAllowancesPanel() {
           showCapability={false}
           onSave={save}
           onRemove={remove}
+          onPaste={pasteSave}
         />
       </section>
 
@@ -620,6 +637,7 @@ export function PlanAllowancesPanel() {
           </div>
         </div>
         <PlanMatrix
+          tableId="admin-limits-allowances"
           plans={plans}
           columns={otherColumns}
           capabilityByKey={capabilityByKey}
@@ -628,6 +646,7 @@ export function PlanAllowancesPanel() {
           showCapability
           onSave={save}
           onRemove={remove}
+          onPaste={pasteSave}
         />
       </section>
     </div>

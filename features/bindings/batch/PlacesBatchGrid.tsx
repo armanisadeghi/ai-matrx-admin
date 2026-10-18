@@ -6,24 +6,21 @@
 // inputs are columns, and every cell is the same four-source picker the middle
 // uses — with an Advanced popover onto the full card.
 //
-// The three parts that make a batch grid better than N single edits come from
-// `BatchGridParts`, shared with the shortcut grid: the health dot and its rule,
-// the ADD/UPD badge, and the fill-down that states its own limits. This file
-// composes them over this domain's nouns; it invents none of them.
+// The grid is the canonical batch matrix (`MatrxBatchGrid`, @ai-matrx/design-system):
+// the health icon and its rule, the ADD/UPD badge, the fill-down that states its own
+// limits, the per-row refusal sentences and the remove action are its parts; this file
+// composes them over this domain's nouns and invents none of them.
 //
 // Every refusal is printed ON THE ROW THAT CAUSED IT (P7). A red row says, in
 // domain words, exactly what stands in the way — the grid never sends a person
 // hunting for a coloured dot's meaning.
 
-import { Fragment } from "react";
-import { AlertTriangle, X } from "lucide-react";
-
-import { cn } from "@/lib/utils";
 import {
-  FillDownButton,
-  RowKindBadge,
-  RowStatusDot,
-} from "@/features/agent-shortcuts/components/batch/BatchGridParts";
+  MatrxBatchGrid,
+  type BatchGridColumn,
+  type BatchGridRowStatus,
+} from "@ai-matrx/design-system/data-table";
+
 import {
   SurfaceVariableBinding,
   type BindingTarget,
@@ -38,14 +35,6 @@ import { offeredValuesToSurfaceValues } from "../offered-adapter";
 import { sourceLabelsFor, FILL_DOWN_LIMITS } from "../words";
 import type { PlaceHealth, PlaceOfferState, PlaceRow } from "./batch-model";
 import { displayLabel } from "@ai-matrx/kit/text-case";
-
-const STATUS_WORDS = {
-  red: (n: number) =>
-    `${n} ${n === 1 ? "thing stands" : "things stand"} in the way of writing this place — the row says what`,
-  amber: (n: number) =>
-    `${n} required ${n === 1 ? "input has" : "inputs have"} nothing feeding it`,
-  green: "This place is ready to write",
-};
 
 export interface PlacesBatchGridProps {
   rows: readonly PlaceRow[];
@@ -71,6 +60,52 @@ export interface PlacesBatchGridProps {
   onMapChange: (key: string, next: ConsumptionMap) => void;
   onRemoveRow: (key: string) => void;
   onFillDown: (targetName: string, mapping: ValueMapping | null) => void;
+}
+
+/**
+ * The row's TONE decides the icon, so its colour and its sentence can never
+ * disagree with the refusal printed beside Apply.
+ */
+function statusOf(health: PlaceHealth): BatchGridRowStatus {
+  if (health.tone === "red") {
+    const count =
+      health.unmapped + health.problems.length + health.blockers.length;
+    const n = count + health.warnings.length;
+    return {
+      tone: "blocked",
+      label: `${n} ${n === 1 ? "thing stands" : "things stand"} in the way of writing this place — the row says what`,
+    };
+  }
+  if (health.tone === "amber") {
+    const n = health.unfedRequired.length;
+    return {
+      tone: "attention",
+      label: `${n} required ${n === 1 ? "input has" : "inputs have"} nothing feeding it`,
+    };
+  }
+  return { tone: "ready", label: "This place is ready to write" };
+}
+
+/** P7 — the reasons, in domain words, for the row that caused them. */
+function sentencesOf(health: PlaceHealth): string[] {
+  return [
+    ...(health.unmapped > 0
+      ? [
+          `${health.unmapped} ${health.unmapped === 1 ? "input is" : "inputs are"} waiting for you to pick which offered value feeds ${health.unmapped === 1 ? "it" : "them"}.`,
+        ]
+      : []),
+    // H3 — an unread place says so, and says nothing else.
+    ...(health.unknown ? [health.unknown] : []),
+    ...health.blockers,
+    ...health.warnings.map(
+      (warning) => `Contract mismatch (it still saves): ${warning}`,
+    ),
+    ...health.problems,
+    ...health.unfedRequired.map(
+      (name) =>
+        `"${name}" is required and nothing feeds it, and the Mandate Holder has no default of its own.`,
+    ),
+  ];
 }
 
 export function PlacesBatchGrid({
@@ -104,231 +139,103 @@ export function PlacesBatchGrid({
     ? rows.filter((row) => healthOf(row.key).tone !== "green")
     : rows;
 
+  const gridColumns: BatchGridColumn<PlaceRow>[] = columns.map((target) => ({
+    id: target.name,
+    header: displayLabel(target.label, target.name),
+    helpText: target.name,
+    width: 240,
+    caption: (
+      <>
+        {target.required ? (
+          <span className="text-destructive-ink">Required</span>
+        ) : (
+          <span>Optional</span>
+        )}
+        <span> · {contextKeys.has(target.name) ? "context slot" : "variable"}</span>
+      </>
+    ),
+    read: (row) => mapOf(row.key)[target.name] ?? null,
+    render: (row) => (
+      <PlaceBindingCell
+        placeLabel={row.label}
+        holderKind={holderKind}
+        offerState={offerOf(row.key)}
+        target={target}
+        isContext={contextKeys.has(target.name)}
+        pinnedContext={pinnedContextOf(row.key)}
+        map={mapOf(row.key)}
+        disabled={Boolean(disabled) || appliedKeys.has(row.key)}
+        onChange={(next) => onMapChange(row.key, next)}
+      />
+    ),
+    fill: {
+      label: "Fill down",
+      title: "Feed this input the same way at every place",
+      limits: FILL_DOWN_LIMITS,
+      applyLabel: "Fill every place",
+      width: 384,
+      onApply: (value) =>
+        onFillDown(target.name, (value as ValueMapping | undefined) ?? null),
+      renderControl: (value, set) => (
+        <SurfaceVariableBinding
+          target={target}
+          mapping={(value as ValueMapping | undefined) ?? undefined}
+          availableSurfaceValues={commonSurfaceValues}
+          sourceLabels={sourceLabelsFor(holderKind)}
+          valueFieldLabel="Offered value"
+          onChange={(next) => set(next)}
+        />
+      ),
+    },
+  }));
+
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-muted/50">
-              <th className="sticky left-0 z-10 min-w-[240px] border-b border-r border-border bg-muted/50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Place
-              </th>
-              {columns.map((target) => (
-                <th
-                  key={target.name}
-                  className="min-w-[230px] border-b border-border px-2 py-2 text-left align-top text-[11px] font-semibold text-muted-foreground"
-                >
-                  <div className="flex items-start gap-1.5">
-                    <div className="min-w-0">
-                      <div className="truncate text-[12px] font-semibold text-foreground">
-                        {displayLabel(target.label, target.name)}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1 text-[10px] font-normal normal-case tracking-normal text-muted-foreground">
-                        {target.required ? (
-                          <span className="text-rose-600 dark:text-rose-400">
-                            Required
-                          </span>
-                        ) : (
-                          <span>Optional</span>
-                        )}
-                        <span>·</span>
-                        <span>
-                          {contextKeys.has(target.name)
-                            ? "context slot"
-                            : "variable"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="ml-auto pt-0.5">
-                      <FillDownButton
-                        label="Fill down"
-                        title={`Feed this input the same way at every place`}
-                        limits={FILL_DOWN_LIMITS}
-                        width="w-96"
-                        applyLabel="Fill every place"
-                        onApply={(value) =>
-                          onFillDown(
-                            target.name,
-                            (value as ValueMapping | undefined) ?? null,
-                          )
-                        }
-                        renderControl={(value, set) => (
-                          <SurfaceVariableBinding
-                            target={target}
-                            mapping={
-                              (value as ValueMapping | undefined) ?? undefined
-                            }
-                            availableSurfaceValues={commonSurfaceValues}
-                            sourceLabels={sourceLabelsFor(holderKind)}
-                            valueFieldLabel="Offered value"
-                            onChange={(next) => set(next)}
-                          />
-                        )}
-                      />
-                    </div>
-                  </div>
-                </th>
-              ))}
-              <th className="w-10 border-b border-border px-2 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((row) => {
-              const health = healthOf(row.key);
-              const done = appliedKeys.has(row.key);
-              const sentences = [
-                ...(health.unmapped > 0
-                  ? [
-                      `${health.unmapped} ${health.unmapped === 1 ? "input is" : "inputs are"} waiting for you to pick which offered value feeds ${health.unmapped === 1 ? "it" : "them"}.`,
-                    ]
-                  : []),
-                // H3 — an unread place says so, and says nothing else.
-                ...(health.unknown ? [health.unknown] : []),
-                ...health.blockers,
-                ...health.warnings.map(
-                  (warning) =>
-                    `Contract mismatch (it still saves): ${warning}`,
-                ),
-                ...health.problems,
-                ...health.unfedRequired.map(
-                  (name) =>
-                    `"${name}" is required and nothing feeds it, and the Mandate Holder has no default of its own.`,
-                ),
-              ];
-              return (
-                <Fragment key={row.key}>
-                  <tr className={done ? "opacity-60" : "hover:bg-accent/30"}>
-                    <td className="sticky left-0 z-10 border-b border-r border-border bg-background px-3 py-1.5 align-middle">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <RowStatusDot
-                          att={toAttention(health)}
-                          words={STATUS_WORDS}
-                        />
-                        <RowKindBadge
-                          kind={row.kind}
-                          addTitle="No answer at this rung yet — this writes a new one"
-                          updateTitle="This replaces the answer already written at this rung"
-                        />
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-medium text-foreground">
-                            {row.label}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                            <span className="truncate font-mono">
-                              {row.mandateKey}
-                            </span>
-                            {row.offeredCount !== null ? (
-                              <span className="shrink-0">
-                                · offers {row.offeredCount}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                        {done ? (
-                          <span className="ml-auto shrink-0 text-[10px] text-emerald-600 dark:text-emerald-400">
-                            written
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-
-                    {columns.map((target) => (
-                      <td
-                        key={target.name}
-                        className="border-b border-border px-2 py-1.5 align-middle"
-                      >
-                        <PlaceBindingCell
-                          placeLabel={row.label}
-                          holderKind={holderKind}
-                          offerState={offerOf(row.key)}
-                          target={target}
-                          isContext={contextKeys.has(target.name)}
-                          pinnedContext={pinnedContextOf(row.key)}
-                          map={mapOf(row.key)}
-                          disabled={disabled || done}
-                          onChange={(next) => onMapChange(row.key, next)}
-                        />
-                      </td>
-                    ))}
-
-                    <td className="border-b border-border px-1 py-1.5 text-center align-middle">
-                      <button
-                        type="button"
-                        onClick={() => onRemoveRow(row.key)}
-                        className="text-muted-foreground hover:text-destructive"
-                        title={`Remove ${row.label} from this batch`}
-                        aria-label={`Remove ${row.label} from this batch`}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-
-                  {/* P7 — the reason, on the row that caused it. */}
-                  {sentences.length > 0 ? (
-                    <tr>
-                      <td
-                        colSpan={columns.length + 2}
-                        className={cn(
-                          "border-b border-border px-3 py-1.5 text-[11.5px] leading-relaxed",
-                          health.tone === "red"
-                            ? "bg-destructive/5 text-destructive-ink"
-                            : "bg-amber-500/5 text-amber-700 dark:text-amber-400",
-                        )}
-                      >
-                        <ul className="space-y-0.5">
-                          {sentences.map((sentence) => (
-                            <li
-                              key={sentence}
-                              className="flex items-start gap-1.5"
-                            >
-                              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                              <span>{sentence}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                    </tr>
-                  ) : null}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {columns.length === 0 ? (
-        <div className="border-t border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
-          No per-place columns yet — every input is inherited or set once for
-          all places. Flip an input to{" "}
-          <span className="font-medium">Per place</span> above to vary it here.
-        </div>
-      ) : null}
-      {attentionOnly && visible.length === 0 ? (
-        <div className="border-t border-border px-3 py-6 text-center text-xs text-muted-foreground">
-          Every place in this batch is ready to write.
-        </div>
-      ) : null}
-    </div>
+    <MatrxBatchGrid<PlaceRow>
+      tableId="bindings-places-batch"
+      rows={visible}
+      getRowId={(row) => row.key}
+      rowHeader={{
+        header: "Place",
+        width: 260,
+        label: (row) => row.label,
+        render: (row) => (
+          <span className="block min-w-0">
+            <span className="block truncate text-sm font-medium text-foreground">
+              {row.label}
+            </span>
+            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="truncate font-mono">{row.mandateKey}</span>
+              {row.offeredCount !== null ? (
+                <span className="shrink-0">· offers {row.offeredCount}</span>
+              ) : null}
+            </span>
+          </span>
+        ),
+      }}
+      columns={gridColumns}
+      // Every cell here is a picker; nothing reaches the grid as typed or pasted text.
+      onChange={() => undefined}
+      status={(row) => statusOf(healthOf(row.key))}
+      kind={(row) => row.kind}
+      kindWords={{
+        add: "No answer at this rung yet — this writes a new one",
+        update: "This replaces the answer already written at this rung",
+      }}
+      notes={(row) => {
+        const health = healthOf(row.key);
+        const tone = health.tone === "red" ? "blocked" : "attention";
+        return sentencesOf(health).map((text) => ({ tone, text }));
+      }}
+      doneRowIds={appliedKeys}
+      onRemoveRow={(row) => onRemoveRow(row.key)}
+      removeLabel={(row) => `Remove ${row.label} from this batch`}
+      emptyState={{ title: "Every place in this batch is ready to write." }}
+      {...(columns.length === 0
+        ? {
+            footnote:
+              "No per-place columns yet — flip an input to Per place above to vary it here.",
+          }
+        : {})}
+    />
   );
-}
-
-/**
- * The dot reads the row's TONE, so its colour and its sentence can never
- * disagree with the refusal printed beside Apply.
- */
-function toAttention(health: PlaceHealth) {
-  if (health.tone === "red") {
-    const count =
-      health.unmapped + health.problems.length + health.blockers.length;
-    // Contract warnings are red on the dot too — counted, never "required".
-    return {
-      unmapped: count + health.warnings.length,
-      requiredUnmapped: count,
-    };
-  }
-  if (health.tone === "amber") {
-    return { unmapped: health.unfedRequired.length, requiredUnmapped: 0 };
-  }
-  return { unmapped: 0, requiredUnmapped: 0 };
 }

@@ -1,19 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Workflow } from "lucide-react";
 import {
-  AlertTriangle,
-  ArrowDownToLine,
-  Ban,
-  CheckCircle2,
-  Workflow,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@ai-matrx/design-system";
+  MatrxBatchGrid,
+  type BatchGridColumn,
+  type BatchGridRowStatus,
+} from "@ai-matrx/design-system/data-table";
 import { cn } from "@/lib/utils";
 import { BindingCell } from "./BindingCell";
 import { TreatmentValueControl } from "./TreatmentControls";
@@ -144,9 +136,102 @@ function JobBlock({
     return rowAttention(job, place, handlers).unsettled > 0;
   });
 
+  const placeOf = new Map(places.map((place) => [place.name, place]));
+  // Categories curate; exclusions are the only thing that removes a pair.
+  const excludedCell = (
+    <span className="text-[11px] italic text-muted-foreground">Excluded</span>
+  );
+
+  const columns: BatchGridColumn<Place>[] = [
+    ...treatmentColumns.map(
+      (f): BatchGridColumn<Place> => ({
+        id: `treatment:${f.key}`,
+        header: f.label,
+        helpText: f.hint,
+        width: 160,
+        read: (place) => handlers.resolveTreatment(job, place, f.key),
+        render: (place) =>
+          isExcluded(job, place) ? (
+            excludedCell
+          ) : (
+            <TreatmentValueControl
+              def={f}
+              value={handlers.resolveTreatment(job, place, f.key)}
+              onChange={(v) => handlers.onCellTreatmentChange(job, place, f.key, v)}
+              compact
+            />
+          ),
+        fill: {
+          title: "Set this treatment on every place",
+          limits: "Treatments fill cleanly — every place can render any mode.",
+          applyLabel: "Apply to every place",
+          onApply: (v) =>
+            handlers.onFillTreatmentColumn(
+              job,
+              f.key,
+              (v ?? TEMPLATE_TREATMENT[f.key]) as TreatmentValue,
+            ),
+          renderControl: (value, set) => (
+            <TreatmentValueControl
+              def={f}
+              value={(value as TreatmentValue | undefined) ?? TEMPLATE_TREATMENT[f.key]}
+              onChange={set}
+            />
+          ),
+        },
+      }),
+    ),
+    ...bindingColumns.map(
+      (c): BatchGridColumn<Place> => {
+        const template = (): Binding =>
+          c.templateValueId
+            ? { kind: "known_value", valueId: c.templateValueId }
+            : { kind: "prompt_user", prompt: `Enter ${c.label}` };
+        return {
+          id: `binding:${c.key}`,
+          header: c.label,
+          ...(c.required ? { required: true } : {}),
+          width: 240,
+          read: (place) => handlers.resolveBinding(job, place, c),
+          render: (place) =>
+            isExcluded(job, place) ? (
+              excludedCell
+            ) : (
+              <BindingCell
+                consumed={c}
+                binding={handlers.resolveBinding(job, place, c)}
+                candidates={place.provides}
+                placeLabel={place.label}
+                onChange={(b) => handlers.onCellBindingChange(job, place, c, b)}
+              />
+            ),
+          fill: {
+            title: "Set this input on every place",
+            limits:
+              "Direct values and prompts fill cleanly; a known value only lands where that identity exists.",
+            applyLabel: "Apply to every place",
+            width: 360,
+            onApply: (v) =>
+              handlers.onFillBindingColumn(job, c, (v as Binding | undefined) ?? template()),
+            renderControl: (value, set) => (
+              <BindingCell
+                consumed={c}
+                binding={(value as Binding | undefined) ?? template()}
+                candidates={ALL_KNOWN_VALUES}
+                placeLabel="Every place in this block"
+                onChange={set}
+                compact={false}
+              />
+            ),
+          },
+        };
+      },
+    ),
+  ];
+
   return (
-    <section className="overflow-hidden rounded-lg border border-border">
-      <header className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/40 px-3 py-2">
+    <section className="space-y-1.5">
+      <header className="flex flex-wrap items-center gap-2 px-1">
         <span className="text-sm font-semibold text-foreground">
           {job.label}
         </span>
@@ -169,191 +254,44 @@ function JobBlock({
         </span>
       </header>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-muted/50">
-              <th className="sticky left-0 z-10 min-w-[220px] border-b border-r border-border bg-muted/50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Place
-              </th>
-
-              {treatmentColumns.map((f) => (
-                <th
-                  key={f.key}
-                  className="min-w-[150px] border-b border-border px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className="truncate" title={f.hint}>
-                      {f.label}
-                    </span>
-                    <FillButton
-                      title="Set this treatment on every place"
-                      caveat="Treatments fill cleanly — every place can render any mode."
-                      render={(value, set) => (
-                        <TreatmentValueControl
-                          def={f}
-                          value={
-                            (value as TreatmentValue | undefined) ??
-                            TEMPLATE_TREATMENT[f.key]
-                          }
-                          onChange={set}
-                        />
-                      )}
-                      onApply={(v) =>
-                        handlers.onFillTreatmentColumn(
-                          job,
-                          f.key,
-                          (v ?? TEMPLATE_TREATMENT[f.key]) as TreatmentValue,
-                        )
-                      }
-                    />
-                  </div>
-                </th>
-              ))}
-
-              {bindingColumns.map((c) => (
-                <th
-                  key={c.key}
-                  className="min-w-[230px] border-b border-border px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className="truncate">
-                      {c.label}
-                    </span>
-                    {c.required && (
-                      <span className="text-rose-500" title="Required">
-                        *
-                      </span>
-                    )}
-                    <FillButton
-                      title="Set this input on every place"
-                      caveat="Direct values and prompts fill cleanly; a known value only lands where that identity exists."
-                      render={(value, set) => (
-                        <BindingCell
-                          consumed={c}
-                          binding={
-                            (value as Binding | undefined) ??
-                            (c.templateValueId
-                              ? { kind: "known_value", valueId: c.templateValueId }
-                              : { kind: "prompt_user", prompt: `Enter ${c.label}` })
-                          }
-                          candidates={ALL_KNOWN_VALUES}
-                          placeLabel="Every place in this block"
-                          onChange={set}
-                          compact={false}
-                        />
-                      )}
-                      onApply={(v) => {
-                        const next =
-                          (v as Binding | undefined) ??
-                          (c.templateValueId
-                            ? ({ kind: "known_value", valueId: c.templateValueId } as Binding)
-                            : ({ kind: "prompt_user", prompt: `Enter ${c.label}` } as Binding));
-                        handlers.onFillBindingColumn(job, c, next);
-                      }}
-                    />
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {visiblePlaces.map((place) => {
-              const excluded = isExcluded(job, place);
-              const att = rowAttention(job, place, handlers);
-              return (
-                <tr
-                  key={place.name}
-                  className={cn(
-                    excluded ? "opacity-55" : "hover:bg-accent/30",
-                  )}
-                >
-                  <td className="sticky left-0 z-10 border-b border-r border-border bg-background px-3 py-1.5 align-middle">
-                    <div className="flex min-w-0 items-center gap-2">
-                      {excluded ? (
-                        <Ban
-                          className="h-4 w-4 shrink-0 text-rose-500"
-                          aria-label="Excluded"
-                        />
-                      ) : (
-                        <StatusDot att={att} />
-                      )}
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-medium text-foreground">
-                          {place.label}
-                        </div>
-                        <div className="truncate font-mono text-[10px] text-muted-foreground">
-                          {place.name}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-
-                  {excluded ? (
-                    <td
-                      colSpan={treatmentColumns.length + bindingColumns.length}
-                      className="border-b border-border px-3 py-1.5 text-[11px] italic text-muted-foreground"
-                    >
-                      {/* Categories curate; exclusions are the only thing that removes a pair. */}
-                      Excluded here:{" "}
-                      <span className="not-italic">{job.label}</span>
-                    </td>
-                  ) : (
-                    <>
-                      {treatmentColumns.map((f) => (
-                        <td
-                          key={f.key}
-                          className="border-b border-border px-2 py-1.5 align-middle"
-                        >
-                          <TreatmentValueControl
-                            def={f}
-                            value={handlers.resolveTreatment(job, place, f.key)}
-                            onChange={(v) =>
-                              handlers.onCellTreatmentChange(job, place, f.key, v)
-                            }
-                            compact
-                          />
-                        </td>
-                      ))}
-
-                      {bindingColumns.map((c) => (
-                        <td
-                          key={c.key}
-                          className="border-b border-border px-2 py-1.5 align-middle"
-                        >
-                          <BindingCell
-                            consumed={c}
-                            binding={handlers.resolveBinding(job, place, c)}
-                            candidates={place.provides}
-                            placeLabel={place.label}
-                            onChange={(b) =>
-                              handlers.onCellBindingChange(job, place, c, b)
-                            }
-                          />
-                        </td>
-                      ))}
-                    </>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {!hasColumns && (
-        <div className="border-t border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
-          No per-cell columns; set a row to{" "}
-          <span className="font-medium">Per-cell</span> to edit.
-        </div>
-      )}
-      {attentionOnly && visiblePlaces.length === 0 && (
-        <div className="border-t border-border px-3 py-6 text-center text-xs text-muted-foreground">
-          <CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-500" />
-          Every place is settled for this job.
-        </div>
-      )}
+      <MatrxBatchGrid<Place>
+        tableId={`unified-batch-studio-${job.key}`}
+        rows={visiblePlaces}
+        getRowId={(place) => place.name}
+        rowHeader={{
+          header: "Place",
+          width: 240,
+          label: (place) => place.label,
+          render: (place) => (
+            <span className="block min-w-0">
+              <span className="block truncate text-sm font-medium text-foreground">
+                {place.label}
+              </span>
+              <span className="block truncate font-mono text-[10px] text-muted-foreground">
+                {place.name}
+              </span>
+            </span>
+          ),
+        }}
+        columns={columns}
+        // Every cell is a picker; nothing arrives as typed or pasted text.
+        onChange={() => undefined}
+        status={(place) => {
+          const row = placeOf.get(place.name) ?? place;
+          return isExcluded(job, row)
+            ? { tone: "blocked", label: `Excluded here: ${job.label}` }
+            : statusOf(rowAttention(job, row, handlers));
+        }}
+        notes={(place) =>
+          isExcluded(job, place)
+            ? [{ tone: "attention", text: `Excluded here: ${job.label}` }]
+            : []
+        }
+        emptyState={{ title: "Every place is settled for this job." }}
+        {...(hasColumns
+          ? {}
+          : { footnote: "No per-cell columns; set a row to Per-cell to edit." })}
+      />
     </section>
   );
 }
@@ -377,62 +315,9 @@ function rowAttention(
   return { unsettled, red };
 }
 
-function StatusDot({ att }: { att: { unsettled: number; red: number } }) {
-  if (att.red > 0) {
-    return (
-      <span title={`${att.red} with nothing available`}>
-        <AlertTriangle className="h-4 w-4 shrink-0 text-rose-500" />
-      </span>
-    );
-  }
-  if (att.unsettled > 0) {
-    return (
-      <span title={`${att.unsettled} awaiting confirmation`}>
-        <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
-      </span>
-    );
-  }
-  return <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />;
-}
-
-function FillButton({
-  title,
-  caveat,
-  render,
-  onApply,
-}: {
-  title: string;
-  caveat: string;
-  render: (value: unknown, set: (v: unknown) => void) => React.ReactNode;
-  onApply: (value: unknown) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState<unknown>(undefined);
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="shrink-0 text-muted-foreground transition-colors hover:text-primary"
-          title={title}
-        >
-          <ArrowDownToLine className="h-3.5 w-3.5" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent sizing="content" align="start" className="space-y-2 p-3">
-        <p className="text-[11px] text-muted-foreground">{caveat}</p>
-        {render(value, setValue)}
-        <Button
-          variant="primary"
-          className="w-full"
-          onClick={() => {
-            onApply(value);
-            setOpen(false);
-          }}
-        >
-          Apply to every place
-        </Button>
-      </PopoverContent>
-    </Popover>
-  );
+function statusOf(att: { unsettled: number; red: number }): BatchGridRowStatus {
+  if (att.red > 0) return { tone: "blocked", label: `${att.red} with nothing available` };
+  if (att.unsettled > 0)
+    return { tone: "attention", label: `${att.unsettled} awaiting confirmation` };
+  return { tone: "ready", label: "Every input is settled" };
 }
