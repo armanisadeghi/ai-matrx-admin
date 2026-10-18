@@ -42,12 +42,102 @@ export interface PreviewBlock {
   off?: string | null;
 }
 
+/** A door the server can preview (`preview_doors.py`): what the model receives arriving through it. */
+export interface PreviewDoor {
+  id: string;
+  label: string;
+  /** "interactive" | "programmatic": the turn-assembly family its rules run by. */
+  family: string;
+  surface: string | null;
+  /** The real doors this one stands for. */
+  covers: string;
+}
+
+/** Text the platform added to the request, labeled (`matrx_ai.config.platform_parts`). */
+export interface PreviewPlatformPart {
+  id: string;
+  label: string;
+  source: string;
+  channel?: string;
+  purpose?: string;
+  where?: string;
+  text: string;
+}
+
+/** One part the turn-assembly step staged on this door, labeled with its injector. */
+export interface PreviewStagedPart {
+  injector: string;
+  label: string;
+  slot: string;
+  text: string;
+}
+
+export interface PreviewTurnAssembly {
+  door: string;
+  ran: string[];
+  skipped: Record<string, string>;
+  staged: PreviewStagedPart[];
+}
+
+/** A tool on the wire and the source that put it there (TOOL-SOURCES rule W). */
+export interface PreviewToolSource {
+  name: string;
+  source: string;
+}
+
 export interface ModelViewPreview {
   provider: string | null;
   model: string | null;
   request: CapturedRequest;
   notices?: PreviewNotice[];
   prompt_blocks?: PreviewBlock[];
+  platform_parts?: PreviewPlatformPart[];
+  tools?: PreviewToolSource[];
+  turn_assembly?: PreviewTurnAssembly | null;
+  /** The door this capture previewed; null = the request's own. */
+  door?: PreviewDoor | null;
+  /** Every door the server can preview. */
+  doors?: PreviewDoor[];
+}
+
+/** The door the Model view opens on: chat, where the model is reached most. */
+export const DEFAULT_PREVIEW_DOOR = "chat";
+
+/** One labeled thing the platform added on this door: a request part or a staged turn part. */
+export interface LabeledAddition {
+  key: string;
+  label: string;
+  source: string;
+  text: string;
+}
+
+/**
+ * Everything the platform added on this door, labeled: the turn-assembly step's staged parts
+ * (surface notes, minor-safety note, group view…) first, then every registered platform part
+ * found in the request (date line, organization list, turn block, skills…). Nothing dropped.
+ */
+export function labeledAdditions(preview: ModelViewPreview | null): LabeledAddition[] {
+  if (!preview) return [];
+  const staged = (preview.turn_assembly?.staged ?? []).map((s, i) => ({
+    key: `staged-${s.injector}-${s.slot}-${i}`,
+    label: s.label,
+    source: s.injector,
+    text: s.text,
+  }));
+  const parts = (preview.platform_parts ?? []).map((p, i) => ({
+    key: `part-${p.id}-${i}`,
+    label: p.label,
+    source: p.source,
+    text: p.text,
+  }));
+  return [...staged, ...parts];
+}
+
+/** The source the server recorded for each wire tool, by name. */
+export function toolSourceByName(preview: ModelViewPreview | null): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const t of preview?.tools ?? []) out[t.name] = t.source;
+  return out;
 }
 
 const LEVEL_LABELS: Record<string, string> = {

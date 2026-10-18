@@ -1,0 +1,34 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+OLD PATH REFUSED, written by scripts/sync-main.py
+File:        features/surfaces/utils/bindings-changed.ts
+Belongs at:  ../aidream/apps/shared/chat/src/surfaces/utils/bindings-changed.ts
+Why:         features/surfaces/utils/ was moved (entry 'features/surfaces/utils/' in .matrx/moved-paths.txt). A file saved at the old path would
+             recreate it, so the sweep moved it here instead of committing it there.
+Done with it: the work is in the new path, this .held file is deleted, and its line in
+_conflicts/README.md is deleted.
+---------------- THE REFUSED FILE BELOW ----------------
+/**
+ * A surface binding was saved or removed. The service clears its menu-agent
+ * cache, but a list that is already mounted (the "Agents for this page"
+ * popover, the Surface Context window) holds its rows in component state and
+ * would keep showing a removed binding until reload. Every writer announces
+ * here; every mounted list refreshes.
+ */
+import { useEffect } from "react";
+
+const EVENT = "matrx:surface-bindings-changed";
+
+export function announceBindingsChanged(surfaceName?: string): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(EVENT, { detail: { surfaceName } }));
+}
+
+export function useOnBindingsChanged(cb: () => void): void {
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const h = () => cb();
+    window.addEventListener(EVENT, h);
+    return () => window.removeEventListener(EVENT, h);
+  }, [cb]);
+}

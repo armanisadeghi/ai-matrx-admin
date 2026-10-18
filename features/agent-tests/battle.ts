@@ -114,10 +114,10 @@ export type BattleVotes = Readonly<Record<string, "up" | "down">>;
 
 export interface CasePairVerdict {
   caseId: string;
-  /** The setup that won this case, `tie`, or null while it is still being judged. */
+  /** The setup that won this case, `tie`, `none` (the judge gave no verdict), or null while judging. */
   winner: string | null;
   /** Pairwise rounds (repeats) the judge gave each side, and the ties. */
-  judge: { challenger: number; baseline: number; ties: number; pending: number };
+  judge: { challenger: number; baseline: number; ties: number; pending: number; failed: number };
   /** The judge's one-line rationales, one per decided round. */
   rationales: string[];
   /** True when the person's own votes decided this case (they outrank the judge). */
@@ -133,6 +133,8 @@ export interface PairwiseVerdict {
   wins: number;
   losses: number;
   ties: number;
+  /** Cases the judge could not decide (its call failed) and nobody voted on: never counted as ties. */
+  unjudged: number;
   /** One-sided sign-test p over the decided cases (ties excluded): how likely a lead this big is by chance. */
   p: number;
   /** "clear" only when the lead would happen by chance at most 1 time in 8 (3–0, 4–0, 5–1 …). */
@@ -183,7 +185,7 @@ export function pairwiseVerdict(
   const caseIds = [...new Set(pairs.map((r) => r.caseId))];
   const cases = caseIds.map<CasePairVerdict>((caseId) => {
     const mine = pairs.filter((r) => r.caseId === caseId && (r.pairwise?.challenger ?? r.setupKey) === challenger);
-    const judge = { challenger: 0, baseline: 0, ties: 0, pending: 0 };
+    const judge = { challenger: 0, baseline: 0, ties: 0, pending: 0, failed: 0 };
     const rationales: string[] = [];
     for (const r of mine) {
       if (r.status !== "done") {
@@ -193,8 +195,9 @@ export function pairwiseVerdict(
       const w = r.pairwise?.winner ?? null;
       if (w === challenger) judge.challenger += 1;
       else if (w === baseline) judge.baseline += 1;
-      else judge.ties += 1;
-      if (r.pairwise?.reason) rationales.push(r.pairwise.reason);
+      else if (w === "tie") judge.ties += 1;
+      else judge.failed += 1;
+      if (r.pairwise?.reason && w) rationales.push(r.pairwise.reason);
     }
     // The person's votes on this case's answers: +1 / -1 per answer, summed per side.
     let voteScore = 0;
@@ -210,6 +213,7 @@ export function pairwiseVerdict(
     else if (judge.pending > 0) winner = null;
     else if (judge.challenger > judge.baseline) winner = challenger;
     else if (judge.baseline > judge.challenger) winner = baseline;
+    else if (judge.challenger + judge.baseline + judge.ties === 0) winner = "none";
     else winner = "tie";
     return { caseId, winner, judge, rationales, byVote };
   });
@@ -217,16 +221,18 @@ export function pairwiseVerdict(
   const wins = cases.filter((c) => c.winner === challenger).length;
   const losses = cases.filter((c) => c.winner === baseline).length;
   const ties = cases.filter((c) => c.winner === "tie").length;
+  const unjudged = cases.filter((c) => c.winner === "none").length;
   const lead = Math.max(wins, losses);
   const p = wins === losses ? 1 : signTestP(lead, wins + losses);
   const confidence = wins === losses ? "even" : p <= CLEAR_WIN_P && lead > ties ? "clear" : "leans";
-  return { settled, baseline, challenger, cases, wins, losses, ties, p, confidence };
+  return { settled, baseline, challenger, cases, wins, losses, ties, unjudged, p, confidence };
 }
 
 /** The verdict in one line: "Candidate wins 3–0", "Leans Candidate 2–1 · too close to call". */
 export function pairwiseLine(v: PairwiseVerdict, labelOf: (key: string) => string): string {
   if (!v.settled) return "Judging";
-  const tiesPart = v.ties ? ` · ${v.ties} ${v.ties === 1 ? "tie" : "ties"}` : "";
+  const tiesPart =
+    (v.ties ? ` · ${v.ties} ${v.ties === 1 ? "tie" : "ties"}` : "") + (v.unjudged ? ` · ${v.unjudged} not judged` : "");
   const leader = v.wins >= v.losses ? v.challenger : v.baseline;
   const score = `${Math.max(v.wins, v.losses)}–${Math.min(v.wins, v.losses)}`;
   if (v.confidence === "clear") return `${labelOf(leader)} wins ${score}${tiesPart}`;
