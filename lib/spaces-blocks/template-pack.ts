@@ -9,6 +9,10 @@
 //   page / linkToPage block  props.spaceId = "page:<page key>"
 //   a span                   link = "page:<page key>"   or   mention = { kind: "space", spaceId: "page:<key>" }
 //
+// A pack may also carry a BOARD (`board`): chapters (frames) whose tiles name tables by the same table token
+// (`{ kind: "table", table: "<token>", layout: "section" }`), plus child boards. The Board gallery's "Use
+// template" installs the tables through the same door, then makes the board with the made table ids.
+//
 // Block ids are optional in a pack (each use gives every block a fresh id). The pack is stored as a
 // platform `custom.template` row: the spec is the row's spec with the pack riding in it as `spacePack`,
 // and the card carries `space` (what the Spaces gallery shows). See
@@ -89,8 +93,14 @@ export interface SpaceTemplatePack extends PackIdentity {
   version: number;
   /** The tables, views, relationships and sample rows. */
   spec: TemplateSpec;
-  /** pages[0] is the root page; "Use template" opens it. */
+  /** pages[0] is the root page; "Use template" opens it. Empty only when the pack carries a `board`. */
   pages: PackPage[];
+  /**
+   * A BOARD the pack makes instead of (or beside) pages: its chapters (frames) hold tiles that name the
+   * pack's tables by TOKEN. "Use template" on the Board gallery installs the tables, then makes this board
+   * (and its child pages) with every table tile pointed at the made table. See PackBoard.
+   */
+  board?: PackBoard;
   /**
    * Records-check findings the pack keeps on purpose, each with its reason (the agency sample's all-yellow
    * win kinds match its reference). A waiver that no longer matches a finding is itself a finding.
@@ -101,6 +111,63 @@ export interface SpaceTemplatePack extends PackIdentity {
 /** What the card carries under `space` (custom.template.card.space). */
 export interface SpaceTemplateCardFace extends PackIdentity {
   pages: number;
+  /** Set when the pack makes a board: what the Board gallery lists (the Spaces gallery lists only packs with pages). */
+  board?: { title: string; chapters: number; pages: number };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The board a pack makes (Board gallery "Use template")
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** What a board tile shows: an installed table (by token), the person's own Note (seeded), or words kept on the board. */
+export const PACK_BOARD_TILE_KINDS = ["table", "note", "writeUp"] as const;
+export type PackBoardTileKind = (typeof PACK_BOARD_TILE_KINDS)[number];
+
+/** One tile of a board chapter. */
+export interface PackBoardTile {
+  kind: PackBoardTileKind;
+  title: string;
+  /** kind "table": the spec table's token. */
+  table?: string;
+  /** kind "table": "section" draws the table as a titled, grouped, edit-in-place section (records-ui SectionCard). Default "table". */
+  layout?: "section" | "table";
+  /** kind "note": the words the new Note starts with (its first line names it); kind "writeUp": the markdown. */
+  text?: string;
+  /** World px. In page layout a chapter is PACK_BOARD_COLUMN wide, so a full-width tile is PACK_BOARD_TILE_W. */
+  size: { w: number; h: number };
+}
+
+/** One chapter: a frame, in reading order, holding its tiles. */
+export interface PackBoardChapter {
+  title: string;
+  /** The frame's own note. */
+  note?: string;
+  tiles: PackBoardTile[];
+}
+
+/** One board (the top board, or one of its pages). */
+export interface PackBoardPage {
+  /** Stable within the pack: lowercase letters, digits and dashes. */
+  key: string;
+  title: string;
+  /** "page" reads top to bottom with the chapters in an outline; "canvas" (default) is the free canvas. */
+  layout?: "page" | "canvas";
+  chapters: PackBoardChapter[];
+}
+
+/** The top board and its child boards (pages, one level: each is filed under the top board). */
+export interface PackBoard extends PackBoardPage {
+  pages?: PackBoardPage[];
+}
+
+/** The page-layout column (features/board/engine/page-layout.ts PAGE_COLUMN_W) and the widest tile inside a chapter. */
+export const PACK_BOARD_COLUMN = 1100;
+export const PACK_BOARD_TILE_W = 1020;
+
+/** The pack's boards, top board first. */
+export function packBoards(board: PackBoard): PackBoardPage[] {
+  const { pages, ...top } = board;
+  return [top, ...(pages ?? [])];
 }
 
 /** The card face of a pack. */
@@ -114,6 +181,9 @@ export function packCardFace(pack: SpaceTemplatePack): SpaceTemplateCardFace {
     category: pack.category,
     tags: [...pack.tags],
     pages: pack.pages.length,
+    ...(pack.board
+      ? { board: { title: pack.board.title, chapters: pack.board.chapters.length, pages: pack.board.pages?.length ?? 0 } }
+      : {}),
   };
 }
 

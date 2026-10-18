@@ -16,22 +16,26 @@ import { cloneBoardContent } from "./clone-content";
 import { BUILTIN_BOARD_TEMPLATES, builtinTemplateByKey } from "./builtin";
 import type { BoardDocument } from "../board/document";
 import { materializeStarterNotes } from "./starter-notes";
+import { isPackKey, listBoardPacks, makeBoardFromPack } from "./board-packs";
+import type { AppDispatch } from "@/lib/redux/store";
 
 export interface BoardTemplateEntry {
-  /** `builtin:<id>` or the saved board's id. */
+  /** `builtin:<id>`, `pack:<template id>` (a template pack that makes a board) or the saved board's id. */
   key: string;
   title: string;
+  /** Owned by the platform: a built-in from code or a published board pack. */
   builtin: boolean;
   /** The tiles to preview. */
   doc: BoardDocument;
 }
 
-/** Built-in templates first, then the person's saved ones (boards labeled `template` that they can read). */
+/** Built-in templates first, then the published board packs, then the person's saved ones (boards labeled `template` that they can read). */
 export async function listBoardTemplates(): Promise<BoardTemplateEntry[]> {
   const builtin: BoardTemplateEntry[] = BUILTIN_BOARD_TEMPLATES.map((t) => ({ key: t.key, title: t.title, builtin: true, doc: t.build() }));
-  const ids = await listTemplateIds("board");
+  const [ids, packs] = await Promise.all([listTemplateIds("board"), listBoardPacks()]);
+  const packed = packs.map((p) => ({ key: p.key, title: p.title, builtin: true, doc: p.doc }));
   const saved = (await getBoardsByIds(ids)).map((b) => ({ key: b.id, title: b.title, builtin: false, doc: b.doc }));
-  return [...builtin, ...saved];
+  return [...builtin, ...packed, ...saved];
 }
 
 export function isBoardTemplate(templateIds: readonly string[] | null, boardId: string): boolean {
@@ -57,7 +61,13 @@ export async function makeBoardFromTemplate(
   settings?: JsonObject,
   /** Built-in templates only: adds to the fresh document before it is stored (the Studio adds the brand's own accounts). */
   extend?: (doc: BoardDocument) => BoardDocument,
+  /** Board packs only: installing their tables copies the template's assistant (host steps need the store). */
+  pack?: { dispatch: AppDispatch; onStage?: (stage: string) => void },
 ): Promise<LoadedBoard> {
+  if (isPackKey(key)) {
+    if (!pack) throw new Error("This template installs tables; it needs the app's store to do so.");
+    return makeBoardFromPack(key, organizationId, title, pack.dispatch, pack.onStage);
+  }
   const builtin = builtinTemplateByKey(key);
   if (builtin) {
     const built = builtin.build();

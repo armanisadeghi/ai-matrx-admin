@@ -6,15 +6,16 @@
 
 import { LayoutTemplate, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
 import { boardHref, isBoardError } from "../persistence/boardsService";
 import { BoardTemplateGallery } from "./BoardTemplateGallery";
 import { makeBoardFromTemplate, templateBoardTitle } from "./board-templates";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
+import { listBoardPacks } from "./board-packs";
 
 /** Built-ins with the starter (when it names one) first. Exported for the test. */
 export function orderedStarters(starterKey: string | undefined) {
@@ -23,14 +24,27 @@ export function orderedStarters(starterKey: string | undefined) {
 
 export function StartTemplates({ starterKey }: { starterKey?: string }) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const organizationId = useAppSelector(selectOrganizationId);
   const [busy, setBusy] = useState<string | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  // The published board packs (Design system, …) sit after the built-ins; a failed read leaves the built-ins and says so.
+  const [packs, setPacks] = useState<Array<{ key: string; title: string; summary: string }>>([]);
+  useEffect(() => {
+    let live = true;
+    listBoardPacks().then(
+      (all) => live && setPacks(all.map(({ key, title, summary }) => ({ key, title, summary }))),
+      (e: unknown) => live && toast.error(e instanceof Error ? e.message : "We couldn't list the board templates."),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const use = async (key: string, title: string) => {
     setBusy(key);
     try {
-      const board = await makeBoardFromTemplate(key, organizationId, templateBoardTitle(title));
+      const board = await makeBoardFromTemplate(key, organizationId, templateBoardTitle(title), undefined, undefined, { dispatch });
       router.push(boardHref(board));
     } catch (e) {
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
@@ -42,7 +56,7 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
     <>
       <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Start from a template</h3>
       <div className="mt-2 flex flex-wrap gap-2">
-        {orderedStarters(starterKey).map((t) => (
+        {[...orderedStarters(starterKey), ...packs].map((t) => (
           <button
             key={t.key}
             type="button"

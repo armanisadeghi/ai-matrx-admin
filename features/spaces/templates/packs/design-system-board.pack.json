@@ -1,0 +1,920 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0363",
+  "version": 1,
+  "title": "Design system board",
+  "description": "Colours, type, spacing, corners and shadows as editable sections of one board.",
+  "forWho": "Product teams keeping one design system",
+  "icon": {
+    "icon": "Palette"
+  },
+  "cover": null,
+  "category": "docs",
+  "tags": [
+    "design",
+    "tokens",
+    "colors",
+    "typography",
+    "board"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-design-system-board",
+    "catalogueId": "SP0363",
+    "useCase": "Ilse Marchetti keeps her studio's colours, type, spacing, corners and shadows in one place her team edits.",
+    "industry": "cross_industry",
+    "vertical": "Design systems",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "tables",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Fernwick Design Co.",
+      "describes": "A small product design studio that keeps one design system for its apps.",
+      "address": {
+        "line1": "27 Quillan Row",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97211",
+        "country": "US"
+      },
+      "phone": "(503) 555-0163",
+      "website": "fernwick.net",
+      "email": "hello@fernwick.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-design-system-board",
+    "tables": [
+      {
+        "token": "color",
+        "name": "Colors",
+        "labelSingular": "Colour",
+        "labelPlural": "Colours",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "palette",
+        "titleField": "name",
+        "describes": "Every colour the product uses, light and dark, and what each is read on.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "group",
+            "label": "Group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Surfaces",
+              "Muted",
+              "Primary",
+              "Lines",
+              "Feedback"
+            ],
+            "choiceColors": {
+              "Surfaces": "slate",
+              "Muted": "gray",
+              "Primary": "blue",
+              "Lines": "teal",
+              "Feedback": "red"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "color_pair",
+              "options": {
+                "contrastWith": {
+                  "readsOnField": "reads_on"
+                }
+              }
+            }
+          },
+          {
+            "key": "reads_on",
+            "label": "Read on",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "col-01",
+            "values": {
+              "name": "background",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#0b0d12\"}",
+              "usage_note": "The page itself. Everything else sits on it."
+            }
+          },
+          {
+            "key": "col-02",
+            "values": {
+              "name": "foreground",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#111827\",\"dark\":\"#e8ebf1\"}",
+              "reads_on": "background",
+              "usage_note": "Body text and icons on the page."
+            }
+          },
+          {
+            "key": "col-03",
+            "values": {
+              "name": "card",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#141821\"}",
+              "usage_note": "Raised panels, dialogs and menus."
+            }
+          },
+          {
+            "key": "col-04",
+            "values": {
+              "name": "card-foreground",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#111827\",\"dark\":\"#e8ebf1\"}",
+              "reads_on": "card",
+              "usage_note": "Text inside a card."
+            }
+          },
+          {
+            "key": "col-05",
+            "values": {
+              "name": "muted",
+              "group": "Muted",
+              "value": "{\"light\":\"#f1f4f8\",\"dark\":\"#1c212c\"}",
+              "usage_note": "Quiet fills: table headers, empty states, code blocks."
+            }
+          },
+          {
+            "key": "col-06",
+            "values": {
+              "name": "muted-foreground",
+              "group": "Muted",
+              "value": "{\"light\":\"#6b7487\",\"dark\":\"#9aa3b5\"}",
+              "reads_on": "muted",
+              "usage_note": "Hints and captions on a muted fill. Check it on light."
+            }
+          },
+          {
+            "key": "col-07",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#2f5bea\",\"dark\":\"#6d8dff\"}",
+              "usage_note": "The one main action on a screen."
+            }
+          },
+          {
+            "key": "col-08",
+            "values": {
+              "name": "primary-foreground",
+              "group": "Primary",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#0b1230\"}",
+              "reads_on": "primary",
+              "usage_note": "Label on a primary button."
+            }
+          },
+          {
+            "key": "col-09",
+            "values": {
+              "name": "border",
+              "group": "Lines",
+              "value": "{\"light\":\"#e2e6ee\",\"dark\":\"#262c38\"}",
+              "usage_note": "Dividers and card edges. Never text."
+            }
+          },
+          {
+            "key": "col-10",
+            "values": {
+              "name": "input",
+              "group": "Lines",
+              "value": "{\"light\":\"#646d80\",\"dark\":\"#8d97aa\"}",
+              "reads_on": "card",
+              "usage_note": "The outline of a field, so it is found without a label."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "ring",
+              "group": "Lines",
+              "value": "{\"light\":\"#2f5bea\",\"dark\":\"#8aa4ff\"}",
+              "usage_note": "Keyboard focus. Always visible, never removed."
+            }
+          },
+          {
+            "key": "col-12",
+            "values": {
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#c62828\",\"dark\":\"#f47a7a\"}",
+              "reads_on": "background",
+              "usage_note": "Delete and errors. Ask before anything that cannot be undone."
+            }
+          }
+        ]
+      },
+      {
+        "token": "type_style",
+        "name": "Typography",
+        "labelSingular": "Text style",
+        "labelPlural": "Text styles",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "type",
+        "titleField": "name",
+        "describes": "The text styles: font, weight, size, line height and spacing.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "group",
+            "label": "Group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Display",
+              "Headings",
+              "Text",
+              "Code"
+            ],
+            "choiceColors": {
+              "Display": "violet",
+              "Headings": "blue",
+              "Text": "slate",
+              "Code": "amber"
+            }
+          },
+          {
+            "key": "style",
+            "label": "Style",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "type_style"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "typ-01",
+            "values": {
+              "name": "display",
+              "group": "Display",
+              "style": "{\"font\":\"Geist\",\"weight\":700,\"size\":48,\"lineHeight\":56,\"letterSpacing\":-1}",
+              "usage_note": "One per page at most: a landing headline."
+            }
+          },
+          {
+            "key": "typ-02",
+            "values": {
+              "name": "title",
+              "group": "Headings",
+              "style": "{\"font\":\"Geist\",\"weight\":600,\"size\":30,\"lineHeight\":38,\"letterSpacing\":-0.5}",
+              "usage_note": "The page title."
+            }
+          },
+          {
+            "key": "typ-03",
+            "values": {
+              "name": "heading",
+              "group": "Headings",
+              "style": "{\"font\":\"Geist\",\"weight\":600,\"size\":20,\"lineHeight\":28,\"letterSpacing\":-0.2}",
+              "usage_note": "Section headings inside a page."
+            }
+          },
+          {
+            "key": "typ-04",
+            "values": {
+              "name": "body",
+              "group": "Text",
+              "style": "{\"font\":\"Geist\",\"weight\":400,\"size\":15,\"lineHeight\":24,\"letterSpacing\":0}",
+              "usage_note": "Everything people read."
+            }
+          },
+          {
+            "key": "typ-05",
+            "values": {
+              "name": "caption",
+              "group": "Text",
+              "style": "{\"font\":\"Geist\",\"weight\":500,\"size\":12,\"lineHeight\":16,\"letterSpacing\":0.2}",
+              "usage_note": "Labels over values, timestamps, small print."
+            }
+          },
+          {
+            "key": "typ-06",
+            "values": {
+              "name": "code",
+              "group": "Code",
+              "style": "{\"font\":\"Geist Mono\",\"weight\":400,\"size\":13,\"lineHeight\":20,\"letterSpacing\":0}",
+              "usage_note": "Code, ids and values people copy."
+            }
+          }
+        ]
+      },
+      {
+        "token": "spacing",
+        "name": "Spacing",
+        "labelSingular": "Spacing value",
+        "labelPlural": "Spacing values",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "ruler",
+        "titleField": "name",
+        "describes": "The spacing scale every layout is built from.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 256
+              }
+            ],
+            "look": {
+              "id": "measure",
+              "options": {
+                "unit": "px",
+                "measurePreview": "spacing"
+              }
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "spc-01",
+            "values": {
+              "name": "space-1",
+              "value": 4,
+              "usage_note": "Between an icon and its label."
+            }
+          },
+          {
+            "key": "spc-02",
+            "values": {
+              "name": "space-2",
+              "value": 8,
+              "usage_note": "Between related controls in a row."
+            }
+          },
+          {
+            "key": "spc-03",
+            "values": {
+              "name": "space-3",
+              "value": 12,
+              "usage_note": "Inside a compact card."
+            }
+          },
+          {
+            "key": "spc-04",
+            "values": {
+              "name": "space-4",
+              "value": 16,
+              "usage_note": "Default padding of a card or a dialog."
+            }
+          },
+          {
+            "key": "spc-05",
+            "values": {
+              "name": "space-6",
+              "value": 24,
+              "usage_note": "Between groups inside a section."
+            }
+          },
+          {
+            "key": "spc-06",
+            "values": {
+              "name": "space-8",
+              "value": 32,
+              "usage_note": "Between sections of a page."
+            }
+          }
+        ]
+      },
+      {
+        "token": "radius",
+        "name": "Corner radius",
+        "labelSingular": "Radius",
+        "labelPlural": "Radii",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "square",
+        "titleField": "name",
+        "describes": "How round corners are, from chips to avatars.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 9999
+              }
+            ],
+            "look": {
+              "id": "measure",
+              "options": {
+                "unit": "px",
+                "measurePreview": "radius"
+              }
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rad-01",
+            "values": {
+              "name": "radius-sm",
+              "value": 4,
+              "usage_note": "Chips, tags and small inputs."
+            }
+          },
+          {
+            "key": "rad-02",
+            "values": {
+              "name": "radius-md",
+              "value": 8,
+              "usage_note": "Buttons, fields and menus."
+            }
+          },
+          {
+            "key": "rad-03",
+            "values": {
+              "name": "radius-lg",
+              "value": 12,
+              "usage_note": "Cards, dialogs and panels."
+            }
+          },
+          {
+            "key": "rad-04",
+            "values": {
+              "name": "radius-full",
+              "value": 9999,
+              "usage_note": "Avatars, pills and round buttons."
+            }
+          }
+        ]
+      },
+      {
+        "token": "shadow",
+        "name": "Shadows",
+        "labelSingular": "Shadow",
+        "labelPlural": "Shadows",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "layers",
+        "titleField": "name",
+        "describes": "Elevation: how far something floats above the page.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "shadow"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "shd-01",
+            "values": {
+              "name": "shadow-sm",
+              "value": "{\"x\":0,\"y\":1,\"blur\":2,\"spread\":0,\"color\":\"rgba(15,23,42,0.08)\"}",
+              "usage_note": "Cards resting on the page."
+            }
+          },
+          {
+            "key": "shd-02",
+            "values": {
+              "name": "shadow-md",
+              "value": "{\"layers\":[{\"x\":0,\"y\":4,\"blur\":8,\"spread\":-2,\"color\":\"rgba(15,23,42,0.10)\"},{\"x\":0,\"y\":2,\"blur\":4,\"spread\":-2,\"color\":\"rgba(15,23,42,0.06)\"}]}",
+              "usage_note": "Menus and popovers that float over content."
+            }
+          },
+          {
+            "key": "shd-03",
+            "values": {
+              "name": "shadow-lg",
+              "value": "{\"layers\":[{\"x\":0,\"y\":16,\"blur\":32,\"spread\":-8,\"color\":\"rgba(15,23,42,0.18)\"},{\"x\":0,\"y\":6,\"blur\":12,\"spread\":-4,\"color\":\"rgba(15,23,42,0.08)\"}]}",
+              "usage_note": "Dialogs, the highest layer on screen."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "color_request",
+        "name": "Propose a colour",
+        "describes": "Suggest a new colour for the system.",
+        "audience": "staff",
+        "table": "color",
+        "fields": [
+          {
+            "fieldKey": "name",
+            "ask": "What is the colour called?",
+            "required": true
+          },
+          {
+            "fieldKey": "group",
+            "ask": "Which group does it belong to?"
+          },
+          {
+            "fieldKey": "usage_note",
+            "ask": "Where would it be used?"
+          }
+        ],
+        "submitLabel": "Send proposal",
+        "confirmation": "Thanks. It is in the Colors section."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_color",
+        "name": "All colours",
+        "table": "color",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_type_style",
+        "name": "All text styles",
+        "table": "type_style",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_spacing",
+        "name": "All spacing values",
+        "table": "spacing",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_radius",
+        "name": "All radii",
+        "table": "radius",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_shadow",
+        "name": "All shadows",
+        "table": "shadow",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Design system assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "color",
+          "describes": "Every colour, its light and dark values and what it is read on."
+        },
+        {
+          "name": "related_tables",
+          "table": "type_style",
+          "describes": "The text styles."
+        }
+      ],
+      "question": {
+        "ask": "How many colours are in the Surfaces group?",
+        "whyItMatters": "Ilse keeps the surfaces to a handful so screens stay calm.",
+        "expect": {
+          "table": "color",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "group": "Surfaces"
+          },
+          "answer": 4,
+          "unit": "colours"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open Colors.",
+        "action": {
+          "kind": "open",
+          "surface": "all_color"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_color",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open Typography.",
+        "action": {
+          "kind": "open",
+          "surface": "all_type_style"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_type_style",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open Spacing.",
+        "action": {
+          "kind": "open",
+          "surface": "all_spacing"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_spacing",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Board template author (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "fernwick.net"
+      ],
+      "fictionalStreets": [
+        "Quillan Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [],
+  "board": {
+    "key": "design-system",
+    "title": "Design system",
+    "layout": "page",
+    "chapters": [
+      {
+        "title": "Overview",
+        "tiles": [
+          {
+            "kind": "note",
+            "title": "Design system",
+            "text": "Design system\n\n## Principles\n- Clear before clever: every screen says what it is for in its first line.\n- One way to do one thing: a colour, a size or a component has one name.\n- Calm by default: colour is for meaning, never for decoration.\n\n## Using tokens\nUse a token by its name, never its value. Change the value here and every screen follows. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\nBuild screens from the components in this system. When one is missing, add it to Components with a short note on where it is needed.\n\n## Accessibility\nText reaches 4.5:1 against what it sits on; large text and icons 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "size": {
+              "w": 1020,
+              "h": 620
+            }
+          }
+        ]
+      },
+      {
+        "title": "Colors",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Colors",
+            "table": "color",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 1080
+            }
+          }
+        ]
+      },
+      {
+        "title": "Typography",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Typography",
+            "table": "type_style",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 760
+            }
+          }
+        ]
+      },
+      {
+        "title": "Spacing",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Spacing",
+            "table": "spacing",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 560
+            }
+          }
+        ]
+      },
+      {
+        "title": "Corner radius",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Corner radius",
+            "table": "radius",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 460
+            }
+          }
+        ]
+      },
+      {
+        "title": "Shadows",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Shadows",
+            "table": "shadow",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 420
+            }
+          }
+        ]
+      },
+      {
+        "title": "Components",
+        "tiles": [
+          {
+            "kind": "note",
+            "title": "Components",
+            "text": "Components\n\nList each component you use, with a link to its design and its code, and who looks after it.\n\n- Button: primary, quiet, outline, danger.\n- Field: label above, hint below, error in place.\n- Dialog: one question, two answers.\n",
+            "size": {
+              "w": 1020,
+              "h": 360
+            }
+          }
+        ]
+      },
+      {
+        "title": "Assets",
+        "tiles": [
+          {
+            "kind": "note",
+            "title": "Assets",
+            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "size": {
+              "w": 1020,
+              "h": 280
+            }
+          }
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "key": "files",
+        "title": "Files",
+        "layout": "page",
+        "chapters": [
+          {
+            "title": "Files",
+            "tiles": [
+              {
+                "kind": "writeUp",
+                "title": "Files",
+                "text": "Drop logo files, icon sets and exports on this page. Each file becomes a tile you can open and share.",
+                "size": {
+                  "w": 1020,
+                  "h": 200
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

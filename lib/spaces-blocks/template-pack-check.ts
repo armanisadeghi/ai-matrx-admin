@@ -22,6 +22,9 @@ import { buildSpaceSnapshotSchema } from "./jsonSchema";
 import { validateSnapshot } from "./schema";
 import {
   LEGACY_PACK_IDS,
+  PACK_BOARD_COLUMN,
+  PACK_BOARD_TILE_KINDS,
+  PACK_BOARD_TILE_W,
   PACK_RELATIVE_DAYS,
   PAGE_TOKEN,
   SPACE_PACK_ID,
@@ -32,6 +35,7 @@ import {
   pageKeyOf,
   resolvePackBlocks,
   type PackBlock,
+  type PackBoard,
   type PackPage,
   type SpaceTemplatePack,
 } from "./template-pack";
@@ -113,7 +117,8 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
 
   // ── 3. the page tree ───────────────────────────────────────────────────────
   const pages = Array.isArray(pack.pages) ? pack.pages : [];
-  if (!pages.length) say("pages", "A pack has at least one page; pages[0] is the root \"Use template\" opens.");
+  if (!pages.length && pack.board === undefined) say("pages", "A pack has at least one page (pages[0] is the root \"Use template\" opens), or a \"board\".");
+  if (pack.board !== undefined) checkBoard(pack.board, tables, say);
   const keys = new Set<string>();
   pages.forEach((p, i) => {
     const at = `pages[${i}]`;
@@ -234,6 +239,81 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   }
   waivers.forEach((w, i) => (used.has(i) || !isObj(w) ? null : say(`waivers[${i}]`, `No finding at "${String(w.at)}" any more; remove the waiver.`)));
   return out;
+}
+
+const BOARD_KEY = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** The pack's board: its shape, every chapter and tile, and every table token naming a spec table. */
+function checkBoard(raw: unknown, tables: Map<string, TemplateSpec["tables"][number]>, say: (at: string, says: string) => void) {
+  if (!isObj(raw)) {
+    say("board", "A board is an object with key, title, layout, chapters and (optionally) pages.");
+    return;
+  }
+  const board = raw as unknown as PackBoard;
+  const keys = new Set<string>();
+  const one = (b: unknown, at: string) => {
+    if (!isObj(b)) {
+      say(at, "A board is an object with key, title and chapters.");
+      return;
+    }
+    if (!str(b.key) || !BOARD_KEY.test(b.key)) say(`${at}.key`, `"${String(b.key)}" must be lowercase letters, digits and single dashes ("files").`);
+    else if (keys.has(b.key)) say(`${at}.key`, `"${b.key}" is used by two boards; each board key is unique.`);
+    else keys.add(b.key);
+    if (!str(b.title)) say(`${at}.title`, "Give the board a title.");
+    else if (b.title.length > 80) say(`${at}.title`, `Keep the title to 80 characters (it is ${b.title.length}).`);
+    if (b.layout !== undefined && b.layout !== "page" && b.layout !== "canvas") say(`${at}.layout`, `"${String(b.layout)}" is not a layout. Write "page" or "canvas".`);
+    if (!Array.isArray(b.chapters)) {
+      say(`${at}.chapters`, "A board's chapters are a list (each a frame with its tiles).");
+      return;
+    }
+    const widest = b.layout === "page" ? PACK_BOARD_TILE_W : Infinity;
+    (b.chapters as unknown[]).forEach((c, ci) => {
+      const cat = `${at}.chapters[${ci}]`;
+      if (!isObj(c)) {
+        say(cat, "A chapter is { title, tiles }.");
+        return;
+      }
+      if (!str(c.title)) say(`${cat}.title`, "Give the chapter a title (it is the Outline's entry).");
+      if (c.note !== undefined && typeof c.note !== "string") say(`${cat}.note`, "A chapter's note is text.");
+      if (!Array.isArray(c.tiles)) {
+        say(`${cat}.tiles`, "A chapter's tiles are a list (it may be empty).");
+        return;
+      }
+      (c.tiles as unknown[]).forEach((t, ti) => {
+        const tat = `${cat}.tiles[${ti}]`;
+        if (!isObj(t)) {
+          say(tat, "A tile is { kind, title, size }.");
+          return;
+        }
+        if (!(PACK_BOARD_TILE_KINDS as readonly string[]).includes(String(t.kind))) say(`${tat}.kind`, `"${String(t.kind)}" is not a tile kind. Use one of: ${PACK_BOARD_TILE_KINDS.join(", ")}.`);
+        if (!str(t.title)) say(`${tat}.title`, "Give the tile a title.");
+        const size = t.size;
+        if (!isObj(size) || !Number.isFinite(size.w) || !Number.isFinite(size.h) || (size.w as number) < 160 || (size.h as number) < 120)
+          say(`${tat}.size`, 'Give the tile a size of at least { "w": 160, "h": 120 } (world px).');
+        else if ((size.w as number) > widest)
+          say(`${tat}.size.w`, `A page-layout chapter is ${PACK_BOARD_COLUMN} wide; a tile is at most ${PACK_BOARD_TILE_W} (it is ${String(size.w)}).`);
+        if (t.kind === "table") {
+          if (!str(t.table)) say(`${tat}.table`, "A table tile names a spec table by its token.");
+          else if (!tables.has(t.table)) say(`${tat}.table`, `No table has the token "${t.table}". Tables: ${[...tables.keys()].join(", ") || "none"}.`);
+          if (t.layout !== undefined && t.layout !== "section" && t.layout !== "table") say(`${tat}.layout`, `"${String(t.layout)}" is not a table layout. Write "section" or "table".`);
+          if (t.text !== undefined) say(`${tat}.text`, "A table tile has no text; its rows are the table's sample rows.");
+        } else if (t.kind === "note" || t.kind === "writeUp") {
+          if (!str(t.text)) say(`${tat}.text`, `A ${String(t.kind)} tile starts with words: write its text.`);
+          else if (/\bNotion\b/.test(t.text)) say(`${tat}.text`, "Write in our own words: the text names another product.");
+          if (t.table !== undefined || t.layout !== undefined) say(`${tat}`, `A ${String(t.kind)} tile names no table and no layout.`);
+        }
+      });
+    });
+  };
+  one(board, "board");
+  if (board.pages !== undefined) {
+    if (!Array.isArray(board.pages)) say("board.pages", "A board's pages are a list of boards.");
+    else
+      (board.pages as unknown[]).forEach((p, i) => {
+        one(p, `board.pages[${i}]`);
+        if (isObj(p) && p.pages !== undefined) say(`board.pages[${i}].pages`, "Pages are one level deep: a page has no pages of its own.");
+      });
+  }
 }
 
 interface TokenWorld {

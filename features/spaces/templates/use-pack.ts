@@ -48,11 +48,16 @@ type Door = { rpc(fn: "space_templates", args: { p_filter: Record<string, unknow
 // Not in the generated types until the next regeneration: a typed local shape for this one door.
 const door = () => createClient().schema("custom") as unknown as Door;
 
-/** Every Space template the person can use; `installedIn` marks the ones that organization already has. */
-export async function listSpaceTemplates(installedIn: string | null): Promise<SpaceTemplateCard[]> {
+/**
+ * Every Space template the person can use; `installedIn` marks the ones that organization already has.
+ * `makes` picks the gallery: "pages" (the Spaces gallery: packs with pages) or "board" (the Board gallery:
+ * packs that carry a board, `card.space.board`). One catalogue, two doors.
+ */
+export async function listSpaceTemplates(installedIn: string | null, makes: "pages" | "board" = "pages"): Promise<SpaceTemplateCard[]> {
   const { data, error } = await door().rpc("space_templates", { p_filter: installedIn ? { installed_in: installedIn } : {} });
   if (error) throw new Error(`We couldn't list the templates: ${error.message}`);
-  return (data?.cards ?? []) as SpaceTemplateCard[];
+  const cards = (data?.cards ?? []) as SpaceTemplateCard[];
+  return cards.filter((c) => (makes === "board" ? !!c.space?.board : (c.space?.pages ?? 0) > 0));
 }
 
 const full = new Map<string, Promise<SpaceTemplateFull>>();
@@ -65,7 +70,7 @@ export function readSpaceTemplate(id: string): Promise<SpaceTemplateFull> {
       const { data, error } = await door().rpc("space_templates", { p_filter: { id } });
       if (error) throw new Error(`We couldn't open this template: ${error.message}`);
       const card = data?.cards?.[0] as SpaceTemplateFull | undefined;
-      if (!card?.pack?.pages?.length) throw new Error("This template has no pages.");
+      if (!card?.pack?.pages?.length && !card?.pack?.board) throw new Error("This template has no pages.");
       return card;
     })();
     p.catch(() => full.delete(id));

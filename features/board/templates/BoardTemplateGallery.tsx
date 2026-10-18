@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { TemplateGalleryShell, type TemplateEntry } from "@/features/spaces/sidebar/TemplateGalleryShell";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
 import { boardHref, isBoardError } from "../persistence/boardsService";
@@ -29,11 +29,13 @@ export function BoardTemplateGallery({
   initialKey?: string;
 }) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const organizationId = useAppSelector(selectOrganizationId); // org-filter: write-target installing a board template writes into the selected organization
   const [saved, setSaved] = useState<BoardTemplateEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string>(initialKey ?? BUILTIN_BOARD_TEMPLATES[0].key);
   const [using, setUsing] = useState(false);
+  const [stage, setStage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -60,7 +62,7 @@ export function BoardTemplateGallery({
     if (!current) return;
     setUsing(true);
     try {
-      const board = await makeBoardFromTemplate(current.key, organizationId, templateBoardTitle(current.title));
+      const board = await makeBoardFromTemplate(current.key, organizationId, templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage: setStage });
       // A stale toast ("Saved as a template") must not sit over the new board; the new one carries Open
       // in case the navigation is slow or blocked.
       toast.dismiss();
@@ -72,6 +74,7 @@ export function BoardTemplateGallery({
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
     } finally {
       setUsing(false);
+      setStage(null);
     }
   };
 
@@ -85,7 +88,7 @@ export function BoardTemplateGallery({
       error={error}
       picked={current?.key ?? picked}
       onPick={setPicked}
-      previewTitle={current?.title ?? null}
+      previewTitle={stage ?? current?.title ?? null}
       previewLoading={false}
       preview={current ? <BoardSketch doc={current.doc} /> : null}
       usable={!!current}
