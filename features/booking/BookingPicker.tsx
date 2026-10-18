@@ -40,6 +40,8 @@ interface ConfirmAnswer {
   state?: string;
   booking_ref?: string | null;
   message?: string | null;
+  /** PAYMENTS-CONNECT: Stripe Checkout on the organization's own account, when the page asks for payment. */
+  payment_url?: string | null;
 }
 
 type Stage =
@@ -215,6 +217,11 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
         message: "Your details did not reach us, so nothing was booked. Try again.",
       }));
 
+    // PAYMENTS-CONNECT: the page asks for payment — the slot is booked, now pay on Stripe.
+    if (answer.payment_url) {
+      window.location.assign(answer.payment_url);
+      return;
+    }
     if (answer.state === "booked") {
       setStage({ kind: "booked", slot: stage.slot, ref: answer.booking_ref ?? null });
       return;

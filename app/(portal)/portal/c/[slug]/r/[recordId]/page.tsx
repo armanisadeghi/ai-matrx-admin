@@ -42,7 +42,11 @@ import {
 } from "@/features/portals/service";
 import { isHers, readable, shownFields } from "@/features/portals/shown";
 
-import { addPortalComment, savePortalField } from "./actions";
+import { addPortalComment, payPortalRecord, savePortalField } from "./actions";
+import { readAsk, latestPaymentStatus } from "@/features/payments/server";
+import { resolveAmountCents } from "@/features/payments/amount";
+import { formatMoney } from "@ai-matrx/kit/format";
+import { Button } from "@ai-matrx/design-system/controls";
 
 export const dynamic = "force-dynamic";
 
@@ -150,6 +154,16 @@ export default async function PortalRecordPage({
       }))
     : [];
 
+  // PAYMENTS-CONNECT: a table that asks for payment offers Pay until the record is paid.
+  // The amount shown is the ask's; the server recomputes it from the stored record at checkout.
+  const payAsk = await readAsk("table", table.table_id).catch(() => null);
+  const payStatus = payAsk ? await latestPaymentStatus(membership.organization_id, recordId).catch(() => null) : null;
+  const payAmount = payAsk ? resolveAmountCents(payAsk, document) : null;
+  const payLabel =
+    payAsk && payAmount?.ok
+      ? `Pay ${formatMoney(payAmount.cents, { currency: payAsk.currency, unit: "minor" })}`
+      : "Pay";
+
   // A relation Field holds another record's id — not something a person reads.
   const worded = fields.filter((field) => field.type !== "relation");
   const headline = worded[0] ? readable(document[worded[0].key]) : "";
@@ -222,6 +236,21 @@ export default async function PortalRecordPage({
                 save={savePortalField}
               />
             ))}
+          </section>
+        ) : null}
+
+        {payAsk ? (
+          <section className="mt-6 flex items-center justify-between gap-4 rounded-xl border border-border bg-card px-4 py-3">
+            <div className="text-sm text-foreground">{payAsk.description || "Payment"}</div>
+            {payStatus === "paid" || payStatus === "refunded" ? (
+              <span className="text-sm font-medium text-muted-foreground">{payStatus === "paid" ? "Paid" : "Refunded"}</span>
+            ) : (
+              <form action={payPortalRecord.bind(null, membership.slug, recordId)}>
+                <Button type="submit" variant="primary">
+                  {payLabel}
+                </Button>
+              </form>
+            )}
           </section>
         ) : null}
 

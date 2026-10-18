@@ -24,6 +24,7 @@ import { NextResponse } from "next/server";
 
 import { publicForm, submitPublicForm } from "@/features/forms/service";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
+import { checkoutIfAsked } from "@/features/payments/server";
 
 export const dynamic = "force-dynamic";
 
@@ -104,12 +105,26 @@ export async function POST(
     // `accepted` and `held` are both a successful send; the difference is
     // whether it is in the table yet, and the store's own message says which.
     const sent = outcome.state === "accepted" || outcome.state === "held";
+    // PAYMENTS-CONNECT: a form that asks for payment opens Stripe Checkout on the organization's
+    // own account for the record just saved. The answers are kept whatever the card does; the
+    // record says Unpaid until Stripe says paid. The address is THIS site's, never the embed's.
+    const payment = sent
+      ? await checkoutIfAsked({
+          subjectKind: "form",
+          subjectId: formId,
+          recordId: outcome.record_id,
+          origin: new URL(request.url).origin,
+          back: `/f/${formId}`,
+        }).catch((thrown: unknown) => ({ refused: thrown instanceof Error ? thrown.message : "Payment could not be started." }))
+      : null;
     return NextResponse.json(
       {
         ok: sent,
         state: outcome.state,
         message: outcome.message,
         record_id: outcome.record_id,
+        ...(payment && "url" in payment ? { payment_url: payment.url } : {}),
+        ...(payment && "refused" in payment ? { payment_refused: payment.refused } : {}),
       },
       { status: sent ? 200 : 429 },
     );
