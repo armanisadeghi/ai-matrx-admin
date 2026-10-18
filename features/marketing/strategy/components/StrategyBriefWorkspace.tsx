@@ -17,7 +17,14 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  */
 import { useState } from "react";
 import Link from "next/link";
-import { Check, ExternalLink, History, Loader2, RefreshCw } from "lucide-react";
+import {
+  Check,
+  CircleDashed,
+  ExternalLink,
+  History,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -225,86 +232,123 @@ export function StrategyBriefWorkspace({
   const sources = current ? builtFrom(scope, current.inputs) : [];
   const status = current ? statusRow(current) : null;
   const openQuestions = current ? asList(current.facts.open_questions) : [];
-  const factValues = current
-    ? FACT_ROWS[scope]
-        .map((row) => ({ ...row, value: asText(current.facts[row.key]) }))
-        .filter((row) => row.value)
+  const factsFound = current
+    ? FACT_ROWS[scope].filter((row) => asText(current.facts[row.key])).length
+    : 0;
+  const factsTotal = FACT_ROWS[scope].length;
+  const goTo = (anchor: string) =>
+    document
+      .getElementById(anchor)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  // Short states only — what is done, what is not, and the one door to change it.
+  const states: Array<{
+    key: string;
+    label: string;
+    value: string;
+    done: boolean;
+    action: string;
+    anchor: string;
+  }> = current
+    ? [
+        {
+          key: "facts",
+          label: "Facts",
+          value: `${factsFound} of ${factsTotal} found`,
+          done: factsFound === factsTotal,
+          action: "Review",
+          anchor: "strategy-facts",
+        },
+        {
+          key: "lines",
+          label: "Service lines",
+          value: current.serviceLines.length
+            ? String(current.serviceLines.length)
+            : "None yet",
+          done: current.serviceLines.length > 0,
+          action: "Review",
+          anchor: "strategy-lines",
+        },
+        {
+          key: "questions",
+          label: "AI is unsure about",
+          value: openQuestions.length
+            ? String(openQuestions.length)
+            : "Nothing",
+          done: openQuestions.length === 0,
+          action: "Answer",
+          anchor: "strategy-corrections",
+        },
+        {
+          key: "corrections",
+          label: "Your corrections",
+          value: current.guidance.trim() ? "Added" : "None yet",
+          done: Boolean(current.guidance.trim()),
+          action: current.guidance.trim() ? "Edit" : "Add",
+          anchor: "strategy-corrections",
+        },
+      ]
     : [];
-  // The headline is the lead fact only; a missing lead never promotes another fact.
-  const headline = asText(current?.facts[FACT_ROWS[scope][0].key]);
-  const heroFacts = factValues.filter(
-    (row) => row.key !== FACT_ROWS[scope][0].key,
-  );
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-3 px-3 py-3 sm:px-4">
       <h1 className="sr-only">{nounTitle}</h1>
       {/* Lead with the substance: who they are, then the strategy itself. */}
-      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+      <header className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-4 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
             {nounTitle}
-          </p>
+          </h2>
           {generate.running ? (
             <span className="flex items-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" aria-hidden />
               {generate.stage ?? "Working…"}
             </span>
-          ) : current ? (
-            <div className="flex items-center gap-2">
-              {current.status === "awaiting_review" ? (
-                <Badge variant="secondary">Waiting for you</Badge>
-              ) : null}
-              <Button variant="quiet" onClick={() => void runGenerate()}>
+          ) : (
+            <Button
+              variant={current ? "outline" : "primary"}
+              onClick={() => void runGenerate()}
+            >
+              {current ? (
                 <RefreshCw className="size-3.5" aria-hidden />
-                Write a new version
-              </Button>
-            </div>
-          ) : null}
-        </div>
-        {current ? (
-          <>
-            {headline ? (
-              <h2
-                className={`mt-3 max-w-4xl text-balance break-words font-semibold leading-tight tracking-tight text-foreground ${
-                  headline.length > 160
-                    ? "text-xl sm:text-2xl"
-                    : "text-2xl sm:text-4xl"
-                }`}
-              >
-                {headline}
-              </h2>
-            ) : null}
-            {heroFacts.length > 0 ? (
-              <dl
-                className={`${headline ? "mt-6" : "mt-3"} grid gap-3 sm:grid-cols-2 lg:grid-cols-3`}
-              >
-                {heroFacts.map((row) => (
-                  <div
-                    key={row.key}
-                    className="min-w-0 rounded-xl border border-border bg-card/80 p-4"
-                  >
-                    <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {row.label}
-                    </dt>
-                    <dd className="mt-1 break-words text-sm leading-snug text-foreground">
-                      {row.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            ) : null}
-          </>
-        ) : (
-          <div className="mt-3">
-            {generate.running ? null : (
-              <Button variant="primary" onClick={() => void runGenerate()}>
+              ) : (
                 <AGENT_ICON className="size-3.5" aria-hidden />
-                {`Write the ${noun}`}
-              </Button>
-            )}
-          </div>
-        )}
+              )}
+              {current ? "Write a new version" : `Write the ${noun}`}
+            </Button>
+          )}
+        </div>
+        {states.length > 0 ? (
+          <ul className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {states.map((state) => (
+              <li key={state.key} className="min-w-0">
+                <button
+                  type="button"
+                  onClick={() => goTo(state.anchor)}
+                  className="flex h-full w-full min-w-0 flex-col items-start gap-1 rounded-xl border border-border bg-card/80 p-3 text-left transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {state.label}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    {state.done ? (
+                      <Check
+                        className="size-3.5 shrink-0 text-primary"
+                        aria-hidden
+                      />
+                    ) : (
+                      <CircleDashed
+                        className="size-3.5 shrink-0 text-muted-foreground"
+                        aria-hidden
+                      />
+                    )}
+                    <span className="truncate">{state.value}</span>
+                  </span>
+                  <span className="text-xs text-primary">{state.action}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </header>
 
       <DurableRunFailure
@@ -321,82 +365,123 @@ export function StrategyBriefWorkspace({
             </div>
           </SectionCard>
 
-          {scope === "brand" || current.serviceLines.length > 0 ? (
+          <div id="strategy-facts" className="scroll-mt-16">
             <SectionCard
-              title={
-                scope === "brand"
-                  ? "Service lines and where each competes"
-                  : "Service lines this site carries"
-              }
-              about="Each line of business, the customers it is for and how far it reaches: national, regional, a service radius or specific locations."
+              title="Facts the AI established"
+              about="What the AI concluded about the business. Anything wrong goes in Your corrections and outranks these."
             >
-              {current.serviceLines.length === 0 ? (
-                <p className="p-3 text-sm text-muted-foreground">
-                  None established yet
-                </p>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {current.serviceLines.map((line) => (
-                    <li key={line.name} className="px-3 py-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">
-                          {line.name}
-                        </span>
-                        <Badge variant="outline">
-                          {footprintLabel(line.footprint)}
-                        </Badge>
-                        {line.customerSegment ? (
-                          <span className="text-xs text-muted-foreground">
-                            for {line.customerSegment}
-                          </span>
-                        ) : null}
-                      </div>
-                      {line.footprintDetail || line.why ? (
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {[line.footprintDetail, line.why]
-                            .filter(Boolean)
-                            .join(" — ")}
-                        </p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="space-y-3 p-3">
+                {factsFound === 0 ? (
+                  <p className="type-secondary text-muted-foreground">
+                    Asked after this version — write a new version
+                  </p>
+                ) : null}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {FACT_ROWS[scope].map((row) => {
+                    const value = asText(current.facts[row.key]);
+                    return (
+                      <PropertyRow
+                        key={row.key}
+                        label={row.label}
+                        value={value || undefined}
+                        missing={value ? undefined : "Not established"}
+                      />
+                    );
+                  })}
+                </div>
+                {openQuestions.length > 0 ? (
+                  <PropertyRow label="What the AI was unsure about">
+                    <ul className="list-disc space-y-0.5 pl-5">
+                      {openQuestions.map((q) => (
+                        <li key={q}>{q}</li>
+                      ))}
+                    </ul>
+                  </PropertyRow>
+                ) : null}
+              </div>
             </SectionCard>
+          </div>
+
+          {scope === "brand" || current.serviceLines.length > 0 ? (
+            <div id="strategy-lines" className="scroll-mt-16">
+              <SectionCard
+                title={
+                  scope === "brand"
+                    ? "Service lines and where each competes"
+                    : "Service lines this site carries"
+                }
+                about="Each line of business, the customers it is for and how far it reaches: national, regional, a service radius or specific locations."
+              >
+                {current.serviceLines.length === 0 ? (
+                  <p className="p-3 text-sm text-muted-foreground">
+                    None established yet
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {current.serviceLines.map((line) => (
+                      <li key={line.name} className="px-3 py-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-medium text-foreground">
+                            {line.name}
+                          </span>
+                          <Badge variant="outline">
+                            {footprintLabel(line.footprint)}
+                          </Badge>
+                          {line.customerSegment ? (
+                            <span className="text-xs text-muted-foreground">
+                              for {line.customerSegment}
+                            </span>
+                          ) : null}
+                        </div>
+                        {line.footprintDetail || line.why ? (
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {[line.footprintDetail, line.why]
+                              .filter(Boolean)
+                              .join(" — ")}
+                          </p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </SectionCard>
+            </div>
           ) : null}
 
-          <SectionCard
-            title="Your corrections"
-            about={`Say it the way you would say it out loud: "it's more like a 30-mile radius", "we stopped doing residential last year". This outranks everything the AI inferred and carries into every later version. Confirming with no corrections means "this is right".`}
-          >
-            <div className="space-y-2 p-3">
-              <ProTextarea
-                value={guidanceValue}
-                onChange={(event) => setGuidance(event.target.value)}
-                placeholder="What the AI got wrong, or could not have known"
-                autoGrow
-                minHeight={96}
-              />
-              <div className="flex items-center gap-2">
-                <Button
-                  icon={
-                    ruling.isPending ? (
-                      <Loader2 className="animate-spin" aria-hidden />
-                    ) : (
-                      <Check aria-hidden />
-                    )
-                  }
-                  variant="primary"
-                  disabled={ruling.isPending}
-                  onClick={() => ruling.mutate({ guidance: guidanceValue })}
-                >
-                  {current.status === "confirmed"
-                    ? "Save corrections"
-                    : "Confirm this brief"}
-                </Button>
+          <div id="strategy-corrections" className="scroll-mt-16">
+            <SectionCard
+              title="Your corrections"
+              about={`Say it the way you would say it out loud: "it's more like a 30-mile radius", "we stopped doing residential last year". This outranks everything the AI inferred and carries into every later version. Confirming with no corrections means "this is right".`}
+            >
+              <div className="space-y-2 p-3">
+                <ProTextarea
+                  value={guidanceValue}
+                  onChange={(event) => setGuidance(event.target.value)}
+                  placeholder="What the AI got wrong, or could not have known"
+                  autoGrow
+                  minHeight={96}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    icon={
+                      ruling.isPending ? (
+                        <Loader2 className="animate-spin" aria-hidden />
+                      ) : (
+                        <Check aria-hidden />
+                      )
+                    }
+                    variant="primary"
+                    disabled={ruling.isPending}
+                    onClick={() => ruling.mutate({ guidance: guidanceValue })}
+                  >
+                    {current.status === "confirmed"
+                      ? "Save corrections"
+                      : "Confirm this brief"}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </SectionCard>
+            </SectionCard>
+          </div>
         </>
       ) : null}
 
@@ -497,15 +582,6 @@ export function StrategyBriefWorkspace({
                 />
               ) : null}
             </div>
-            {openQuestions.length > 0 ? (
-              <PropertyRow label="What the AI was unsure about">
-                <ul className="list-disc space-y-0.5 pl-5">
-                  {openQuestions.map((q) => (
-                    <li key={q}>{q}</li>
-                  ))}
-                </ul>
-              </PropertyRow>
-            ) : null}
           </div>
         </SectionCard>
       ) : null}

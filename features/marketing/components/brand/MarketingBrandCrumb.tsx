@@ -51,7 +51,13 @@ import PageHeader from "@/features/shell/components/header/PageHeader";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { listMarketingBrandModes } from "@/features/marketing/lib/brand-sections";
-import { brandKindOf, brandNavLabel } from "@/features/marketing/lib/brand-kind";
+import {
+  brandKindCopy,
+  brandKindOf,
+  brandNavLabel,
+  type BrandRoom,
+} from "@/features/marketing/lib/brand-kind";
+import { researchInitHref } from "@/features/research/utils/init-route";
 import {
   listMarketingSeoModes,
   listMarketingWebsiteModes,
@@ -59,7 +65,10 @@ import {
   marketingWebsiteSectionSuffix,
 } from "@/features/marketing/lib/route-sections";
 import { marketingSeg } from "@/features/marketing/lib/keys";
-import { useAllBrandOptions, useBrandSites } from "@/features/marketing/data/hooks";
+import {
+  useAllBrandOptions,
+  useBrandSites,
+} from "@/features/marketing/data/hooks";
 import { brandSwitchHref } from "@/features/marketing/lib/brand-switch";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -115,7 +124,10 @@ function OptionsMenu({
           <ChevronDown className="h-3.5 w-3.5" aria-hidden />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[13rem] max-w-[20rem]">
+      <DropdownMenuContent
+        align="start"
+        className="min-w-[13rem] max-w-[20rem]"
+      >
         {headerLabel ? (
           <DropdownMenuLabel className="text-xs text-muted-foreground">
             {headerLabel}
@@ -152,7 +164,10 @@ function DesktopCrumb({ level }: { level: CrumbLevel }) {
       href={level.href}
       title={level.label}
       aria-current={level.isCurrent ? "page" : undefined}
-      className={cn(CRUMB_LINK, level.isCurrent && "font-medium text-foreground")}
+      className={cn(
+        CRUMB_LINK,
+        level.isCurrent && "font-medium text-foreground",
+      )}
     >
       {level.label}
     </Link>
@@ -161,7 +176,9 @@ function DesktopCrumb({ level }: { level: CrumbLevel }) {
       aria-current={level.isCurrent ? "page" : undefined}
       className={cn(
         "max-w-[10rem] truncate sm:max-w-[14rem]",
-        level.isCurrent ? "font-medium text-foreground" : "text-muted-foreground",
+        level.isCurrent
+          ? "font-medium text-foreground"
+          : "text-muted-foreground",
       )}
     >
       {level.label}
@@ -338,7 +355,11 @@ export function MarketingBrandCrumb() {
                 // entity-scoped) — lib/brand-switch.ts.
                 href: active
                   ? brandPath
-                  : brandSwitchHref(marketingSeg(row), pathname, searchParams.toString()),
+                  : brandSwitchHref(
+                      marketingSeg(row),
+                      pathname,
+                      searchParams.toString(),
+                    ),
                 active,
               };
             })
@@ -379,6 +400,47 @@ export function MarketingBrandCrumb() {
     }
   }
 
+  // ── Identity room level (Strategy, Voice, Audience…) ───────────────────
+  if (sectionSeg === "identity") {
+    const identityPath = marketingRoutes.brandIdentity(brand.seg);
+    const assetsPath = marketingRoutes.brandAssets(brand.seg);
+    const roomCopy = brandKindCopy(brand).rooms;
+    const roomHrefs: Array<[BrandRoom, string]> = [
+      ["media", assetsPath],
+      ["strategy", `${identityPath}/strategy`],
+      ["knowledge", `${identityPath}/knowledge`],
+      ["offerings", `${identityPath}/offerings`],
+      ["guidelines", `${identityPath}/guidelines`],
+      ["messaging", `${identityPath}/messaging`],
+      ["claims", `${identityPath}/claims`],
+      ["voice", `${identityPath}/voice`],
+      [
+        "research",
+        researchInitHref({ subject: brand.name, returnTo: identityPath }),
+      ],
+      ["competitors", marketingRoutes.brandCompetitors(brand.seg)],
+      ["audience", `${identityPath}/audience`],
+    ];
+    const roomOptions: CrumbOption[] = roomHrefs.map(([room, href]) => ({
+      label: roomCopy[room].name,
+      href,
+      active:
+        room === "media"
+          ? pathname.startsWith(assetsPath)
+          : segments[3] === room,
+    }));
+    const activeRoom = roomOptions.find((option) => option.active);
+    if (activeRoom) {
+      levels.push({
+        key: "room",
+        label: activeRoom.label,
+        href: activeRoom.href,
+        optionsLabel: "Identity",
+        options: roomOptions,
+      });
+    }
+  }
+
   const lastIndex = levels.length - 1;
   levels[lastIndex] = { ...levels[lastIndex], isCurrent: true };
 
@@ -403,7 +465,9 @@ export function MarketingBrandCrumb() {
               // may take at most 60% of the row); the MIDDLE levels (the brand's long name) give way first.
               className={cn(
                 "flex items-center gap-1",
-                index === 0 || index === levels.length - 1 ? "shrink-0" : "min-w-0",
+                index === 0 || index === levels.length - 1
+                  ? "shrink-0"
+                  : "min-w-0",
                 index === levels.length - 1 && index > 0 && "max-w-[60%]",
               )}
             >
