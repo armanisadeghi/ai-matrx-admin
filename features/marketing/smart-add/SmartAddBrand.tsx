@@ -2041,7 +2041,7 @@ export function SmartAddBrand({
           kinds={relationKinds}
           web={
             enrichWeb
-              ? { choices: webItems.flatMap((i) => (webChoices[i.key] ? [webChoices[i.key]] : [])), statuses: enrichWeb.statuses, flush: () => enrichWeb.flush(webPersonName) }
+              ? { choices: webItems.flatMap((i) => (webChoices[i.key] ? [webChoices[i.key]] : [])), statuses: enrichWeb.statuses, markCount: webItems.filter((i) => !webChoices[i.key] && webMarks[i.key]).length, flush: () => enrichWeb.flush(webPersonName) }
               : undefined
           }
           onBack={() => setReviewing(false)}
