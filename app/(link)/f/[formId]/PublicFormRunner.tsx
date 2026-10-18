@@ -117,6 +117,9 @@ export function PublicFormRunner({
   linkQuery?: Record<string, string | string[] | undefined>;
 }) {
   const hidden = hiddenFromLink(form.presentation?.hidden_fields ?? [], linkQuery ?? {});
+  // PAYMENTS-CONNECT: where Stripe Checkout sent the payer back (/api/payments/return).
+  const paymentParam = linkQuery?.payment;
+  const paymentOutcome = typeof paymentParam === "string" && ["paid", "cancelled", "open"].includes(paymentParam) ? paymentParam : null;
   // ── COUNTED HONESTLY (TYPEFORM-DUP): view, start, each question reached — through our own route.
   const visitKey = useRef<string | null>(null);
   const count = useCallback(
@@ -311,6 +314,8 @@ export function PublicFormRunner({
           state?: string;
           message?: string | null;
           record_id?: string | null;
+          payment_url?: string | null;
+          payment_refused?: string | null;
         };
         if (!response.ok || body.ok === false) {
           return {
@@ -323,6 +328,12 @@ export function PublicFormRunner({
         storePlace(form.form_id, null);
         secretRef.current = null;
         setSecret(null);
+        // PAYMENTS-CONNECT: the form asks for payment. The answers are saved; now pay on Stripe
+        // (the organization's own account). Coming back lands on ?payment=paid|cancelled.
+        if (body.payment_url) {
+          window.location.assign(body.payment_url);
+          return { ok: true, recordId: body.record_id ?? null, message: "Taking you to payment…" };
+        }
         setSent(true);
         // HELD IS NOT SENT-AND-FORGOTTEN. An answer whose form has no accept
         // Rule waits for a person, and the thank-you screen says so in the
@@ -457,6 +468,15 @@ export function PublicFormRunner({
       {/* The form's authored text (intro, question help, thank-you) reads
           through the one rich-content core — markdown and math, in the
           server HTML (records-ui `renderText` host port, 0.85.15). */}
+      {paymentOutcome ? (
+        <div className="mb-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground" role="status">
+          {paymentOutcome === "paid"
+            ? "Payment received. Thank you."
+            : paymentOutcome === "cancelled"
+              ? "Payment was not completed. Your answers were saved."
+              : "Your payment is still processing."}
+        </div>
+      ) : null}
       <RecordsUiProvider value={FORM_TEXT_HOST}>
         <div className={placeChecked ? undefined : "invisible"} aria-busy={!placeChecked} data-form-place-checked={placeChecked ? "" : undefined}>
         <FormRunner

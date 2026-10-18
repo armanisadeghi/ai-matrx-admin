@@ -34,6 +34,7 @@ import { openToolInCanvas } from "@/features/canvas/host/toolCanvas";
 import { AI_WATCH_CANVAS_ID, AI_WATCH_CANVAS_KEY, WORKFLOW_RUN_CANVAS_ID } from "./canvas/runViewKinds";
 import { selectOpenInstances } from "@ai-matrx/summon/open";
 import type { RootState } from "@/lib/redux/store";
+import { toast } from "sonner";
 
 /** Root runs on this page that are running right now, as one stable key. */
 const selectLiveRootRunKey = createSelector(
@@ -98,18 +99,26 @@ export default function AutoWatch() {
   const openWatchInCanvas = useCallback(() => {
     openToolInCanvas(canvas, { kind: AI_WATCH_CANVAS_ID, key: AI_WATCH_CANVAS_KEY, title: "Watch AI", data: {} });
   }, [canvas]);
+  // NO ROOM beside the page (a phone, a narrow window): opening the canvas column by itself either
+  // covers the page (phones: full screen) or squeezes it (desktop: every pixel of it shifts). Neither
+  // happens unasked — the view waits behind a notice whose button opens it (a press moves the page
+  // on purpose). Nothing is skipped: the notice stays until pressed or dismissed.
+  const offerInCanvas = useCallback((id: string, title: string, open: () => void) => {
+    toast(title, { id, duration: Infinity, dismissible: true, action: { label: "Open", onClick: open } });
+  }, []);
 
   // A docked window the page grew over closes itself and says so here: its view moves to the canvas.
   useEffect(() => {
     const onNoRoom = (e: Event) => {
       const { overlayId, instanceId } = (e as CustomEvent<{ overlayId: string; instanceId: string }>).detail;
       if (overlayId === "workflowRunWindow" && instanceId.startsWith("workflow-run:")) {
-        openRunInCanvas(instanceId.slice("workflow-run:".length));
-      } else if (overlayId === "aiWatchWindow") openWatchInCanvas();
+        const runId = instanceId.slice("workflow-run:".length);
+        offerInCanvas(`workflow-run-offer:${runId}`, "Workflow run", () => openRunInCanvas(runId));
+      } else if (overlayId === "aiWatchWindow") offerInCanvas("watch-ai-offer", "Watch AI", openWatchInCanvas);
     };
     window.addEventListener(AUTO_OPEN_NO_ROOM_EVENT, onNoRoom);
     return () => window.removeEventListener(AUTO_OPEN_NO_ROOM_EVENT, onNoRoom);
-  }, [openRunInCanvas, openWatchInCanvas]);
+  }, [openRunInCanvas, openWatchInCanvas, offerInCanvas]);
 
   // MKT-076: Watch AI opens by itself once per page load; a close sticks until the person reopens it.
   const watchOpened = useRef(false);
@@ -123,12 +132,12 @@ export default function AutoWatch() {
     }
     watchOpened.current = true;
     if (!room) {
-      openWatchInCanvas();
+      offerInCanvas("watch-ai-offer", "Watch AI", openWatchInCanvas);
       return;
     }
     markAutoOpened("aiWatchWindow", AI_WATCH_PAGE_INSTANCE);
     dispatch(watchAiRunAction());
-  }, [dispatch, store, room, openWatchInCanvas, canvas, watchTabId]);
+  }, [dispatch, store, room, openWatchInCanvas, offerInCanvas, canvas, watchTabId]);
 
   const openedRuns = useRef(new Set<string>());
   useEffect(() => {
@@ -138,7 +147,7 @@ export default function AutoWatch() {
     for (const runId of fresh) {
       openedRuns.current.add(runId);
       if (!room) {
-        openRunInCanvas(runId);
+        offerInCanvas(`workflow-run-offer:${runId}`, "Workflow run", () => openRunInCanvas(runId));
         continue;
       }
       markAutoOpened("workflowRunWindow", workflowRunWindowInstanceId(runId));
@@ -146,7 +155,7 @@ export default function AutoWatch() {
     }
     // Watch AI itself waits for the first AI call (below): a run with no call yet has nothing
     // to show, and the window would only sit over the page's input.
-  }, [canWatch, room, liveRootRuns, dispatch, openRunInCanvas]);
+  }, [canWatch, room, liveRootRuns, dispatch, openRunInCanvas, offerInCanvas]);
 
   const openedCalls = useRef(new Set<string>());
   useEffect(() => {

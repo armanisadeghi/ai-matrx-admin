@@ -1,0 +1,56 @@
+/**
+ * Pure helpers behind the Cases / Battle / Debrief tab bodies: which declared inputs a case sets
+ * (they show as variable pills), what a finished battle says in one plain line, and whether Keep
+ * is the primary action (only when the candidate won).
+ */
+
+import type { SetupScore } from "./battle";
+
+export interface CaseInputDeclaration {
+  name: string;
+  label?: string | null;
+  helpText?: string | null;
+}
+
+/** The agent's declared inputs that this case actually sets (empty values do not count). */
+export function caseInputs<T extends CaseInputDeclaration>(variables: unknown, declarations: readonly T[]): T[] {
+  if (!variables || typeof variables !== "object" || Array.isArray(variables)) return [];
+  const set = variables as Record<string, unknown>;
+  return declarations.filter((d) => {
+    const v = set[d.name];
+    return v !== undefined && v !== null && v !== "";
+  });
+}
+
+export interface BattleVerdict {
+  /** The plain result line: who won, or tie, or still running. */
+  line: string;
+  tone: "success" | "neutral" | "warning";
+  /** True only when the candidate won: Keep is then the tab's primary action. */
+  keepIsPrimary: boolean;
+}
+
+/** What a battle says in one line. Pure: the same score always reads the same. */
+export function battleVerdict(
+  score: { scores: SetupScore[]; winner: string | null; settled: boolean },
+  labelOf: (key: string) => string,
+): BattleVerdict {
+  if (!score.settled) return { line: "Running", tone: "neutral", keepIsPrimary: false };
+  const tally = score.scores
+    .map((s) => `${labelOf(s.key)} ${s.pass}/${s.pass + s.fail + s.other + s.pending}`)
+    .join(" · ");
+  if (!score.winner) return { line: `Tie · ${tally}`, tone: "neutral", keepIsPrimary: false };
+  const won = score.winner === "candidate";
+  return {
+    line: `${labelOf(score.winner)} wins · ${tally}`,
+    tone: won ? "success" : "warning",
+    keepIsPrimary: won,
+  };
+}
+
+/** The Keep button's words: it says plainly when the candidate did not win. */
+export function keepLabel(state: { kept: boolean; keeping: boolean; won: boolean }): string {
+  if (state.kept) return "Kept";
+  if (state.keeping) return "Keeping…";
+  return state.won ? "Keep candidate" : "Keep anyway";
+}

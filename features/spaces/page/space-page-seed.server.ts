@@ -43,6 +43,8 @@ import type { BlockSeed, SeededWhere, SpaceBlockSeeds } from "./space-seed-conte
 
 /** The page read waits at most this long; past it the browser reads the page as before. */
 const DOC_BUDGET_MS = 2_000;
+/** The tables' row counts (`where_id_opens`, asked for every table block at once) are waited for this long before the shell goes out. */
+const ROWS_BUDGET_MS = 700;
 /** The linked pages' read (one call, after the page) waits at most this long; past it the browser asks once. */
 const LINKS_BUDGET_MS = 800;
 
@@ -230,6 +232,10 @@ export interface SpacePageReads {
   doc: SpaceDoc | undefined;
   /** Per database block id: its first reads, streaming. Never rejects; null when nothing was seeded. */
   seeds: SpaceBlockSeeds;
+  /** Per database block id: how many rows its table shows this person (capped); absent = not known in time. */
+  expectedRows?: Record<string, number>;
+  /** Per board block id: the cards each column holds, when its open view is the table's opening board. */
+  expectedGroups?: Record<string, number[]>;
   /** Round 40: every page the blocks link to (null = cannot open); undefined = not read, the browser asks. */
   links?: SpaceLinks;
   /** Round 40: the pages mentioning this one (`content.space_backlinks`); undefined = the browser asks. */
@@ -286,8 +292,64 @@ export async function readSpacePage(spaceId: string): Promise<SpacePageReads> {
   const doc = await within<SpaceDoc | null | undefined>(DOC_BUDGET_MS, store.get(spaceId), undefined);
   if (!doc) return { doc: undefined, seeds: {} };
   const seeds = askBlocks(ctx, doc);
-  const [links, backlinks] = await Promise.all([readLinks(store, doc), readBacklinks(supabase, doc.id)]);
-  return { doc, seeds, links, backlinks };
+  const [links, backlinks, expected] = await Promise.all([readLinks(store, doc), readBacklinks(supabase, doc.id), readExpectedRows(ctx, doc)]);
+  return {
+    doc,
+    seeds,
+    ...(expected ? { expectedRows: expected.rows } : {}),
+    ...(expected && Object.keys(expected.groups).length ? { expectedGroups: expected.groups } : {}),
+    links,
+    backlinks,
+  };
+}
+
+/** The rows each table block's table shows this person: the `rows_visible` of the `where` every block asks anyway (memoised: asked once). */
+export function rowsVisibleOf(where: SeededWhere): number | null {
+  const row = where.data as { rows_visible?: unknown } | null;
+  return !where.error && row && typeof row === "object" && typeof row.rows_visible === "number" && row.rows_visible >= 0 ? row.rows_visible : null;
+}
+
+/**
+ * The cards each board column holds (lane SKELETON-HEIGHT-2): the table's opening view's counts, and only for
+ * a block whose open view IS that board (same layout, same grouping Field). Anything else is not predicted.
+ */
+export function columnCardsOf(where: SeededWhere, view: { layout: string; groupField?: string | undefined }): number[] | null {
+  const open = (where.data as { opening_view?: { layout?: unknown; group_field?: unknown; groups?: unknown } } | null)?.opening_view;
+  if (where.error || !open || view.layout !== "kanban" || open.layout !== "kanban" || !view.groupField || open.group_field !== view.groupField) return null;
+  const groups = Array.isArray(open.groups) ? open.groups : [];
+  return groups.length > 0 && groups.every((n) => typeof n === "number" && Number.isFinite(n) && n >= 0) ? (groups as number[]) : null;
+}
+
+/** A view that shows every row of its table: the table's count is then the block's (a filter shows fewer). */
+function showsWholeTable(view: { filters?: unknown; where?: unknown }): boolean {
+  return !view.where && Object.keys((view.filters ?? {}) as Record<string, unknown>).length === 0;
+}
+
+async function readExpectedRows(
+  ctx: Promise<PageReads>,
+  doc: SpaceDoc,
+): Promise<{ rows: Record<string, number>; groups: Record<string, number[]> } | undefined> {
+  const tables = databaseBlocks(doc.blocks).filter((b) => b.props.source.kind === "table" && isUuidShape(b.props.source.tableId) && !b.props.sample);
+  if (!tables.length) return undefined;
+  const found = { rows: {} as Record<string, number>, groups: {} as Record<string, number[]> };
+  const asked = Promise.all(
+    tables.map(async (b) => {
+      if (b.props.source.kind !== "table") return;
+      const view = activeView(b.props.views, b.props.activeViewId);
+      if (!showsWholeTable(view)) return;
+      const reads = await ctx;
+      const where = await reads.where(b.props.source.tableId);
+      if (!where) return;
+      const rows = rowsVisibleOf(where.where);
+      if (rows !== null) found.rows[b.blockId] = rows;
+      const groups = columnCardsOf(where.where, view);
+      if (groups) found.groups[b.blockId] = groups;
+    }),
+  ).then(() => found);
+  // Whatever landed in time: a block whose count is late is drawn at the default size, as before.
+  const landed = await within<typeof found | null>(ROWS_BUDGET_MS, asked, null);
+  const out = landed ?? found;
+  return Object.keys(out.rows).length ? { rows: { ...out.rows }, groups: { ...out.groups } } : undefined;
 }
 
 /** Round 40: "N backlinks" under the title, read with the page (the same door the browser asked). */

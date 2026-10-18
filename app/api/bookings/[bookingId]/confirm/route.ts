@@ -17,6 +17,7 @@
 import { NextResponse } from "next/server";
 
 import { bucketFor, confirmBooking, publicBooking } from "@/features/booking/service";
+import { checkoutIfAsked } from "@/features/payments/server";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
 
 export const dynamic = "force-dynamic";
@@ -94,6 +95,18 @@ export async function POST(
       clientKey: typeof body.clientKey === "string" ? body.clientKey : null,
     });
     const done = outcome.state === "booked" || outcome.state === "held";
+    // PAYMENTS-CONNECT: a booking page that asks for payment sends the booker to Stripe Checkout
+    // on the organization's own account right after the slot is confirmed; the booking record
+    // says Unpaid until Stripe says paid (hold-until-paid is a store change, not built yet).
+    const payment = done
+      ? await checkoutIfAsked({
+          subjectKind: "form",
+          subjectId: bookingId,
+          recordId: outcome.record_id,
+          origin: new URL(request.url).origin,
+          back: `/b/${bookingId}`,
+        }).catch((thrown: unknown) => ({ refused: thrown instanceof Error ? thrown.message : "Payment could not be started." }))
+      : null;
     return NextResponse.json(
       {
         ok: done,
@@ -101,6 +114,8 @@ export async function POST(
         booking_ref: outcome.booking_ref,
         slot_at: outcome.slot_at,
         message: outcome.message,
+        ...(payment && "url" in payment ? { payment_url: payment.url } : {}),
+        ...(payment && "refused" in payment ? { payment_refused: payment.refused } : {}),
       },
       { status: 200 },
     );

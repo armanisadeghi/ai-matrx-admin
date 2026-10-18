@@ -32,6 +32,7 @@ import {
   BookA,
   User as UserIcon,
   KeyRound,
+  CreditCard,
   UserCog,
   Tags,
   Gauge,
@@ -610,6 +611,26 @@ export function OrgManage({
                 <Button asChild variant="outline">
                   <Link href={`/organizations/${slug}/settings/api-keys`}>
                     Open API keys
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </div>
+            </SectionCard>
+          )}
+
+          {/* Payments — collect into the organization's own Stripe account (PAYMENTS-CONNECT) */}
+          {canManageSettings && (
+            <SectionCard
+              id="payments"
+              icon={CreditCard}
+              title="Payments"
+              description="Take payments on forms, booking pages and portals."
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <p className="text-sm text-muted-foreground flex-1">Money goes to your own Stripe account.</p>
+                <Button asChild variant="outline">
+                  <Link href={`/organizations/${slug}/settings/payments`}>
+                    Open payments
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </Button>

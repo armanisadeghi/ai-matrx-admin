@@ -9298,6 +9298,69 @@ export type Database = {
         }
         Relationships: []
       }
+      org_payment_account: {
+        Row: {
+          charges_enabled: boolean
+          connected_by: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          default_currency: string | null
+          details_submitted: boolean
+          disconnected_at: string | null
+          display_name: string | null
+          id: string
+          livemode: boolean
+          metadata: Json
+          organization_id: string
+          payouts_enabled: boolean
+          stripe_account_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          charges_enabled?: boolean
+          connected_by?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_currency?: string | null
+          details_submitted?: boolean
+          disconnected_at?: string | null
+          display_name?: string | null
+          id?: string
+          livemode?: boolean
+          metadata?: Json
+          organization_id: string
+          payouts_enabled?: boolean
+          stripe_account_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          charges_enabled?: boolean
+          connected_by?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_currency?: string | null
+          details_submitted?: boolean
+          disconnected_at?: string | null
+          display_name?: string | null
+          id?: string
+          livemode?: boolean
+          metadata?: Json
+          organization_id?: string
+          payouts_enabled?: boolean
+          stripe_account_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       org_plan: {
         Row: {
           created_at: string
@@ -9365,6 +9428,149 @@ export type Database = {
             referencedColumns: ["plan_key"]
           },
         ]
+      }
+      payment: {
+        Row: {
+          amount_cents: number
+          ask_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          id: string
+          livemode: boolean
+          metadata: Json
+          organization_id: string
+          paid_at: string | null
+          record_id: string
+          status: string
+          stripe_account_id: string
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          subject_id: string
+          subject_kind: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          amount_cents: number
+          ask_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          description?: string | null
+          id?: string
+          livemode?: boolean
+          metadata?: Json
+          organization_id: string
+          paid_at?: string | null
+          record_id: string
+          status?: string
+          stripe_account_id: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subject_id: string
+          subject_kind: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          amount_cents?: number
+          ask_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          id?: string
+          livemode?: boolean
+          metadata?: Json
+          organization_id?: string
+          paid_at?: string | null
+          record_id?: string
+          status?: string
+          stripe_account_id?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subject_id?: string
+          subject_kind?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_ask_id_fkey"
+            columns: ["ask_id"]
+            isOneToOne: false
+            referencedRelation: "payment_ask"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_ask: {
+        Row: {
+          amount_cents: number | null
+          amount_field: string | null
+          amount_mode: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          enabled: boolean
+          id: string
+          metadata: Json
+          organization_id: string
+          status_field_key: string
+          subject_id: string
+          subject_kind: string
+          table_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          amount_cents?: number | null
+          amount_field?: string | null
+          amount_mode?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          metadata?: Json
+          organization_id: string
+          status_field_key?: string
+          subject_id: string
+          subject_kind: string
+          table_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          amount_cents?: number | null
+          amount_field?: string | null
+          amount_mode?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          status_field_key?: string
+          subject_id?: string
+          subject_kind?: string
+          table_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
       }
       plan: {
         Row: {
@@ -11142,6 +11348,10 @@ export type Database = {
         }
         Returns: Json
       }
+      org_payments_status: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       org_plan_assign: {
         Args: { p_note: string; p_org: string; p_plan: string }
         Returns: Json
@@ -11185,6 +11395,28 @@ export type Database = {
         Returns: Json
       }
       org_usage_state: { Args: { p_org: string }; Returns: Json }
+      payment_ask_set: {
+        Args: {
+          p_organization_id: string
+          p_spec: Json
+          p_subject_id: string
+          p_subject_kind: string
+        }
+        Returns: Json
+      }
+      payment_asks: { Args: { p_organization_id: string }; Returns: Json }
+      payment_mark_unpaid: {
+        Args: { p_payment_id: string }
+        Returns: undefined
+      }
+      payment_settle: {
+        Args: {
+          p_checkout_session_id: string
+          p_payment_intent_id?: string
+          p_status: string
+        }
+        Returns: Json
+      }
       period_reset: {
         Args: { p_period: Database["billing"]["Enums"]["meter_period"] }
         Returns: string
@@ -38873,6 +39105,32 @@ export type Database = {
         Args: { p_organization_id: string; p_raw: Json }
         Returns: Json
       }
+      _booking_fill: {
+        Args: { p_text: string; p_tokens: Json }
+        Returns: string
+      }
+      _booking_ics: {
+        Args: {
+          p_description: string
+          p_end: string
+          p_method: string
+          p_sequence: number
+          p_start: string
+          p_title: string
+          p_uid: string
+        }
+        Returns: string
+      }
+      _booking_messages: {
+        Args: {
+          p_event: string
+          p_form_id: string
+          p_organization_id: string
+          p_record_id: string
+          p_submission_id: string
+        }
+        Returns: Json
+      }
       _booking_release: {
         Args: {
           p_hold_id: string
@@ -38889,6 +39147,7 @@ export type Database = {
           slot_key: string
         }[]
       }
+      _booking_urlenc: { Args: { p: string }; Returns: string }
       _bulk_rows_skip_trigger_work: {
         Args: {
           p_any_state: boolean
@@ -40898,6 +41157,16 @@ export type Database = {
           status: string
           title: string
         }[]
+      }
+      booking_messages: {
+        Args: {
+          p_event: string
+          p_form_id: string
+          p_organization_id: string
+          p_record_id: string
+          p_submission_id: string
+        }
+        Returns: Json
       }
       booking_notify: {
         Args: {

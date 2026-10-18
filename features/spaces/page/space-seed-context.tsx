@@ -81,7 +81,27 @@ export function BlockRecordsSeed({ children }: { children: ReactNode }) {
   return <RecordsSeedProvider seed={seed}>{children}</RecordsSeedProvider>;
 }
 
-export function SpaceSeedProvider({ seeds, children }: { seeds?: SpaceBlockSeeds; children: ReactNode }) {
+/**
+ * HOW MANY ROWS EACH TABLE BLOCK'S TABLE SHOWS THIS PERSON (lane SKELETON-HEIGHT): the `rows_visible` of
+ * `custom.where_id_opens`, read on the server before the page's shell goes out (a short wait; past it, not
+ * known). A loading frame sized by it is the loaded frame's height. Fixed for a page (a prop), so it can sit
+ * above dehydrated blocks without redrawing them.
+ */
+const ExpectedRowsContext = createContext<Record<string, number> | null>(null);
+/** A board block's cards per column (lane SKELETON-HEIGHT-2), by block id: only for a block whose open view is the table's opening board. */
+const ExpectedGroupsContext = createContext<Record<string, number[]> | null>(null);
+
+/** Rows the server says this block's table shows the person (null when it did not know). */
+export function useBlockExpectedRows(blockId: string): number | null {
+  return useContext(ExpectedRowsContext)?.[blockId] ?? null;
+}
+
+/** Cards per column the server says this board block's table holds (null when it did not know). */
+export function useBlockExpectedGroups(blockId: string): number[] | null {
+  return useContext(ExpectedGroupsContext)?.[blockId] ?? null;
+}
+
+export function SpaceSeedProvider({ seeds, expectedRows, expectedGroups, children }: { seeds?: SpaceBlockSeeds; expectedRows?: Record<string, number>; expectedGroups?: Record<string, number[]>; children: ReactNode }) {
   // The first state is this page's, from the first render: nothing is set by the effect on mount.
   const [state, setState] = useState<{ seeds: SpaceBlockSeeds | undefined; landed: Record<string, BlockSeed | null>; waited: boolean }>(() => ({ seeds, landed: {}, waited: false }));
   useEffect(() => {
@@ -104,7 +124,11 @@ export function SpaceSeedProvider({ seeds, children }: { seeds?: SpaceBlockSeeds
   const settled = !seeds || ids.length === 0 || (!!mine && (mine.waited || ids.every((id) => id in mine.landed)));
   return (
     <SeedPromisesContext value={seeds ?? null}>
-      <SeedLandedContext value={{ landed: mine?.landed ?? NOTHING_LANDED, settled }}>{children}</SeedLandedContext>
+      <ExpectedRowsContext value={expectedRows ?? null}>
+        <ExpectedGroupsContext value={expectedGroups ?? null}>
+          <SeedLandedContext value={{ landed: mine?.landed ?? NOTHING_LANDED, settled }}>{children}</SeedLandedContext>
+        </ExpectedGroupsContext>
+      </ExpectedRowsContext>
     </SeedPromisesContext>
   );
 }

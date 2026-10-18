@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { FlaskConical, Send, Swords } from "lucide-react";
+import { FlaskConical, Lightbulb, Send, Swords } from "lucide-react";
 import Link from "next/link";
 import { Badge, Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
@@ -44,6 +44,7 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { StudioControlsPreview } from "./StudioEmpty";
 import { PaneBar } from "./PaneBar";
 import { StudioInputPills, type StudioInputDefinition } from "./StudioInputPills";
+import { ResultCard, TabHead, Waiting } from "./StudioTabParts";
 
 export type ControlsTab = "settings" | "cases" | "versions" | "battle" | "debrief";
 const TABS: { value: ControlsTab; label: string }[] = [
@@ -84,6 +85,8 @@ export function StudioControls({
   const dispatch = useAppDispatch();
   const record = useAppSelector((s) => (agentId ? selectAgentById(s, agentId) : undefined));
   const [candidate, setCandidate] = useState<StudioCandidate | null>(null);
+  /** The proposal last kept as a version: its Debrief card reads "Kept" instead of offering a retry. */
+  const [keptId, setKeptId] = useState<string | null>(null);
   /** A candidate is an unsaved draft: write it down as it changes, and re-apply it to the Builder record on reload. */
   const restored = useRef<string | null>(null);
   useEffect(() => {
@@ -119,6 +122,7 @@ export function StudioControls({
     if (c.messages) dispatch(setAgentMessages({ id: agentId, messages: c.messages as typeof record.messages }));
     if (c.modelId) dispatch(setAgentField({ id: agentId, field: "modelId", value: c.modelId }));
     setCandidate(c);
+    setKeptId(null);
     remember(c);
     return c;
   };
@@ -132,6 +136,7 @@ export function StudioControls({
   const keep = async () => {
     if (!agentId) return;
     await dispatch(saveAgent(agentId)).unwrap();
+    setKeptId(candidate?.proposalId ?? null);
     setCandidate(null);
     remember(null);
     onSaved();
@@ -157,13 +162,17 @@ export function StudioControls({
             candidate={candidate}
             onKeep={keep}
             onDiscard={discard}
+            onOpenCases={() => setTab("cases")}
           />
         ) : (
           <DebriefTab
             runConversationId={runConversationId}
             candidateId={candidate?.proposalId ?? null}
+            keptId={keptId}
             onTry={tryProposal}
             onBattle={() => setTab("battle")}
+            onDiscard={discard}
+            onOpenCases={() => setTab("cases")}
           />
         )}
       </div>
@@ -342,13 +351,19 @@ function VersionsTab({ agentId }: { agentId: string }) {
 function DebriefTab({
   runConversationId,
   candidateId,
+  keptId,
   onTry,
   onBattle,
+  onDiscard,
+  onOpenCases,
 }: {
   runConversationId: string | null;
   candidateId: string | null;
+  keptId: string | null;
   onTry: (p: DebriefProposal) => StudioCandidate | null;
   onBattle: () => void;
+  onDiscard: () => void;
+  onOpenCases: () => void;
 }) {
   const messageId = useAppSelector((s) =>
     runConversationId ? selectLatestAssistantMessageId(runConversationId)(s) : undefined,
@@ -388,31 +403,62 @@ function DebriefTab({
     }).catch(() => undefined);
   }, [runConversationId, messageId, doneText, doneFork, doneModel]);
   if (!runConversationId || !messageId) {
-    return <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Run the agent first" line="Debrief reads its latest answer" />;
+    return (
+      <EmptyState
+        icon={<AGENT_ICON className="h-5 w-5" />}
+        title="Run the agent first"
+        line="Debrief reads its latest answer"
+        action={
+          <Button variant="outline" onClick={onOpenCases}>
+            Run a test case
+          </Button>
+        }
+      />
+    );
   }
   const parsed = debrief?.status === "done" ? parseAgentDebrief(debrief.text) : null;
+  const working = debrief?.status === "running";
+  const hasRun = debrief && debrief.status !== "choosing";
   return (
     <div className="flex flex-col gap-2" data-testid="studio-debrief">
-      <Button
-        variant={parsed ? "outline" : "primary"}
-        onClick={() => setDebrief(key, { status: "choosing" })}
-      >
-        {debrief && debrief.status !== "choosing" ? "Debrief again" : "Debrief the latest answer"}
-      </Button>
-      {!debrief ? <p className="text-xs text-muted-foreground">Opens under the answer in the center</p> : null}
-      {debrief?.status === "running" ? <p className="text-xs text-muted-foreground">Reading the run…</p> : null}
+      <TabHead>
+        <Button
+          variant={parsed || working ? "outline" : "primary"}
+          icon={<Lightbulb />}
+          disabled={working}
+          onClick={() => setDebrief(key, { status: "choosing" })}
+        >
+          {hasRun ? "Debrief again" : "Debrief the latest answer"}
+        </Button>
+        {!debrief ? <span className="min-w-0 truncate text-xs text-muted-foreground">Opens under the answer</span> : null}
+      </TabHead>
+      {working ? <Waiting text="Reading the run" /> : null}
       {debrief?.status === "done" && !parsed ? (
-        <p className="text-xs text-muted-foreground">No proposals could be read from this debrief</p>
+        <ResultCard>
+          <span className="text-foreground">No proposals could be read from this debrief</span>
+          <span className="text-muted-foreground">Debrief again, or pick a stronger model</span>
+        </ResultCard>
+      ) : null}
+      {debrief?.status === "error" ? (
+        <ResultCard tone="warning">
+          <span className="text-foreground">The debrief did not finish</span>
+          <span className="text-muted-foreground">Debrief again to retry</span>
+        </ResultCard>
       ) : null}
       {parsed ? (
         <DebriefProposalCards
           debrief={parsed}
           renderActions={(p) =>
-            candidateId === p.id ? (
+            keptId === p.id ? (
+              <Badge tone="success">Kept as a version</Badge>
+            ) : candidateId === p.id ? (
               <>
                 <Badge tone="info">Candidate</Badge>
                 <Button variant="primary" icon={<Swords />} onClick={onBattle} data-testid="studio-proposal-battle">
                   Battle it
+                </Button>
+                <Button variant="quiet" onClick={onDiscard}>
+                  Discard
                 </Button>
               </>
             ) : p.target === "instructions" || p.target === "model" ? (

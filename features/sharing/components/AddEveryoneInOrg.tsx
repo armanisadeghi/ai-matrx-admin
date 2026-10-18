@@ -15,9 +15,15 @@
  * a checkbox and all ticked. Pressing the button grants each ticked PERSON through the same door
  * the single-person share uses. Nobody who joins later is included, and the panel says so in one
  * sentence.
+ *
+ * A TEAM IS THE SAME CONVENIENCE, NARROWER (AT-SHARE-B, Airtable parity "user groups"). Once an organization is
+ * picked, its teams (the platform's own `iam.team`, read through `team_list`) are offered beside "Everyone"; picking
+ * one lists that team's current members (`team_members`) and grants each PERSON the same way. A team is never a
+ * grantee: what a team member gets is their own share, and people who join the team later are not added.
  */
 
 import { readOrganizationMemberRows } from "@/features/organizations/service/orgMemberRows";
+import { listTeamMembers, listTeams, type Team } from "@/features/organizations/service/teamsService";
 import React, { useEffect, useState } from "react";
 import { Building2, CheckCircle, Loader2, Users, XCircle } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
@@ -69,6 +75,18 @@ export interface AddEveryoneInOrgProps {
 
 type Outcome = { ok: boolean; say: string };
 
+/** "Everyone in the organization" — the default pick of the group select. */
+const EVERYONE = "__everyone__";
+
+async function readTeamMembers(teamId: string): Promise<OrgMemberPerson[]> {
+  const rows = await listTeamMembers(teamId);
+  return rows.map((row) => ({
+    userId: row.userId,
+    email: row.email ?? "",
+    name: row.displayName || row.email || "Unnamed person",
+  }));
+}
+
 async function readMembers(orgId: string): Promise<OrgMemberPerson[]> {
   // THE ONE ROSTER READ (joined in flight, reused for 30 s).
   const data = await readOrganizationMemberRows(orgId);
@@ -96,8 +114,33 @@ export function AddEveryoneInOrg({
   const [ticked, setTicked] = useState<Set<string>>(new Set());
   const [running, setRunning] = useState(false);
   const [outcomes, setOutcomes] = useState<Record<string, Outcome>>({});
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [teamsError, setTeamsError] = useState<string | null>(null);
+  const [group, setGroup] = useState(EVERYONE);
 
-  const orgName = orgs.find((o) => o.id === orgId)?.name ?? "this organization";
+  const orgLabel = orgs.find((o) => o.id === orgId)?.name ?? "this organization";
+  const team = group === EVERYONE ? undefined : teams.find((t) => t.id === group);
+  // Every sentence below names the group being added: the organization, or the team picked inside it.
+  const orgName = team ? team.name : orgLabel;
+
+  // The organization's teams, offered beside "Everyone". None: the group select is absent.
+  useEffect(() => {
+    if (!open || !orgId) return;
+    let cancelled = false;
+    setTeams([]);
+    setTeamsError(null);
+    setGroup(EVERYONE);
+    listTeams(orgId)
+      .then((rows) => {
+        if (!cancelled) setTeams(rows.filter((t) => t.archivedAt === null && t.memberCount > 0));
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setTeamsError(err instanceof Error ? err.message : "The teams could not be listed.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, orgId]);
   const already = new Set(alreadySharedUserIds);
 
   useEffect(() => {
@@ -106,7 +149,7 @@ export function AddEveryoneInOrg({
     setMembers(null);
     setLoadError(null);
     setOutcomes({});
-    readMembers(orgId)
+    (group === EVERYONE ? readMembers(orgId) : readTeamMembers(group))
       .then((rows) => {
         if (cancelled) return;
         const others = rows.filter((m) => m.userId !== me);
@@ -128,7 +171,7 @@ export function AddEveryoneInOrg({
     // `already` is read once per organization pick on purpose: a grant made here must not
     // untick the row it just granted while the results are on screen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, orgId, me]);
+  }, [open, orgId, group, me]);
 
   const toggle = (userId: string, on: boolean) =>
     setTicked((prev) => {
@@ -181,7 +224,7 @@ export function AddEveryoneInOrg({
         }}
       >
         <Users className="w-4 h-4 mr-2" />
-        Add everyone in an organization
+        Add everyone in an organization or team
       </Button>
     );
   }
@@ -226,6 +269,34 @@ export function AddEveryoneInOrg({
           </SelectContent>
         </Select>
       </div>
+
+      {orgId && teams.length > 0 ? (
+        <div className="space-y-1.5">
+          <Label htmlFor="add-everyone-group" className="text-xs">
+            Who
+          </Label>
+          <Select value={group} onValueChange={setGroup} disabled={running}>
+            <SelectTrigger id="add-everyone-group">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={EVERYONE}>Everyone in {orgLabel}</SelectItem>
+              {teams.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.name}
+                  <span className="type-meta text-muted-foreground"> · {t.memberCount}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
+      {orgId && teamsError ? (
+        <p className="type-secondary text-destructive">
+          The teams in {orgLabel} could not be listed: {teamsError}
+          <ErrorAlchemyMenu error={teamsError} />
+        </p>
+      ) : null}
 
       {orgId && loadError ? (
         <p className="type-secondary text-destructive">

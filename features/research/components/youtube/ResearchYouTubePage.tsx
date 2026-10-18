@@ -99,9 +99,11 @@ export default function ResearchYouTubePage() {
     });
   };
 
-  const processSelected = async () => {
-    if (selected.size === 0) return;
-    const videoIds = [...selected];
+  const [analyzing, setAnalyzing] = useState<Set<string>>(new Set());
+
+  const processVideos = async (videoIds: string[]) => {
+    if (videoIds.length === 0) return;
+    setAnalyzing((current) => new Set([...current, ...videoIds]));
     setProcessing(true);
     setBatchProgress(`Connecting to ${videoIds.length} videos…`);
     try {
@@ -139,6 +141,11 @@ export default function ResearchYouTubePage() {
             );
           } finally {
             completed += 1;
+            setAnalyzing((current) => {
+              const next = new Set(current);
+              next.delete(videoId);
+              return next;
+            });
             setBatchProgress(`${completed}/${videoIds.length} finished`);
             streamAbortControllersRef.current.delete(abortController);
             if (adoptedRequestId) {
@@ -190,7 +197,7 @@ export default function ResearchYouTubePage() {
               icon={processing ? <LoaderCircle className="animate-spin" /> : <Brain />}
               variant="primary"
               type="button"
-              onClick={() => void processSelected()}
+              onClick={() => void processVideos([...selected])}
               disabled={processing}
             >
               {processing
@@ -228,7 +235,13 @@ export default function ResearchYouTubePage() {
           </Button>
         </div>
       ) : (
-        <TopicYouTubeLibrary videos={videos} selected={selected} onToggle={toggle} />
+        <TopicYouTubeLibrary
+          videos={videos}
+          selected={selected}
+          onToggle={toggle}
+          analyzing={analyzing}
+          onAnalyze={(videoId) => void processVideos([videoId])}
+        />
       )}
     </div>
   );

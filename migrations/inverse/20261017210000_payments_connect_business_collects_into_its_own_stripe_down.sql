@@ -2,7 +2,7 @@
 -- lane: PAYMENTS-CONNECT
 -- chair-step: removes the business payments tables and doors; drops every recorded payment row.
 delete from platform.client_callable_door
- where schema_name = 'public' and function_name in ('org_payments_status', 'payment_asks', 'payment_ask_set');
+ where schema_name = 'billing' and function_name in ('org_payments_status', 'payment_asks', 'payment_ask_set', 'payment_settle', 'payment_mark_unpaid');
 drop function if exists public.payment_ask_set(uuid, text, uuid, jsonb);
 drop function if exists public.payment_asks(uuid);
 drop function if exists public.org_payments_status(uuid);

@@ -1,8 +1,22 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Pencil, Loader2 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+/**
+ * InlineDecisionBlock — an agent's `<decision>`: alternatives the person picks
+ * between, and the pick REPLACES the block in place (the chosen option's text
+ * becomes the content). Drawn as a question with every option visible —
+ * the same row look as the ask card's pick-one question (`ask_person`
+ * `choice`, @ai-matrx/chat AskCard ChoiceBody) — so a person sees what each
+ * option actually says before choosing.
+ *
+ * One click on a row IS the choice. The pencil edits an option's text before
+ * using it; "Write my own" opens an empty box.
+ */
+
+import React, { useState } from "react";
+import { Loader2, Pencil } from "lucide-react";
+import { Button } from "@ai-matrx/design-system/controls";
+import { cn } from "@ai-matrx/design-system";
+import { ProTextarea } from "@/components/official/ProTextarea";
 import type { InlineDecision, InlineDecisionOption } from "./types";
 
 interface InlineDecisionBlockProps {
@@ -10,11 +24,13 @@ interface InlineDecisionBlockProps {
   isStreamActive?: boolean;
   /**
    * `choiceLabel` is the picked option's label when its text was kept as is
-   * (null for Custom or an edited text) — the words the choice remark uses.
+   * (null for Write my own or an edited text) — the words the choice remark uses.
    */
   onResolve: (decisionId: string, rawXml: string, chosenText: string, choiceLabel: string | null) => void;
   rawXml: string;
 }
+
+const CUSTOM_ID = "custom";
 
 export default function InlineDecisionBlock({
   decision,
@@ -22,196 +38,137 @@ export default function InlineDecisionBlock({
   onResolve,
   rawXml,
 }: InlineDecisionBlockProps) {
-  const [expanded, setExpanded] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // The option being edited (an option id, CUSTOM_ID, or null when none).
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [fadeOut, setFadeOut] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const allOptions: InlineDecisionOption[] = decision.options.some(
-    (o) => o.id === "custom",
-  )
-    ? decision.options
-    : [...decision.options, { id: "custom", label: "Custom", text: "" }];
-
-  useEffect(() => {
-    if (selectedId && textareaRef.current) {
-      const ta = textareaRef.current;
-      ta.focus();
-      ta.setSelectionRange(ta.value.length, ta.value.length);
-      ta.style.height = "auto";
-      ta.style.height = `${ta.scrollHeight}px`;
-    }
-  }, [selectedId]);
+  const options = decision.options.filter((o) => o.id !== CUSTOM_ID);
+  const groupName = `decision-${decision.id}`;
 
   const resolveWith = (option: InlineDecisionOption | undefined, text: string) => {
     const trimmed = text.trim();
     if (!trimmed || isStreamActive) return;
     setFadeOut(true);
     setTimeout(() => {
-      const kept =
-        option && option.id !== "custom" && option.text.trim() === trimmed;
+      const kept = option !== undefined && option.text.trim() === trimmed;
       onResolve(decision.id, rawXml, trimmed, kept ? option.label : null);
     }, 280);
   };
 
-  // One click IS the choice. Custom has no text yet, so it opens the free
-  // text path instead.
-  const handleSelect = (option: InlineDecisionOption) => {
-    if (option.id === "custom") {
-      if (selectedId === "custom") {
-        handleCancel();
-        return;
-      }
-      setSelectedId("custom");
-      setEditText("");
-      return;
-    }
-    resolveWith(option, option.text);
+  const startEdit = (id: string, text: string) => {
+    setEditingId(id);
+    setEditText(text);
   };
-
-  // Pencil beside an option: customize its text before choosing.
-  const handleCustomize = (option: InlineDecisionOption) => {
-    setSelectedId(option.id);
-    setEditText(option.text);
-  };
-
-  const handleApply = () => {
-    resolveWith(
-      allOptions.find((o) => o.id === selectedId),
-      editText,
-    );
-  };
-
-  const handleCancel = () => {
-    setSelectedId(null);
+  const cancelEdit = () => {
+    setEditingId(null);
     setEditText("");
-  };
-
-  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditText(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   return (
     <div
-      className={`my-1.5 border rounded-md overflow-hidden transition-all duration-200 ${
-        expanded
-          ? "border-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.1)]"
-          : "border-border"
-      } ${fadeOut ? "opacity-0 -translate-y-1 scale-[0.99] transition-all duration-[280ms]" : ""} bg-card`}
+      role="group"
+      aria-label={decision.prompt}
+      className={cn(
+        "my-2 flex flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-all duration-200",
+        fadeOut && "-translate-y-1 scale-[0.99] opacity-0 duration-[280ms]",
+      )}
     >
-      {/* Header — click to toggle options */}
-      <div
-        role="button"
-        tabIndex={0}
-        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors duration-100"
-        onClick={() => {
-          setExpanded(!expanded);
-          if (expanded) {
-            setSelectedId(null);
-            setEditText("");
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded(!expanded);
-          }
-        }}
-      >
-        <span
-          className={`w-2 h-2 rounded-full bg-primary flex-shrink-0 ${
-            expanded ? "" : "animate-pulse"
-          } shadow-[0_0_6px_hsl(var(--primary)/0.4)]`}
-        />
-        <span className="text-sm font-medium text-foreground truncate">
-          {decision.prompt}
-        </span>
+      <div className="text-sm font-medium text-foreground">{decision.prompt}</div>
+
+      <div className="flex flex-col gap-1.5">
+        {options.map((option) => (
+          <div key={option.id} className="flex items-start gap-1">
+            <label
+              data-clickable=""
+              className={cn(
+                "flex min-w-0 flex-1 items-start gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent",
+                editingId === option.id && "border-primary",
+              )}
+            >
+              <input
+                type="radio"
+                name={groupName}
+                value={option.id}
+                checked={editingId === option.id}
+                disabled={isStreamActive}
+                onChange={() => resolveWith(option, option.text)}
+                className="mt-0.5 size-3.5"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-foreground">{option.label}</div>
+                {option.text && option.text !== option.label ? (
+                  <div className="mt-0.5 line-clamp-4 whitespace-pre-wrap text-muted-foreground">
+                    {option.text}
+                  </div>
+                ) : null}
+              </div>
+            </label>
+            <Button
+              variant="quiet"
+              icon={<Pencil />}
+              aria-label={`Edit ${option.label}`}
+              disabled={isStreamActive}
+              onClick={() => startEdit(option.id, option.text)}
+            />
+          </div>
+        ))}
+
+        <label
+          data-clickable=""
+          className={cn(
+            "flex items-start gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent",
+            editingId === CUSTOM_ID && "border-primary",
+          )}
+        >
+          <input
+            type="radio"
+            name={groupName}
+            value={CUSTOM_ID}
+            checked={editingId === CUSTOM_ID}
+            disabled={isStreamActive}
+            onChange={() => startEdit(CUSTOM_ID, "")}
+            className="mt-0.5 size-3.5"
+          />
+          <span className="font-medium text-foreground">Write my own</span>
+        </label>
       </div>
 
-      {/* Expanded body */}
-      {expanded && (
-        <div className="px-3.5 pt-0.5 pb-3.5 animate-in slide-in-from-top-1 duration-150">
-          {/* Option pills */}
-          <div className="flex flex-wrap gap-1.5 mb-0.5">
-            {allOptions.map((option) => (
-              <span key={option.id} className="inline-flex items-center gap-0.5">
-                <Button
-                  variant={selectedId === option.id ? "primary" : "outline"}
-                  size="sm"
-                  disabled={isStreamActive}
-                  onClick={() => handleSelect(option)}
-                >
-                  {option.id === "custom" ? (
-                    <Pencil className="w-3 h-3 mr-1 flex-shrink-0" />
-                  ) : null}
-                  {option.label}
-                </Button>
-                {option.id !== "custom" ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={`Edit ${option.label}`}
-                    disabled={isStreamActive}
-                    onClick={() => handleCustomize(option)}
-                  >
-                    <Pencil className="w-3 h-3" />
-                  </Button>
-                ) : null}
-              </span>
-            ))}
-          </div>
-
-          {/* Editable textarea */}
-          {selectedId && (
-            <div className="mt-2.5 animate-in fade-in slide-in-from-bottom-1 duration-150">
-              <textarea
-                ref={textareaRef}
-                className="w-full text-base leading-relaxed text-foreground bg-background/50 border border-border rounded px-3 py-2.5 resize-none overflow-hidden outline-none focus:border-primary/50 transition-colors duration-150 placeholder:text-muted-foreground/50"
-                value={editText}
-                onChange={handleTextareaInput}
-                placeholder={
-                  selectedId === "custom"
-                    ? "Write your own approach..."
-                    : "Edit the text"
+      {editingId !== null ? (
+        <div className="flex flex-col gap-2">
+          <ProTextarea
+            aria-label="Your text"
+            className="text-base"
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            rows={3}
+            autoFocus
+          />
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" onClick={cancelEdit}>
+              Cancel
+            </Button>
+            {isStreamActive ? (
+              <Button variant="quiet" disabled icon={<Loader2 className="animate-spin" />}>
+                Waiting
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                disabled={!editText.trim()}
+                onClick={() =>
+                  resolveWith(
+                    options.find((o) => o.id === editingId),
+                    editText,
+                  )
                 }
-                rows={2}
-              />
-              <div className="flex items-center justify-between gap-2 mt-2">
-                <span />
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleCancel}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  {isStreamActive ? (
-                    <span className="text-xs font-medium px-3.5 py-1.5 rounded bg-muted text-muted-foreground flex items-center gap-1.5">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      Waiting for response...
-                    </span>
-                  ) : (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleApply}
-                      disabled={!editText.trim()}
-                      variant="primary"
-                    >
-                      Use this text
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+              >
+                Use this text
+              </Button>
+            )}
+          </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

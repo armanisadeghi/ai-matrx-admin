@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
 import { ResolvedBlockSeed, useAwaitedBlockSeed } from "../page/space-seed-context";
+import { DatabaseLoadingBox, WithExpectedRows } from "./database-loading-box";
 import { DATABASE_HOST_CLASS, DatabaseHost, activeLayout, paintedSizesOf } from "./database-host";
 
 // The same chunk the editor's database node view loads, rendered on the server only (rows in the HTML).
@@ -19,7 +20,9 @@ function SeededDatabase({ blockId, p }: { blockId: string; p: Record<string, unk
   const seed = useAwaitedBlockSeed(blockId);
   return (
     <ResolvedBlockSeed blockId={blockId} seed={seed}>
-      <DatabaseBlock blockId={blockId} props={p} onChange={() => undefined} editable={false} />
+      <WithExpectedRows blockId={blockId}>
+        <DatabaseBlock blockId={blockId} props={p} onChange={() => undefined} editable={false} />
+      </WithExpectedRows>
     </ResolvedBlockSeed>
   );
 }
@@ -48,7 +51,7 @@ export function ServerDrawnDatabase({ blockId, p }: { blockId: string; p: Record
     return <div className={DATABASE_HOST_CLASS} contentEditable={false} data-layout={layout} data-block-id={blockId} suppressHydrationWarning dangerouslySetInnerHTML={KEPT_AS_SERVED} />;
   return (
     <DatabaseHost blockId={blockId} layout={layout} painted={paintedSizesOf(p)} serverDrawn>
-      <Suspense fallback={<div className="spaces-db-loading" />}>
+      <Suspense fallback={<DatabaseLoadingBox blockId={blockId} p={p} />}>
         <SeededDatabase blockId={blockId} p={p} />
       </Suspense>
     </DatabaseHost>

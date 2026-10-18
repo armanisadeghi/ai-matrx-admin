@@ -17,6 +17,10 @@
 // failed", and nothing here swallows one.
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { readAsk, startCheckout } from "@/features/payments/server";
+import { isHers } from "@/features/portals/shown";
 
 import {
   DoorRefusal,
@@ -25,6 +29,7 @@ import {
   portalCommentWrite,
   portalMe,
   portalRecordUpdate,
+  portalRecords,
 } from "@/features/portals/service";
 
 export interface PortalWriteOutcome {
@@ -115,3 +120,34 @@ export async function addPortalComment(
   revalidatePath(`/portal/c/${slug}/r/${recordId}`);
   return { ok: true };
 }
+
+/**
+ * PAYMENTS-CONNECT: Pay for one of HER records. Membership and "this record is hers" are asked
+ * again here — a bound action is an address anyone can post to — then the server opens Stripe
+ * Checkout on the organization's own Stripe account and sends her there.
+ */
+export async function payPortalRecord(slug: string, recordId: string): Promise<void> {
+  const membership = membershipFor(await portalMe(), slug);
+  if (!membership) throw new Error("Sign in to this portal first.");
+  let tableId: string | null = null;
+  for (const table of membership.tables) {
+    const records = await portalRecords({ organizationId: membership.organization_id, tableId: table.table_id });
+    if (records.some((r) => r.id === recordId && isHers(r.document, table.names_via, membership.client_record_id))) {
+      tableId = table.table_id;
+      break;
+    }
+  }
+  if (!tableId) throw new Error("That is not on your portal.");
+  const ask = await readAsk("table", tableId);
+  if (!ask || ask.organization_id !== membership.organization_id) throw new Error("This record has nothing to pay.");
+  const h = await headers();
+  const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
+  const started = await startCheckout({
+    ask,
+    recordId,
+    origin,
+    back: `/portal/c/${encodeURIComponent(slug)}/r/${encodeURIComponent(recordId)}`,
+  });
+  redirect(started.url);
+}
+
