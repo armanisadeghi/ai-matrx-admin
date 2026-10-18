@@ -50,7 +50,7 @@ export type RedesignAnswer = { views: SpaceDbView[]; added: string[] };
 
 interface DesignerContext {
   wired: boolean;
-  /** "/" → Database with AI: resolves with the new table and its views, or null when canceled / failed. */
+  /** "/" → Database with AI: resolves with the new table and its views, or null when cancelled / failed. */
   design: (page: DesignPage) => Promise<DesignAnswer | null>;
   /** ••• → Redesign with AI: resolves with the block's new views, or null. */
   redesign: (target: RedesignTarget) => Promise<RedesignAnswer | null>;

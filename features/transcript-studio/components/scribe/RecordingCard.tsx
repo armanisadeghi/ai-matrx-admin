@@ -96,7 +96,7 @@ export function RecordingCard({
     previewText.length > 0 &&
     !(cleanedSeg?.text?.trim());
 
-  // Long-press → open transcript. Canceled by movement (so a horizontal swipe
+  // Long-press → open transcript. Cancelled by movement (so a horizontal swipe
   // never also triggers the press).
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);

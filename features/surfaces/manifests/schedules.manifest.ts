@@ -327,7 +327,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "schedule_runs",
     label: "Run history",
     description:
-      "The loaded runs of the open schedule, newest first (default 20): per run the status (queued | claimed | running | success | failed | canceled | skipped), surface, queue, due/started/finished timestamps, result summary, error message and output_ref. Empty on the list route or when the schedule has never run.",
+      "The loaded runs of the open schedule, newest first (default 20): per run the status (queued | claimed | running | success | failed | cancelled | skipped), surface, queue, due/started/finished timestamps, result summary, error message and output_ref. Empty on the list route or when the schedule has never run.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 4000,

@@ -325,7 +325,7 @@ export function MeetingFormDialog({
       }
     }
 
-    // THE SERIES MOVES → its canceled and moved dates belonged to the old
+    // THE SERIES MOVES → its cancelled and moved dates belonged to the old
     // schedule. Google Calendar and Outlook warn and let the person choose;
     // silently archiving them is how a canceled date came back (verifier,
     // 2026-09-29). Asked before anything is written.

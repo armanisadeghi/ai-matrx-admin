@@ -83,7 +83,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "meeting_status",
     label: "Meeting status",
     description:
-      "Where the meeting stands: scheduled | live | ended | canceled | archived | unscheduled. Always present.",
+      "Where the meeting stands: scheduled | live | ended | cancelled | archived | unscheduled. Always present.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 10,
