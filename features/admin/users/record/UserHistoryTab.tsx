@@ -54,6 +54,9 @@ export async function listUserAdminHistory(userId: string, limit = 500): Promise
       .from("admin_audit_log")
       .select("id, created_at, action, actor_user_id, before, after, metadata, organization_id")
       .eq("target_user_id", userId)
+      // admin_lane_* rows record an admin's OWN seat being admitted (target = the admin), not an
+      // action on this person; they would bury every real action.
+      .not("action", "like", "admin_lane_%")
       .order("created_at", { ascending: false })
       .limit(limit),
     supabase

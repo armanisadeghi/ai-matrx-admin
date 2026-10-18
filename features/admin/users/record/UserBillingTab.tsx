@@ -203,7 +203,7 @@ export function UserBillingTab({ userId, overview, reload }: UserTabBodyProps) {
           label="Grant ends"
           value={plan?.grant_expires_at ? new Date(plan.grant_expires_at).toLocaleString() : null}
           missing={plan?.source === "grant" ? true : "No grant"}
-          meta={plan?.grant_note ?? undefined}
+          help={plan?.grant_note ?? undefined}
         />
       </div>
 
