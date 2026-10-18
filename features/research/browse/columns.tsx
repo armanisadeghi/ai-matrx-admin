@@ -12,7 +12,6 @@
 
 import { FolderKanban } from "lucide-react";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   TextCell,
   timeCell,
@@ -144,8 +143,7 @@ export const RESEARCH_TOPIC_COLUMNS: EntityColumnSpec<ResearchTopicListRow>[] = 
       id: "updated_at",
       accessorKey: "updated_at",
       header: "Updated",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 120,
       cell: (row) => <span className="type-secondary">{timeCell(row.updated_at)}</span>,
     },
@@ -159,8 +157,7 @@ export const RESEARCH_TOPIC_COLUMNS: EntityColumnSpec<ResearchTopicListRow>[] = 
       id: "created_at",
       accessorKey: "created_at",
       header: "Created",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 120,
       cell: (row) => <span className="type-secondary">{timeCell(row.created_at)}</span>,
     },
