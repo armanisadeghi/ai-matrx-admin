@@ -81,7 +81,6 @@ const BASELINE = new Set<string>([
   "features/rag/components/FileRagStatusChip.tsx",
   "features/rag/components/library/LibraryPublishPanel.tsx",
   "features/rag/components/search/RagReviewRepairWorkspace.tsx",
-  "features/research/components/init/ResearchInitForm.tsx",
   "features/scopes/components/active-context/miller-columns/MillerColumns.tsx",
   "features/scopes/components/management/ScopesSettingsPanel.tsx",
   "features/scopes/components/pages/ContextItemPicker.tsx",
