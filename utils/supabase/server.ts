@@ -9,6 +9,8 @@ import { cookies, headers } from "next/headers";
 import { supabaseNext } from "@/utils/supabase/authCookie";
 import { adminLaneOpenForHeaders, installAdminLane } from "@/utils/supabase/adminLane";
 import { installRestDeadline } from "@/utils/supabase/restDeadline";
+import { installTestRun } from "@/utils/supabase/testRun";
+import { testRunFromCookieHeader } from "@/lib/test-run/marker";
 
 export async function createClient(options?: { appendSetCookie?: (header: string) => void }) {
   const [cookieStore, requestHeaders] = await Promise.all([
@@ -32,5 +34,8 @@ export async function createClient(options?: { appendSetCookie?: (header: string
   // THE REST DEADLINE (utils/supabase/restDeadline.ts): a stalled database
   // answers this request with an honest error well inside the 15s function
   // limit instead of an opaque 504 FUNCTION_INVOCATION_TIMEOUT.
-  return installRestDeadline(installAdminLane(client, () => laneOpen));
+  // THE TEST STAMP (lib/test-run/marker.ts): a dev-login test session's server-side writes carry
+  // its run id too, so the rows they create are stamped and archivable. No cookie, no header.
+  const testRun = testRunFromCookieHeader(requestHeaders.get("cookie"));
+  return installRestDeadline(installTestRun(installAdminLane(client, () => laneOpen), testRun));
 }

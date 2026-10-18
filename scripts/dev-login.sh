@@ -65,4 +65,9 @@ chmod 600 "$NONCE_FILE" 2>/dev/null || true
 echo "[dev-login] host   : $HOST  (your session's own cookie jar; server mode: ${RUNNING_MODE:-not running})"
 echo "[dev-login] nonce  : $(basename "$NONCE_FILE")  (single use, consumed on any presentation)"
 echo "[dev-login] as     : $WHO"
-echo "[dev-login] OPEN   : http://$HOST:$PORT/api/dev-login?nonce=$NONCE&next=$NEXT_PATH$AS_SUFFIX"
+# THE TEST STAMP: this session's run id. Every row it creates carries it (lib/test-run/marker.ts);
+# archive them all before you report: select platform.archive_test_run('<run id>');
+TEST_RUN="$(uuidgen 2>/dev/null | tr 'A-Z' 'a-z')"
+[[ -n "$TEST_RUN" ]] || TEST_RUN="$(node -e 'console.log(crypto.randomUUID())')"
+echo "[dev-login] test run: $TEST_RUN  (rows you create are stamped; archive: select platform.archive_test_run('$TEST_RUN'))"
+echo "[dev-login] OPEN   : http://$HOST:$PORT/api/dev-login?nonce=$NONCE&next=$NEXT_PATH$AS_SUFFIX&test_run=$TEST_RUN"

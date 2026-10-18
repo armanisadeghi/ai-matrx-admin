@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { handOverSession } from "@/lib/guest/session-handover";
 import { agentTrafficOf, agentTrafficSetCookie } from "@/lib/agent-traffic/marker";
+import { isTestRunId, testRunSetCookie } from "@/lib/test-run/marker";
 import { readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "@/utils/supabase/server";
@@ -257,6 +258,14 @@ export async function GET(request: NextRequest) {
       "Set-Cookie",
       agentTrafficSetCookie("dev-login", request.nextUrl.protocol === "https:"),
     );
+  }
+  // THE TEST STAMP (lib/test-run/marker.ts): a dev-login session is a TEST session, so every row
+  // it creates carries its run id (`pnpm dev-login` mints it and prints it; a bare URL gets one
+  // here). Only on a successful sign-in redirect, and never in production.
+  if (process.env.NODE_ENV !== "production" && response.status >= 300 && response.status < 400) {
+    const asked = request.nextUrl.searchParams.get("test_run");
+    const runId = isTestRunId(asked) ? asked : crypto.randomUUID();
+    response.headers.append("Set-Cookie", testRunSetCookie(runId, request.nextUrl.protocol === "https:"));
   }
   return response;
 }

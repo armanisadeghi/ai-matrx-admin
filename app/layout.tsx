@@ -47,6 +47,7 @@ import { NewVersionWatcher } from "@/components/errors/NewVersionWatcher";
 import { UserAcquisitionCapture } from "@/lib/product-analytics/UserAcquisitionCapture";
 import { PerfVitalsReporter } from "@/lib/perf/PerfVitalsReporter";
 import { AgentTrafficForwarder } from "@/lib/agent-traffic/AgentTrafficForwarder";
+import { TestRunForwarder } from "@/lib/test-run/TestRunForwarder";
 import { DevWalkMonitor } from "@/components/dev/DevWalkMonitor";
 
 export { metadata, viewport };
@@ -156,6 +157,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           {/* While a notification acts, router moves to another page open a new tab. */}
           <NoticeRouterGuard>{children}</NoticeRouterGuard>
           <AgentTrafficForwarder />
+          <TestRunForwarder />
           <UserAcquisitionCapture />
           <PerfVitalsReporter />
           <Sonner />
