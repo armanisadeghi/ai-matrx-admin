@@ -617,13 +617,18 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         {!compactHeader && <span className="min-w-0 truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>}
         <PlanBackLink state={state} />
       </div>
-      <StageSteps
-        aria-label="Where you are"
-        steps={stage.steps}
-        current={stage.current}
-        labels={compactHeader ? "current" : "all"}
-        data-testid="studio-stage"
-      />
+      {/* Drawn once the workspace is measured, so its labels never re-flow after the first paint. */}
+      {layout === null ? (
+        <span />
+      ) : (
+        <StageSteps
+          aria-label="Where you are"
+          steps={stage.steps}
+          current={stage.current}
+          labels={compactHeader ? "current" : "all"}
+          data-testid="studio-stage"
+        />
+      )}
       <div className="flex min-w-0 items-center justify-end gap-2">
         <StudioCost
           buildId={state.buildId}
@@ -634,8 +639,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           <Button
             variant="primary"
             data-testid="studio-make-agent"
-            disabled={!state.chatId || !hasAnswer || making}
-            title={!hasAnswer ? "Get a result you like first" : undefined}
+            disabled={!state.chatId || making}
             onClick={() => void makeThisAnAgent()}
           >
             {isMobile ? "Make agent" : "Make this an agent"}

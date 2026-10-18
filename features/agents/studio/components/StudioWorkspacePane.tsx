@@ -12,6 +12,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Plus, X } from "lucide-react";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { EditableLabel } from "@ai-matrx/design-system";
+import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { VariableChip } from "@ai-matrx/rich-content/display/chat-markdown/matrx-variables/VariableChip";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { toast } from "@/lib/toast";
@@ -71,19 +72,27 @@ function QuietText({
 
 /** The record, re-read while the assistant is working; `refresh` after the person's own edit. */
 export function useStudioWorkspace(conversationId: string | null) {
-  const [ws, setWs] = useState<StudioWorkspace | null>(null);
+  // The record is held WITH the conversation it belongs to, so a closed or switched conversation shows
+  // nothing without a synchronous reset in the effect.
+  const [held, setHeld] = useState<{ id: string; ws: StudioWorkspace } | null>(null);
+  const ws = held && held.id === conversationId ? held.ws : null;
+  const setWs = (update: StudioWorkspace | null | ((w: StudioWorkspace | null) => StudioWorkspace | null)) => {
+    if (!conversationId) return;
+    setHeld((current) => {
+      const prev = current && current.id === conversationId ? current.ws : null;
+      const next = typeof update === "function" ? update(prev) : update;
+      return next ? { id: conversationId, ws: next } : null;
+    });
+  };
   const edits = useRef(0);
   useEffect(() => {
-    if (!conversationId) {
-      setWs(null);
-      return;
-    }
+    if (!conversationId) return;
     let live = true;
     const read = async () => {
       if (edits.current > 0) return; // never overwrite the screen under a pending edit
       try {
         const next = await loadWorkspace(conversationId);
-        if (live) setWs(next);
+        if (live) setHeld(next ? { id: conversationId, ws: next } : null);
       } catch {
         /* the next poll tries again; a failed read never blanks what is on screen */
       }
@@ -247,7 +256,9 @@ export function StudioWorkspacePane({
         {ws.approved_result && (
           <section className="flex flex-col gap-1" data-testid="workspace-approved">
             <h3 className="text-xs font-semibold text-foreground">The result you approved</h3>
-            <p className="line-clamp-6 whitespace-pre-wrap text-xs text-muted-foreground">{ws.approved_result.text}</p>
+            <div className="max-h-40 overflow-hidden rounded-md border border-border px-2 py-1.5 text-sm [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+              <RichContent level="full" imagePolicy="ai" source={ws.approved_result.text} />
+            </div>
           </section>
         )}
         {LISTS.map(({ field, title }) =>
