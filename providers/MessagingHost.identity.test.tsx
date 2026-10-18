@@ -155,6 +155,8 @@ jest.mock("@/utils/supabase/client", () => {
   return { supabase, createClient: () => supabase };
 });
 
+// The DM badge waits for the engaged-late tier (settled AND engaged); identity is what is under test here.
+jest.mock("@/lib/boot/engagedLate", () => ({ whenEngagedLate: () => Promise.resolve(true), useEngagedLateReady: () => true }));
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => undefined, replace: () => undefined, prefetch: () => undefined }),
   usePathname: () => "/messages",

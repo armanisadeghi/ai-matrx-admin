@@ -38,7 +38,8 @@ jest.mock("@/lib/config-attestation/appConfig", () => ({
 // The page "settles" when the test says so (V22: nothing is read on mount).
 let settle: (ok: boolean) => void = () => undefined;
 let settled: Promise<boolean> = Promise.resolve(true);
-jest.mock("@/lib/boot/lateIdle", () => ({ whenLateIdle: () => settled }));
+// "settled" = the engaged-late tier: the page settled AND the person engaged it (2026-10-17).
+jest.mock("@/lib/boot/engagedLate", () => ({ whenEngagedLate: () => settled }));
 jest.mock("@/lib/toast", () => ({ toast: jest.fn() }));
 jest.mock("@/lib/diagnostics/hardNavigationTrace", () => ({ noteHardNavigationReason: jest.fn() }));
 

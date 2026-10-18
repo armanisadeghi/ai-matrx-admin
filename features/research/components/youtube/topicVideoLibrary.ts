@@ -56,15 +56,22 @@ export async function loadTopicVideoLibrary(topicId: string): Promise<RankedTopi
     ),
   ]);
   const preRead = new Map(sourceRows.map((row) => [row.id, row.pre_read_score]));
+  // Search evidence is RELATIVE to this topic's videos (aidream research/video_ranking.py
+  // does the same): video pre-read scores sit on the web scale, median ~3.6 of 100,
+  // so an absolute /100 would flatten the strongest signal.
+  const bestPreRead = Math.max(0, ...sourceRows.map((row) => row.pre_read_score ?? 0));
 
   const scored = videos.map((video) => {
     const sourceId = video.topic_source_id ?? null;
     const imp = sourceId ? (importance.get(sourceId) ?? null) : null;
+    const rawPreRead = sourceId ? (preRead.get(sourceId) ?? null) : null;
+    const relativePreRead =
+      rawPreRead == null || bestPreRead <= 0 ? null : (rawPreRead / bestPreRead) * 100;
     return {
       video,
       importance: imp,
       score: scoreVideo({
-        preReadScore: sourceId ? (preRead.get(sourceId) ?? null) : null,
+        preReadScore: relativePreRead,
         importance: imp?.score ?? null,
         viewCount: video.view_count,
         likeCount: video.like_count,
