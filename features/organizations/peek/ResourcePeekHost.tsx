@@ -11,12 +11,20 @@
  *
  * Imperative callers (a button's click) use `openResourcePeek` from `./resourcePeekStore` directly.
  *
- * Unmounting this component does NOT close an open peek: the peek is a floating quick look owned by
- * the app's host, so a popover or menu that closes because the person clicked into the peek no
- * longer takes the peek with it. The host closes every peek when the route changes.
+ * THIS BRIDGE OWNS ITS PEEK (2026-10-18, adversarial IMPORTANT-4): its key is stable — the caller's
+ * `peekKey`, else `kind:id` — so a host that unmounts and remounts while its caller still says "open"
+ * re-asks for the SAME peek instead of stacking a second one; and unmounting (or changing `id`) closes
+ * the peek it opened, so a caller that drops its target never leaves a peek out of sync with it. It
+ * closes only a peek it still owns: one replaced by another opener of the same record is left alone.
+ * The imperative `openResourcePeek` path keeps the floating behaviour (a popover that closes because
+ * the person clicked into the peek does not take the peek with it).
+ *
+ * With no host on the page (the `(link)` group renders no `Providers`), the request falls back to
+ * `fallbackHref` — by default the record's own route — in a new tab, never nothing (finding 7).
  */
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { peekHref } from "./peekHref";
 import { closeResourcePeek, openResourcePeek } from "./resourcePeekStore";
 
 export interface ResourcePeekHostProps {
@@ -25,26 +33,33 @@ export interface ResourcePeekHostProps {
   onClose: () => void;
   /** The destination the CALLER resolved for this record (see `peekHrefOverride`). */
   href?: string | null;
+  /** One peek per key. Default `kind:id`. */
+  peekKey?: string;
+  /** Where the record opens when no peek host is on this page. Default: `href`, else the record's route. */
+  fallbackHref?: string | null;
 }
 
-export function ResourcePeekHost({ kind, id, onClose, href }: ResourcePeekHostProps) {
-  const key = `resource-peek-host:${useId()}`;
+export function ResourcePeekHost({ kind, id, onClose, href, peekKey, fallbackHref }: ResourcePeekHostProps) {
+  const key = id ? (peekKey ?? `${kind}:${id}`) : null;
   const closeRef = useRef(onClose);
   useEffect(() => {
     closeRef.current = onClose;
   });
-  // ONE function for this mount's whole life, so a re-request (new href) replaces the open peek
-  // without telling the caller it closed.
+  // ONE function for this mount's whole life: it is the owner mark, and a re-request (new href)
+  // replaces the open peek without telling the caller it closed.
   const [notifyClose] = useState(() => () => closeRef.current());
+  const fallback = fallbackHref ?? href ?? (id ? peekHref(kind, id) : undefined) ?? null;
+
+  // Unmount, or a new record / key: close the peek this bridge opened (the caller is gone or moved on).
+  useEffect(() => {
+    if (!key) return;
+    return () => closeResourcePeek(key, { notify: false, owner: notifyClose });
+  }, [key, notifyClose]);
 
   useEffect(() => {
-    if (!id) {
-      // The caller closed it — nothing to tell them.
-      closeResourcePeek(key, { notify: false });
-      return;
-    }
-    openResourcePeek({ key, kind, id, href, trigger: "click", onClose: notifyClose });
-  }, [key, kind, id, href, notifyClose]);
+    if (!key || !id) return;
+    openResourcePeek({ key, kind, id, href, trigger: "click", onClose: notifyClose, fallbackHref: fallback });
+  }, [key, kind, id, href, fallback, notifyClose]);
 
   return null;
 }
