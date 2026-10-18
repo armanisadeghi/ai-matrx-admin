@@ -114,7 +114,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 // ── Vocabulary ──────────────────────────────────────────────────────────────
 

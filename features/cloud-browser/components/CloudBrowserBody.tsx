@@ -67,7 +67,7 @@ import { AuthenticatorPanel } from "./AuthenticatorPanel";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useArtifactBodyOutput } from "@/features/canvas/output/bodyOutput";
 import { printCapturedImage } from "@/features/canvas/output/printCapture";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 /** A screenshot frame's bytes (a data URL or a signed image URL). */
 async function screenshotBlob(url: string): Promise<Blob> {

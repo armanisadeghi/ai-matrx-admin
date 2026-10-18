@@ -38,7 +38,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 import {
   MatrxDataTable,
   type MatrxColumnDef,

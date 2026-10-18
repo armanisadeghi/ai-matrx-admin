@@ -25,7 +25,7 @@ import { KeywordIntelligenceHub } from "@/features/marketing/seo/hub/KeywordInte
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 export default function MarketingBrandSeoPage() {
   const brand = useMarketingBrand();

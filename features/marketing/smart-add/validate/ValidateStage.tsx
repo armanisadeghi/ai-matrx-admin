@@ -38,7 +38,7 @@ import { WeThinkHint } from "../WeThinkHint";
 import { useLogoGroups } from "../logoGroups";
 import { ANSWER_LABEL, isGapKey, optionsFor, type Answer, type FocusItem } from "./queue";
 import { SECTION_LABEL, sectionOf } from "./fold";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 export interface AnsweredEntry {
   /** Unique per answer (an item answered, undone and answered again has two). */

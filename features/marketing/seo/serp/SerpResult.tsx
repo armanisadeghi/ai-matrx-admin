@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 /**
  * SerpResult — the canonical "simulated Google search result".

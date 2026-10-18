@@ -20,7 +20,7 @@ import {
   Play,
   Tag,
 } from "lucide-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 import { cn } from "@/lib/utils";
 import MarkdownCore from "@ai-matrx/rich-content/markdown-core/MarkdownCore";
 import { ExternalImage, Pill, SiteFavicon } from "./scraper-kind-shared";

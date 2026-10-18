@@ -16,7 +16,7 @@
 import React, { useState } from "react";
 import { ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import {
   getBreadcrumbParts,

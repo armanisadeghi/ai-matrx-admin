@@ -1,6 +1,6 @@
 "use client";
 
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 interface Props {
   hostname: string | null | undefined;

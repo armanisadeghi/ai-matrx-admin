@@ -2,7 +2,7 @@
 
 import { Globe, Play, FileText, File, Pencil, AtSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SiteIcon } from '@/components/official/site-icon/SiteIcon';
+import { SiteIcon } from '@ai-matrx/design-system/site-icon';
 import type { ResearchSource, SourceType } from '../../types';
 
 const ICON_MAP: Record<SourceType, typeof Globe> = {

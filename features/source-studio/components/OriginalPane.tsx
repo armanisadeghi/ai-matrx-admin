@@ -25,7 +25,7 @@ import {
   type SeekRequest,
 } from "@/features/source-studio/sourceStudioModel";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 export interface OriginalPaneProps {
   view: OriginalView;

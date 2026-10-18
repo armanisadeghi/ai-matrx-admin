@@ -48,7 +48,7 @@ import {
   type ExternalDomainRollup,
 } from "./model";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 function StatChip({
   value,

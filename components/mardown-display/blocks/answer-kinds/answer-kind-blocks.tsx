@@ -24,7 +24,7 @@ import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { readSearchKindValue, text } from "../search-kinds/search-kind-data";
 import { eventText, eventToCalendar } from "./event-calendar";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 interface AnswerKindBlockProps {
   serverData?: unknown;

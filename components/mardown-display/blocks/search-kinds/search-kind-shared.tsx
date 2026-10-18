@@ -15,7 +15,7 @@
 import React from "react";
 import { Star, StarHalf } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 import {
   getBreadcrumbParts,
 } from "@ai-matrx/chat/tool-call-visualization/renderers/search/parseSearch";

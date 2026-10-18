@@ -21,7 +21,7 @@ import { listSiteOptions } from "@/features/marketing/data/service";
 import { parseSiteIntegrations } from "@/features/marketing/data/integrations-schema";
 import type { MarketingSite } from "@/features/marketing/types";
 import { cn } from "@/lib/utils";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 export function useSiteOptions() {
   return useQuery({

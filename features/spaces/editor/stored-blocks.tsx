@@ -31,7 +31,7 @@ import { embedTarget } from "./embed-providers";
 import { SpaceEmbedFrame } from "./SpaceEmbedFrame";
 import { openMediaPicker, type MediaKind } from "./media-insert";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 const DatabaseBlockView = dynamic(() => import("../data/DatabaseBlock").then((m) => m.DatabaseBlock), {
   ssr: false,

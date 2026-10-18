@@ -33,7 +33,7 @@ import {
   Loader2,
   Paperclip,
 } from "lucide-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { formatDurationMs, formatFileSize } from "@ai-matrx/kit/format";
 import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";

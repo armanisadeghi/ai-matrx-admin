@@ -21,7 +21,7 @@ import { useSeededLink } from "../page/space-links";
 import { useSpaces } from "../state/SpacesProvider";
 import { InlineMath } from "./stored-blocks";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 function readSpan(raw: unknown): RichSpan {
   try {

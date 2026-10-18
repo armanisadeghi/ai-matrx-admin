@@ -31,7 +31,7 @@ import {
   WRITTEN_BY_FILTER_LABEL,
 } from "../types";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
+import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 const DATE_BUCKET_OPTIONS = DATE_BUCKETS.map((b) => ({
   value: b.value,
