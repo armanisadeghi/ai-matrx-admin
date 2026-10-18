@@ -310,8 +310,3 @@ export function whatToDoWhenStopped(kind: BackgroundRunKind): string {
     ? "Run it again; nothing is copied twice."
     : "Run it again to continue; finished rows are kept.";
 }
-
-/** "rows" → "Rows", "row pages" → "Row pages". */
-export function countLabel(label: string): string {
-  return label.charAt(0).toUpperCase() + label.slice(1);
-}

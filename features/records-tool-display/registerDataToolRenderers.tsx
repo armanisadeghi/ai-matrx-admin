@@ -18,7 +18,13 @@ import {
   toolRendererRegistry,
 } from "@ai-matrx/chat/tool-call-visualization/registry/registry";
 import type { ToolRenderer } from "@ai-matrx/chat/tool-call-visualization/types";
-import { answerRenderer } from "./answerRenderer";
+import { answerRenderer, isBackgroundRunCall } from "./answerRenderer";
+
+/** A background copy's live card stays in the turn: it is the progress, not a log line. */
+const BACKGROUND_RUN_PINNED = {
+  visibility: "pinned" as const,
+  reason: "A background copy's live progress card is the answer.",
+};
 
 /** The tools whose answers `answerRenderer` reads (`readRecordsAnswer`). */
 export const ANSWER_READ_FOR = ["records", "table"] as const;
@@ -46,6 +52,10 @@ export function registerDataToolRenderers(registry: Record<string, ToolRenderer>
       ...previous,
       InlineComponent: answerRenderer(previous.InlineComponent),
       OverlayComponent: answerRenderer(previous.OverlayComponent ?? previous.InlineComponent),
+      getInlineVisibility: (entry) =>
+        isBackgroundRunCall(entry) ? BACKGROUND_RUN_PINNED : previous.getInlineVisibility?.(entry) ?? null,
+      getDisplayMode: (entry) =>
+        isBackgroundRunCall(entry) ? "stay-open" : previous.getDisplayMode?.(entry) ?? null,
     };
     registered.add(next);
     if (registry === toolRendererRegistry) registerToolRenderer(toolName, next);

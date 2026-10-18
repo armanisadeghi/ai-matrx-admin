@@ -1,6 +1,3 @@
--- target: branch,production
--- additive: yes
--- guard: custom/system_enabled
 -- based-on: custom.booking_confirm(uuid, uuid, text, jsonb, text, text, text) 4547bd454a22894579a901abaa4ce0253522c8564ca37ba942f3367825fd8e77
 -- based-on: custom.booking_reschedule(text, text, text, text) c5e78ee4678d89cd41aeefb93490ddf9d8416949b36b938e1d2772b7fb9d13bf
 -- based-on: custom.booking_cancel(text, text) c43f4e3df2bdc28758d0a72c33ac63d357cc56380645f84125196865a8813b86
@@ -394,11 +391,6 @@ exception when others then
 end;
 $fn$;
 
-grant execute on function custom._booking_urlenc(text) to service_role;
-grant execute on function custom._booking_fill(text, jsonb) to service_role;
-grant execute on function custom._booking_ics(text, text, text, timestamptz, timestamptz, text, integer) to service_role;
-grant execute on function custom._booking_messages(uuid, uuid, uuid, uuid, text) to service_role;
-grant execute on function custom.booking_messages(uuid, uuid, uuid, uuid, text) to service_role;
 
 
 insert into platform.client_callable_door

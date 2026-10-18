@@ -8,6 +8,7 @@
  *    titled with the Table's name, columns named by its Fields, cells drawn by records-ui's
  *    `RecordValue`, with "Open the table" and THE one "Save to a table" (`useOpenSaveToTable`).
  *  - Records it wrote → one sentence naming the Table, and a door to the record (or the table).
+ *  - A long copy running in the background → the live card (`BackgroundRunCard`), by its run.
  *  - Anything else → one sentence (`readRecordsAnswer`), never the result's JSON.
  *
  * The Table's name and Fields come from lane KINDS-GLUE's table-kind read (`useTableKind`, the data
@@ -42,6 +43,7 @@ import {
   type RecordsAnswer,
 } from "./readRecordsAnswer";
 import { formatCount } from "@ai-matrx/kit/format";
+import { BackgroundRunCard } from "./BackgroundRunCard";
 
 /** Rows before "Show more" inside a chat turn. */
 const ROWS_IN_A_TURN = 8;
@@ -219,6 +221,7 @@ function SentenceLine({ answer }: { answer: Extract<RecordsAnswer, { kind: "line
 export function RecordsAnswerBody({ answer }: { answer: RecordsAnswer }) {
   if (answer.kind === "rows") return <RowsTable answer={answer} />;
   if (answer.kind === "write") return <WriteLine answer={answer} />;
+  if (answer.kind === "background") return <BackgroundRunCard runId={answer.runId} hint={answer.run} />;
   return <SentenceLine answer={answer} />;
 }
 

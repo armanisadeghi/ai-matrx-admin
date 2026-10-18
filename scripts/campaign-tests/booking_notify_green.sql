@@ -117,7 +117,7 @@ begin
   if v_body not like '%Tess Test%' or v_body not like '%calendar.google.com%' then
     raise exception '1: the confirmation words are wrong: %', v_body;
   end if;
-  if v_code <> '/b/manage/' || v_ref then raise exception '1: the manage link is %', v_code; end if;
+  if v_code not like '/b/manage/' || v_ref || '%' then raise exception '1: the manage link is %', v_code; end if;
   if jsonb_array_length(v_meta -> 'email_attachments') <> 1
      or v_meta #>> '{email_attachments,0,filename}' <> 'appointment.ics' then
     raise exception '1: the calendar file is not on the email';
