@@ -12,7 +12,9 @@
  *   hand-shortened-id|<file>      an id cut down by hand for display: `x.id.slice(0, n)`, `xId.slice(…)`,
  *                                 `truncateId(…)`, a local `shortId(…)`/`shortUuid(…)`.
  *   hand-copied-id|<file>         an id copied by hand: `copyText(<…id…>)`, `navigator.clipboard.writeText(<…id…>)`,
- *                                 or a copy control titled/labelled "Copy ID" / "Copy UUID".
+ *                                 or a copy control titled/labelled "Copy ID" / "Copy UUID" / "Copy agent ID" /
+ *                                 "Copy Memory ID" (up to three words before the id word), or a copy helper whose
+ *                                 id follows literal args: `handleCopy("agent-id", agentId, …)`.
  *   hand-built-id-component|<file> a component DECLARED to show/copy an id (CopyableUuid, CopyableId*, *IdBadge,
  *                                 *IdCopy, ShortId, IdChip, UuidDisplay) outside record-id.tsx / MatrxUuidCell.tsx.
  *   id-exception|<file>           an `id-exception: <reason>` on the line or within 3 lines above; ratchets too.
