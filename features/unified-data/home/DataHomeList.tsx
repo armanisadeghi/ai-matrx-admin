@@ -321,7 +321,7 @@ export function DataHomeList({ dataSource, sharedOnlyHere = false }: DataHomeLis
         clearsShellHeader={false}
         notice={(list) => (
           <>
-            {!list.query.search ? <DataHomeRecent rows={recent} onOpened={(row) => marks.opened(row.id)} /> : null}
+            {!list.query.search ? <DataHomeRecent rows={recent} expected={rowsById.size === 0 && marks.recent.length > 0} onOpened={(row) => marks.opened(row.id)} /> : null}
             {corpus.meta.refusals.length > 0 || corpus.meta.capped || corpus.meta.searchTrouble ? (
             <div role="status" className="flex flex-col gap-1 text-xs text-muted-foreground" data-data-home-notice="">
               {corpus.meta.capped ? <span>Showing the newest {formatCount(DATA_HOME_ROW_CAP)}.</span> : null}
