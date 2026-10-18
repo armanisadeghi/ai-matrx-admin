@@ -21,6 +21,8 @@ interface MembershipRequestBody {
   organizationId: string;
   userId: string;
   role?: unknown;
+  /** Recorded on the person's admin audit row. */
+  reason?: string;
 }
 
 async function parseMembershipRequest(
@@ -30,6 +32,7 @@ async function parseMembershipRequest(
     organizationId?: unknown;
     userId?: unknown;
     role?: unknown;
+    reason?: unknown;
   } | null;
 
   if (
@@ -44,6 +47,7 @@ async function parseMembershipRequest(
     organizationId: body.organizationId,
     userId: body.userId,
     role: body.role,
+    reason: typeof body.reason === "string" ? body.reason : undefined,
   };
 }
 
@@ -69,6 +73,7 @@ export async function POST(request: Request) {
       action: "add",
       organizationId: body.organizationId,
       userId: body.userId,
+      reason: body.reason,
       role: body.role,
     });
     return NextResponse.json({ result });
@@ -88,6 +93,7 @@ export async function PATCH(request: Request) {
       action: "set_role",
       organizationId: body.organizationId,
       userId: body.userId,
+      reason: body.reason,
       role: body.role,
     });
     return NextResponse.json({ result });
@@ -104,6 +110,7 @@ export async function DELETE(request: Request) {
       action: "remove",
       organizationId: body.organizationId,
       userId: body.userId,
+      reason: body.reason,
     });
     return NextResponse.json({ result });
   } catch (error) {

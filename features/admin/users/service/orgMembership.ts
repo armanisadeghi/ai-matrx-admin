@@ -14,6 +14,8 @@ export interface MembershipChange {
   organizationId: string;
   userId: string;
   role?: OrgRole;
+  /** Why — recorded on the person's admin history. */
+  reason?: string;
 }
 
 /** Apply one membership change; throws with the server's own words on refusal. */

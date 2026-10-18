@@ -116,15 +116,18 @@ export async function manageAdminOrganizationMembership(args: {
   organizationId: string;
   userId: string;
   role?: OrgRole;
+  /** Recorded on the person's admin audit row (admin._audit_user_action) and on iam.org_admin_audit. */
+  reason?: string;
 }) {
   const session = await createClient();
-  const { data, error } = await session.rpc(
+  const { data, error } = await session.schema("iam").rpc(
     "admin_manage_organization_membership",
     {
       p_action: args.action,
       p_org_id: args.organizationId,
       p_user_id: args.userId,
       p_role: args.role,
+      p_reason: args.reason,
     },
   );
 

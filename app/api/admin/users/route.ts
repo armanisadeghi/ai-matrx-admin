@@ -17,11 +17,9 @@ import { ONBOARDING_METADATA_KEY } from "@/utils/onboarding";
 import type { AdminUserRow } from "@/features/admin/users/types";
 import type { Database } from "@/types/database.types";
 import { loadAdminOrganizationDirectory } from "@/features/admin/users/server/organizationMembershipAdmin";
-import { recordUserAction } from "@/features/admin/users/server/recordUserAction";
 import { isJsonObject } from "@/types/json";
 import {
   hasMcpFullAccessPermission,
-  withMcpFullAccessPermission,
 } from "@/features/admin/users/lib/mcp-access";
 import { extractErrorMessage } from "@/utils/errors";
 import { readAllRows } from "@ai-matrx/data/db";
@@ -393,9 +391,8 @@ export async function GET() {
 // PATCH /api/admin/users — update server-managed account controls.
 // Body: { userId: string, onboardingCompleted?: boolean, mcpFullAccess?: boolean }
 export async function PATCH(request: NextRequest) {
-  let actorUserId: string;
   try {
-    actorUserId = await requireSuperAdmin();
+    await requireSuperAdmin();
   } catch (e) {
     return errorResponse(e);
   }
@@ -420,81 +417,20 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  const admin = createAdminClient();
-
-  // Merge into existing metadata so we don't clobber other keys.
-  const { data: existing, error: fetchError } =
-    await admin.auth.admin.getUserById(body.userId);
-  if (fetchError || !existing?.user) {
-    return NextResponse.json(
-      { error: fetchError?.message ?? "User not found" },
-      { status: 404 },
-    );
-  }
-
-  const update: {
-    user_metadata?: Record<string, unknown>;
-    app_metadata?: Record<string, unknown>;
-  } = {};
-  if (onboardingSupplied) {
-    update.user_metadata = {
-      ...(existing.user.user_metadata ?? {}),
-      [ONBOARDING_METADATA_KEY]: body.onboardingCompleted,
-    };
-  }
-  if (mcpAccessSupplied) {
-    const appMetadata = isJsonObject(existing.user.app_metadata)
-      ? existing.user.app_metadata
-      : {};
-    update.app_metadata = withMcpFullAccessPermission(
-      appMetadata,
-      body.mcpFullAccess === true,
-    );
-  }
-
-  const { error: updateError } = await admin.auth.admin.updateUserById(
-    body.userId,
-    update,
-  );
-  if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
-  }
-
-  // One admin audit row per control changed (admin._audit_user_action, the same helper every SQL
-  // door uses). A failed write is reported, never swallowed.
+  // ONE transaction: iam.admin_set_account_flags changes the flag(s) on auth.users AND writes each
+  // admin.admin_audit_log row, or does neither (users one-roof S12). Called as the signed-in super
+  // admin, so the database names the actor; the function refuses anyone else.
   const reason = typeof body.reason === "string" ? body.reason : null;
-  try {
-    if (onboardingSupplied) {
-      const before = existing.user.user_metadata?.[ONBOARDING_METADATA_KEY];
-      await recordUserAction(admin, {
-        action: "onboarding_flag_set",
-        targetUserId: body.userId,
-        actorUserId,
-        before: { onboarding_completed: typeof before === "boolean" ? before : null },
-        after: { onboarding_completed: body.onboardingCompleted === true },
-        reason,
-        metadata: { via: "api/admin/users PATCH" },
-      });
-    }
-    if (mcpAccessSupplied) {
-      const appMetadata = isJsonObject(existing.user.app_metadata)
-        ? existing.user.app_metadata
-        : {};
-      await recordUserAction(admin, {
-        action: body.mcpFullAccess === true ? "mcp_full_access_grant" : "mcp_full_access_revoke",
-        targetUserId: body.userId,
-        actorUserId,
-        before: { mcp_full_access: hasMcpFullAccessPermission(appMetadata) },
-        after: { mcp_full_access: body.mcpFullAccess === true },
-        reason,
-        metadata: { via: "api/admin/users PATCH" },
-      });
-    }
-  } catch (e) {
-    return NextResponse.json(
-      { error: extractErrorMessage(e, "The audit row was not written") },
-      { status: 500 },
-    );
+  const session = await createClient();
+  const { error: setError } = await session.schema("iam").rpc("admin_set_account_flags", {
+    p_user: body.userId,
+    p_onboarding: onboardingSupplied ? body.onboardingCompleted : undefined,
+    p_mcp_full_access: mcpAccessSupplied ? body.mcpFullAccess : undefined,
+    p_reason: reason ?? undefined,
+  });
+  if (setError) {
+    const status = setError.code === "P0002" ? 404 : setError.code === "42501" ? 403 : 500;
+    return NextResponse.json({ error: setError.message }, { status });
   }
 
   return NextResponse.json({

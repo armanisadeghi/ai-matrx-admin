@@ -185,10 +185,30 @@ export async function POST(request: Request) {
       failed_count: failed,
     });
 
+    // Each person who was sent this email gets one admin history row (admin.record_contact →
+    // 'email_sent', reason = the subject, never the body). An address with no account is no person.
+    const sentTo = recipients.filter((_, i) => {
+      const r = results[i];
+      return r?.status === "fulfilled" && r.value.success;
+    });
+    const auditFailures: string[] = [];
+    for (const email of sentTo) {
+      const { error: auditError } = await adminSupabase.schema("admin").rpc("record_contact", {
+        p_action: "email_sent",
+        p_email: email,
+        p_title: subject,
+        p_ref: { channel: "email", via: "api/admin/email" },
+        p_actor: authUser.id,
+      });
+      if (auditError) auditFailures.push(`${email}: ${auditError.message}`);
+    }
+
     return NextResponse.json({
       success: true,
-      msg: `Email sent to ${successful} recipient(s)${failed > 0 ? `, ${failed} failed` : ""}`,
-      data: { successful, failed, total: recipients.length },
+      msg: `Email sent to ${successful} recipient(s)${failed > 0 ? `, ${failed} failed` : ""}${
+        auditFailures.length ? `; ${auditFailures.length} not recorded in admin history` : ""
+      }`,
+      data: { successful, failed, total: recipients.length, audit_failures: auditFailures },
     });
   } catch (error) {
     console.error("Error in POST /api/admin/email:", error);

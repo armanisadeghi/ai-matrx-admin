@@ -113,9 +113,9 @@ export async function createCoupons(input: {
   }));
 }
 
-export async function revokeCoupon(id: string): Promise<void> {
+export async function revokeCoupon(id: string, reason?: string): Promise<void> {
   const supabase = createClient();
-  const { error } = await supabase.schema("billing").rpc("coupon_revoke", { p_id: id });
+  const { error } = await supabase.schema("billing").rpc("coupon_revoke", { p_id: id, p_reason: reason });
   if (error) throw dbError(error);
 }
 
@@ -152,7 +152,9 @@ export async function sendDirectMessage(input: {
   content: string;
   organizationId: string;
   replayKey: (conversationId: string, content: string) => Promise<string>;
-}): Promise<{ conversationId: string }> {
+  /** What the message is about, for the person's admin history (never the body). */
+  title?: string;
+}): Promise<{ conversationId: string; auditError: string | null }> {
   const convRes = await fetch("/api/messages/conversations", {
     method: "POST",
     headers: applyOrganizationContextHeader({ "Content-Type": "application/json" }, input.organizationId),
@@ -169,7 +171,18 @@ export async function sendDirectMessage(input: {
   });
   const msgJson = await msgRes.json();
   if (!msgRes.ok || !msgJson.success) throw new Error(msgJson.msg ?? "Could not send message");
-  return { conversationId };
+  // The person's admin history records that a message was sent (never its body). The message is
+  // already delivered, so a failed audit write comes back as `auditError` (the caller shows it),
+  // never thrown as a failed send that invites a second send.
+  const { error: auditError } = await createClient()
+    .schema("admin")
+    .rpc("record_contact", {
+      p_action: "message_sent",
+      p_user: input.userId,
+      p_title: input.title ?? "Direct message",
+      p_ref: { conversation_id: conversationId },
+    });
+  return { conversationId, auditError: auditError ? auditError.message : null };
 }
 
 export async function sendAdminEmail(input: {
@@ -223,6 +236,7 @@ export async function sendCoupon(input: {
       content: input.message,
       organizationId: input.organizationId,
       replayKey: (conversationId, content) => couponDmKey(input.couponId, conversationId, content),
+      title: input.subject,
     });
     address = input.userId;
   } else if (input.channel === "email") {
