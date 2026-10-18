@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { FullScreenPortal } from "../FullScreenPortal";
 import {
   Check,
   X,
@@ -1073,7 +1074,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     <>
       {/* Fullscreen overlay */}
       {isFullScreen && (
-        <>
+        <FullScreenPortal active>
           <div
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm cursor-pointer"
             onClick={() => setIsFullScreen(false)}
@@ -1095,7 +1096,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               )}
             </div>
           </div>
-        </>
+        </FullScreenPortal>
       )}
 
       {/* Embedded collapsible view */}

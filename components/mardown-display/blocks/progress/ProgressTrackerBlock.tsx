@@ -2,6 +2,7 @@
 
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
 // re-declares a registered kind's fields (`check:kind-type-twins`).
+import { FullScreenPortal } from "../FullScreenPortal";
 import { Button, Badge, Tile, Select } from "@ai-matrx/design-system/controls";
 import type {
   ProgressCategory,
@@ -369,7 +370,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
   const filteredCategories = getFilteredCategories();
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {/* Fullscreen Backdrop */}
       {isFullScreen && (
         <div
@@ -679,7 +680,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
         tasks={convertedTasks}
         checkboxState={checkboxState}
       />
-    </>
+    </FullScreenPortal>
   );
 };
 

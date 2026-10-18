@@ -2,6 +2,7 @@
 
 // THE SHAPES COME FROM THE REGISTRY, via the parser that produces them —
 // this renderer never re-declares them (`check:kind-type-twins`).
+import { FullScreenPortal } from "../FullScreenPortal";
 import type {
   ResourceItem,
   ResourceCategory,
@@ -284,7 +285,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
   };
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {isFullScreen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
@@ -608,7 +609,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
           </div>
         </div>
       </div>
-    </>
+    </FullScreenPortal>
   );
 };
 

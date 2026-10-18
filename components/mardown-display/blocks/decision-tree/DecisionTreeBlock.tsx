@@ -1,5 +1,6 @@
 "use client";
 
+import { FullScreenPortal } from "../FullScreenPortal";
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
 import { decisionTreeToMarkdown } from "@/features/rich-content-host/block-note-markdown";
@@ -544,7 +545,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
   };
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {/* Fullscreen Backdrop */}
       {isFullScreen && (
         <div
@@ -822,7 +823,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
           </div>
         </div>
       </div>
-    </>
+    </FullScreenPortal>
   );
 };
 

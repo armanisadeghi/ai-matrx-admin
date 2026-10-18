@@ -2,6 +2,7 @@
 
 // THE SHAPES COME FROM THE REGISTRY, via the parser that produces them —
 // this renderer never re-declares them (`check:kind-type-twins`).
+import { FullScreenPortal } from "../FullScreenPortal";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { Button, Chip, Tile, Select } from "@ai-matrx/design-system/controls";
@@ -356,7 +357,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
   };
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {/* Fullscreen Backdrop */}
       {isFullScreen && (
         <div
@@ -835,7 +836,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
         tasks={convertedTasks}
         checkboxState={checkboxState}
       />
-    </>
+    </FullScreenPortal>
   );
 };
 
