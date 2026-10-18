@@ -411,3 +411,31 @@ export function webDecisionCounts(choices: WebChoice[], kinds: Pick<BrandRelatio
   const parts = [...counts.entries()].map(([l, count]) => ({ label: l, count })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
   return { total: choices.length, parts };
 }
+
+/**
+ * The Apply summary line for "On the web": the brand's true saved total (every answer and every Ask me later / Ignore
+ * on its rows, from all visits), by relationship, plus how many of them were answered on this visit. Pure; tested.
+ * `saved` is null while the saved rows have not been read (or the read failed): the visit's own counts show instead,
+ * and say so.
+ */
+export function webDecisionSummary(
+  visit: WebChoice[],
+  saved: Pick<WebDecisionRow, "relationKey" | "mark">[] | null,
+  kinds: Pick<BrandRelationKind, "key" | "label">[],
+): { total: number; parts: { label: string; count: number }[]; thisVisit: number; tail: string } {
+  const thisVisit = visit.length;
+  if (!saved) {
+    const own = webDecisionCounts(visit, kinds);
+    return { total: own.total, parts: own.parts, thisVisit, tail: own.total ? "answered this visit" : "" };
+  }
+  const label = new Map(kinds.map((k) => [k.key, k.label]));
+  const counts = new Map<string, number>();
+  for (const r of saved) {
+    const l = r.relationKey ? (label.get(r.relationKey) ?? r.relationKey) : r.mark === "later" ? "Ask me later" : "Ignored";
+    counts.set(l, (counts.get(l) ?? 0) + 1);
+  }
+  const parts = [...counts.entries()].map(([l, count]) => ({ label: l, count })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  const total = saved.length;
+  const tail = !thisVisit ? "saved on this brand" : thisVisit === total ? "saved, all answered this visit" : `saved on this brand, ${thisVisit} answered this visit`;
+  return { total, parts, thisVisit, tail };
+}

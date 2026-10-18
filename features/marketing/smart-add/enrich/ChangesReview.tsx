@@ -26,7 +26,7 @@ import { diffCounts, type ChangeChoice, type EnrichChange } from "./diff";
 import type { BrandSnapshot, KnownFact } from "./known";
 import { loadNewFindings, type FindingSummary } from "./newFindings";
 import type { WebChoice } from "../webKinds";
-import { webDecisionCounts, type WebSaveStatus } from "../webDecisions";
+import { listBrandWebDecisions, webDecisionSummary, type WebSaveStatus } from "../webDecisions";
 
 /** Enrich's "On the web" answers: already saved on the brand as they were given; Apply only makes sure of it. */
 export interface EnrichWebReview {
@@ -50,10 +50,18 @@ function WebDecisionsRow({
   kinds: BrandRelationKind[];
   result: { saved: string[]; failed: { key: string; error: string }[] } | null;
 }) {
-  const counts = webDecisionCounts(web.choices, kinds);
-  if (!counts.total) return null;
   const states = Object.values(web.statuses);
   const saving = states.filter((s) => s.state === "saving").length;
+  // The true saved total comes from the brand's rows (earlier visits count too), read again once saving settles and after Apply.
+  const savedQuery = useQuery({
+    queryKey: ["marketing", "enrich-web-saved-total", brandId, saving, result ? "applied" : "open"],
+    queryFn: () => listBrandWebDecisions(brandId),
+    staleTime: 0,
+    refetchOnMount: "always",
+    enabled: saving === 0,
+  });
+  const counts = webDecisionSummary(web.choices, savedQuery.data ?? null, kinds);
+  if (!counts.total) return null;
   const failed = result ? result.failed.length : states.filter((s) => s.state === "failed").length;
   return (
     <RowGroup title="On the web" data-testid="enrich-web-decisions">
@@ -61,6 +69,9 @@ function WebDecisionsRow({
         <span className="w-28 shrink-0 text-xs text-muted-foreground">Websites decided</span>
         <span className="shrink-0 text-sm tabular-nums" data-testid="enrich-web-decisions-total">
           {counts.total}
+        </span>
+        <span className="shrink-0 text-xs text-muted-foreground" data-testid="enrich-web-decisions-tail">
+          {counts.tail}
         </span>
         <span className="min-w-0 truncate text-sm text-muted-foreground">{counts.parts.map((p) => `${p.count} ${p.label}`).join(" · ")}</span>
         <span className="ml-auto shrink-0 text-xs" data-testid="enrich-web-decisions-state">
