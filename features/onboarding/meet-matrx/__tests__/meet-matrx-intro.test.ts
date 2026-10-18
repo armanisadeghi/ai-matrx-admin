@@ -48,10 +48,10 @@ describe("shouldShowMeetMatrxIntro", () => {
 
 describe("Knowledge pitch", () => {
   const k = MEET_MATRX_GROUPS.flatMap((g) => g.items).find((i) => i.id === "knowledge")!;
-  it("says everything, one place, never forgotten, and not 'documents'", () => {
-    expect(k.pitch).toMatch(/everything/i);
+  it("says ALL information, one place, every agent knows it always, and not 'documents'", () => {
+    expect(k.pitch).toMatch(/all your information/i);
     expect(k.pitch).toMatch(/one place/i);
-    expect(k.pitch).toMatch(/never forget/i);
+    expect(k.pitch).toMatch(/agents know all of it, always/i);
     expect(k.pitch).not.toMatch(/document|file/i);
   });
 });

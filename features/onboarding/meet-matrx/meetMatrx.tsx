@@ -47,7 +47,7 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
       {
         id: "knowledge",
         name: "Knowledge",
-        pitch: "Everything in one place. Agents never forget.",
+        pitch: "All your information in one place. Your agents know all of it, always.",
         href: "/knowledge/hub",
         identity: PRIMITIVE_IDENTITIES.knowledge,
         featured: true,

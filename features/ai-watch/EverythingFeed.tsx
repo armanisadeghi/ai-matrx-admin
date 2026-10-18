@@ -6,6 +6,7 @@
  * newest page refreshes every few seconds; older runs page in on request (server-side keyset).
  */
 
+import { fetchMandateLabels } from "@/features/admin/spend-alarms/spendAlarms";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Eye } from "lucide-react";
 import { originClassLabel } from "@ai-matrx/chat/agents/redux/conversation-history/source-registry";
@@ -18,6 +19,7 @@ import {
   fetchEverythingPage,
   mergeEverything,
   rowTitle,
+  humanizeFeature,
   type EverythingFilters,
   type EverythingRow,
 } from "./everything-feed";
@@ -46,6 +48,7 @@ export default function EverythingFeed({
   const [more, setMore] = useState(true);
   const [names, setNames] = useState<{ people: Record<string, string>; organizations: Record<string, string> }>({ people: {}, organizations: {} });
   const [agentNames, setAgentNames] = useState<Record<string, string>>({});
+  const [mandateLabels, setMandateLabels] = useState<Record<string, string>>({});
   // The options of each filter are what the feed has shown so far; picking one re-reads on the server.
   const seen = useRef({ people: new Set<string>(), orgs: new Set<string>(), origins: new Set<string>(), mandates: new Set<string>(), agents: new Map<string, string>() });
   const [, bump] = useState(0);
@@ -62,6 +65,7 @@ export default function EverythingFeed({
     }
     bump((n) => n + 1);
     void fetchEverythingNames([...s.people], [...s.orgs]).then(setNames, () => undefined);
+    void fetchMandateLabels([...s.mandates]).then((m) => setMandateLabels((cur) => ({ ...cur, ...Object.fromEntries(m) })), () => undefined);
     void fetchAgentNames([...s.agents.keys()]).then((n) => setAgentNames((cur) => ({ ...cur, ...n })), () => undefined);
   }, []);
 
@@ -131,7 +135,7 @@ export default function EverythingFeed({
           </select>
           <select aria-label="Mandate" className={selectCls} value={filters.mandateKey ?? ""} onChange={(e) => set({ mandateKey: e.target.value || null })}>
             <option value="">Any mandate</option>
-            {[...s.mandates].map((m) => <option key={m} value={m}>{m}</option>)}
+            {[...s.mandates].map((m) => <option key={m} value={m}>{mandateLabels[m] ?? humanizeFeature(m)}</option>)}
           </select>
         </div>
         <div className="flex items-center gap-1">
@@ -172,7 +176,7 @@ export default function EverythingFeed({
           <span className="flex items-center justify-between gap-2">
             <span className="flex min-w-0 items-center gap-1">
               {r.status && LIVE_STATUSES.has(r.status) ? <Eye className="h-3 w-3 shrink-0 text-orange-500" /> : null}
-              <span className="truncate" title={rowTitle(r, agentNames)}>{rowTitle(r, agentNames)}</span>
+              <span className="truncate" title={rowTitle(r, agentNames, mandateLabels)}>{rowTitle(r, agentNames, mandateLabels)}</span>
             </span>
             <span className="shrink-0 text-muted-foreground">{r.status ?? ""}</span>
           </span>

@@ -212,13 +212,30 @@ function OutcomePanel({
   );
 }
 
+/**
+ * Done polling: the spine row is over AND, for a kept outcome, the saved agent's id is on the record —
+ * or the id never came after `MAX_POLLS_FOR_AGENT_ID` polls past the end (then the end is reported
+ * as it stands). Exported for `build-progress-settled.test.ts`.
+ */
+export const MAX_POLLS_FOR_AGENT_ID = 10;
+export function buildIsSettled(
+  detail: Pick<FactoryBuildDetail, "spineStatus" | "state">,
+  pollsSoFar: number,
+): boolean {
+  if (!spineIsOver(detail.spineStatus)) return false;
+  const outcome = detail.state?.outcome;
+  const kept = Boolean(outcome && KEPT_OUTCOMES.has(outcome));
+  if (!kept || detail.state?.agent_id) return true;
+  return pollsSoFar >= MAX_POLLS_FOR_AGENT_ID;
+}
+
 export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardWhenKept, className }: BuildProgressProps) {
   const router = useRouter();
   // A "Build unproven" follow-up replaces the build this view tracks.
   const [rebuiltId, setRebuiltId] = useState<string | null>(null);
   const currentId = rebuiltId ?? buildId;
   // The latest read, tagged with the build it belongs to (a new id reads as loading).
-  const [snap, setSnap] = useState<{ id: string; detail: FactoryBuildDetail | null; error: string | null } | null>(null);
+  const [snap, setSnap] = useState<{ id: string; detail: FactoryBuildDetail | null; error: string | null; polls?: number } | null>(null);
   const detail = snap?.id === currentId ? snap.detail : undefined;
   const error = snap?.id === currentId ? snap.error : null;
   const [busy, setBusy] = useState(false);
@@ -229,12 +246,14 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
   useEffect(() => {
     let live = true;
     let timer: ReturnType<typeof setInterval> | null = null;
+    let overPolls = 0;
     const tick = async () => {
       try {
         const next = await getFactoryBuild(currentId);
         if (!live) return;
-        setSnap({ id: currentId, detail: next, error: null });
-        if ((!next || spineIsOver(next.spineStatus)) && timer) clearInterval(timer);
+        if (next && spineIsOver(next.spineStatus)) overPolls += 1;
+        setSnap({ id: currentId, detail: next, error: null, polls: overPolls });
+        if ((!next || buildIsSettled(next, overPolls)) && timer) clearInterval(timer);
       } catch (e) {
         if (live) setSnap({ id: currentId, detail: null, error: e instanceof Error ? e.message : "Could not load the build" });
       }
@@ -248,16 +267,19 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
   }, [currentId]);
 
   const over = detail ? spineIsOver(detail.spineStatus) : false;
+  // A kept build reports its end once the saved agent's id is on the record too (it can land a poll
+  // after the spine row closes), so the caller can move straight to the agent.
+  const settled = detail ? buildIsSettled(detail, snap?.polls ?? 0) : false;
 
   const reported = useRef<string | null>(null);
   useEffect(() => {
-    if (over && detail?.state && reported.current !== currentId) {
+    if (over && settled && detail?.state && reported.current !== currentId) {
       reported.current = currentId;
       onFinished?.(detail.state);
       const kept = detail.state.outcome && KEPT_OUTCOMES.has(detail.state.outcome) ? detail.state.agent_id : null;
       if (forwardWhenKept && kept) router.push(refineAgentHref(kept));
     }
-  }, [over, detail, currentId, onFinished, forwardWhenKept, router]);
+  }, [over, settled, detail, currentId, onFinished, forwardWhenKept, router]);
 
   const cells = detail ? stepCells(detail) : [];
 

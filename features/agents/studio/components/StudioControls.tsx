@@ -22,7 +22,7 @@ import { FlaskConical, Lightbulb, Send, Swords } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Badge, Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
-import { ModelListDropdown } from "@ai-matrx/agents/models/react";
+import { ModelListDropdown, useModelCatalog } from "@ai-matrx/agents/models/react";
 import { selectAgentById, selectAgentIsDirty } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { selectActiveModels } from "@ai-matrx/agents/models";
@@ -38,6 +38,8 @@ import { saveAgent } from "@/features/agents/redux/builder-write.thunks";
 import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
+import { debriefModelIds } from "../debrief-models";
+import { describeVersionNote } from "../version-notes";
 import { StudioBattle } from "./StudioBattle";
 import { followServerWork } from "@/features/ai-watch/followed-work";
 import { candidateFromProposal, type StudioCandidate } from "../battle";
@@ -65,7 +67,7 @@ interface StudioControlsProps {
   /** The center's current run (Debrief reads its latest answer). */
   runConversationId: string | null;
   /** Send words to the assistant on the left (feedback on the process). */
-  onFeedback: (text: string) => void;
+  onFeedback: (text: string) => Promise<boolean>;
   /** After a save: run the agent again, fresh. */
   onSaved: () => void;
   /** Run one of the agent's test cases, fresh, in the center. */
@@ -185,11 +187,12 @@ export function StudioControls({
   );
 }
 
-function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeedback: (t: string) => void; onSaved: () => void }) {
+function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeedback: (t: string) => Promise<boolean>; onSaved: () => void }) {
   const dispatch = useAppDispatch();
   const record = useAppSelector((s) => selectAgentById(s, agentId));
   const dirty = useAppSelector((s) => selectAgentIsDirty(s, agentId));
   const [feedback, setFeedback] = useState("");
+  const [sending, setSending] = useState(false);
   const [saving, setSaving] = useState(false);
   if (!record) return <RegionSkeleton />;
 
@@ -208,11 +211,16 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
   const discard = () => {
     for (const field of ["name", "description", "modelId"] as const) dispatch(resetAgentField({ id: agentId, field }));
   };
-  const send = () => {
+  /** The box keeps the text until the turn really started (never drops input). */
+  const send = async () => {
     const text = feedback.trim();
-    if (!text) return;
-    onFeedback(text);
-    setFeedback("");
+    if (!text || sending) return;
+    setSending(true);
+    try {
+      if (await onFeedback(text)) setFeedback((now) => (now.trim() === text ? "" : now));
+    } finally {
+      setSending(false);
+    }
   };
 
   const inputs = (record.variableDefinitions ?? []) as StudioInputDefinition[];
@@ -268,14 +276,14 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault();
-                  send();
+                  void send();
                 }
               }}
               minHeight={36}
               autoGrow
               wrapperClassName="min-w-0 flex-1"
             />
-            <Button variant="outline" icon={<Send />} aria-label="Send to the assistant" title="Send to the assistant" disabled={!feedback.trim()} onClick={send} />
+            <Button variant="outline" icon={<Send />} aria-label="Send to the assistant" title="Send to the assistant" disabled={!feedback.trim() || sending} onClick={() => void send()} />
           </div>
         </div>
       </div>
@@ -310,6 +318,9 @@ interface VersionRow {
 }
 
 function VersionsTab({ agentId }: { agentId: string }) {
+  useModelOptions();
+  const modelRecords = useModelRecords(selectActiveModels);
+  const modelName = (id: string) => modelRecords.find((m) => m.id === id)?.name;
   const [rows, setRows] = useState<VersionRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -342,7 +353,7 @@ function VersionsTab({ agentId }: { agentId: string }) {
           getKey={(r) => String(r.version_number)}
           title={(r) => `Version ${r.version_number}`}
           meta={(r) => formatDistanceToNow(new Date(r.changed_at), { addSuffix: true })}
-          subtitle={(r) => (r.change_note?.trim() ? r.change_note.trim() : undefined)}
+          subtitle={(r) => describeVersionNote(r.change_note, modelName)}
           href={(r) => `/agents/${agentId}/v/${r.version_number}`}
           size="sm"
           sourceFeature="agent"
@@ -378,6 +389,9 @@ function DebriefTab({
   // The model the debrief reads the run with: the strongest non-gated Claude unless the person picks one.
   useModelOptions();
   const records = useModelRecords(selectActiveModels);
+  // Only text/chat models still served, from the live catalog (never mock, speech, image or retired ones).
+  const { models: catalogModels } = useModelCatalog("user");
+  const debriefIds = debriefModelIds(catalogModels);
   const [pickedModel, setPickedModel] = useState<string | null>(null);
   const model = pickedModel ?? debrief?.model ?? defaultDebriefModelId(records);
   // The debrief runs on its own fork: Watch AI and the Builder follow that conversation too.
@@ -443,6 +457,7 @@ function DebriefTab({
         <div className="min-w-0 flex-1" data-testid="studio-debrief-model">
           <ModelListDropdown
             aria-label="Debrief model"
+            allowedModelIds={debriefIds.length > 0 ? debriefIds : undefined}
             modelOnly
             inputModalities={[]}
             outputModalities={["text"]}

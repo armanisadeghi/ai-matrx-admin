@@ -105,8 +105,14 @@ export function humanizeFeature(key: string): string {
  * The title a row wears: the mandate or holder if it has one, else THE AGENT'S NAME (looked up by id), else the
  * feature as words. A raw source key ("manual", "chat") alone never names a run when an agent ran it.
  */
-export function rowTitle(row: EverythingRow, agentNames: Readonly<Record<string, string>> = {}): string {
-  if (row.labelSource === "holder" || row.labelSource === "mandate" || row.labelSource === "agent") return row.label;
+export function rowTitle(
+  row: EverythingRow,
+  agentNames: Readonly<Record<string, string>> = {},
+  mandateLabels: Readonly<Record<string, string>> = {},
+): string {
+  // A mandate wears its registry label; a key the registry cannot name is shown as words, never the code key.
+  if (row.labelSource === "mandate") return (row.mandateKey ? mandateLabels[row.mandateKey] : undefined) ?? humanizeFeature(row.label);
+  if (row.labelSource === "holder" || row.labelSource === "agent") return row.label;
   const agent = row.agentId ? agentNames[row.agentId] : undefined;
   if (agent) return agent;
   return row.labelSource === "feature" ? humanizeFeature(row.label) : row.label;
