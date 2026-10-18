@@ -75,8 +75,24 @@ jobs:
         id: source
         if: steps.initial_source.outputs.proceed == 'true'
         run: bash scripts/hosted-release-guard.sh
-      - name: Release and wait for every existing after-phase check and rollout verdict
+      # The after phase runs the same check rows as repo-only-checks.yml on the same 4-core / 16 GB
+      # runner, beside the rollout watch. Run 39162960893 (v0.4.3343) had no swap: the release went
+      # LIVE at 20:34:29Z, the 15 s rollout polls had already stretched to 86-126 s (the machine was
+      # thrashing), and the step died with exit 143 at 20:49:37Z before run.mjs wrote any finding.
+      # repo-only-checks.yml carries this swap and passes every run while using up to 6.2 GB of it.
+      - name: Add 8 GB of swap
         if: steps.source.outputs.proceed == 'true'
+        run: |
+          sudo fallocate -l 8G /matrx-swap && sudo chmod 600 /matrx-swap
+          sudo mkswap /matrx-swap >/dev/null && sudo swapon /matrx-swap
+          free -m
+      # The release and the verdict are separate steps: a step killed after the release went live
+      # (memory, a signal) must still leave a verdict that says the release is live and the checks
+      # are unmeasured — never "failed" with nothing written, which reads as a release that is not live.
+      - name: Release and wait for every existing after-phase check and rollout verdict
+        id: release
+        if: steps.source.outputs.proceed == 'true'
+        continue-on-error: true
         env:
           AIDREAM_DIR: ${{ github.workspace }}/aidream
           RELEASE_EXPECTED_SOURCE_SHA: ${{ steps.source.outputs.source_sha }}
@@ -86,23 +102,65 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          mkdir -p tmp/checks
+          # Memory every 20 s (uploaded below): the next interruption names its own cause.
+          ( while sleep 20; do echo "$(date -u +%T) $(free -m | awk '/^Mem:/{m="used_mb="$3" available_mb="$7} /^Swap:/{s=" swap_used_mb="$3} END{print m s}')"; done ) > tmp/checks/memory.log 2>&1 &
           set -o pipefail
           bash scripts/release.sh --no-migrate --with-checks | tee "$RUNNER_TEMP/hosted-release.stdout"
-          tag="$(sed -n 's/^\(v[0-9][0-9.]*\)  pushed, build started.*/\1/p' "$RUNNER_TEMP/hosted-release.stdout" | tail -1)"
+      - name: Verdict — pushed, live, and every after-phase finding
+        if: always() && steps.source.outputs.proceed == 'true'
+        env:
+          RELEASE_OUTCOME: ${{ steps.release.outcome }}
+        run: |
+          stdout="$RUNNER_TEMP/hosted-release.stdout"
+          tag="$(sed -n 's/^\(v[0-9][0-9.]*\)  pushed, build started.*/\1/p' "$stdout" 2>/dev/null | tail -1)"
           if [ -z "$tag" ]; then
-            echo '::error::Release script did not report a pushed release'
+            echo "::error::Release script did not report a pushed release (release step: ${RELEASE_OUTCOME})"
             exit 1
           fi
+          live=false
+          grep -q "Released and LIVE — ${tag}" "$stdout" && live=true
           findings="tmp/release-logs/findings-${tag}.jsonl"
-          if [ ! -f "$findings" ]; then
-            echo "::error::Release ${tag} has no after-phase findings file; rollout/checks were not verified"
-            exit 1
-          fi
-          node - "$findings" <<'NODE'
+          node - "$findings" "$tag" "$live" "$RELEASE_OUTCOME" <<'NODE'
           const fs = require('node:fs');
-          const rows = fs.readFileSync(process.argv[2], 'utf8').split('\n').filter(Boolean).map(JSON.parse);
-          const errors = rows.filter(row => row.level === 'error');
+          const [file, tag, live, outcome] = process.argv.slice(2);
+          const read = (path) => fs.existsSync(path)
+            ? fs.readFileSync(path, 'utf8').split('\n').filter(Boolean).map(JSON.parse) : null;
+          const rows = read(file);
+          // The rollout/manifest/surface findings land in <findings>.rollout first and are folded
+          // into the findings file only when the whole after phase finishes; read them either way.
+          const rollout = rows ? [] : (read(`${file}.rollout`) || []);
+          const errors = [...(rows || []), ...rollout].filter((row) => row.level === 'error' || row.level === 'ERROR');
           for (const row of errors) console.error(`::error title=${row.category}::${row.title}`);
           if (errors.length) process.exit(1);
-          console.log('Release after-phase checks and rollout completed without error findings.');
+          if (rows) {
+            if (outcome !== 'success') {
+              console.error(`::error title=After phase::${tag}: findings were written but the release step ended ${outcome}`);
+              process.exit(1);
+            }
+            console.log('Release after-phase checks and rollout completed without error findings.');
+            process.exit(0);
+          }
+          if (live !== 'true') {
+            console.error(`::error title=Rollout::${tag} was pushed but never reported LIVE, and its after phase wrote no findings (release step: ${outcome})`);
+            process.exit(1);
+          }
+          // LIVE, but the step ended before the check runner wrote its findings: the release is
+          // live and the checks are UNMEASURED. Recorded as a finding (uploaded below) and announced.
+          const unmeasured = { check: 'hosted-release-after-phase', category: 'Checks', level: 'warning',
+            title: `UNMEASURED — ${tag} is LIVE, but its after-phase checks were interrupted (release step: ${outcome}) before writing findings; see the memory log artifact`,
+            remedy: 'node scripts/checks/run.mjs --skip-live-db --json tmp/release-logs/findings-rerun.jsonl' };
+          fs.mkdirSync(require('node:path').dirname(file), { recursive: true });
+          fs.writeFileSync(file, [JSON.stringify({ ran: [], interrupted: true, release_step: outcome }), JSON.stringify(unmeasured)].join('\n') + '\n');
+          console.log(`::warning title=Checks UNMEASURED::${unmeasured.title}`);
           NODE
+      - name: Upload the release findings, logs and memory trace
+        if: always() && steps.source.outputs.proceed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-release-logs
+          path: |
+            tmp/release-logs/
+            tmp/checks/*.log
+          if-no-files-found: warn
+          retention-days: 7
