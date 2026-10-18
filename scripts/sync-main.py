@@ -1332,6 +1332,98 @@ def clear_untracked_blockers(merge_output, stamp):
     return held
 
 
+def _overwritten_paths(merge_output):
+    paths, listing = [], False
+    for line in merge_output.splitlines():
+        if "would be overwritten by merge" in line:
+            listing = True
+        elif listing and line.startswith("\t"):
+            paths.append(line.strip())
+        elif listing:
+            listing = False
+    return paths
+
+
+def park_dirty_blockers(merge_output):
+    """Set aside the uncommitted edits to TRACKED files a merge refused to overwrite — typically
+    files the sweep held because they need a package npm has not served yet. Each file's local
+    bytes are kept (in memory and in .git/sync-main-parked/ in case this run dies) and the file is
+    reset to HEAD so the merge can run; restore_parked() puts the edits back afterwards. Returns
+    [(path, local_bytes, head_bytes_or_None)]."""
+    _, gd, _ = git("rev-parse", "--git-dir")
+    park_dir = os.path.join(gd.strip(), "sync-main-parked")
+    parked = []
+    for path in _overwritten_paths(merge_output):
+        if not os.path.isfile(path):
+            continue
+        sha = blob_at("HEAD", path)
+        if not sha:
+            continue
+        mine = open(path, "rb").read()
+        backup = os.path.join(park_dir, path)
+        os.makedirs(os.path.dirname(backup), exist_ok=True)
+        with open(backup, "wb") as f:
+            f.write(mine)
+        base = content(sha)
+        with open(path, "wb") as f:
+            f.write(base)
+        say("held edits to %s blocked the merge: set aside (copy in %s) and re-applied after it."
+            % (path, backup))
+        parked.append((path, mine, base))
+    return parked
+
+
+def restore_parked(parked, stamp):
+    """Re-apply parked local edits on top of what the merge left at each path, still uncommitted.
+    Edits that touch lines the merge also changed are moved to _conflicts/<stamp>/<path>.held
+    (the merged version stays live). Returns the held entries."""
+    held = []
+    _, gd, _ = git("rev-parse", "--git-dir")
+    park_dir = os.path.join(gd.strip(), "sync-main-parked")
+    for path, mine, base in parked:
+        sha = blob_at("HEAD", path)
+        new = content(sha) if sha else None
+        merged = None
+        if new is None:
+            merged = None
+        elif new == base:
+            merged = mine
+        elif not (is_binary(mine) or is_binary(base) or is_binary(new)):
+            d = tempfile.mkdtemp(prefix="sync-main-park-")
+            try:
+                files = []
+                for name, data in (("mine", mine), ("base", base), ("new", new)):
+                    fp = os.path.join(d, name)
+                    with open(fp, "wb") as f:
+                        f.write(data)
+                    files.append(fp)
+                r = subprocess.run(["git", "merge-file", "-p", *files], capture_output=True)
+                if r.returncode == 0:
+                    merged = r.stdout
+            finally:
+                shutil.rmtree(d, ignore_errors=True)
+        if merged is not None:
+            with open(path, "wb") as f:
+                f.write(merged)
+            say("re-applied the held edits to %s on top of the merge (still uncommitted)." % path)
+        else:
+            dest = held_copy_path(os.path.join(HOLD_ROOT, stamp), path, ".held")
+            with open(dest, "wb") as f:
+                f.write(mine)
+            say("HELD EDITS CLASHED WITH GITHUB: %s — GitHub's version is live, the local copy is %s."
+                % (path, dest))
+            held.append((path, dest, "uncommitted held edits clashed with GitHub's change; compare "
+                                     "and keep the upgrade"))
+        try:
+            os.remove(os.path.join(park_dir, path))
+        except OSError:
+            pass
+    if held:
+        update_log(stamp, [], held)
+        git("add", "--", HOLD_ROOT)
+    return held
+
+
 def stages(path):
     _, out, _ = git("ls-files", "-u", "-z", "--", path)
     st = {}
@@ -2158,8 +2250,20 @@ def main():
         pulled += int(n.strip())
         rc, out, err = git("merge", "--no-edit", "--no-verify", "-q", "%s/%s" % (REMOTE, BRANCH),
                            check=False)
+        parked = []
+        if (rc != 0 and not os.path.exists(os.path.join(gd, "MERGE_HEAD"))
+                and "Your local changes to the following files would be overwritten" in out + err):
+            # A tracked file with uncommitted edits GitHub also changed — typically one the sweep
+            # held. Retrying cannot help: the same file blocks every attempt (2026-10-17 22:13:
+            # UserBoard.tsx, five attempts, NOT PULLED). Set the edits aside, merge, put them back.
+            parked = park_dirty_blockers(out + err)
+            if parked:
+                rc, out, err = git("merge", "--no-edit", "--no-verify", "-q",
+                                   "%s/%s" % (REMOTE, BRANCH), check=False)
         if rc != 0:
             if not os.path.exists(os.path.join(gd, "MERGE_HEAD")):
+                if parked:
+                    held += restore_parked(parked, stamp)
                 if "untracked working tree files would be overwritten" in out + err:
                     # An untracked file GitHub also carries — typically one the sweep held because it
                     # needs code only GitHub has. Retrying cannot help: the same file blocks every
@@ -2167,6 +2271,7 @@ def main():
                     held += clear_untracked_blockers(out + err, stamp)
                     continue
                 if "overwritten" in out + err:   # an agent wrote a file between step 1 and now
+                    say("the merge refused (going again):\n" + (out + err).strip())
                     continue
                 die("git merge failed:\n" + out + err)
             f, d, h = resolve_all(stamp)
@@ -2183,6 +2288,8 @@ def main():
             msg = "Merge %s/%s (sync-main): %d auto-fixed, %d docs/comments flagged, %d held" % (
                 REMOTE, BRANCH, len(f), len(d), len(h))
             git("commit", "--no-verify", "-q", "-m", msg)
+        if parked:
+            held += restore_parked(parked, stamp)
         if packages is None:
             packages = update_matrx_packages() or ""
             # Files the sweep held for a package that the update just installed go out in THIS
