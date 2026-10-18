@@ -12,7 +12,7 @@ import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "../items/table-tile";
 
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../spaces/templates/packs/design-system-board.pack.json"), "utf8")) as SpaceTemplatePack;
-const MADE = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow"].map((t, i) => [t, { tableId: `00000000-0000-4000-8000-00000000000${i + 1}`, viewIds: {} }]));
+const MADE = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow", "component"].map((t, i) => [t, { tableId: `00000000-0000-4000-8000-00000000000${i + 1}`, viewIds: {} }]));
 
 describe("planPackBoards", () => {
   let n = 0;
@@ -26,6 +26,7 @@ describe("planPackBoards", () => {
       ["Spacing", MADE.spacing.tableId],
       ["Corner radius", MADE.radius.tableId],
       ["Shadows", MADE.shadow.tableId],
+      ["Components", MADE.component.tableId],
     ]);
     for (const t of tables) expect(t.source.kind === "entity" && t.source.meta?.layout).toBe(TABLE_LAYOUT_SECTION);
   });
