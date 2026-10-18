@@ -271,7 +271,8 @@ export function StudioBattle({
       {/* Cost first, then the one action. */}
       <TabHead className="border-t border-border pt-2" >
         <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" data-testid="studio-battle-cost">
-          {caseCount} {caseCount === 1 ? "case" : "cases"} × 2{runsPerCase && runsPerCase > 1 ? ` × ${runsPerCase} runs` : ""} ·{" "}
+          {/* The runs picker beside it says ×N; the pane is narrow, so the cost must never truncate away. */}
+          {caseCount} {caseCount === 1 ? "case" : "cases"} ·{" "}
           {estimate !== null ? (
             <>
               About <Cost usd={estimate / 100} short />
