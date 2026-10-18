@@ -56,6 +56,19 @@ function emailBody(portalTitle: string, organization: string, link: string) {
   return { subject, html };
 }
 
+/**
+ * OUR SIDE BROKE AFTER THE ADDRESS WAS FOUND ON THE PORTAL (the bind refused, or the mail did not
+ * go). Saying "a link is on its way" then is a lie the person waits on forever, so it says so. It
+ * is reachable only for an address that is on the portal, and only when something of ours failed,
+ * so it is not an address oracle a stranger can drive.
+ */
+function failedAnswer() {
+  return NextResponse.json(
+    { ok: false, message: "We could not send your sign-in link just now. Try again in a minute, or ask the business to resend your invitation." },
+    { status: 502 },
+  );
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
@@ -103,7 +116,7 @@ export async function POST(
         slug: portal.slug,
         reason: created.error?.message ?? "no user returned",
       });
-      return sameAnswer();
+      return failedAnswer();
     }
     userId = created.data.user.id;
     const second = await admin.auth.admin.generateLink({ type: "magiclink", email });
@@ -112,7 +125,7 @@ export async function POST(
         slug: portal.slug,
         reason: second.error?.message ?? "no hashed_token returned",
       });
-      return sameAnswer();
+      return failedAnswer();
     }
     hashedToken = second.data.properties.hashed_token;
     userId = second.data.user?.id ?? userId;
@@ -121,7 +134,7 @@ export async function POST(
       console.error("portal sign-in: generateLink answered without a token or a user", {
         slug: portal.slug,
       });
-      return sameAnswer();
+      return failedAnswer();
     }
     hashedToken = first.data.properties.hashed_token;
     userId = first.data.user.id;
@@ -142,7 +155,7 @@ export async function POST(
       slug: portal.slug,
       reason: error instanceof Error ? error.message : "unknown",
     });
-    return sameAnswer();
+    return failedAnswer();
   }
 
   const origin = request.nextUrl.origin;
@@ -160,6 +173,7 @@ export async function POST(
       slug: portal.slug,
       reason: sent.error instanceof Error ? sent.error.message : "unknown",
     });
+    return failedAnswer();
   }
 
   return sameAnswer();

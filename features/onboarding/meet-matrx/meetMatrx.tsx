@@ -7,7 +7,8 @@
  *
  * Names are the canonical vocabulary (common-docs platform/vocabulary/FEATURE.md) — never coin or
  * rename one here. Pitches are 3–7 plain words (guarded in __tests__). Each piece links to its real
- * home; the stage itself is `@ai-matrx/design-system/intro-stage` (one UI system).
+ * home; Knowledge's pitch speaks for ALL of a person's or company's information (notes, files, chats, research,
+ * scrapes, code, tasks — not just files) that every agent can reach and never forgets (Arman, 2026-10-18). The stage itself is `@ai-matrx/design-system/intro-stage` (one UI system).
  */
 import type { ReactNode } from "react";
 import { Database, LayoutGrid, Library, Network, Plug, Puzzle, Workflow } from "lucide-react";
@@ -40,7 +41,7 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
       { id: "applets", name: "Applets", pitch: "Package your AI for anyone to use", icon: <Puzzle />, href: "/applets", tone: 8 },
       { id: "boards", name: "Boards", pitch: "All your work on one canvas", icon: <LayoutGrid />, href: "/board", tone: 3 },
       { id: "custom-data", name: "Custom data", pitch: "Your own tables, shaped your way", icon: <Database />, href: "/data", tone: 6 },
-      { id: "knowledge", name: "Knowledge", pitch: "Your documents, searchable by every agent", icon: <Library />, href: "/knowledge", tone: 5 },
+      { id: "knowledge", name: "Knowledge", pitch: "Everything in one place. Agents never forget.", icon: <Library />, href: "/knowledge", tone: 5 },
       { id: "tools", name: "Tools & Connectors", pitch: "Plug agents into the apps you use", icon: <Plug />, href: "/agent-connections", tone: 2 },
     ],
   },

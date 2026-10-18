@@ -148,6 +148,7 @@ export const RENDER_MAP: OverlayRenderMap = {
   masterworkCheckupWindow: () => import("./masterworkCheckupWindow.render"),
   masterworkYourWordsWindow: () => import("./masterworkYourWordsWindow.render"),
   matcherReviewWindow: () => import("./matcherReviewWindow.render"),
+  meetMatrxWindow: () => import("./meetMatrxWindow.render"),
   messageAnalysisWindow: () => import("./messageAnalysisWindow.render"),
   messagesWindow: () => import("./messagesWindow.render"),
   multiFileSmartCodeEditorWindow: () => import("./multiFileSmartCodeEditorWindow.render"),

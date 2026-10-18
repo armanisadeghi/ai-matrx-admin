@@ -5,9 +5,10 @@
 // a subtransaction it rolls back, so it holds row locks on every record of the column while it runs, and
 // the panel asks on every pick. It must be bounded:
 //   1. a small column (6 values) answers EXACTLY (converts + kept_aside, not limited);
-//   2. a column of 10,000 values answers "limited" with the count held, in well under 3 seconds, and
+//   2. a column of 101+ values answers "limited" with the count held, in well under 3 seconds, and
 //      touches nothing (the same call leaves no row changed);
-//   3. a medium column (1,500 values) finishes inside the statement cap either way (exact or limited).
+//   3. a column of exactly 100 values (the cap) is still answered exactly, in under 8 seconds;
+//      a column of 101 is limited.
 // The whole run is ONE transaction that is ROLLED BACK. Runs on the main database as admin@admin.com in
 // its own Cedar Ridge Physical Therapy workspace.
 //
@@ -62,7 +63,7 @@ try {
     return { table, field };
   }
 
-  for (const [rows, kind] of [[6, "small"], [1500, "medium"], [10000, "big"]]) {
+  for (const [rows, kind] of [[6, "small"], [100, "medium"], [101, "limit"], [10000, "big"]]) {
     await client.query("savepoint t");
     try {
       const { table, field } = await build(rows);
@@ -83,7 +84,8 @@ try {
         if (p.held_before !== rows) said.push(`held_before ${p.held_before} != ${rows}`);
         if (ms > 3000) said.push(`took ${ms} ms (cap 3000)`);
       }
-      if (kind === "medium" && ms > 6000) said.push(`took ${ms} ms (cap 6000)`);
+      if (kind === "medium" && (p.limited || ms > 8000)) said.push(`100 values: limited=${p.limited} in ${ms} ms (want exact, under 8000)`);
+      if (kind === "limit" && !p.limited) said.push("101 values were run, not limited");
       if (said.length) failures.push(`${kind} (${rows}): ${said.join("; ")}`);
       else console.log(`  ok  ${kind} (${rows} values): ${p.limited ? "limited (" + p.why + ")" : `exact ${p.converts}/${p.kept_aside}`} in ${ms} ms`);
     } catch (e) {

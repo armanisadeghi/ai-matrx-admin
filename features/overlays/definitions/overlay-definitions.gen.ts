@@ -140,6 +140,7 @@ export { masterworkBuildWindowOverlay } from "./masterworkBuildWindow.definition
 export { masterworkCheckupWindowOverlay } from "./masterworkCheckupWindow.definition";
 export { masterworkYourWordsWindowOverlay } from "./masterworkYourWordsWindow.definition";
 export { matcherReviewWindowOverlay } from "./matcherReviewWindow.definition";
+export { meetMatrxWindowOverlay } from "./meetMatrxWindow.definition";
 export { messageAnalysisWindowOverlay } from "./messageAnalysisWindow.definition";
 export { messagesWindowOverlay } from "./messagesWindow.definition";
 export { multiFileSmartCodeEditorWindowOverlay } from "./multiFileSmartCodeEditorWindow.definition";

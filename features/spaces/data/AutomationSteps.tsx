@@ -443,6 +443,9 @@ const KIND_TITLE: Record<string, string> = {
   sms: "Send a text",
   google_calendar_event: "Google Calendar event",
   github_issue: "GitHub issue",
+  outlook_mail: "Send Outlook email",
+  outlook_calendar_event: "Outlook calendar event",
+  teams_message: "Teams message",
   add_row: "Add a record",
   email: "Send email",
   slack: "Slack message",
@@ -463,6 +466,9 @@ function newStep(kind: string, env: Env): Step {
     case "sms": return { do: "sms", to: "", message: "" };
     case "google_calendar_event": return { do: "google_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" };
     case "github_issue": return { do: "github_issue", repo: "", title: "", body: "", labels: "" };
+    case "outlook_mail": return { do: "outlook_mail", to: "", subject: "", body: "" };
+    case "outlook_calendar_event": return { do: "outlook_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" };
+    case "teams_message": return { do: "teams_message", channel_link: "", message: "" };
     case "add_row": return { do: "add_row", table_id: env.tableId, values: {} };
     case "email": return { do: "email", to: { address: "" }, subject: "", body: "" };
     case "slack": return { do: "slack", url: "", text: "" };
@@ -471,7 +477,7 @@ function newStep(kind: string, env: Env): Step {
   }
 }
 
-const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "email", "slack", "webhook"] as const;
+const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message", "email", "slack", "webhook"] as const;
 
 function AddStep({ onAdd, kinds = STEP_KINDS }: { onAdd: (kind: string) => void; kinds?: readonly string[] }) {
   const [open, setOpen] = useState(false);
@@ -609,7 +615,20 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
           <TokenText label="Labels" value={str(step.labels)} onChange={(v) => set({ labels: v })} sources={sources} placeholder="Labels, comma-separated" />
         </div>
       ) : null}
-      {step.do === "google_calendar_event" ? (
+      {step.do === "outlook_mail" ? (
+        <div className="flex flex-col gap-1">
+          <TokenText label="To" value={str(step.to)} onChange={(v) => set({ to: v })} sources={sources} placeholder="Email address" />
+          <TokenText label="Subject" value={str(step.subject)} onChange={(v) => set({ subject: v })} sources={sources} placeholder="Subject" />
+          <TokenText label="Message" value={str(step.body)} onChange={(v) => set({ body: v })} sources={sources} placeholder="Message" />
+        </div>
+      ) : null}
+      {step.do === "teams_message" ? (
+        <div className="flex flex-col gap-1">
+          <TokenText label="Channel link" value={str(step.channel_link)} onChange={(v) => set({ channel_link: v })} sources={sources} placeholder="Teams channel link (Get link to channel)" />
+          <TokenText label="Message" value={str(step.message)} onChange={(v) => set({ message: v })} sources={sources} placeholder="Message" />
+        </div>
+      ) : null}
+      {step.do === "google_calendar_event" || step.do === "outlook_calendar_event" ? (
         <div className="flex flex-col gap-1">
           <Pick label="Calendar action" value={str(step.action) || "create"} onChange={(v) => set({ action: v })} options={[{ value: "create", label: "Create an event" }, { value: "update", label: "Change an event" }, { value: "cancel", label: "Cancel an event" }]} />
           {(str(step.action) || "create") !== "create" ? (
@@ -623,10 +642,12 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
               <TokenText label="Ends" value={str(step.ends_at)} onChange={(v) => set({ ends_at: v })} sources={sources} placeholder="End (blank: one hour later)" />
               <TokenText label="Guests" value={str(step.attendees)} onChange={(v) => set({ attendees: v })} sources={sources} placeholder="Guest emails" />
               <TokenText label="Description" value={str(step.description)} onChange={(v) => set({ description: v })} sources={sources} placeholder="Description" />
-              <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                <input type="checkbox" checked={step.notify !== false} onChange={(e) => set({ notify: e.target.checked })} />
-                Email the guests an invitation
-              </label>
+              {step.do === "google_calendar_event" ? (
+                <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <input type="checkbox" checked={step.notify !== false} onChange={(e) => set({ notify: e.target.checked })} />
+                  Email the guests an invitation
+                </label>
+              ) : null}
             </>
           ) : null}
         </div>

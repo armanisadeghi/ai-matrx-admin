@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION ops.record_system_error(p_error jsonb)
  LANGUAGE plpgsql
  SECURITY DEFINER
  SET search_path TO 'pg_catalog'
-AS $function$;
+AS $function$
 declare
   v_e    jsonb := coalesce(p_error, '{}'::jsonb);
   v_uid  uuid := auth.uid();

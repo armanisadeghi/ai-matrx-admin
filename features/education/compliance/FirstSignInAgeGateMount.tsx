@@ -106,6 +106,16 @@ export function markAskedThisSession(): void {
   }
 }
 
+/**
+ * The age question is settled for this person in this browser, so a popup is not about to open: their band is
+ * declared here, or (unless `declaredOnly`) it was already asked this tab session. Read by other first-run
+ * surfaces (Meet Matrx) so two prompts never stack.
+ */
+export function ageQuestionSettled(userId: string | null | undefined, opts?: { declaredOnly?: boolean }): boolean {
+  if (declaredInThisBrowser(userId)) return true;
+  return opts?.declaredOnly ? false : alreadyAskedThisSession();
+}
+
 export function FirstSignInAgeGateMount() {
   const pathname = usePathname();
   // The departed-member portal — see the header block. Deferred, never waived.

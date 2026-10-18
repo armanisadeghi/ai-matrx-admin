@@ -212,7 +212,8 @@ export interface EntityBulkAction<TRow> {
    */
   run: (
     selection: EntityBulkSelection<TRow>,
-    input: EntityBulkActionInput,
+    /** Always passed by the shell (`{}` when the confirm asked nothing). */
+    input?: EntityBulkActionInput,
   ) => Promise<EntityBulkActionResult | void> | EntityBulkActionResult | void;
 }
 

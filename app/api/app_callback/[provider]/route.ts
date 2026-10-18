@@ -27,8 +27,14 @@ const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
       if (!payload.ok) {
         throw new Error(payload.error || 'Slack API error');
       }
-      console.log('Slack app installed successfully:', data);
-      return data;
+      // Never log or hand back a token: answer only who installed where. The person's real Slack
+      // connection is /api/slack/oauth/* (token sealed in the Vault by aidream).
+      const installed = data as { team?: { id?: string; name?: string }; authed_user?: { id?: string; scope?: string } };
+      return {
+        ok: true,
+        team: installed.team ? { id: installed.team.id, name: installed.team.name } : null,
+        authed_user: installed.authed_user ? { id: installed.authed_user.id, scope: installed.authed_user.scope } : null,
+      };
     }
   },
   // Extension point for future providers
@@ -128,7 +134,7 @@ export async function POST(
     // Handle response errors
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`${provider} token exchange failed:`, errorText);
+      console.error(`${provider} token exchange failed:`, response.status);
 
       let errorMessage;
       try {

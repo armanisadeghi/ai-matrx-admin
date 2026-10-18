@@ -58,7 +58,8 @@ begin
   if v_run ->> 'status' is distinct from 'waiting' then raise exception 'RED the run should wait for the server github step: %', v_run; end if;
   if v_run::text not like '%Mail: Order 42%' then raise exception 'RED trigger.body did not reach the step: %', v_run; end if;
   select x into v_watch from custom.record t, jsonb_array_elements(t.data -> 'automations') x where t.id = v_table and x ->> 'id' = v_id::text;
-  if v_watch -> 'app_cursor' <> '{"after": 3}'::jsonb or v_watch ? 'app_says' then raise exception 'RED cursor/says not kept: %', v_watch; end if;
+  -- ADV-FIX-A: the store now also records the handed-in item ids as seen (one email, one run).
+  if v_watch -> 'app_cursor' <> '{"after": 3, "seen": ["m2"]}'::jsonb or v_watch ? 'app_says' then raise exception 'RED cursor/says not kept: %', v_watch; end if;
   raise notice 'GREEN W2-E: app triggers saved off, refused by name, watch/note/event doors, run waits on github_issue with trigger.body filled';
 end
 $proof$;

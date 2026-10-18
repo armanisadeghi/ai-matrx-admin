@@ -114,6 +114,24 @@ describe("never a name twice", () => {
   });
 });
 
+describe("a phone reflows the page to its own width", () => {
+  it("the column takes the view's width and every tile narrows to the chapter, at 100%", () => {
+    const scene = {
+      frames: [{ id: "f", rect: { x: 0, y: 0, w: 1100, h: 800 }, title: "Notes" }],
+      tiles: [
+        { id: "a", rect: { x: 8, y: 40, w: 960, h: 300 }, title: "A" },
+        { id: "b", rect: { x: 8, y: 400, w: 200, h: 300 }, title: "B" },
+      ],
+    };
+    const plan = planPageLayout(scene, undefined, { columnW: 342 });
+    const at = new Map(plan.moves.map((m) => [m.id, m]));
+    expect(plan.column.w).toBe(342);
+    expect(at.get("a")!.w).toBe(342 - PAGE_FRAME_PAD * 2);
+    expect(at.get("b")?.w).toBeUndefined(); // already narrower: keeps its size
+    expect(planPageLayout(scene).column.w).toBe(1100); // a wide view keeps the column
+  });
+});
+
 describe("auto height", () => {
   it("writes only a real change of a real measurement", () => {
     expect(autoHeightChange(300, 299.6)).toBeNull(); // rounds to what it already is

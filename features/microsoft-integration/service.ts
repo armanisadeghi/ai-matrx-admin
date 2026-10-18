@@ -96,7 +96,9 @@ export async function startMicrosoftAuthorization(
   campaigns: readonly MicrosoftCampaign[],
 ): Promise<MicrosoftAuthorizationStart> {
   const data = await microsoftIntegrationsAuthorize(serverApi, { body: {
-    campaigns: [...campaigns],
+    // The server accepts the three write campaigns (MS-WRITE 2026-10-18); the generated client type catches up
+    // the next time the server contract is regenerated, so the list is narrowed here until then.
+    campaigns: [...campaigns] as never,
   } });
   return {
     authorizationUrl: data.authorization_url,

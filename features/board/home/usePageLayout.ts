@@ -20,6 +20,7 @@ import {
   type CanvasSnapshot,
   canvasSnapshot,
   chapterOrder,
+  PAGE_COLUMN_W,
   pageLanding,
   planPageLayout,
   restoreCanvas,
@@ -49,6 +50,12 @@ export function pageScene<T extends BoardTileBase>(board: BoardStore<T>) {
     ],
     frames: now.frames.map((f) => ({ id: f.id, rect: f.rect, title: f.title })),
   };
+}
+
+/** The page column for this view: the view's own width when it is narrower than the column (a phone), else the default. */
+function pageColumnFor(store: BoardCameraStore): number | undefined {
+  const w = Math.floor(store.pageViewWidth());
+  return w < PAGE_COLUMN_W ? w : undefined;
 }
 
 export function usePageLayout<T extends BoardTileBase>({
@@ -138,10 +145,12 @@ export function usePageLayout<T extends BoardTileBase>({
     }
     let timer: ReturnType<typeof setTimeout> | null = null;
     let pressing = false;
+    let column = pageColumnFor(store);
     const run = () => {
       timer = null;
       if (pressing) return; // the press's end runs it
-      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined);
+      column = pageColumnFor(store);
+      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, { columnW: column });
       entryOrder.current = null;
       if (plan.moves.length) board.reflow(plan.moves);
       store.setPageLock({ column: plan.column });
@@ -165,6 +174,10 @@ export function usePageLayout<T extends BoardTileBase>({
     }
     opened.current = true;
     const unsubscribe = board.subscribe(schedule);
+    // The view crossing the column's width (a phone turned, a window narrowed) re-flows the page to it.
+    const unsubscribeSize = store.subscribeFrame(() => {
+      if (pageColumnFor(store) !== column) schedule();
+    });
     const down = () => {
       pressing = true;
     };
@@ -180,6 +193,7 @@ export function usePageLayout<T extends BoardTileBase>({
       if (timer) clearTimeout(timer);
       cancelAnimationFrame(raf);
       unsubscribe();
+      unsubscribeSize();
       window.removeEventListener("pointerdown", down, true);
       window.removeEventListener("pointerup", up, true);
       window.removeEventListener("pointercancel", up, true);
@@ -194,7 +208,7 @@ export function usePageLayout<T extends BoardTileBase>({
     const j = i + dir;
     if (i < 0 || j < 0 || j >= order.length) return;
     [order[i], order[j]] = [order[j], order[i]];
-    const plan = planPageLayout(pageScene(board), order);
+    const plan = planPageLayout(pageScene(board), order, { columnW: store ? pageColumnFor(store) : undefined });
     if (plan.moves.length) board.reflow(plan.moves);
     const moved = board.read().frames.find((f) => f.id === id);
     if (moved && store) store.pageScrollTo(moved.rect.y - PAGE_LABEL_ROOM);

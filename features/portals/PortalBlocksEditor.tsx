@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
-import { Button, Select } from "@ai-matrx/design-system";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import type { Field, PortalCard } from "@ai-matrx/records";
 

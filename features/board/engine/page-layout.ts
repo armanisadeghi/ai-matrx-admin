@@ -80,9 +80,15 @@ export function planPageLayout(
   scene: { tiles: readonly PagePlaced[]; frames: readonly PagePlaced[] },
   /** A chapter order to apply (the outline's move up / down): frames take the frame slots in this order. */
   frameOrder?: readonly string[],
+  /**
+   * A view narrower than the column (a phone): the column takes the view's width at 100% zoom, and every
+   * tile wider than a chapter's inside narrows to it — text stays readable, nothing shrinks to fit.
+   */
+  opts: { columnW?: number } = {},
 ): PagePlan {
+  const narrow = opts.columnW !== undefined && opts.columnW < PAGE_COLUMN_W ? Math.max(240, Math.floor(opts.columnW)) : null;
   const widest = Math.max(0, ...scene.tiles.map((t) => t.rect.w));
-  const W = Math.max(PAGE_COLUMN_W, widest + PAGE_FRAME_PAD * 2);
+  const W = narrow ?? Math.max(PAGE_COLUMN_W, widest + PAGE_FRAME_PAD * 2);
   const x0 = 0;
   const { units, members } = boardUnits(scene);
   const frameIds = new Set(scene.frames.map((f) => f.id));
@@ -123,9 +129,14 @@ export function planPageLayout(
     const labelled = !!frame?.title?.trim() && !inside.some((t) => sameName(t.title, frame.title));
     const top = labelled ? PAGE_FRAME_PAD + PAGE_LABEL_H : PAGE_FRAME_TOP;
     const innerW = W - PAGE_FRAME_PAD * 2;
-    // A chapter's one tile takes the chapter's full width (a section reads as the page's own card).
-    const sole = inside.length === 1 ? [{ ...inside[0], rect: { ...inside[0].rect, w: innerW } }] : inside;
-    if (sole !== inside) sized.add(inside[0].id);
+    // A chapter's one tile takes the chapter's full width (a section reads as the page's own card); on a
+    // narrow view every tile wider than the chapter narrows to it.
+    const sole = inside.map((t) => {
+      const w = inside.length === 1 ? innerW : narrow !== null && t.rect.w > innerW ? innerW : null;
+      if (w === null) return t;
+      sized.add(t.id);
+      return { ...t, rect: { ...t.rect, w } };
+    });
     const { placed, height } = flow(sole, x0 + PAGE_FRAME_PAD, y + top, innerW);
     for (const p of placed) out.set(p.id, p.rect);
     const h = inside.length ? top + height + PAGE_FRAME_PAD : Math.max(PAGE_MIN_FRAME_H, top + PAGE_FRAME_PAD);

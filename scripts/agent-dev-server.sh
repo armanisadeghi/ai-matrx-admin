@@ -1335,7 +1335,7 @@ head += f"; {extra} in extra slots)" if extra else ")"
 print(f"[preview] {head}; {w.get('paused', 0)} paused; as of {age}s ago")
 if burst and burst != cap:
     state = mem.get("state"); why = mem.get("why", "")
-    print(f"[preview]   extra slots {'OPEN' if state == 'headroom' else 'CLOSING' if state == 'shed' else 'closed'}: {why}")
+    print(f"[preview]   extra slots {'OPEN' if state == 'headroom' else 'CLOSING' if state == 'shed' and extra else 'closed'}: {why}")
 def ago(s):
     return f"{s}s" if s < 60 else f"{s // 60}m"
 for a in sorted(act, key=lambda a: a.get("lastRequestSec", 0)):
@@ -1424,7 +1424,7 @@ cmd_status_one() {
 # preview:sweep [--dry-run] — run the stale cleanup now (the watchdog runs it every 30 s).
 cmd_sweep() {
   mkdir -p "$STATE_DIR"
-  prune_holds
+  [[ "${1:-}" == --dry-run ]] || prune_holds
   local out
   out="$(sweep_orphan_browsers "$@")"
   if [[ -n "$out" ]]; then

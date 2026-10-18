@@ -191,6 +191,12 @@ export class BoardCameraStore {
     this.scheduleCoarse();
   }
 
+  /** The width a page-layout column can take at 100% in this view (world px = screen px at zoom 1). */
+  pageViewWidth = (): number => {
+    const { left, right } = this.insets;
+    return Math.max(1, this.size.w - left - right - PAGE_VIEW_MARGIN * 2);
+  };
+
   setSize(size: Size): void {
     this.size = size;
     if (this.pageLock) this.camera = this.lockedCamera(this.camera);

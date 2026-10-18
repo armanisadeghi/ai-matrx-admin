@@ -32,6 +32,7 @@ import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProd
 import AiTestModeDock from "@/features/ai-test-mode/AiTestModeDock";
 import SupportSessionPill from "@/features/admin/users/support-sessions/SupportSessionPill";
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
+import { MeetMatrxIntroMount } from "@/features/onboarding/meet-matrx/MeetMatrxIntroMount";
 import { registerBlobCacheOnFirstFileFetch } from "@/features/files/cache/registerOnFirstFileFetch";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { useHasEngaged } from "@/lib/boot/firstEngagement";
@@ -197,6 +198,10 @@ export default function DeferredSingletonCore() {
           2026-08-20). Dismissible; re-asks next session. Guests are handled by
           EducationAgeGateMount, where their block actually bites. */}
       {user?.id && <FirstSignInAgeGateMount />}
+      {/* Render-free. Meet Matrx ONCE for every existing person on their next visit to home, as a
+          calm window (meetMatrxWindow); remembered on the account (meet_matrx_seen). Never over the
+          age question, the sign-up welcome, or any page they came to work on. */}
+      {user?.id && <MeetMatrxIntroMount />}
       {/* Render-free. Raises the floating "spent so far today" window for a
           Super Admin on their first app open each local day (Arman,
           2026-09-11: scare me with the number, never block the code). Cadence

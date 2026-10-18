@@ -1,20 +1,28 @@
 "use client";
 
 // The topic's video library — the research system's showcase of every video it
-// found. A flagship surface (Arman, 2026-10-17): bespoke type sizes inside this
-// feature are deliberate, colours stay on tokens. Champion: YouTube's own
-// search results — thumbnail left, title, one quiet meta line, channel, a short
-// description, nothing boxed.
+// found. Champion: YouTube's own home grid (Arman, 2026-10-17): 16:9 thumbnail,
+// channel avatar beside a two-line title, channel, "views · age", a ⋮ menu for
+// actions, and a Shorts shelf of tall cards. Nothing boxed, no extra text.
+// Bespoke type sizes inside this feature are deliberate; colours stay on tokens.
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, Brain, Check, LoaderCircle } from "lucide-react";
+import { Brain, CheckCircle2, ExternalLink, LoaderCircle, MoreVertical, PanelTop, SquareCheck } from "lucide-react";
 import { Button, SearchField, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { Checkbox } from "@/components/ui/checkbox";
-import { InfoHint } from "@/components/official/InfoHint";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { UserAvatarDisplay } from "@/components/user/UserIdentity";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import {
@@ -37,6 +45,18 @@ const SORT_OPTIONS: { value: Sort; label: string }[] = [
   { value: "longest", label: "Longest" },
   { value: "engagement", label: "Most engaging" },
 ];
+
+/** Shorts shown before "Show all" — one shelf row at the widest layout. */
+const SHORTS_SHELF = 6;
+/** Regular videos shown above the Shorts shelf — two rows of three. */
+const VIDEOS_BEFORE_SHORTS = 6;
+
+/** A Short: YouTube's /shorts/ address, or a minute or less. */
+export function isShort(entry: RankedTopicVideo): boolean {
+  const { video } = entry;
+  if (video.canonical_url?.includes("/shorts/")) return true;
+  return video.duration_seconds != null && video.duration_seconds > 0 && video.duration_seconds <= 60;
+}
 
 function engagementOf({ video }: RankedTopicVideo): number {
   return youTubeEngagementRate(video.like_count, video.comment_count, video.view_count) ?? -1;
@@ -63,24 +83,22 @@ function hoursOf(totalSeconds: number): string {
   return hours >= 10 ? `${Math.round(hours)}h` : `${hours.toFixed(1)}h`;
 }
 
-export function TopicYouTubeLibrary({
-  videos,
-  selected,
-  onToggle,
-  analyzing,
-  onAnalyze,
-}: {
-  videos: RankedTopicVideo[];
+interface TileActions {
   selected: ReadonlySet<string>;
   onToggle: (videoId: string) => void;
-  /** Videos whose analysis is running now. */
   analyzing: ReadonlySet<string>;
   onAnalyze: (videoId: string) => void;
-}) {
+}
+
+export function TopicYouTubeLibrary({
+  videos,
+  ...actions
+}: TileActions & { videos: RankedTopicVideo[] }) {
   const [sort, setSort] = useUrlState("sort", enumUrlCodec(SORTS, "best"));
   const [status, setStatus] = useUrlState("status", enumUrlCodec(STATUS_FILTERS, "all"));
   const [keyword, setKeyword] = useUrlState("keyword", stringUrlCodec(""));
   const [query, setQuery] = useUrlState("q", stringUrlCodec(""));
+  const [allShorts, setAllShorts] = useState(false);
 
   const analyzed = videos.filter((v) => videoReadState(v.video) === "analyzed").length;
   const totalViews = videos.reduce((sum, v) => sum + (v.video.view_count ?? 0), 0);
@@ -110,30 +128,33 @@ export function TopicYouTubeLibrary({
     }),
     sort,
   );
+  const longForm = shown.filter((v) => !isShort(v));
+  const shorts = shown.filter(isShort);
+  const shelf = allShorts ? shorts : shorts.slice(0, SHORTS_SHELF);
+
+  const stats = [
+    `${analyzed} analyzed`,
+    `${formatYouTubeCount(totalViews)} views`,
+    `${channels} channels`,
+    `${hoursOf(totalSeconds)} of video`,
+  ].join(" · ");
 
   return (
-    <div className="mx-auto w-full max-w-[1280px] px-4 pb-10 pt-8 sm:px-8">
-      <header className="flex flex-col gap-6 border-b border-border pb-8 lg:flex-row lg:items-end lg:justify-between">
-        {/* ui-exception: flagship stage — display number for the headline count. */}
-        <p className="text-5xl font-semibold tracking-tight tabular-nums text-foreground">
-          {videos.length.toLocaleString()}
-          <span className="ml-3 text-2xl font-medium tracking-normal text-muted-foreground">videos found</span>
-        </p>
-        <dl className="grid grid-cols-2 gap-x-10 gap-y-4 sm:grid-cols-4">
-          <HeadlineStat label="Analyzed" value={`${analyzed}`} />
-          <HeadlineStat label="Total views" value={formatYouTubeCount(totalViews)} />
-          <HeadlineStat label="Channels" value={channels.toLocaleString()} />
-          <HeadlineStat label="Watch time" value={hoursOf(totalSeconds)} />
-        </dl>
-      </header>
-
-      <div className="flex flex-wrap items-center gap-2 py-5">
+    <div className="mx-auto w-full max-w-[1600px] px-4 pb-10 pt-5 sm:px-6">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div className="mr-auto min-w-0">
+          {/* ui-exception: flagship stage — the library's headline count. */}
+          <h1 className="text-xl font-semibold tabular-nums text-foreground">
+            {videos.length.toLocaleString()} videos found
+          </h1>
+          <p className="type-secondary tabular-nums text-muted-foreground">{stats}</p>
+        </div>
         <SearchField
           value={query}
           onChange={(event) => setQuery(event.target.value, { history: "replace" })}
           placeholder="Search videos"
           aria-label="Search videos"
-          className="min-w-56 flex-1"
+          className="w-56"
         />
         <SegmentedControl
           aria-label="Analysis status"
@@ -146,7 +167,7 @@ export function TopicYouTubeLibrary({
           ]}
         />
         {keywordOptions.length > 2 && (
-          <Select aria-label="Keyword" value={keyword} options={keywordOptions} onValueChange={(next) => setKeyword(next)} className="max-w-64" />
+          <Select aria-label="Keyword" value={keyword} options={keywordOptions} onValueChange={(next) => setKeyword(next)} className="max-w-56" />
         )}
         <Select aria-label="Sort" value={sort} options={SORT_OPTIONS} onValueChange={(next) => setSort(next)} />
       </div>
@@ -155,31 +176,50 @@ export function TopicYouTubeLibrary({
       {shown.length === 0 ? (
         <p className="py-16 text-center type-body text-muted-foreground">No videos match these filters.</p>
       ) : (
-        <ol className="flex flex-col gap-2">
-          {shown.map((entry, index) => (
-            <VideoRow
-              key={entry.video.youtube_video_id}
-              entry={entry}
-              eagerImage={index < 4}
-              selected={selected.has(entry.video.youtube_video_id)}
-              selecting={selected.size > 0}
-              onToggle={() => onToggle(entry.video.youtube_video_id)}
-              analyzing={analyzing.has(entry.video.youtube_video_id)}
-              onAnalyze={() => onAnalyze(entry.video.youtube_video_id)}
-            />
-          ))}
-        </ol>
+        <div className="mt-6 flex flex-col gap-10">
+          {longForm.length > 0 && (
+            <VideoGrid entries={longForm.slice(0, VIDEOS_BEFORE_SHORTS)} eager {...actions} />
+          )}
+          {shorts.length > 0 && (
+            <section aria-label="Shorts">
+              <div className="mb-3 flex items-center justify-between">
+                {/* ui-exception: flagship stage — shelf heading at YouTube's size.
+                    read-gate-exempt: counts videos already loaded; the parent page owns the read. */}
+                <h2 className="text-lg font-semibold text-foreground">
+                  Shorts <span className="type-secondary font-normal text-muted-foreground">{shorts.length}</span>
+                </h2>
+                {shorts.length > SHORTS_SHELF && (
+                  <Button type="button" variant="quiet" onClick={() => setAllShorts((open) => !open)}>
+                    {allShorts ? "Show fewer" : `Show all ${shorts.length}`}
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                {shelf.map((entry) => (
+                  <ShortTile key={entry.video.youtube_video_id} entry={entry} {...actions} />
+                ))}
+              </div>
+            </section>
+          )}
+          {longForm.length > VIDEOS_BEFORE_SHORTS && (
+            <VideoGrid entries={longForm.slice(VIDEOS_BEFORE_SHORTS)} eager={false} {...actions} />
+          )}
+        </div>
       )}
     </div>
   );
 }
 
-function HeadlineStat({ label, value }: { label: string; value: string }) {
+function VideoGrid({
+  entries,
+  eager,
+  ...actions
+}: TileActions & { entries: RankedTopicVideo[]; eager: boolean }) {
   return (
-    <div className="flex flex-col gap-1">
-      <dt className="type-label">{label}</dt>
-      {/* ui-exception: flagship stage — headline figures. */}
-      <dd className="text-2xl font-semibold tabular-nums text-foreground">{value}</dd>
+    <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
+      {entries.map((entry, index) => (
+        <VideoTile key={entry.video.youtube_video_id} entry={entry} eagerImage={eager && index < 3} {...actions} />
+      ))}
     </div>
   );
 }
@@ -193,187 +233,242 @@ function scoreExplanation(entry: RankedTopicVideo): string {
     .join(" · ");
 }
 
-function VideoRow({
+function useThumbnail(videoId: string, stored: string | null | undefined) {
+  // maxresdefault does not exist for every video; hqdefault always does, and
+  // object-cover in the frame crops its letterbox bars away.
+  const fallback = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  const [src, setSrc] = useState(stored ?? fallback);
+  const [loaded, setLoaded] = useState(false);
+  return {
+    src,
+    loaded,
+    onError: () => setSrc(fallback),
+    // A missing size comes back as YouTube's 120px grey placeholder, not an error.
+    onLoad: (event: React.SyntheticEvent<HTMLImageElement>) => {
+      if (event.currentTarget.naturalWidth <= 120 && src !== fallback) {
+        setSrc(fallback);
+        return;
+      }
+      setLoaded(true);
+    },
+  };
+}
+
+function Thumbnail({
   entry,
-  eagerImage,
+  href,
+  aspect,
+  eager,
   selected,
   selecting,
+  onToggle,
+}: {
+  entry: RankedTopicVideo;
+  href: string;
+  aspect: "video" | "short";
+  eager: boolean;
+  selected: boolean;
+  selecting: boolean;
+  onToggle: () => void;
+}) {
+  const { video, score } = entry;
+  const thumb = useThumbnail(video.youtube_video_id, video.thumbnail_url);
+  return (
+    <div className="group/thumb relative">
+      <Link
+        href={href}
+        className={cn(
+          "relative block overflow-hidden rounded-xl bg-muted",
+          aspect === "short" ? "aspect-[9/16]" : "aspect-video",
+          selected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+        )}
+      >
+        {!thumb.loaded && <span aria-hidden className="absolute inset-0 animate-pulse bg-muted" />}
+        <Image
+          src={thumb.src}
+          alt=""
+          fill
+          unoptimized
+          loading={eager ? "eager" : "lazy"}
+          className="object-cover"
+          onError={thumb.onError}
+          onLoad={thumb.onLoad}
+        />
+        {/* ui-exception: ink on a photo is fixed white on a dark scrim (YouTube's own convention). */}
+        <span
+          className="absolute left-2 top-2 rounded bg-black/75 px-1.5 py-0.5 type-meta font-semibold tabular-nums text-white"
+          aria-label={`Match score ${score.score}`}
+        >
+          {score.score}
+        </span>
+        {aspect === "video" && video.duration && (
+          <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1 py-0.5 type-meta font-medium tabular-nums text-white">
+            {formatYouTubeDuration(video.duration)}
+          </span>
+        )}
+      </Link>
+      <div
+        className={cn(
+          "absolute right-2 top-2 rounded-md bg-card p-1 shadow-sm transition-opacity",
+          selected || selecting ? "opacity-100" : "opacity-0 focus-within:opacity-100 group-hover/thumb:opacity-100",
+        )}
+      >
+        <Checkbox checked={selected} onCheckedChange={onToggle} aria-label={`Select ${video.title ?? "video"}`} />
+      </div>
+    </div>
+  );
+}
+
+function VideoMenu({
+  entry,
+  href,
+  selected,
   onToggle,
   analyzing,
   onAnalyze,
 }: {
   entry: RankedTopicVideo;
-  eagerImage: boolean;
+  href: string;
   selected: boolean;
-  selecting: boolean;
   onToggle: () => void;
   analyzing: boolean;
   onAnalyze: () => void;
 }) {
-  const { video, importance, score, rank } = entry;
-  const [expanded, setExpanded] = useState(false);
-  // maxresdefault does not exist for every video; hqdefault always does, and
-  // object-cover in a 16:9 frame crops its letterbox bars away.
-  const fallbackThumbnail = `https://i.ytimg.com/vi/${video.youtube_video_id}/hqdefault.jpg`;
-  const [thumbnail, setThumbnail] = useState(video.thumbnail_url ?? fallbackThumbnail);
-  const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+  const { video } = entry;
   const analyzed = videoReadState(video) === "analyzed";
-  const engagement = youTubeEngagementRate(video.like_count, video.comment_count, video.view_count);
-  const description = video.description?.trim() ?? "";
-  const longDescription = description.length > 180 || description.split("\n").length > 2;
-  const href = marketingRoutes.youtubeVideo(video.youtube_video_id);
-  const topKeyword = importance?.perKeyword[0] ?? null;
-  const otherKeywords = Math.max(0, (importance?.keywordCount ?? 0) - 1);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button icon={<MoreVertical />} aria-label="Video actions" variant="quiet" className="-mr-2 shrink-0" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuItem asChild>
+          <Link href={href}>
+            <PanelTop className="mr-2 h-4 w-4" />
+            Open video page
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => openOutbound(video.canonical_url, "_blank")}>
+          <ExternalLink className="mr-2 h-4 w-4" />
+          Watch on YouTube
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={analyzed || analyzing} onClick={onAnalyze}>
+          {analyzing ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Brain className="mr-2 h-4 w-4" />}
+          {analyzed ? "Analyzed" : analyzing ? "Analyzing" : "Analyze"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onToggle}>
+          <SquareCheck className="mr-2 h-4 w-4" />
+          {selected ? "Deselect" : "Select"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="whitespace-normal">
+          Match {entry.score.score} · #{entry.rank}
+          <span className="mt-0.5 block font-normal">{scoreExplanation(entry)}</span>
+        </DropdownMenuLabel>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
+function AnalyzedMark({ entry }: { entry: RankedTopicVideo }) {
+  if (videoReadState(entry.video) !== "analyzed") return null;
+  return (
+    <>
+      <span aria-hidden> · </span>
+      <CheckCircle2 aria-label="Analyzed" className="inline size-3.5 -translate-y-px" />
+    </>
+  );
+}
+
+function VideoTile({
+  entry,
+  eagerImage,
+  selected,
+  onToggle,
+  analyzing,
+  onAnalyze,
+}: TileActions & { entry: RankedTopicVideo; eagerImage: boolean }) {
+  const { video } = entry;
+  const id = video.youtube_video_id;
+  const href = marketingRoutes.youtubeVideo(id);
+  const isSelected = selected.has(id);
   const meta = [
     video.view_count != null ? `${formatYouTubeCount(video.view_count)} views` : null,
-    video.like_count != null ? `${formatYouTubeCount(video.like_count)} likes` : null,
-    video.comment_count != null ? `${formatYouTubeCount(video.comment_count)} comments` : null,
     video.published_at ? formatRelativeTime(video.published_at, { style: "intl" }) : null,
   ].filter(Boolean);
 
   return (
-    <li
-      className={cn(
-        "group relative grid gap-5 rounded-2xl p-3 transition-colors sm:grid-cols-[minmax(0,22rem)_minmax(0,1fr)_auto]",
-        selected ? "bg-accent" : "hover:bg-accent/50",
-      )}
-    >
-      <div className="relative">
-        <Link href={href} className="relative block aspect-video overflow-hidden rounded-xl bg-muted">
-          {!thumbnailLoaded && <span aria-hidden className="absolute inset-0 animate-pulse bg-muted" />}
-          <Image
-            src={thumbnail}
-            alt=""
-            fill
-            unoptimized
-            loading={eagerImage ? "eager" : "lazy"}
-            className="object-cover"
-            onError={() => setThumbnail(fallbackThumbnail)}
-            // A missing size comes back as YouTube's 120px grey placeholder, not an error.
-            onLoad={(event) => {
-              if (event.currentTarget.naturalWidth <= 120 && thumbnail !== fallbackThumbnail) {
-                setThumbnail(fallbackThumbnail);
-                return;
-              }
-              setThumbnailLoaded(true);
-            }}
-          />
-          {video.duration && (
-            // ui-exception: ink on a photo is fixed white on a dark scrim (YouTube's own convention).
-            <span className="absolute bottom-2 right-2 rounded-md bg-black/80 px-1.5 py-0.5 type-meta font-medium tabular-nums text-white">
-              {formatYouTubeDuration(video.duration)}
-            </span>
-          )}
-        </Link>
-        <div
-          className={cn(
-            "absolute left-2 top-2 rounded-md bg-card p-1 shadow-sm transition-opacity",
-            selected || selecting ? "opacity-100" : "opacity-0 focus-within:opacity-100 group-hover:opacity-100",
-          )}
-        >
-          <Checkbox checked={selected} onCheckedChange={onToggle} aria-label={`Select ${video.title ?? "video"}`} />
-        </div>
-      </div>
-
-      <div className="flex min-w-0 flex-col gap-2 py-1">
-        {/* ui-exception: flagship stage — a video title reads at YouTube's own size. */}
-        <Link href={href} className="text-lg font-semibold leading-snug text-foreground hover:underline">
-          {video.title ?? "Untitled video"}
-        </Link>
-        <p className="type-secondary tabular-nums text-muted-foreground">
-          {meta.join(" · ")}
-          {engagement !== null && engagement > 0 && ` · ${engagement.toFixed(1)}% engagement`}
-        </p>
-        <div className="flex items-center gap-2">
-          <UserAvatarDisplay user={{ id: video.channel_id, name: video.channel_title }} size="xs" />
-          <span className="truncate type-title text-foreground">{video.channel_title ?? "YouTube creator"}</span>
-          {video.channel_subscriber_count != null && (
-            <span className="shrink-0 type-secondary text-muted-foreground">
-              {formatYouTubeCount(video.channel_subscriber_count)} subscribers
-            </span>
-          )}
-        </div>
-        {description && (
-          <p className={cn("whitespace-pre-line break-words type-body text-muted-foreground", !expanded && "line-clamp-2")}>
-            {description}
+    <article className="flex min-w-0 flex-col gap-3">
+      <Thumbnail
+        entry={entry}
+        href={href}
+        aspect="video"
+        eager={eagerImage}
+        selected={isSelected}
+        selecting={selected.size > 0}
+        onToggle={() => onToggle(id)}
+      />
+      <div className="flex gap-3">
+        <UserAvatarDisplay user={{ id: video.channel_id, name: video.channel_title }} size="sm" className="mt-0.5 shrink-0" />
+        <div className="min-w-0 flex-1">
+          {/* ui-exception: flagship stage — a video title reads at YouTube's own size. */}
+          <Link href={href} className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground" title={video.title ?? undefined}>
+            {video.title ?? "Untitled video"}
+          </Link>
+          <p className="mt-1 truncate type-secondary text-muted-foreground">{video.channel_title ?? "YouTube creator"}</p>
+          <p className="truncate type-secondary tabular-nums text-muted-foreground">
+            {meta.join(" · ")}
+            <AnalyzedMark entry={entry} />
           </p>
-        )}
-        {(topKeyword || longDescription) && (
-          <div className="flex min-h-7 items-center justify-between gap-3">
-            {topKeyword ? (
-              <p className="min-w-0 truncate type-secondary text-muted-foreground">
-                {topKeyword.rank != null ? `#${topKeyword.rank} for ` : "Found for "}
-                <span className="text-foreground">“{topKeyword.keyword}”</span>
-                {otherKeywords > 0 && ` and ${otherKeywords} more`}
-              </p>
-            ) : (
-              <span />
-            )}
-            {longDescription && (
-              <Button type="button" variant="link" onClick={() => setExpanded((open) => !open)}>
-                {expanded ? "Less" : "More"}
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start sm:py-1">
-        <ScoreRing score={score.score} rank={rank} explanation={scoreExplanation(entry)} />
-        <div className="flex items-center gap-1 sm:flex-col sm:items-end">
-          {analyzed ? (
-            <span className="inline-flex items-center gap-1 type-secondary font-medium text-success-ink">
-              <Check className="size-3.5" />
-              Analyzed
-            </span>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              icon={analyzing ? <LoaderCircle className="animate-spin" /> : <Brain />}
-              disabled={analyzing}
-              onClick={onAnalyze}
-            >
-              {analyzing ? "Analyzing" : "Analyze"}
-            </Button>
-          )}
-          <Button asChild variant="quiet" icon={<ArrowUpRight />}>
-            <Link href={href}>Open</Link>
-          </Button>
         </div>
+        <VideoMenu
+          entry={entry}
+          href={href}
+          selected={isSelected}
+          onToggle={() => onToggle(id)}
+          analyzing={analyzing.has(id)}
+          onAnalyze={() => onAnalyze(id)}
+        />
       </div>
-    </li>
+    </article>
   );
 }
 
-const RING_RADIUS = 20;
-const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
-
-function ScoreRing({ score, rank, explanation }: { score: number; rank: number; explanation: string }) {
+function ShortTile({ entry, selected, onToggle, analyzing, onAnalyze }: TileActions & { entry: RankedTopicVideo }) {
+  const { video } = entry;
+  const id = video.youtube_video_id;
+  const href = marketingRoutes.youtubeVideo(id);
+  const isSelected = selected.has(id);
   return (
-    <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
-      <div className="relative size-12">
-        <svg viewBox="0 0 48 48" className="size-12 -rotate-90" aria-hidden>
-          <circle cx="24" cy="24" r={RING_RADIUS} fill="none" strokeWidth="4" className="stroke-muted" />
-          <circle
-            cx="24"
-            cy="24"
-            r={RING_RADIUS}
-            fill="none"
-            strokeWidth="4"
-            strokeLinecap="round"
-            className="stroke-primary"
-            strokeDasharray={RING_LENGTH}
-            strokeDashoffset={RING_LENGTH * (1 - score / 100)}
-          />
-        </svg>
-        <span className="absolute inset-0 grid place-items-center type-title tabular-nums text-foreground">{score}</span>
+    <article className="flex min-w-0 flex-col gap-2">
+      <Thumbnail
+        entry={entry}
+        href={href}
+        aspect="short"
+        eager={false}
+        selected={isSelected}
+        selecting={selected.size > 0}
+        onToggle={() => onToggle(id)}
+      />
+      <div className="flex gap-1">
+        <div className="min-w-0 flex-1">
+          <Link href={href} className="line-clamp-2 type-title text-foreground" title={video.title ?? undefined}>
+            {video.title ?? "Untitled short"}
+          </Link>
+          <p className="truncate type-secondary tabular-nums text-muted-foreground">
+            {video.view_count != null ? `${formatYouTubeCount(video.view_count)} views` : "—"}
+            <AnalyzedMark entry={entry} />
+          </p>
+        </div>
+        <VideoMenu
+          entry={entry}
+          href={href}
+          selected={isSelected}
+          onToggle={() => onToggle(id)}
+          analyzing={analyzing.has(id)}
+          onAnalyze={() => onAnalyze(id)}
+        />
       </div>
-      <span className="inline-flex items-center gap-0.5 type-meta text-muted-foreground">
-        #{rank}
-        <InfoHint text={explanation} label="How this score is made" />
-      </span>
-    </div>
+    </article>
   );
 }

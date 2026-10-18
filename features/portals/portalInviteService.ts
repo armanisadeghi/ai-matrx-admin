@@ -96,7 +96,9 @@ export interface PortalShareAccepted {
 
 /** What is on offer, asked anonymously off the token. Grants nothing. */
 export async function peekPortalShare(token: string): Promise<PortalSharePeek> {
-  const { data, error } = await custom().rpc("portal_share_peek", { p_token: token });
+  // `portal_share_peek` lives in schema `public` (its grant is anon + authenticated, off the token
+  // alone); only the accept door is in `custom`. Asking `custom` for it answered "not found".
+  const { data, error } = await createClient().rpc("portal_share_peek", { p_token: token });
   if (error) throw new Error(error.message);
   return data as unknown as PortalSharePeek;
 }

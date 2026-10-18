@@ -677,7 +677,11 @@ export async function walkCapGate(input: WalkCapGateInput): Promise<Response | n
     if (decision.newlyAdmitted) {
       input.log(
         `[walk-cap] ADMITTED ${host}${decision.burst ? " into an EXTRA slot" : ""} — ${capLabel(count)} live-database walks active` +
-          (decision.burst ? `; ${memory.why}` : ""),
+          (decision.burst
+            ? memory.state === "headroom"
+              ? `; ${memory.why}`
+              : ` (swapped in for an idle session; no new extra slot: ${memory.why})`
+            : ""),
       );
     }
     return null;

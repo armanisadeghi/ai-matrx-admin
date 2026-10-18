@@ -32,10 +32,12 @@ const spawned = [];
 const dirs = [];
 after(() => {
   for (const pid of spawned) {
-    try {
-      process.kill(pid, "SIGKILL");
-    } catch {
-      /* gone */
+    for (const target of [-pid, pid]) {
+      try {
+        process.kill(target, "SIGKILL"); // its own session's group first: a fake browser's sleep goes too
+      } catch {
+        /* gone */
+      }
     }
   }
   for (const d of dirs) rmSync(d, { recursive: true, force: true });
@@ -236,23 +238,23 @@ import socket, os, sys, time
 s = socket.socket(); s.bind(("127.0.0.1", 0)); s.listen(1)
 port = s.getsockname()[1]
 c = socket.create_connection(("127.0.0.1", port)); a, _ = s.accept()
-sys.stdout.write(f"{port}\\n"); sys.stdout.flush()
-if os.fork() == 0:
+child = os.fork()
+if child:
+    sys.stdout.write(f"{port} {child}\\n"); sys.stdout.flush(); os._exit(0)
+if True:
     os.setsid()
     devnull = os.open(os.devnull, os.O_RDWR)
     for fd in (0, 1, 2):
         os.dup2(devnull, fd)
     time.sleep(600); os._exit(0)
-os._exit(0)
 `;
   const helperOut = spawnSync("/usr/bin/python3", ["-c", py], { encoding: "utf8" });
-  const port = Number(helperOut.stdout.trim());
+  const [port, helper] = helperOut.stdout.trim().split(/\s+/).map(Number);
+  spawned.push(helper);
   assert.ok(port > 0);
   const attached = orphan(browserArgv(bin, 605, `--remote-debugging-port=${port}`));
   sourced(dir, "sweep_orphan_browsers", { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "0" });
   assert.ok(isAlive(attached), "a CDP client is attached, so the browser stays");
-  const holder = spawnSync("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:ESTABLISHED", "-t"], { encoding: "utf8" }).stdout.trim().split("\n");
-  for (const p of holder) if (Number(p) > 0) spawned.push(Number(p));
 });
 
 test("a detached launcher from agent scratch, older than the longest hold, is closed with its browser", () => {

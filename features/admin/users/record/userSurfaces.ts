@@ -17,7 +17,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   Building2,
   Gauge,
-  ShieldCheck,
   Gem,
   Gift,
   GraduationCap,
@@ -32,6 +31,7 @@ import {
   MailCheck,
   MailPlus,
   MessageSquare,
+  ShieldCheck,
   SlidersHorizontal,
   StickyNote,
   UserCheck,
@@ -72,7 +72,7 @@ export const USER_TABS: readonly UserTab[] = [
   { id: "organizations", label: "Organizations", icon: Building2, built: true },
   { id: "content", label: "Content", icon: FolderOpen, built: true },
   { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
-  { id: "notes", label: "Notes", icon: StickyNote, built: false },
+  { id: "notes", label: "Notes", icon: StickyNote, built: true },
   { id: "security", label: "Security", icon: ShieldCheck, built: true },
   { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: true },
   { id: "acquisition", label: "Acquisition", icon: UserPlus, built: true },
@@ -160,6 +160,22 @@ export function userActions(placement: UserActionDef["placement"]): UserActionDe
   return USER_ACTIONS.filter((a) => a.live && a.placement === placement).sort(
     (a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group),
   );
+}
+
+/**
+ * A door that RUNS one of the page's actions (lane L, 2026-10-18): the person's page opened with
+ * `?do=<action>` runs that action once it has loaded — the same dialog its header opens — then drops
+ * the parameter. For a surface that cannot hold the dialog itself (a hover peek unmounts when a
+ * dialog takes focus). The page refuses an action that is not live or not allowed for this person.
+ */
+export const USER_ACTION_PARAM = "do";
+
+export function userActionHref(userId: string, action: UserActionId): string {
+  return `${userRecordHref(userId)}?${USER_ACTION_PARAM}=${encodeURIComponent(action)}`;
+}
+
+export function isUserActionId(value: string | null): value is UserActionId {
+  return USER_ACTIONS.some((a) => a.id === value && a.live);
 }
 
 export function userActionDef(id: UserActionId): UserActionDef {

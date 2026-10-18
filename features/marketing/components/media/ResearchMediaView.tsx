@@ -344,7 +344,7 @@ export function ResearchMediaView({
     }
   };
 
-  if (images.isLoading) {
+  if (images.isLoading || brandScope === null) {
     return <LoadingSurface label="Loading research images…" />;
   }
   if (images.isError) {
@@ -353,7 +353,8 @@ export function ResearchMediaView({
     );
   }
 
-  if (rows.length === 0) {
+  // Only an organization with no research at all gets the bare card; a brand with nothing linked keeps its filters.
+  if (rows.length === 0 && brandFilter === BRAND_ALL && !images.isPending) {
     return (
       <SectionCard title="Research images">
         <div className="p-3">
@@ -483,14 +484,26 @@ export function ResearchMediaView({
       </div>
 
       {filtered.length === 0 ? (
-        <MediaEmptyState
-          title="No research images match"
-          action={
-            <Button variant="quiet" onClick={resetFilters}>
-              Reset filters
-            </Button>
-          }
-        />
+        brandFilter !== BRAND_ALL && brandFilter !== BRAND_NONE && rows.length === 0 ? (
+          // Nothing is linked to this brand yet: one way out, never a dead end.
+          <MediaEmptyState
+            title={`No research linked to ${brands.data?.find((b) => b.id === brandFilter)?.name ?? "this brand"} yet`}
+            action={
+              <Button variant="quiet" onClick={() => setBrandFilter(BRAND_ALL)}>
+                Show all research
+              </Button>
+            }
+          />
+        ) : (
+          <MediaEmptyState
+            title="No research images match"
+            action={
+              <Button variant="quiet" onClick={resetFilters}>
+                Reset filters
+              </Button>
+            }
+          />
+        )
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filtered.map((row) => {

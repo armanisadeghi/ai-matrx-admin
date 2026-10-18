@@ -1,7 +1,7 @@
 /**
  * What a person is actually agreeing to when they connect Microsoft.
  *
- * The server declares six campaigns (`MicrosoftGraphCampaign` in
+ * The server declares nine campaigns (`MicrosoftGraphCampaign` in
  * `aidream/services/microsoft_integrations/lifecycle.py`); each maps to an exact
  * set of delegated Graph scopes and nothing wider. This file is the ONE place
  * those campaigns are described to a human, in the sentences a person can judge:
@@ -20,6 +20,9 @@ export const MICROSOFT_CAMPAIGNS = [
   "outlook_calendar_basic",
   "teams_personal_read",
   "sharepoint_selected",
+  "outlook_mail_send",
+  "outlook_calendar_write",
+  "teams_channel_send",
 ] as const;
 
 export type MicrosoftCampaign = (typeof MICROSOFT_CAMPAIGNS)[number];
@@ -35,6 +38,11 @@ export interface MicrosoftCampaignDescriptor {
   readonly scopes: readonly string[];
   /** Always requested — identity is how the account is named on screen. */
   readonly alwaysOn: boolean;
+  /**
+   * A WRITE permission (table-automation steps act as the person). Approved on its own: Microsoft consent for a write
+   * scope is never bundled with the read-only ones, so choosing one clears the other kind.
+   */
+  readonly writes?: boolean;
 }
 
 export const MICROSOFT_CAMPAIGN_DESCRIPTORS: readonly MicrosoftCampaignDescriptor[] =
@@ -94,6 +102,36 @@ export const MICROSOFT_CAMPAIGN_DESCRIPTORS: readonly MicrosoftCampaignDescripto
       cannot: "Reach any site that has not been named and granted.",
       scopes: ["Sites.Selected"],
       alwaysOn: false,
+    },
+    {
+      campaign: "outlook_mail_send",
+      label: "Send Outlook email",
+      grants:
+        "Send email from your Outlook address when one of your automations has a Send Outlook email step.",
+      cannot: "Read your mail. It only sends, and only when an automation you switched on runs.",
+      scopes: ["Mail.Send"],
+      alwaysOn: false,
+      writes: true,
+    },
+    {
+      campaign: "outlook_calendar_write",
+      label: "Change Outlook calendar events",
+      grants:
+        "Create, change and cancel events on your calendar when one of your automations has an Outlook calendar step.",
+      cannot: "Do anything outside your own calendar.",
+      scopes: ["Calendars.ReadWrite"],
+      alwaysOn: false,
+      writes: true,
+    },
+    {
+      campaign: "teams_channel_send",
+      label: "Post in Teams channels",
+      grants:
+        "Post a message in a Teams channel you name when one of your automations has a Teams message step. Work or school accounts only.",
+      cannot: "Read channel messages or chats.",
+      scopes: ["ChannelMessage.Send"],
+      alwaysOn: false,
+      writes: true,
     },
   ];
 

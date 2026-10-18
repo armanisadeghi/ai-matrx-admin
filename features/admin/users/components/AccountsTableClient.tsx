@@ -274,6 +274,7 @@ function AccountsRoster() {
     toggleTopTierModels,
     openMessage,
     signOutEverywhere,
+    verifyEmail,
     messageTarget,
     messageDraft,
     dialogs: userActionDialogs,
@@ -351,6 +352,9 @@ function AccountsRoster() {
         return;
       case "sign_out_everywhere":
         signOutEverywhere(row);
+        return;
+      case "verify_email":
+        verifyEmail(row);
         return;
     }
   };
@@ -905,7 +909,8 @@ function AccountsRoster() {
         variant: "destructive",
         reason: { placeholder: "Reason (recorded with each closure)" },
       }),
-      run: async (sel, { reason }) => {
+      run: async (sel, input) => {
+        const reason = input?.reason;
         if (!reason) throw new Error("A reason is required to close accounts.");
         return runPerRow(
           sel,
@@ -940,7 +945,8 @@ function AccountsRoster() {
         confirmLabel: "Reopen",
         reason: { placeholder: "Reason (recorded in the admin history)" },
       }),
-      run: async (sel, { reason }) => {
+      run: async (sel, input) => {
+        const reason = input?.reason;
         if (!reason) throw new Error("A reason is required to reopen accounts.");
         return runPerRow(
           sel,

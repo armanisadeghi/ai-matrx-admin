@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   MICROSOFT_CAMPAIGN_DESCRIPTORS,
   MICROSOFT_DEFAULT_CAMPAIGNS,
+  describeMicrosoftCampaign,
   microsoftReturnMessage,
   type MicrosoftCampaign,
 } from "@/features/microsoft-integration/campaigns";
@@ -98,7 +99,14 @@ export function MicrosoftConnectPanel({
     setSelected((current) => {
       const next = new Set(current);
       if (next.has(campaign)) next.delete(campaign);
-      else next.add(campaign);
+      else {
+        // A write permission is approved on its own: choosing one kind clears the other.
+        const writes = describeMicrosoftCampaign(campaign)?.writes === true;
+        for (const other of Array.from(next)) {
+          if ((describeMicrosoftCampaign(other)?.writes === true) !== writes) next.delete(other);
+        }
+        next.add(campaign);
+      }
       return next;
     });
   }, []);

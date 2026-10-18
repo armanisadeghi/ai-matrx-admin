@@ -4,8 +4,10 @@
 --
 -- ADV-1 F8 (tables close-out, 2026-10-18). custom.field_retype_preview ran the real change on every record
 -- of the column and held row locks on the whole table until it rolled back; the panel asks on every pick.
--- Now: a column holding more than 2000 values is not run (answers limited, with the count held); a smaller
--- one runs under a 1s lock cap and a 4s statement cap, and a busy or slow table answers limited as well.
+-- Now: a column holding more than 100 values is not run (answers limited, with the count held); a smaller
+-- one runs under a 1s lock cap, and a table another editor holds answers limited as well. (Measured
+-- 2026-10-18: the real change costs about 40 ms a value, so 100 values is about 5 s; a statement timeout set
+-- from inside a function cannot cut the running statement, so the value count is the bound.)
 -- The exact count is kept for every small column. Nothing about the change itself moves.
 -- Inverse: migrations/inverse/20261018140000_adv_fix_b_retype_preview_is_bounded_down.sql
 set local lock_timeout = '3s';
@@ -29,7 +31,7 @@ declare
   v_before  integer;
   v_out     jsonb;
   v_opts    uuid;
-  v_cap     constant integer := 2000;   -- a column holding more values than this is not run: nothing is locked
+  v_cap     constant integer := 100;    -- a column holding more values than this is not run: nothing is locked
   v_lock0   text;
   v_stmt0   text;
 begin
@@ -47,7 +49,7 @@ begin
   -- ADV-1 F8 (2026-10-18): THE PREVIEW CAN NEVER HOLD A BIG TABLE. It used to run the real change on every
   -- record, holding row locks on the whole table until the rollback, and the panel asked on every pick.
   -- A column holding more than v_cap values is not run at all (the answer says "limited" and gives the
-  -- count held), and a smaller one runs under short lock and statement caps, so a busy or slow table
+  -- count held), and a smaller one runs under a short lock cap, so a busy table
   -- answers "limited" too instead of making other editors wait. The change itself is unchanged.
   if v_before > v_cap then
     return jsonb_build_object('held_before', v_before, 'converts', null, 'kept_aside', null,
@@ -56,7 +58,6 @@ begin
   v_lock0 := current_setting('lock_timeout');
   v_stmt0 := current_setting('statement_timeout');
   perform set_config('lock_timeout', '1s', true);
-  perform set_config('statement_timeout', '4s', true);
   begin
     perform custom.field_update(p_organization_id, p_field_id, p_patch);
     select nullif(f.data -> 'config' ->> 'options_table_id', '')::uuid into v_opts

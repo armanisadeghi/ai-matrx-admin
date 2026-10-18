@@ -243,7 +243,8 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
     <div
       className={
         auto
-          ? "flex flex-col gap-2"
+          ? // A wide section scrolls sideways inside its own card only (a phone); it never scrolls down.
+            "flex min-w-0 flex-col gap-2 overflow-x-auto"
           : mount.mountsTheTable
             ? "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1"
             : "h-full min-h-0 overflow-y-auto p-4"
@@ -373,8 +374,9 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     // The Get data tile is the source picker until its table exists: one click opens it.
     opensOnClick: (s) => s.kind === "entity" && !tableIdOf(s) && Boolean(readDataFetchMeta(s.meta)),
     Body: TableItemBody,
+    menuActions: tableMenuActions,
     // A section card carries its own title (its h2) and lays out at its natural height.
-    namesItself: () => false,
+    namesItself: (s) => Boolean(tableIdOf(s)) && tableLayoutOf(s) === "section",
     autoHeight: (s) => Boolean(tableIdOf(s)) && tableLayoutOf(s) === "section",
     // Wakes with its grid, scroll, selection and open cell intact: the gates keep their answers
     // (lib/kept-answer), so a wake never drops to "Opening the table…" (lane REMOUNT-SAFETY).
