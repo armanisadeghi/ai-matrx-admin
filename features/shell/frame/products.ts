@@ -3,6 +3,7 @@
 // final; change them HERE only. Host-agnostic data (lucide icons + design-system
 // chip hues), so the file moves into @ai-matrx/shell as a copy.
 import {
+  AppWindow,
   AudioLines,
   BarChart3,
   BookOpen,
@@ -13,6 +14,7 @@ import {
   Code2,
   Contact,
   Database,
+  Eye,
   Factory,
   FileSignature,
   FileText,
@@ -42,6 +44,8 @@ import {
   Target,
   Users,
   Video,
+  Webhook,
+  Workflow,
   Wrench,
 } from "lucide-react";
 import type { FrameProduct, ProductFamily } from "./types";
@@ -66,13 +70,23 @@ export const PRODUCTS: readonly FrameProduct[] = [
       {
         id: "main",
         items: [
-          { id: "home", label: "Overview", icon: House },
           { id: "mandates", label: "Mandates", icon: ListChecks },
-          { id: "agents", label: "Agents", icon: Users },
-          { id: "runs", label: "Runs", icon: History },
+          { id: "agents", label: "Agents", icon: Webhook },
+          { id: "workflows", label: "Workflows", icon: Workflow },
+          { id: "hindsight", label: "Hindsight review", icon: Eye },
+          { id: "replay", label: "Replay", icon: History },
         ],
       },
     ],
+  },
+  {
+    id: "applets",
+    name: "Applets",
+    family: "build",
+    icon: AppWindow,
+    color: "fuchsia",
+    homeHref: "/applets",
+    menu: [{ id: "main", items: [{ id: "all", label: "All applets", icon: AppWindow }] }],
   },
   {
     id: "code",
@@ -151,6 +165,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
           { id: "documents", label: "Documents", icon: FileText, count: 42 },
           { id: "notes", label: "Notes", icon: NotebookPen, count: 118 },
           { id: "slides", label: "Slides", icon: Presentation, count: 7 },
+          { id: "pdf", label: "PDF & scan", icon: ScanLine },
         ],
       },
       {
@@ -270,6 +285,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
       {
         id: "main",
         items: [
+          { id: "meet", label: "Meet", icon: Video },
           { id: "calendar", label: "Calendar", icon: CalendarDays },
           { id: "messages", label: "Messages", icon: MessagesSquare },
         ],
@@ -330,13 +346,13 @@ export const PRODUCTS: readonly FrameProduct[] = [
     ],
   },
   {
-    id: "industries",
-    name: "Industries",
+    id: "solutions",
+    name: "Solutions",
     family: "yours",
     icon: Factory,
     color: "teal",
-    homeHref: "/industries",
-    menu: [{ id: "main", items: [{ id: "all", label: "All industries", icon: Factory }] }],
+    homeHref: "/solutions",
+    menu: [{ id: "main", items: [{ id: "all", label: "All solutions", icon: Factory }] }],
   },
 ];
 

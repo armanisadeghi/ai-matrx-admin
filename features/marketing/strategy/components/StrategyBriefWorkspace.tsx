@@ -17,13 +17,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  */
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Check,
-  ExternalLink,
-  History,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { Check, ExternalLink, History, Loader2, RefreshCw } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +34,10 @@ import {
 } from "@/features/marketing/components/shared/MarketingUi";
 import { useBrandSites } from "@/features/marketing/data/hooks";
 import { marketingSeg } from "@/features/marketing/lib/keys";
-import { brandKindCopy, type BrandKind } from "@/features/marketing/lib/brand-kind";
+import {
+  brandKindCopy,
+  type BrandKind,
+} from "@/features/marketing/lib/brand-kind";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 import type { StrategyBrief, StrategyScope } from "../data";
@@ -58,7 +55,10 @@ const SCOPE_NOUN: Record<StrategyScope, string> = {
 };
 
 /** Facts the agent establishes, in the order a person reads them. */
-const FACT_ROWS: Record<StrategyScope, Array<{ key: string; label: string }>> = {
+const FACT_ROWS: Record<
+  StrategyScope,
+  Array<{ key: string; label: string }>
+> = {
   brand: [
     { key: "what_they_do", label: "What they do" },
     { key: "primary_location", label: "Where they are" },
@@ -99,7 +99,10 @@ function asList(value: unknown): string[] {
 }
 
 /** "Built from a crawl of 983 pages and 28 days of Search Console" — from provenance, never inferred. */
-function builtFrom(scope: StrategyScope, inputs: Record<string, unknown>): string[] {
+function builtFrom(
+  scope: StrategyScope,
+  inputs: Record<string, unknown>,
+): string[] {
   const parts: string[] = [];
   const crawl = inputs.crawl as Record<string, unknown> | undefined;
   if (crawl && typeof crawl.pages === "number") {
@@ -121,7 +124,9 @@ function builtFrom(scope: StrategyScope, inputs: Record<string, unknown>): strin
   }
   if (inputs.brand_strategy_id) parts.push("the brand strategy");
   if (Array.isArray(inputs.sites)) {
-    parts.push(`${inputs.sites.length} website${inputs.sites.length === 1 ? "" : "s"}`);
+    parts.push(
+      `${inputs.sites.length} website${inputs.sites.length === 1 ? "" : "s"}`,
+    );
   }
   return parts;
 }
@@ -170,7 +175,12 @@ export function StrategyBriefWorkspace({
   organizationId: string;
 }) {
   const brief = useStrategyBrief(scope, id, organizationId);
-  const history = useStrategyHistory(scope, id, organizationId, Boolean(brief.data));
+  const history = useStrategyHistory(
+    scope,
+    id,
+    organizationId,
+    Boolean(brief.data),
+  );
   const ruling = useStrategyRuling(scope, id, organizationId);
   const generate = useGenerateStrategy(scope, id, organizationId);
   // The site brief READS the brand strategy — say what it read.
@@ -186,7 +196,9 @@ export function StrategyBriefWorkspace({
   const current = brief.data ?? null;
   const guidanceValue = guidance ?? current?.guidance ?? "";
   const noun =
-    scope === "brand" ? brandKindCopy(brandKind).strategy.noun : SCOPE_NOUN[scope];
+    scope === "brand"
+      ? brandKindCopy(brandKind).strategy.noun
+      : SCOPE_NOUN[scope];
   const brandStrategyHref = `${marketingRoutes.brandIdentity(brandSeg)}/strategy`;
 
   async function runGenerate() {
@@ -203,7 +215,9 @@ export function StrategyBriefWorkspace({
 
   if (brief.isLoading) return <LoadingSurface label={`Loading the ${noun}…`} />;
   if (brief.error) {
-    return <QueryError error={brief.error} onRetry={() => void brief.refetch()} />;
+    return (
+      <QueryError error={brief.error} onRetry={() => void brief.refetch()} />
+    );
   }
 
   const nounTitle = noun.charAt(0).toUpperCase() + noun.slice(1);
@@ -216,8 +230,11 @@ export function StrategyBriefWorkspace({
         .map((row) => ({ ...row, value: asText(current.facts[row.key]) }))
         .filter((row) => row.value)
     : [];
-  const headline = factValues[0]?.value ?? "";
-  const heroFacts = factValues.slice(1, 4);
+  // The headline is the lead fact only; a missing lead never promotes another fact.
+  const headline = asText(current?.facts[FACT_ROWS[scope][0].key]);
+  const heroFacts = factValues.filter(
+    (row) => row.key !== FACT_ROWS[scope][0].key,
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-3 px-3 py-3 sm:px-4">
@@ -234,41 +251,52 @@ export function StrategyBriefWorkspace({
               {generate.stage ?? "Working…"}
             </span>
           ) : current ? (
-            <Button variant="quiet" onClick={() => void runGenerate()}>
-              <RefreshCw className="size-3.5" aria-hidden />
-              Write a new version
-            </Button>
+            <div className="flex items-center gap-2">
+              {current.status === "awaiting_review" ? (
+                <Badge variant="secondary">Waiting for you</Badge>
+              ) : null}
+              <Button variant="quiet" onClick={() => void runGenerate()}>
+                <RefreshCw className="size-3.5" aria-hidden />
+                Write a new version
+              </Button>
+            </div>
           ) : null}
         </div>
-        {current && headline ? (
+        {current ? (
           <>
-            <h2 className="mt-3 max-w-4xl text-balance text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
-              {headline}
-            </h2>
+            {headline ? (
+              <h2
+                className={`mt-3 max-w-4xl text-balance break-words font-semibold leading-tight tracking-tight text-foreground ${
+                  headline.length > 160
+                    ? "text-xl sm:text-2xl"
+                    : "text-2xl sm:text-4xl"
+                }`}
+              >
+                {headline}
+              </h2>
+            ) : null}
             {heroFacts.length > 0 ? (
-              <dl className="mt-6 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+              <dl
+                className={`${headline ? "mt-6" : "mt-3"} grid gap-3 sm:grid-cols-2 lg:grid-cols-3`}
+              >
                 {heroFacts.map((row) => (
-                  <div key={row.key} className="bg-card/90 p-4">
+                  <div
+                    key={row.key}
+                    className="min-w-0 rounded-xl border border-border bg-card/80 p-4"
+                  >
                     <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       {row.label}
                     </dt>
-                    <dd className="mt-1 text-sm leading-snug text-foreground">{row.value}</dd>
+                    <dd className="mt-1 break-words text-sm leading-snug text-foreground">
+                      {row.value}
+                    </dd>
                   </div>
                 ))}
               </dl>
             ) : null}
           </>
-        ) : current ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Asked after this version — write a new version
-          </p>
         ) : (
-          <div className="mt-3 space-y-4">
-            <h2 className="max-w-3xl text-balance text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
-              {scope === "brand"
-                ? "What this business does, who it serves, where it competes."
-                : "What this website is for and what it must win."}
-            </h2>
+          <div className="mt-3">
             {generate.running ? null : (
               <Button variant="primary" onClick={() => void runGenerate()}>
                 <AGENT_ICON className="size-3.5" aria-hidden />
@@ -295,25 +323,39 @@ export function StrategyBriefWorkspace({
 
           {scope === "brand" || current.serviceLines.length > 0 ? (
             <SectionCard
-              title={scope === "brand" ? "Service lines and where each competes" : "Service lines this site carries"}
+              title={
+                scope === "brand"
+                  ? "Service lines and where each competes"
+                  : "Service lines this site carries"
+              }
               about="Each line of business, the customers it is for and how far it reaches: national, regional, a service radius or specific locations."
             >
               {current.serviceLines.length === 0 ? (
-                <p className="p-3 text-sm text-muted-foreground">None established yet</p>
+                <p className="p-3 text-sm text-muted-foreground">
+                  None established yet
+                </p>
               ) : (
                 <ul className="divide-y divide-border">
                   {current.serviceLines.map((line) => (
                     <li key={line.name} className="px-3 py-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">{line.name}</span>
-                        <Badge variant="outline">{footprintLabel(line.footprint)}</Badge>
+                        <span className="text-sm font-medium text-foreground">
+                          {line.name}
+                        </span>
+                        <Badge variant="outline">
+                          {footprintLabel(line.footprint)}
+                        </Badge>
                         {line.customerSegment ? (
-                          <span className="text-xs text-muted-foreground">for {line.customerSegment}</span>
+                          <span className="text-xs text-muted-foreground">
+                            for {line.customerSegment}
+                          </span>
                         ) : null}
                       </div>
                       {line.footprintDetail || line.why ? (
                         <p className="mt-0.5 text-xs text-muted-foreground">
-                          {[line.footprintDetail, line.why].filter(Boolean).join(" — ")}
+                          {[line.footprintDetail, line.why]
+                            .filter(Boolean)
+                            .join(" — ")}
                         </p>
                       ) : null}
                     </li>
@@ -337,16 +379,20 @@ export function StrategyBriefWorkspace({
               />
               <div className="flex items-center gap-2">
                 <Button
-                  icon={ruling.isPending ? (
-                    <Loader2 className="animate-spin" aria-hidden />
-                  ) : (
-                    <Check aria-hidden />
-                  )}
+                  icon={
+                    ruling.isPending ? (
+                      <Loader2 className="animate-spin" aria-hidden />
+                    ) : (
+                      <Check aria-hidden />
+                    )
+                  }
                   variant="primary"
                   disabled={ruling.isPending}
                   onClick={() => ruling.mutate({ guidance: guidanceValue })}
                 >
-                  {current.status === "confirmed" ? "Save corrections" : "Confirm this brief"}
+                  {current.status === "confirmed"
+                    ? "Save corrections"
+                    : "Confirm this brief"}
                 </Button>
               </div>
             </div>
@@ -361,10 +407,23 @@ export function StrategyBriefWorkspace({
         >
           <ul className="divide-y divide-border">
             {(sites.data ?? []).map((site) => (
-              <li key={site.id} className="flex items-center justify-between gap-2 px-3 py-2">
-                <span className="min-w-0 truncate text-sm text-foreground">{site.domain ?? site.name}</span>
+              <li
+                key={site.id}
+                className="flex items-center justify-between gap-2 px-3 py-2"
+              >
+                <span className="min-w-0 truncate text-sm text-foreground">
+                  {site.domain ?? site.name}
+                </span>
                 <Button asChild variant="quiet">
-                  <Link href={marketingRoutes.brandContentPlanSite(brandSeg, marketingSeg(site), "brief")} target="_blank" rel="noopener noreferrer">
+                  <Link
+                    href={marketingRoutes.brandContentPlanSite(
+                      brandSeg,
+                      marketingSeg(site),
+                      "brief",
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Site brief
                     <ExternalLink className="size-3" aria-hidden />
                   </Link>
@@ -391,8 +450,15 @@ export function StrategyBriefWorkspace({
         >
           <div className="space-y-3 p-3">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <PropertyRow label="Status" value={status?.value} help={status?.help} />
-              <PropertyRow label="Built" value={formatDate(current.generatedAt)} />
+              <PropertyRow
+                label="Status"
+                value={status?.value}
+                help={status?.help}
+              />
+              <PropertyRow
+                label="Built"
+                value={formatDate(current.generatedAt)}
+              />
               <PropertyRow
                 label="Built from"
                 value={sources.length > 0 ? sources.join(", ") : undefined}
@@ -418,7 +484,11 @@ export function StrategyBriefWorkspace({
                   }
                   meta={
                     <Button asChild variant="quiet">
-                      <Link href={brandStrategyHref} target="_blank" rel="noopener noreferrer">
+                      <Link
+                        href={brandStrategyHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         Open
                         <ExternalLink className="size-3" aria-hidden />
                       </Link>
@@ -447,20 +517,37 @@ export function StrategyBriefWorkspace({
               <li key={version.id} className="px-3 py-2">
                 <details>
                   <summary className="flex cursor-pointer flex-wrap items-center gap-2 text-xs">
-                    <History className="size-3.5 text-muted-foreground" aria-hidden />
-                    <span className="font-medium text-foreground">v{version.versionNo}</span>
-                    <span className="text-muted-foreground">{formatDate(version.generatedAt)}</span>
+                    <History
+                      className="size-3.5 text-muted-foreground"
+                      aria-hidden
+                    />
+                    <span className="font-medium text-foreground">
+                      v{version.versionNo}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {formatDate(version.generatedAt)}
+                    </span>
                     {version.agentConfidence != null ? (
-                      <Badge variant="outline">confidence {version.agentConfidence}/5</Badge>
+                      <Badge variant="outline">
+                        confidence {version.agentConfidence}/5
+                      </Badge>
                     ) : null}
                     {version.reviewedAt ? (
-                      <span className="text-muted-foreground">confirmed {formatDate(version.reviewedAt)}</span>
+                      <span className="text-muted-foreground">
+                        confirmed {formatDate(version.reviewedAt)}
+                      </span>
                     ) : null}
                   </summary>
                   <div className="mt-2 space-y-3 rounded-md border border-border p-3">
-                    <MarkdownRenderer content={version.briefMarkdown} fontSize={13} />
+                    <MarkdownRenderer
+                      content={version.briefMarkdown}
+                      fontSize={13}
+                    />
                     {version.guidance ? (
-                      <PropertyRow label="Your words at the time" value={version.guidance} />
+                      <PropertyRow
+                        label="Your words at the time"
+                        value={version.guidance}
+                      />
                     ) : null}
                   </div>
                 </details>

@@ -7,15 +7,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { settleFromReturn } from "@/features/payments/server";
+import { safeReturnPath } from "@/features/payments/amount";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 export const dynamic = "force-dynamic";
 
-/** Only a path on THIS site is followed — never an outside address carried in the link. */
+/** Only a path on THIS site is followed — never an outside address carried in the link (I3). */
 function backTo(request: NextRequest, outcome: string): URL {
-  const raw = request.nextUrl.searchParams.get("back") ?? "/";
-  const safe = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
-  const url = new URL(safe, request.nextUrl.origin);
+  const path = safeReturnPath(request.nextUrl.searchParams.get("back"), request.nextUrl.origin);
+  const url = new URL(path, request.nextUrl.origin);
   url.searchParams.set("payment", outcome);
   return url;
 }

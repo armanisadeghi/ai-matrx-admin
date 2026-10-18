@@ -50,6 +50,7 @@ import {
   rungWords,
   unmandatedRunLabel,
 } from "./format";
+import { PHONE_TABLE_PX, runColumnWidths } from "./column-widths";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 export type RunsScope = { mandateKey: AnyMandateKey } | { agentId: string };
@@ -186,6 +187,8 @@ export function RunsTable({
 
   const { ref: boxRef, width: boxWidth } = useContainerWidth();
   const narrow = boxWidth != null && boxWidth < NARROW_TABLE_PX;
+  const phone = boxWidth != null && boxWidth < PHONE_TABLE_PX;
+  const widths = runColumnWidths(phone);
 
   const table = useServerTable<MandateRun>(
     async (state) => {
@@ -210,14 +213,14 @@ export function RunsTable({
     {
       id: "when",
       header: "Date",
-      width: 118,
+      width: widths.when,
       sortable: true,
       defaultSortDirection: "desc",
       filter: false,
       accessorFn: (run) => run.startedAt,
       cell: (run) => (
         <span className="tabular-nums" title={absoluteWhen(run.startedAt)}>
-          {whenWords(run.startedAt)}
+          {phone ? whenWords(run.startedAt).split(",")[0] : whenWords(run.startedAt)}
         </span>
       ),
     },
@@ -301,7 +304,7 @@ export function RunsTable({
     {
       id: "status",
       header: "Result",
-      width: 92,
+      width: widths.status,
       sortable: true,
       filter: "select",
       filterSingle: true,
@@ -328,7 +331,7 @@ export function RunsTable({
       id: "cost",
       header: "Cost",
       // "12,345 points" whole, never "5,414 poi…".
-      width: 112,
+      width: widths.cost,
       sortable: true,
       filter: false,
       accessorFn: (run) => run.cost,
@@ -375,8 +378,8 @@ export function RunsTable({
       sortable: false,
       filter: false,
       resizable: false,
-      width: 84,
-      minWidth: 84,
+      width: widths.open,
+      minWidth: widths.open,
       cell: (run) => {
         const href = outputHrefOf(run, audience);
         const what =
@@ -403,7 +406,7 @@ export function RunsTable({
       {boxWidth != null && (
     <MatrxDataTable<MandateRun>
       // The hidden-by-default set is read when the table mounts: crossing the width bar remounts it.
-      key={narrow ? "narrow" : "wide"}
+      key={phone ? "phone" : narrow ? "narrow" : "wide"}
       {...table.tableProps}
       columns={columns}
       getRowId={(run) => `${run.runKind}:${run.runId}`}

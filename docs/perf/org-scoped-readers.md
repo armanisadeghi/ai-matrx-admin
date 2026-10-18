@@ -59,3 +59,15 @@ Need their own shape, not the computed field as-is:
   scope tree org list (`features/scopes/service/scopesService.ts`), CRM `ctx.orgIds` remaining uses
   (team reach, `crm/service.ts` ~1473/1702/1729/1810). Names-only consumers belong on
   `useOrganizationsWith(ids)`; filter consumers on `in_my_organizations` (add the table's overload).
+
+## Apply verification (2026-10-17, after the coordinator's check)
+Both migrations applied through `pnpm db:apply` in one transaction each and ledgered; the ledger
+checksums equal the sha256 of the committed files (0ad7aa05… and e6ffdf2f…). `pnpm check:migrations`
+names no problem with either file (its two FAILs are other lanes' files: campaign files in the swept
+directory, and missing based-on headers in mnd_admin_list_model_and_spend_columns.sql /
+notify_from_sql_options_and_the_server_door.sql).
+
+## Not verified
+Signed-in browser spot check: the shared preview handed out a slot (sd9901744.localhost:3001), but
+the Browser pane refused to navigate to it twice, so no screen walk was done. The proof is the live
+PostgREST parity run above, made as test@test.com through the same supabase-js calls the app makes.

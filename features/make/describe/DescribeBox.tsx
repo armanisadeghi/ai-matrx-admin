@@ -50,7 +50,7 @@ import { followUpsFor, planFor, STEP_WORDS, type MakePlan, type MakeStepId } fro
 import {
   AnswerRefused,
   bindReuses,
-  declareDescribeSpec,
+  declareWithStarter,
   DesignRefused,
   describeVariables,
   landReusedRows,
@@ -208,8 +208,9 @@ export function DescribeBox() {
             const bound = bindReuses(checked.spec, safe.reuses, tables);
             const boundIds = ((bound.tables ?? []) as unknown as Array<{ bindsTo?: { tableId: string } }>).flatMap((t) => (t.bindsTo ? [t.bindsTo.tableId] : []));
             const landed = landReusedRows(bound, boundIds.length ? await readReusedRows(client, r.organizationId, boundIds) : {});
-            const templateId = await declareDescribeSpec(client, r.organizationId, landed.spec, stampOf(r.key));
-            commit({ ...r, templateId, notes: [...answer.notes, ...safe.notes, ...checked.autoFixes, ...landed.notes] });
+            // AT-AIBASE: the base also gets a starter dashboard and suggested automations (saved off), said in the notes.
+            const { templateId, notes: starterNotes } = await declareWithStarter(client, r.organizationId, landed.spec, stampOf(r.key));
+            commit({ ...r, templateId, notes: [...answer.notes, ...safe.notes, ...checked.autoFixes, ...landed.notes, ...starterNotes] });
             mark("check", "done");
             break;
           }

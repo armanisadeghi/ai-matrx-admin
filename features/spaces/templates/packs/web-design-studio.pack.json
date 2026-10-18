@@ -1,0 +1,4193 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0451",
+  "version": 1,
+  "title": "Web Design Studio HQ",
+  "description": "Clients, site projects, page inventory, revision requests and invoices for a web studio.",
+  "forWho": "Web design and development studios",
+  "icon": {
+    "emoji": "🖥️"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "clients",
+  "tags": [
+    "web design",
+    "projects",
+    "revisions",
+    "invoices"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-web-design-studio",
+    "catalogueId": "SP0451",
+    "useCase": "Marisol Quennell runs a web studio and uses this to see which sites are about to launch, which pages are still waiting on copy, how many revisions a project has used and which invoices are late.",
+    "industry": "media_creators",
+    "vertical": "Web design studio",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Lowtide Web Studio",
+      "describes": "A six-person studio building marketing sites and small online stores for local businesses, with care plans after launch.",
+      "address": {
+        "line1": "38 Pemberly Row",
+        "city": "Asheville",
+        "region": "NC",
+        "postalCode": "28801",
+        "country": "US"
+      },
+      "phone": "(828) 555-0162",
+      "website": "lowtidestudio.net",
+      "email": "hello@lowtidestudio.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-web-design-studio",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The businesses the studio builds and cares for sites for.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lead",
+              "Active",
+              "Maintenance",
+              "Past"
+            ],
+            "choiceColors": {
+              "Lead": "slate",
+              "Active": "blue",
+              "Maintenance": "green",
+              "Past": "amber"
+            },
+            "required": true,
+            "default": "Lead",
+            "statusGroups": {
+              "Lead": "todo",
+              "Active": "in_progress",
+              "Maintenance": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "industry",
+            "label": "Industry",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hospitality",
+              "Trades",
+              "Health",
+              "Retail",
+              "Professional",
+              "Arts"
+            ],
+            "choiceColors": {
+              "Hospitality": "slate",
+              "Trades": "blue",
+              "Health": "green",
+              "Retail": "amber",
+              "Professional": "violet",
+              "Arts": "red"
+            }
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "website",
+            "label": "Current website",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Relationship owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "projects_count",
+            "label": "Projects",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_name",
+            "agg": "count"
+          },
+          {
+            "key": "projects_open",
+            "label": "Projects in progress",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Discovery",
+                "Design",
+                "Build",
+                "Review"
+              ]
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_project",
+            "label": "New project",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "project",
+              "template": "New project",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          },
+          {
+            "key": "btn_site",
+            "label": "Open website",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{website}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About the business"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they do, who they serve, and why the site needs to change."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "People"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who approves, who writes copy, who owns the domain."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agreed terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Care plan, payment schedule and revision allowance."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Juniper Hollow Inn",
+              "status": "Active",
+              "industry": "Hospitality",
+              "contact_email": "stay@juniperhollowinn.net",
+              "website": "https://juniperhollowinn.net",
+              "since": "@today-95d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Calloway Electric",
+              "status": "Active",
+              "industry": "Trades",
+              "contact_email": "office@callowayelectric.net",
+              "website": "https://callowayelectric.net",
+              "since": "@today-60d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Mossgate Physiotherapy",
+              "status": "Maintenance",
+              "industry": "Health",
+              "contact_email": "front@mossgatephysio.net",
+              "website": "https://mossgatephysio.net",
+              "since": "@today-400d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Tern & Tide Candles",
+              "status": "Active",
+              "industry": "Retail",
+              "contact_email": "makers@terntidecandles.net",
+              "website": "https://terntidecandles.net",
+              "since": "@today-150d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Hargrove Tax Advisers",
+              "status": "Active",
+              "industry": "Professional",
+              "contact_email": "desk@hargrovetaxadv.net",
+              "website": "https://hargrovetaxadv.net",
+              "since": "@today-30d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Blue Ridge Ceramics Guild",
+              "status": "Maintenance",
+              "industry": "Arts",
+              "contact_email": "info@blueridgeceramics.net",
+              "website": "https://blueridgeceramics.net",
+              "since": "@today-700d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Fieldstone Dental",
+              "status": "Lead",
+              "industry": "Health",
+              "contact_email": "hello@fieldstonedental.net",
+              "website": "https://fieldstonedental.net",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Ardent Bike Repair",
+              "status": "Past",
+              "industry": "Retail",
+              "contact_email": "shop@ardentbikes.net",
+              "website": "https://ardentbikes.net",
+              "since": "@today-900d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "client-9",
+            "values": {
+              "client_name": "Wren Creek Bakery",
+              "status": "Active",
+              "industry": "Hospitality",
+              "contact_email": "orders@wrencreekbakery.net",
+              "website": "https://wrencreekbakery.net",
+              "since": "@today-45d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "project_name",
+        "describes": "Each site build, redesign or care plan, from discovery to launch.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Phase",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Discovery",
+              "Design",
+              "Build",
+              "Review",
+              "Launched"
+            ],
+            "choiceColors": {
+              "Discovery": "slate",
+              "Design": "blue",
+              "Build": "green",
+              "Review": "amber",
+              "Launched": "violet"
+            },
+            "required": true,
+            "default": "Discovery",
+            "statusGroups": {
+              "Discovery": "todo",
+              "Design": "in_progress",
+              "Build": "in_progress",
+              "Review": "in_progress",
+              "Launched": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New site",
+              "Redesign",
+              "Landing page",
+              "Online store",
+              "Care plan"
+            ],
+            "choiceColors": {
+              "New site": "slate",
+              "Redesign": "blue",
+              "Landing page": "green",
+              "Online store": "amber",
+              "Care plan": "violet"
+            }
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "launch_on",
+            "label": "Launch",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "budget",
+            "label": "Fixed fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ]
+          },
+          {
+            "key": "invoiced",
+            "label": "Invoiced (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "paid",
+            "label": "Paid (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "left_to_invoice",
+            "label": "Left to invoice (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Fixed fee (USD)} > {Invoiced (USD)}, {Fixed fee (USD)} - {Invoiced (USD)}, 0)"
+          },
+          {
+            "key": "pages_total",
+            "label": "Pages",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pages",
+            "pick": "page_title",
+            "agg": "count"
+          },
+          {
+            "key": "pages_ok",
+            "label": "Pages approved",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pages",
+            "pick": "page_title",
+            "agg": "count",
+            "filter": {
+              "status": "Approved"
+            }
+          },
+          {
+            "key": "progress",
+            "label": "Page progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Pages} > 0, ROUND({Pages approved} / {Pages} * 100, 0), 0)"
+          },
+          {
+            "key": "open_changes",
+            "label": "Open revisions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "revisions",
+            "pick": "change_request",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Open",
+                "In progress"
+              ]
+            }
+          },
+          {
+            "key": "change_hours",
+            "label": "Revision hours",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "revisions",
+            "pick": "hours",
+            "agg": "sum"
+          },
+          {
+            "key": "days_to_launch",
+            "label": "Days to launch",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Launch}, 'days')"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "lead",
+            "label": "Project lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_launched",
+            "label": "Mark launched",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_mark_launched"
+            }
+          },
+          {
+            "key": "add_page",
+            "label": "New page",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "page",
+              "template": "New page",
+              "prefill": {
+                "project": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_revision",
+            "label": "New revision",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "revision",
+              "template": "New revision",
+              "prefill": {
+                "project": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "starts_on",
+            "launch_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New project",
+            "values": {
+              "project_name": "New project",
+              "status": "Discovery"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the site must do for the business in plain words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pages, features, integrations and what is out of scope."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Launch plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Domain, redirects, analytics, handover training and the date."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "project-1",
+            "values": {
+              "project_name": "Juniper Hollow booking site refresh",
+              "status": "Build",
+              "kind": "Redesign",
+              "starts_on": "@today-40d",
+              "launch_on": "@today+12d",
+              "budget": 9800,
+              "client": "client-1",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "project-2",
+            "values": {
+              "project_name": "Calloway Electric new site",
+              "status": "Design",
+              "kind": "New site",
+              "starts_on": "@today-20d",
+              "launch_on": "@today+30d",
+              "budget": 7200,
+              "client": "client-2",
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "project-3",
+            "values": {
+              "project_name": "Mossgate care plan year two",
+              "status": "Launched",
+              "kind": "Care plan",
+              "starts_on": "@today-360d",
+              "launch_on": "@today+5d",
+              "budget": 1800,
+              "client": "client-3",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "project-4",
+            "values": {
+              "project_name": "Tern & Tide online store",
+              "status": "Review",
+              "kind": "Online store",
+              "starts_on": "@today-75d",
+              "launch_on": "@today+6d",
+              "budget": 14500,
+              "client": "client-4",
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "project-5",
+            "values": {
+              "project_name": "Hargrove tax season landing page",
+              "status": "Discovery",
+              "kind": "Landing page",
+              "starts_on": "@today-3d",
+              "launch_on": "@today+21d",
+              "budget": 3200,
+              "client": "client-5",
+              "lead": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "project-6",
+            "values": {
+              "project_name": "Blue Ridge Ceramics events page",
+              "status": "Launched",
+              "kind": "Landing page",
+              "starts_on": "@today-90d",
+              "launch_on": "@today-45d",
+              "budget": 2400,
+              "client": "client-6",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "project-7",
+            "values": {
+              "project_name": "Wren Creek Bakery ordering site",
+              "status": "Build",
+              "kind": "Online store",
+              "starts_on": "@today-25d",
+              "launch_on": "@today+18d",
+              "budget": 8600,
+              "client": "client-9",
+              "lead": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "project-8",
+            "values": {
+              "project_name": "Ardent Bikes brochure site",
+              "status": "Launched",
+              "kind": "New site",
+              "starts_on": "@today-950d",
+              "launch_on": "@today-880d",
+              "budget": 4900,
+              "client": "client-8",
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "project-9",
+            "values": {
+              "project_name": "Fieldstone Dental new site",
+              "status": "Discovery",
+              "kind": "New site",
+              "starts_on": "@today+7d",
+              "launch_on": "@today+75d",
+              "budget": 11000,
+              "client": "client-7",
+              "lead": "tm-1",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "page",
+        "name": "Pages",
+        "labelSingular": "Page",
+        "labelPlural": "Pages",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file",
+        "titleField": "page_title",
+        "describes": "Every page on every site, from copy to approval.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "page_title",
+            "label": "Page",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "Copy drafted",
+              "Designed",
+              "Built",
+              "Approved"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "Copy drafted": "blue",
+              "Designed": "green",
+              "Built": "amber",
+              "Approved": "violet"
+            },
+            "required": true,
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "Copy drafted": "in_progress",
+              "Designed": "in_progress",
+              "Built": "in_progress",
+              "Approved": "done"
+            }
+          },
+          {
+            "key": "page_type",
+            "label": "Page type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Home",
+              "Service",
+              "About",
+              "Blog",
+              "Contact",
+              "Store"
+            ],
+            "choiceColors": {
+              "Home": "slate",
+              "Service": "blue",
+              "About": "green",
+              "Blog": "amber",
+              "Contact": "violet",
+              "Store": "red"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_approved",
+            "label": "Mark approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "page_mark_approved"
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New page",
+            "values": {
+              "page_title": "New page",
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What a visitor should do after reading this page."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Content"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Headline, body copy, images and who supplies each."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Open questions for the client."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "page-1",
+            "values": {
+              "page_title": "Home",
+              "status": "Built",
+              "page_type": "Home",
+              "due_on": "@today+3d",
+              "project": "project-1",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-2",
+            "values": {
+              "page_title": "Rooms and rates",
+              "status": "Built",
+              "page_type": "Service",
+              "due_on": "@today+4d",
+              "project": "project-1",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "page-3",
+            "values": {
+              "page_title": "Book a stay",
+              "status": "Designed",
+              "page_type": "Contact",
+              "due_on": "@today+6d",
+              "project": "project-1",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-4",
+            "values": {
+              "page_title": "Home",
+              "status": "Designed",
+              "page_type": "Home",
+              "due_on": "@today+9d",
+              "project": "project-2",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "page-5",
+            "values": {
+              "page_title": "Services",
+              "status": "Copy drafted",
+              "page_type": "Service",
+              "due_on": "@today+14d",
+              "project": "project-2",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-6",
+            "values": {
+              "page_title": "Emergency callouts",
+              "status": "Not started",
+              "page_type": "Service",
+              "due_on": "@today+18d",
+              "project": "project-2",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "page-7",
+            "values": {
+              "page_title": "Home",
+              "status": "Approved",
+              "page_type": "Home",
+              "due_on": "@today-12d",
+              "project": "project-4",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-8",
+            "values": {
+              "page_title": "Shop all candles",
+              "status": "Built",
+              "page_type": "Store",
+              "due_on": "@today-2d",
+              "project": "project-4",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "page-9",
+            "values": {
+              "page_title": "Checkout and delivery",
+              "status": "Built",
+              "page_type": "Store",
+              "due_on": "@mon+3d",
+              "project": "project-4",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-10",
+            "values": {
+              "page_title": "About the makers",
+              "status": "Approved",
+              "page_type": "About",
+              "due_on": "@today-10d",
+              "project": "project-4",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "page-11",
+            "values": {
+              "page_title": "Tax season landing",
+              "status": "Copy drafted",
+              "page_type": "Home",
+              "due_on": "@today+7d",
+              "project": "project-5",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-12",
+            "values": {
+              "page_title": "Home",
+              "status": "Designed",
+              "page_type": "Home",
+              "due_on": "@today+10d",
+              "project": "project-7",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "page-13",
+            "values": {
+              "page_title": "Menu and ordering",
+              "status": "Not started",
+              "page_type": "Store",
+              "due_on": "@today+13d",
+              "project": "project-7",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-14",
+            "values": {
+              "page_title": "Visit us",
+              "status": "Copy drafted",
+              "page_type": "Contact",
+              "due_on": "@today+11d",
+              "project": "project-7",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "page-15",
+            "values": {
+              "page_title": "Events calendar",
+              "status": "Approved",
+              "page_type": "Service",
+              "due_on": "@today-50d",
+              "project": "project-6",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "page-16",
+            "values": {
+              "page_title": "Journal",
+              "status": "Not started",
+              "page_type": "Blog",
+              "due_on": "@today+20d",
+              "project": "project-9",
+              "owner": "tm-5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "revision",
+        "name": "Revisions",
+        "labelSingular": "Revision",
+        "labelPlural": "Revisions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "message-square-diff",
+        "titleField": "change_request",
+        "describes": "Change requests from clients and testing, with the hours they take.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "change_request",
+            "label": "Change request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Raised by",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Client",
+              "Internal",
+              "Testing"
+            ],
+            "choiceColors": {
+              "Client": "slate",
+              "Internal": "blue",
+              "Testing": "green"
+            }
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "key": "requested_on",
+            "label": "Requested",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "in_scope",
+            "label": "Inside agreed scope",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "revision_mark_done"
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New revision",
+            "values": {
+              "change_request": "New revision",
+              "status": "Open"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they asked for"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Quote the request and where it is on the site."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decision"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "In scope, extra hours, or declined, and who agreed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "revision-1",
+            "values": {
+              "change_request": "Swap hero photo for the courtyard view",
+              "status": "Done",
+              "source": "Client",
+              "hours": 1,
+              "requested_on": "@today-14d",
+              "in_scope": true,
+              "project": "project-1"
+            }
+          },
+          {
+            "key": "revision-2",
+            "values": {
+              "change_request": "Add a pet policy block to rooms",
+              "status": "In progress",
+              "source": "Client",
+              "hours": 2,
+              "requested_on": "@today-3d",
+              "in_scope": true,
+              "project": "project-1"
+            }
+          },
+          {
+            "key": "revision-3",
+            "values": {
+              "change_request": "Menu on mobile overlaps the logo",
+              "status": "Open",
+              "source": "Testing",
+              "hours": 1.5,
+              "requested_on": "@today-1d",
+              "in_scope": true,
+              "project": "project-1"
+            }
+          },
+          {
+            "key": "revision-4",
+            "values": {
+              "change_request": "Wants a second colour for buttons",
+              "status": "Open",
+              "source": "Client",
+              "hours": 3,
+              "requested_on": "@today-2d",
+              "in_scope": false,
+              "project": "project-2"
+            }
+          },
+          {
+            "key": "revision-5",
+            "values": {
+              "change_request": "Shipping table rounds wrongly",
+              "status": "In progress",
+              "source": "Testing",
+              "hours": 2,
+              "requested_on": "@today-4d",
+              "in_scope": true,
+              "project": "project-4"
+            }
+          },
+          {
+            "key": "revision-6",
+            "values": {
+              "change_request": "Larger product photos on category pages",
+              "status": "Done",
+              "source": "Client",
+              "hours": 4,
+              "requested_on": "@today-9d",
+              "in_scope": false,
+              "project": "project-4"
+            }
+          },
+          {
+            "key": "revision-7",
+            "values": {
+              "change_request": "Add gift wrap option at checkout",
+              "status": "Open",
+              "source": "Client",
+              "hours": 6,
+              "requested_on": "@today-5d",
+              "in_scope": false,
+              "project": "project-4"
+            }
+          },
+          {
+            "key": "revision-8",
+            "values": {
+              "change_request": "Image alt text pass",
+              "status": "Open",
+              "source": "Internal",
+              "hours": 2,
+              "requested_on": "@today-1d",
+              "in_scope": true,
+              "project": "project-4"
+            }
+          },
+          {
+            "key": "revision-9",
+            "values": {
+              "change_request": "Add Saturday hours to footer",
+              "status": "Done",
+              "source": "Client",
+              "hours": 0.5,
+              "requested_on": "@today-8d",
+              "in_scope": true,
+              "project": "project-3"
+            }
+          },
+          {
+            "key": "revision-10",
+            "values": {
+              "change_request": "Pickup time slots look cramped",
+              "status": "Open",
+              "source": "Testing",
+              "hours": 2.5,
+              "requested_on": "@today-2d",
+              "in_scope": true,
+              "project": "project-7"
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "invoice_name",
+        "describes": "Milestone invoices for each project. Tracking only.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "invoice_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Overdue",
+              "Paid"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Overdue": "green",
+              "Paid": "amber"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_late",
+            "label": "Days late",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Due} < TODAY(), {Status} != \"Paid\"), DATEDIFF({Due}, TODAY(), \"days\"), 0)"
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_paid",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_mark_paid"
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ],
+          [
+            "issued_on",
+            "paid_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New invoice",
+            "values": {
+              "invoice_name": "New invoice",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What this invoice covers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The milestone and what the client has received."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "invoice-1",
+            "values": {
+              "invoice_name": "Juniper Hollow deposit",
+              "status": "Paid",
+              "amount": 3300,
+              "issued_on": "@today-40d",
+              "due_on": "@today-26d",
+              "paid_on": "@today-30d",
+              "project": "project-1"
+            }
+          },
+          {
+            "key": "invoice-2",
+            "values": {
+              "invoice_name": "Juniper Hollow design sign-off",
+              "status": "Paid",
+              "amount": 3300,
+              "issued_on": "@today-18d",
+              "due_on": "@today-4d",
+              "paid_on": "@today-6d",
+              "project": "project-1"
+            }
+          },
+          {
+            "key": "invoice-3",
+            "values": {
+              "invoice_name": "Calloway deposit",
+              "status": "Paid",
+              "amount": 2400,
+              "issued_on": "@today-20d",
+              "due_on": "@today-6d",
+              "paid_on": "@today-9d",
+              "project": "project-2"
+            }
+          },
+          {
+            "key": "invoice-4",
+            "values": {
+              "invoice_name": "Tern & Tide deposit",
+              "status": "Paid",
+              "amount": 4800,
+              "issued_on": "@today-75d",
+              "due_on": "@today-61d",
+              "paid_on": "@today-66d",
+              "project": "project-4"
+            }
+          },
+          {
+            "key": "invoice-5",
+            "values": {
+              "invoice_name": "Tern & Tide build milestone",
+              "status": "Overdue",
+              "amount": 4800,
+              "issued_on": "@today-30d",
+              "due_on": "@today-16d",
+              "project": "project-4"
+            }
+          },
+          {
+            "key": "invoice-6",
+            "values": {
+              "invoice_name": "Hargrove deposit",
+              "status": "Sent",
+              "amount": 1600,
+              "issued_on": "@today-2d",
+              "due_on": "@today+12d",
+              "project": "project-5"
+            }
+          },
+          {
+            "key": "invoice-7",
+            "values": {
+              "invoice_name": "Wren Creek deposit",
+              "status": "Paid",
+              "amount": 2900,
+              "issued_on": "@today-25d",
+              "due_on": "@today-11d",
+              "paid_on": "@today-14d",
+              "project": "project-7"
+            }
+          },
+          {
+            "key": "invoice-8",
+            "values": {
+              "invoice_name": "Wren Creek build milestone",
+              "status": "Sent",
+              "amount": 2900,
+              "issued_on": "@today-3d",
+              "due_on": "@today+11d",
+              "project": "project-7"
+            }
+          },
+          {
+            "key": "invoice-9",
+            "values": {
+              "invoice_name": "Mossgate care plan",
+              "status": "Sent",
+              "amount": 1800,
+              "issued_on": "@today-1d",
+              "due_on": "@today+13d",
+              "project": "project-3"
+            }
+          },
+          {
+            "key": "invoice-10",
+            "values": {
+              "invoice_name": "Blue Ridge launch balance",
+              "status": "Paid",
+              "amount": 1200,
+              "issued_on": "@today-60d",
+              "due_on": "@today-46d",
+              "paid_on": "@today-48d",
+              "project": "project-6"
+            }
+          },
+          {
+            "key": "invoice-11",
+            "values": {
+              "invoice_name": "Tern & Tide launch balance",
+              "status": "Draft",
+              "amount": 4900,
+              "issued_on": "@today+1d",
+              "due_on": "@today+15d",
+              "project": "project-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one relationship owner.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each project belongs to one client.",
+        "fromTable": "project",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "projects"
+      },
+      {
+        "describes": "Each project belongs to one project lead.",
+        "fromTable": "project",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "project_by_lead"
+      },
+      {
+        "describes": "Each page belongs to one project.",
+        "fromTable": "page",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "pages"
+      },
+      {
+        "describes": "Each page belongs to one owner.",
+        "fromTable": "page",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "page_by_owner"
+      },
+      {
+        "describes": "Each revision belongs to one project.",
+        "fromTable": "revision",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "revisions"
+      },
+      {
+        "describes": "Each invoice belongs to one project.",
+        "fromTable": "invoice",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Marisol Quennell",
+              "role": "Creative director",
+              "work_email": "marisol@lowtidestudio.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Jun-ho Albrecht",
+              "role": "Front-end developer",
+              "work_email": "jun-ho@lowtidestudio.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Odette Faulkner",
+              "role": "UX designer",
+              "work_email": "odette@lowtidestudio.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Bram Szymanski",
+              "role": "Project manager",
+              "work_email": "bram@lowtidestudio.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Keisha Moorhouse",
+              "role": "Copy and content",
+              "work_email": "keisha@lowtidestudio.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "project_intake",
+        "name": "Start a project",
+        "describes": "Take in a new site request before it becomes a project.",
+        "audience": "staff",
+        "table": "project",
+        "fields": [
+          {
+            "fieldKey": "project_name",
+            "ask": "What is the project?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which client?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of work?"
+          },
+          {
+            "fieldKey": "launch_on",
+            "ask": "When does it need to be live?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is in the Discovery column."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "project_mark_launched",
+        "table": "project",
+        "name": "Mark launched",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Launched"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "page_mark_approved",
+        "table": "page",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "revision_mark_done",
+        "table": "revision",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_mark_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "project_board",
+        "name": "Projects board",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_cal",
+        "name": "Projects calendar",
+        "table": "project",
+        "kind": "calendar",
+        "dateField": "launch_on",
+        "allDay": true
+      },
+      {
+        "token": "project_over",
+        "name": "Overdue",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "launch_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Discovery",
+            "Design",
+            "Build",
+            "Review"
+          ]
+        }
+      },
+      {
+        "token": "project_week",
+        "name": "Due this week",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "launch_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Discovery",
+            "Design",
+            "Build",
+            "Review"
+          ]
+        }
+      },
+      {
+        "token": "project_next7",
+        "name": "Next 7 days",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "launch_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Discovery",
+            "Design",
+            "Build",
+            "Review"
+          ]
+        }
+      },
+      {
+        "token": "project_mine",
+        "name": "My projects",
+        "table": "project",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_page",
+        "name": "All pages",
+        "table": "page",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "page_board",
+        "name": "Pages board",
+        "table": "page",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "page_cal",
+        "name": "Pages calendar",
+        "table": "page",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "page_over",
+        "name": "Overdue",
+        "table": "page",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Copy drafted",
+            "Designed",
+            "Built"
+          ]
+        }
+      },
+      {
+        "token": "page_week",
+        "name": "Due this week",
+        "table": "page",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Copy drafted",
+            "Designed",
+            "Built"
+          ]
+        }
+      },
+      {
+        "token": "page_next7",
+        "name": "Next 7 days",
+        "table": "page",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Copy drafted",
+            "Designed",
+            "Built"
+          ]
+        }
+      },
+      {
+        "token": "page_mine",
+        "name": "My pages",
+        "table": "page",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_revision",
+        "name": "All revisions",
+        "table": "revision",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "revision_board",
+        "name": "Revisions board",
+        "table": "revision",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "revision_cal",
+        "name": "Revisions calendar",
+        "table": "revision",
+        "kind": "calendar",
+        "dateField": "requested_on",
+        "allDay": true
+      },
+      {
+        "token": "revision_week",
+        "name": "Raised this week",
+        "table": "revision",
+        "kind": "grid",
+        "within": {
+          "requested_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoices board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_cal",
+        "name": "Invoices calendar",
+        "table": "invoice",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Web Design Studio HQ assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "project",
+          "describes": "Each site build, redesign or care plan, from discovery to launch."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many sites are in the build phase?",
+        "whyItMatters": "The project manager balances developer time across builds.",
+        "expect": {
+          "table": "project",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Build"
+          },
+          "answer": 2,
+          "unit": "projects"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open projects.",
+        "action": {
+          "kind": "open",
+          "surface": "project_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open pages.",
+        "action": {
+          "kind": "open",
+          "surface": "page_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "page_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lowtidestudio.net"
+      ],
+      "fictionalStreets": [
+        "Pemberly Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "web-design-studio",
+      "parent": null,
+      "title": "Web Design Studio HQ",
+      "icon": {
+        "emoji": "🖥️"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One workspace for the whole studio: clients, the sites you are building, every page on every site, the revision requests that eat hours, and the invoices that keep the lights on. Open the Dashboard on Monday, then work Mine and Overdue. Check Open revisions on a project before you say yes to anything new."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:project-phases"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:client-intake-and-brief"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:revision-policy"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:launch-checklist"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The businesses the studio builds and cares for sites for."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each site build, redesign or care plan, from discovery to launch."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "project_board"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pro-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "launch_on"
+              },
+              {
+                "id": "pro-t",
+                "name": "All projects",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pro-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "launch_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Discovery",
+                    "Design",
+                    "Build",
+                    "Review"
+                  ]
+                }
+              },
+              {
+                "id": "pro-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "launch_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Discovery",
+                    "Design",
+                    "Build",
+                    "Review"
+                  ]
+                }
+              },
+              {
+                "id": "pro-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "launch_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Discovery",
+                    "Design",
+                    "Build",
+                    "Review"
+                  ]
+                }
+              },
+              {
+                "id": "pro-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every page on every site, from copy to approval."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "page",
+              "view": "page_board"
+            },
+            "inline": true,
+            "title": "Pages",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pag-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pag-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "pag-t",
+                "name": "All pages",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pag-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Copy drafted",
+                    "Designed",
+                    "Built"
+                  ]
+                }
+              },
+              {
+                "id": "pag-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Copy drafted",
+                    "Designed",
+                    "Built"
+                  ]
+                }
+              },
+              {
+                "id": "pag-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Copy drafted",
+                    "Designed",
+                    "Built"
+                  ]
+                }
+              },
+              {
+                "id": "pag-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pag-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Revisions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change requests from clients and testing, with the hours they take."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "revision",
+              "view": "revision_board"
+            },
+            "inline": true,
+            "title": "Revisions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rev-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rev-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "requested_on"
+              },
+              {
+                "id": "rev-t",
+                "name": "All revisions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rev-week",
+                "name": "Raised this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "requested_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "rev-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Milestone invoices for each project. Tracking only."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inv-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inv-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "inv-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inv-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "inv-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "inv-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "web-design-studio",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Where the studio stands this week."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_project"
+                    },
+                    "inline": true,
+                    "title": "Projects by phase",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Projects by phase",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoice value by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Invoice value by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "page",
+                      "view": "all_page"
+                    },
+                    "inline": true,
+                    "title": "Pages by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Pages by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "revision",
+                      "view": "all_revision"
+                    },
+                    "inline": true,
+                    "title": "Revision hours by project",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Revision hours by project",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "project",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Launching in the next 14 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Launching in the next 14 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Launching in the next 14 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "launch_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Discovery",
+                    "Design",
+                    "Build",
+                    "Review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Late invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Late invoices",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open revisions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "revision",
+              "view": "all_revision"
+            },
+            "inline": true,
+            "title": "Open revisions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Open revisions",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Page progress (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pages approved divided by all pages on the project"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 50 with a launch inside two weeks means move the date or add people"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Left to invoice (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fixed fee minus everything invoiced so far"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invoice the next milestone the day it is reached"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Open revisions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Requests still Open or In progress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over five on one project means hold a scope conversation"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days late"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Days past the due date for unpaid invoices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call at 7 days; pause care-plan work at 30"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "project-phases",
+      "parent": "web-design-studio",
+      "title": "How a project moves through phases",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A project that skips a phase pays for it later, usually in revisions. These are the exit tests we use."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Phase"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Exit test"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Discovery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Goals, sitemap and content owner agreed in writing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Project manager"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Design"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Home and one inner page approved on desktop and phone"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Creative director"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Build"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every page Built; forms, analytics and redirects working"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Developer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Client has signed off every page; open revisions at zero"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Project manager"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Launched"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Live, monitored for a week, handover session held"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Project manager"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Moving a project forward"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the project row and check Page progress and Open revisions."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the exit test is met, change the phase and note what was agreed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the next phase's first page or task so work starts the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Slipping projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A project more than a week behind needs a new launch date told to the client that day, not at the next call."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never absorb the delay silently; log it in the project page with the cause."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "client-intake-and-brief",
+      "parent": "web-design-studio",
+      "title": "Client intake and creative brief",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One page of clear answers saves a month of back and forth. Collect these before you quote."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions to ask"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What should a visitor do on the site, and how will you know it worked?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who are the three kinds of people you most want to reach?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Which sites do you admire, and which do you dislike? Why?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who writes and approves copy? When can they deliver it?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What must the site connect to: bookings, payments, email lists, calendars?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Turning answers into a brief"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the goal as a sentence with a number in it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List pages as a sitemap and count them; each becomes a row in Pages."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note content risks: missing photos, outdated menus, legal text."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree the revision allowance: how many rounds per phase and how extra work is priced."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Red flags"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Several people with veto and no single owner."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Copy promised after design starts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A launch date set by an event that cannot move."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "revision-policy",
+      "parent": "web-design-studio",
+      "title": "Revision policy and scope changes",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The rule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each phase includes two rounds of consolidated feedback. A round is one list from one person who speaks for the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging a request"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a row to Revisions with the page, what changed and who asked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Estimate the hours before doing the work."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Untick Inside agreed scope if it adds something new."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Answering the client"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "In scope: reply with the date it will be done."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Out of scope: offer two options, a quote for extra hours or a swap for something planned."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never start out-of-scope work on a verbal yes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checking the damage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open a project and read Revision hours against the fixed fee. When revisions exceed ten percent of the fee, raise it with the client before the next phase."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "launch-checklist",
+      "parent": "web-design-studio",
+      "title": "Launch day checklist",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Launch is a checklist, not a feeling. Print it, tick it, and keep one person in charge."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the switch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every page approved and revisions at zero"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Forms deliver to the right inbox, tested twice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Analytics and conversion goals firing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Redirects from old addresses mapped and tested"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Backups taken, passwords handed to the owner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final invoice sent so payment is not an afterthought"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The switch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Lower the domain record's cache time a day earlier."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Point the domain at the new host and watch it propagate."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the secure certificate, the home page and one form."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look at errors and broken links daily."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hold the handover call: how to edit, who to call, what the care plan covers."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the project to Launched and ask for a short testimonial."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
