@@ -10,7 +10,7 @@
  * Every found list carries its disclosure (how it was found, what that leans toward) — the page shows it.
  */
 
-import { postJson, requestRaw } from "@/lib/python-client";
+import { getJson, postJson, requestRaw } from "@/lib/python-client";
 import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
 import { ComparisonRefusal, type ComparisonItemInput, type LookupMatch } from "./contract";
@@ -30,6 +30,8 @@ export interface DiscoveryReading {
   handle: string;
   of: string;
   priceMax: number | null;
+  /** "compare two …": how many the person said they want (nothing is preselected). */
+  wanted: number | null;
   needs: "area" | null;
   summary: string;
   searches: number;
@@ -96,7 +98,7 @@ export function parseReading(raw: unknown): DiscoveryReading {
   return {
     kind: str(o.kind), branch: o.branch === "C" ? "C" : "A", mode,
     topic: str(o.topic), area: str(o.area), platform: str(o.platform), handle: str(o.handle), of: str(o.of),
-    priceMax: numOrNull(o.price_max), needs: o.needs === "area" ? "area" : null,
+    priceMax: numOrNull(o.price_max), wanted: numOrNull(o.wanted), needs: o.needs === "area" ? "area" : null,
     summary: str(o.summary), searches: num(o.searches), points: num(o.points),
   };
 }
@@ -246,4 +248,66 @@ export function discoveryRecord(concept: string, result: DiscoverResult, rows: D
       rank: row.rank, name: row.match.name, detail: row.match.detail, kept: row.picked, added: row.rank === null,
     })),
   };
+}
+
+// ── one row against the map: the guaranteed path ─────────────────────────────
+
+export type ResolveStatus = "found" | "choose" | "not_found";
+
+export interface ResolveCandidate {
+  match: LookupMatch;
+  /** The map's category ("Medical spa"), shown so the person sees what kind of place it is. */
+  category: string;
+}
+
+export interface ResolveResult {
+  status: ResolveStatus;
+  query: string;
+  match: LookupMatch | null;
+  category: string;
+  candidates: ResolveCandidate[];
+  message: string | null;
+  points: number;
+}
+
+export function parseResolve(raw: unknown): ResolveResult {
+  const o = obj(raw);
+  const status: ResolveStatus = o.status === "found" || o.status === "choose" ? o.status : "not_found";
+  const cands = Array.isArray(o.candidates)
+    ? o.candidates.map((c) => ({ match: parseMatch(obj(c).match), category: str(obj(c).category) }))
+    : [];
+  return {
+    status, query: str(o.query), match: o.match ? parseMatch(o.match) : null, category: str(o.category),
+    candidates: cands, message: strOrNull(o.message), points: num(o.points),
+  };
+}
+
+export interface ResolveRequest {
+  name: string;
+  city?: string | null;
+  website?: string | null;
+}
+
+/** One row (a business name + where it is) → the real place, or the nearest real places to pick from. */
+export async function resolveRow(req: ResolveRequest, opts: Ctx): Promise<ResolveResult> {
+  try {
+    const { data } = await postJson<unknown>("/comparison/resolve", {
+      name: req.name.trim(),
+      ...(req.city?.trim() ? { city: req.city.trim() } : {}),
+      ...(req.website?.trim() ? { website: req.website.trim() } : {}),
+    }, { organizationId: org(opts.organizationId), signal: opts.signal });
+    return parseResolve(data);
+  } catch (err) {
+    const e = err as { userMessage?: string; status?: number };
+    if (err instanceof ComparisonRefusal) throw err;
+    throw new ComparisonRefusal(`http_${e?.status ?? "error"}`, e?.userMessage ?? "The map did not answer. Try again.");
+  }
+}
+
+/** Points one row's map search costs (shown on the Find button before anything is spent). */
+export async function resolvePrice(opts: Ctx): Promise<number> {
+  const { data } = await getJson<unknown>("/comparison/resolve/price", {
+    organizationId: org(opts.organizationId), signal: opts.signal,
+  });
+  return num(obj(data).points);
 }

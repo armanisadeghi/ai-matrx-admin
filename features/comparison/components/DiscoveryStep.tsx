@@ -89,6 +89,12 @@ export function DiscoveryStep({
         </div>
       </div>
 
+      {rows.length && result.notes.length ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {result.notes.map((n) => <span key={n} className="type-secondary text-warning-ink">{n}</span>)}
+        </div>
+      ) : null}
+
       {rows.length ? (
         <ol className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
           {rows.map((row) => {
@@ -113,6 +119,7 @@ export function DiscoveryStep({
                             <span className="tabular-nums text-foreground">{m.rating.toFixed(1)}</span></>
                         ) : null}
                         {m.reviews_count !== null ? <span className="tabular-nums">({m.reviews_count.toLocaleString()})</span> : null}
+                        <span>{kind.key === "local_business" ? "on the map" : kind.key === "companies_reviews" ? "on its review page" : "at the source"}</span>
                       </span>
                     ) : null}
                     {m.detail ? <span className="type-secondary block truncate text-muted-foreground" title={m.detail}>{m.detail}</span> : null}

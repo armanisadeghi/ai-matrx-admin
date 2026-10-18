@@ -1,7 +1,11 @@
 "use client";
 
 /**
- * The one friendly box. A person types a CONCEPT ("best bike shops in Bend", "payroll software",
+ * The kind tabs, the guaranteed rows (passed in as `children` for kinds that have them), and the
+ * one-line box. For a kind with rows the box is secondary: a list ("A vs B") only FILLS the rows, and a
+ * concept ("best e-waste recycling in Los Angeles") runs discovery — the person always sees and confirms.
+ *
+ * The box: a person types a CONCEPT ("best bike shops in Bend", "payroll software",
  * "who competes with @handle") or a LIST ("Hydro Flask vs Yeti", names with their city, links). The
  * box says which it read — "Find for me" or "Compare these" — and the person can flip it. A concept
  * shows how we will search for it and what finding costs before anything is spent; a list shows its
@@ -10,7 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Compass, Globe, MapPin, Search, Share2, ShoppingBag, Store } from "lucide-react";
+import { Building2, Compass, Globe, MapPin, Plus, Search, Share2, ShoppingBag, Store } from "lucide-react";
 import { Button, Chip, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { formatPoints } from "@ai-matrx/kit/format";
@@ -40,7 +44,7 @@ const PLAN_DELAY_MS = 400;
 
 export function CompareInput({
   kinds, kindKey, onKind, text, onText, area, onArea, onFind, finding, mode, onMode, scope, onScope,
-  onDiscover, organizationId, stage,
+  onDiscover, organizationId, stage, onFillRows, children,
 }: {
   kinds: ComparisonKindInfo[];
   kindKey: string;
@@ -60,6 +64,10 @@ export function CompareInput({
   organizationId: string;
   /** The step a running discovery is on ("Searching the map"). */
   stage: string | null;
+  /** Kinds with rows: a typed list fills the rows (nothing is searched until Find). */
+  onFillRows?: () => void;
+  /** The rows (the guaranteed path) for kinds that have them. */
+  children?: React.ReactNode;
 }) {
   const kind = kinds.find((k) => k.key === kindKey) ?? null;
   const parsed = parseInput(text, kindKey as KindKey, area);
@@ -85,7 +93,7 @@ export function CompareInput({
   });
   const reading = findMode && planText.trim().length >= 2 ? plan.data ?? null : null;
   const needsArea = reading?.needs === "area" && !area.trim();
-  const showNear = kindKey === "local_business" || reading?.mode === "places" || reading?.needs === "area";
+  const showNear = findMode && (reading?.mode === "places" || reading?.needs === "area");
   const canDiscover = findMode && text.trim().length >= 2 && !finding && !needsArea && !plan.isFetching && reading !== null;
 
   // A city typed on the last place ("A vs B, Nashville TN") shows up in the Near box, editable.
@@ -99,7 +107,10 @@ export function CompareInput({
     }
   }, [findMode, parsed.sharedArea, area, onArea]);
 
-  const go = () => (findMode ? (canDiscover ? onDiscover() : undefined) : (canFind ? onFind() : undefined));
+  const fills = Boolean(onFillRows);
+  const canFill = fills && parsed.items.length >= 1 && !blockedByLinks;
+  const go = () => (findMode ? (canDiscover ? onDiscover() : undefined)
+    : fills ? (canFill ? onFillRows?.() : undefined) : (canFind ? onFind() : undefined));
 
   return (
     <section className="space-y-5">
@@ -117,6 +128,9 @@ export function CompareInput({
         })}
       </div>
 
+      {children}
+
+      {fills ? <div className="type-label pt-2 text-muted-foreground">Or type it in one line</div> : null}
       <div className="space-y-2">
         <ProTextarea
           value={text}
@@ -125,7 +139,7 @@ export function CompareInput({
           placeholder={findMode ? "best bike shops in Bend, OR" : kind?.example ?? "Type two or more, separated by vs"}
           aria-label="What to compare"
           autoGrow
-          minHeight={112}
+          minHeight={fills ? 44 : 112}
           maxHeight={320}
           enableCleanup={false}
         />
@@ -172,6 +186,10 @@ export function CompareInput({
           <Button variant="primary" hero icon={<Search className="h-4 w-4" />} onClick={go} disabled={!canDiscover}
             meta={reading && reading.points > 0 ? formatPoints(reading.points, { short: true }) : undefined}>
             {finding ? "Finding" : "Find for me"}
+          </Button>
+        ) : fills ? (
+          <Button variant="outline" icon={<Plus className="h-4 w-4" />} onClick={go} disabled={!canFill}>
+            {parsed.items.length > 1 ? `Fill ${Math.min(parsed.items.length, 5)} rows` : "Fill a row"}
           </Button>
         ) : (
           <Button variant="primary" hero icon={<Search className="h-4 w-4" />} onClick={go} disabled={!canFind}
