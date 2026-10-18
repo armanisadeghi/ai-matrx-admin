@@ -25,8 +25,9 @@ const FIELDS: MemoryServiceOptions<BoardListRow>["fields"] = {
   title: { value: (r) => r.title, search: true },
   tile_count: { value: (r) => r.tile_count },
   updated_at: { value: (r) => r.updated_at },
-  // Recents: a board never opened sorts by its last edit.
-  last_opened_at: { value: (r) => r.last_opened_at ?? r.updated_at },
+  // The date filter sees the real moment (a never-opened board has none); Recents sorts a
+  // never-opened board by its last edit.
+  last_opened_at: { value: (r) => r.last_opened_at, sortValue: (r) => r.last_opened_at ?? r.updated_at },
   created_at: { value: (r) => r.created_at },
 };
 
