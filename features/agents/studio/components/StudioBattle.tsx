@@ -226,6 +226,7 @@ export function StudioBattle({
               modelOnly
               inputModalities={["text"]}
               selectionPurpose="agent"
+              triggerVariant="settings"
               value={modelId}
               onValueChange={setModelId}
             />
