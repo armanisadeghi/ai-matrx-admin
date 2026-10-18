@@ -16,6 +16,7 @@ import { Copy, ExternalLink, RefreshCw } from "lucide-react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useResolvedOrganization } from "@/features/organizations/hooks";
 import { OrganizationAccessGate } from "@/features/organizations/components/OrganizationAccessGate";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { Badge, Button, Field, RegionSkeleton, Select } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { createClient } from "@/utils/supabase/client";
@@ -90,7 +91,9 @@ export default function OrgDomainsPage() {
   }, [organizationId]);
 
   useEffect(() => {
-    void load();
+    void (async () => {
+      await load();
+    })();
   }, [load]);
 
   const api = useCallback(
@@ -305,7 +308,9 @@ function DomainCard({
           </div>
         </div>
       ) : null}
-      {domain.last_error ? <p className="text-sm text-destructive">{domain.last_error}</p> : null}
+      {domain.last_error ? (
+        <ErrorNotice size="inline" message={domain.last_error} operation="Check the domain" className="text-sm" />
+      ) : null}
 
       <RoutesEditor
         organizationId={organizationId}
