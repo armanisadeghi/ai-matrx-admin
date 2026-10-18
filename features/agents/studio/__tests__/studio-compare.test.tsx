@@ -62,3 +62,14 @@ describe("StudioCompare", () => {
     expect(compareViews("Approved", false).map((v) => v.value)).toEqual(["both", "new", "original"]);
   });
 });
+
+describe("compareIsNarrow", () => {
+  it("is narrow on a phone or under the side-by-side width, never while unmeasured", () => {
+    const { compareIsNarrow } = jest.requireActual("../components/StudioCompare") as typeof import("../components/StudioCompare");
+    expect(compareIsNarrow(null, false)).toBe(false);
+    expect(compareIsNarrow(0, false)).toBe(false);
+    expect(compareIsNarrow(392, false)).toBe(true); // Watch AI open beside the Studio
+    expect(compareIsNarrow(700, false)).toBe(false);
+    expect(compareIsNarrow(700, true)).toBe(true);
+  });
+});
