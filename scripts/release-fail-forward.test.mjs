@@ -26,12 +26,16 @@ const afterPush = code.slice(pushAt, afterStart);
 // A remedy string may NAME a check ("pnpm check:migrations:strict"); only an unquoted token RUNS one.
 const unquoted = (text) => text.replace(/"(?:[^"\\]|\\.)*"/g, '""');
 
-test("nothing but the fetch and the push can stop a release", () => {
+test("only GitHub, invalid release trees, and the opt-in hosted source check can stop a release", () => {
+  const hostedCheck = code.match(/if \[\[ -n "\$\{RELEASE_EXPECTED_SOURCE_SHA:-\}" \]\]; then([\s\S]*?)^    fi$/m);
+  assert.ok(hostedCheck, "the hosted source refusal must stay inside its opt-in condition");
+  assert.match(hostedCheck[1], /RELEASE_EXPECTED_SOURCE_SHA must be a full commit SHA/);
+  assert.match(hostedCheck[1], /main moved beyond guarded source/);
   const fails = [...everythingBeforePush.matchAll(/\bfail "([^"]*)"/g)].map((m) => m[1]);
   for (const message of fails) {
     assert.match(
       message,
-      /Cannot reach GitHub|assemble the release commit|Could not read the version|Could not write version|Could not assemble the release commit|Lost the push race|Cannot push to GitHub|\$VERSION_FILE not found/,
+      /Cannot reach GitHub|assemble the release commit|Could not read the version|Could not write version|Could not assemble the release commit|Lost the push race|Cannot push to GitHub|\$VERSION_FILE not found|release tree cannot be parsed|pnpm-lock\.yaml in the release tree|RELEASE_EXPECTED_SOURCE_SHA must be a full commit SHA|main moved beyond guarded source/,
       `a fail() before the push that is not GitHub or the worktree: ${message}`,
     );
   }
@@ -130,7 +134,8 @@ test("declared typed tables scream in the release, never block, at most hourly",
 });
 
 test("everything else runs after the build started, detached, into the log", () => {
-  assert.match(afterPush, /nohup "\$0" \$\{RELEASE_ORIGINAL_ARGS\[@\]\+"\$\{RELEASE_ORIGINAL_ARGS\[@\]\}"\} <\/dev\/null >>"\$\{RELEASE_LOG_FILE:-\/dev\/null\}" 2>&1 &/);
+  assert.match(afterPush, /if \$RUN_CHECKS; then[\s\S]*?exec "\$0" \$\{RELEASE_ORIGINAL_ARGS\[@\]\+"\$\{RELEASE_ORIGINAL_ARGS\[@\]\}"\}/);
+  assert.match(afterPush, /nohup python3 -c '[\s\S]*?os\.setsid\(\); os\.execvp\(sys\.argv\[1\], sys\.argv\[1:\]\)' "\$0" \$\{RELEASE_ORIGINAL_ARGS\[@\]\+"\$\{RELEASE_ORIGINAL_ARGS\[@\]\}"\} <\/dev\/null >>"\$\{RELEASE_LOG_FILE:-\/dev\/null\}" 2>&1 &/);
   assert.match(afterPush, /RELEASE_AFTER_PHASE:-on/);
   const after = code.slice(afterStart);
   assert.match(after, /node "\$SCRIPT_DIR\/checks\/run\.mjs" --skip-live-db --json "\$CHECKS_JSON"/);
