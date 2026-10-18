@@ -46,7 +46,9 @@
 // A full (un-narrowed) run ALSO checks the installed package graph — every
 // `@ai-matrx/<dep>/<subpath>` one installed @ai-matrx package imports must be
 // exported by the <dep> installed beside it (the 2026-10-06 case; see
-// auditPackageGraph below).
+// auditPackageGraph below) — and every NAMED import in it must be in that
+// <dep>'s runtime exports (the 2026-10-18 formatShortcut/addressText renames).
+//   node scripts/check-matrx-imports.mjs --packages   # the package graph only (sync:matrx-packages' adoption gate)
 //
 // Exit codes: 0 clean · 1 an import names something the installed package does
 //             not ship · 2 the script itself could not run — never a silent pass.
@@ -440,6 +442,7 @@ export function audit(root, { only = null, files: given = null, readText = null,
     narrowed: narrowed ?? Boolean(only),
     graphPackages: graph.packages,
     graphSpecifiers: graph.specifiers,
+    graphNamed: graph.namedChecked ?? 0,
   };
 }
 
@@ -497,6 +500,36 @@ function subpathFileShipped(pkgDir, exportsField, sub) {
   return [runtimeRel, typesRel].some((r) => r && existsSync(join(pkgDir, r)));
 }
 
+/** The runtime JS file `<dep>/<sub>` resolves to (import condition first), or null. */
+function runtimeFileOf(depDir, manifest, sub) {
+  const exp = manifest.exports;
+  if (exp == null) {
+    if (sub !== ".") return null;
+    const main = manifest.module ?? manifest.main ?? "index.js";
+    return resolveRelativeJs(join(depDir, "package.json"), `./${main.replace(/^\.\//, "")}`);
+  }
+  let map = exp;
+  if (typeof exp === "string" || Array.isArray(exp) || !Object.keys(exp).some((k) => k.startsWith("."))) map = { ".": exp };
+  let target = map[sub];
+  if (target === undefined) {
+    for (const [k, v] of Object.entries(map)) {
+      const star = k.indexOf("*");
+      if (star === -1) continue;
+      const pre = k.slice(0, star);
+      const post = k.slice(star + 1);
+      if (sub.startsWith(pre) && sub.endsWith(post) && sub.length >= pre.length + post.length) {
+        target = JSON.parse(JSON.stringify(v).split("*").join(sub.slice(pre.length, sub.length - post.length)));
+        break;
+      }
+    }
+  }
+  if (target == null) return null;
+  const rel = pickRuntime(target);
+  if (!rel) return null;
+  const abs = join(depDir, rel);
+  return existsSync(abs) ? abs : null;
+}
+
 function shippedScripts(pkgDir) {
   const out = [];
   const walk = (dir) => {
@@ -521,6 +554,7 @@ export function auditPackageGraph(root) {
   const seen = new Set();
   const realRoot = realpathSync(root);
   let specifiers = 0;
+  let namedChecked = 0;
   const queue = [];
   const enqueueFrom = (fromDir) => {
     const scopeDir = join(fromDir, "node_modules", "@ai-matrx");
@@ -541,12 +575,20 @@ export function auditPackageGraph(root) {
     // pnpm puts a package's own dependencies beside it: <store>/node_modules/@ai-matrx/<dep>.
     enqueueFrom(dirname(dirname(pkgDir)));
     const specs = new Map();
+    // spec -> name -> first shipped file importing it (the 2026-10-18 case: names, not just subpaths).
+    const named = new Map();
     for (const file of shippedScripts(pkgDir)) {
       const text = readFileSync(file, "utf8");
       if (!text.includes(SCOPE)) continue;
       for (const m of text.matchAll(GRAPH_SPECIFIER)) {
         const spec = m[1] + (m[2] ?? "");
         if (!specs.has(spec)) specs.set(spec, file);
+      }
+      for (const imp of collectImports(file, text)) {
+        if (imp.typeOnly || imp.name === WHOLE_MODULE) continue;
+        if (!named.has(imp.specifier)) named.set(imp.specifier, new Map());
+        const names = named.get(imp.specifier);
+        if (!names.has(imp.name)) names.set(imp.name, { file, line: imp.line });
       }
     }
     for (const [spec, file] of specs) {
@@ -565,9 +607,34 @@ export function auditPackageGraph(root) {
         findings.push({ file: where, line: 0, pkg: name, version: dep.version, sub, name: spec, why: "graph", importer: manifest.name });
       else if (!subpathFileShipped(depDir, dep.exports, sub))
         findings.push({ file: where, line: 0, pkg: name, version: dep.version, sub, name: spec, why: "graph-file", importer: manifest.name });
+      else {
+        // THE 2026-10-18 CASE: design-system 0.86.194 renamed formatShortcut -> formatTapShortcut while
+        // the published records-ui 0.116.17 still imported formatShortcut from ./tap-target (61 app files
+        // failed to load; release v0.4.3327 was cut with the pair). The subpath existed; the NAME did not.
+        const names = named.get(spec);
+        if (!names?.size) continue;
+        const runtimeFile = runtimeFileOf(depDir, dep, sub);
+        const shipped = runtimeFile ? runtimeExportsOf(runtimeFile) : null;
+        if (!shipped) continue; // CommonJS / open `export *`: not statically knowable, never guessed
+        for (const [imported, at] of names) {
+          namedChecked++;
+          if (shipped.has(imported)) continue;
+          findings.push({
+            file: `${manifest.name}@${manifest.version}/${relative(pkgDir, at.file).split(sep).join("/")}`,
+            line: at.line,
+            pkg: name,
+            version: dep.version,
+            sub,
+            name: imported,
+            why: "graph-name",
+            importer: manifest.name,
+            importerVersion: manifest.version,
+          });
+        }
+      }
     }
   }
-  return { packages: seen.size, specifiers, findings };
+  return { packages: seen.size, specifiers, namedChecked, findings };
 }
 
 export function findingKey(f) {
@@ -584,6 +651,8 @@ function describe(f) {
   if (f.why === "not-installed") return `"${f.name}" from "${target}": ${f.pkg} is NOT INSTALLED (node_modules has no copy)`;
   if (f.why === "graph")
     return `${f.importer} imports "${f.name}", but the ${f.pkg}@${f.version} installed beside it does not export "${f.sub}"`;
+  if (f.why === "graph-name")
+    return `${f.importer}@${f.importerVersion} imports { ${f.name} } from "${target}", but the ${f.pkg}@${f.version} installed beside it does not export "${f.name}" (renamed or removed)`;
   if (f.why === "graph-missing") return `${f.importer} imports "${f.name}", but ${f.pkg} is not installed beside it`;
   if (f.why === "runtime")
     return `export "${f.name}" is declared in "${target}"'s types but MISSING from its runtime JavaScript`;
@@ -617,7 +686,7 @@ function report(result) {
     console.log(
       `[matrx-imports] OK — ${result.imports} @ai-matrx import name(s) exist in the installed packages` +
         ` (${result.runtimeChecked} value import(s) also found in the runtime JavaScript)` +
-        (!graphDone ? "" : `; ${result.graphSpecifiers} cross-package import(s) across ${result.graphPackages} installed @ai-matrx package(s) resolve`) +
+        (!graphDone ? "" : `; ${result.graphSpecifiers} cross-package import(s) (${result.graphNamed ?? 0} named) across ${result.graphPackages} installed @ai-matrx package(s) resolve`) +
         `${scope}.`,
     );
     return 0;
@@ -641,6 +710,23 @@ function report(result) {
       `    pnpm check:matrx-lockfile     # every @ai-matrx version in pnpm-lock.yaml answers 200\n` +
       `    pnpm sync:matrx-packages      # waits for the tarballs, then updates the lockfile\n` +
       `  Never pin; never delete the import to go green.`,
+  );
+  return 1;
+}
+
+/** --packages report: one line per broken importer -> dependency name. */
+function reportPackages(graph) {
+  if (!graph.findings.length) {
+    console.log(
+      `[matrx-imports --packages] OK — ${graph.specifiers} cross-package specifier(s), ${graph.namedChecked} named import(s) across ${graph.packages} installed @ai-matrx package(s) resolve.`,
+    );
+    return 0;
+  }
+  console.error(`[FAIL] [matrx-imports --packages] ${graph.findings.length} installed @ai-matrx package(s) import something their installed sibling does not ship:`);
+  for (const f of graph.findings) console.error(`    ${f.file}:${f.line}  ${describe(f)}`);
+  console.error(
+    `\n  One package was published before (or without) its dependents. Do not adopt this set: republish the\n` +
+      `  importer against the new name (aidream's npm train), then run 'pnpm sync:matrx-packages' again.`,
   );
   return 1;
 }
@@ -791,7 +877,7 @@ function selfTest() {
       writeFileSync(join(dir, "package.json"), JSON.stringify({ name: `@ai-matrx/${name}`, version, type: "module", exports: exportsMap }));
       writeFileSync(join(dir, "dist", "data-table", "index.js"), js);
     };
-    graphPkg("kit", "0.25.0", { "./transfer-json": "./dist/data-table/index.js", "./format": "./dist/data-table/index.js" }, "export const x = 1;\n");
+    graphPkg("kit", "0.25.0", { "./transfer-json": "./dist/data-table/index.js", "./format": "./dist/data-table/index.js" }, "export const x = 1;\nexport const f = 1;\nexport const normalizeTransferJson = 1;\n");
     graphPkg(
       "design-system",
       "0.69.1",
@@ -818,6 +904,22 @@ function selfTest() {
     clearPackageResolution();
     g = auditPackageGraph(tmp);
     if (g.findings.length || g.specifiers !== 1) failures.push(`GREEN 2026-10-06: expected 1 clean specifier, got ${JSON.stringify(g)}`);
+    // ── THE 2026-10-18 CASE: the subpath exists but the NAME was renamed (formatShortcut -> formatTapShortcut).
+    graphPkg("kit", "0.25.1", { "./transfer-json": "./dist/data-table/index.js" }, "export function formatTapShortcut() {}\nexport const normalizeTransferJson = 1;\n");
+    graphPkg("design-system", "0.70.2", { "./data-table": "./dist/data-table/index.js" }, `import { formatShortcut as fs, normalizeTransferJson } from "@ai-matrx/kit/transfer-json";\n`);
+    clearPackageResolution();
+    runtimeCache.clear();
+    g = auditPackageGraph(tmp);
+    const renamed = g.findings.find((f) => f.why === "graph-name");
+    if (!renamed || renamed.name !== "formatShortcut" || renamed.version !== "0.25.1" || g.findings.length !== 1)
+      failures.push(`RED 2026-10-18: a renamed export imported by a sibling package was not reported exactly once: ${JSON.stringify(g.findings)}`);
+    if (!describe(renamed ?? { why: "graph-name", sub: ".", pkg: "" }).includes("formatShortcut"))
+      failures.push("RED 2026-10-18: the finding does not name the broken import");
+    graphPkg("design-system", "0.70.3", { "./data-table": "./dist/data-table/index.js" }, `import { formatTapShortcut, normalizeTransferJson } from "@ai-matrx/kit/transfer-json";\n`);
+    clearPackageResolution();
+    runtimeCache.clear();
+    g = auditPackageGraph(tmp);
+    if (g.findings.length || g.namedChecked !== 2) failures.push(`GREEN 2026-10-18: expected 2 clean named imports, got ${JSON.stringify(g)}`);
     // RED: the dependency is not installed beside the importer at all.
     rmSync(join(tmp, "node_modules", "@ai-matrx", "kit"), { recursive: true, force: true });
     clearPackageResolution();
@@ -934,7 +1036,7 @@ function selfTest() {
     for (const f of failures) console.error(`  - ${f}`);
     return 1;
   }
-  console.log("check-matrx-imports --self-test OK — RED on a missing export, subpath, wildcard subpath with no shipped file, runtime-only gap, uninstalled package, a broken package-to-package import and a require()/import()/export-* specifier; GREEN once shipped.");
+  console.log("check-matrx-imports --self-test OK — RED on a missing export, subpath, wildcard subpath with no shipped file, runtime-only gap, uninstalled package, a broken package-to-package import (subpath and renamed name) and a require()/import()/export-* specifier; GREEN once shipped.");
   return 0;
 }
 
@@ -942,7 +1044,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   let code;
   try {
     if (process.argv.includes("--self-test")) code = selfTest();
-    else {
+    else if (process.argv.includes("--packages")) {
+      // Package-to-package only (sync:matrx-packages' adoption gate): every @ai-matrx specifier and
+      // every named import inside node_modules/@ai-matrx/*/dist must resolve against the installed sibling.
+      const argv = process.argv.slice(2);
+      const i = argv.indexOf("--root");
+      const root = i !== -1 ? argv[i + 1] : join(dirname(fileURLToPath(import.meta.url)), "..");
+      code = reportPackages(auditPackageGraph(resolve(root)));
+    } else {
       const argv = process.argv.slice(2);
       const i = argv.indexOf("--root");
       const root = i !== -1 ? argv[i + 1] : join(dirname(fileURLToPath(import.meta.url)), "..");
