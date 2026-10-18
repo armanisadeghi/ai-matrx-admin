@@ -794,6 +794,11 @@ def live_plants(top, common_dir):
 # before committing: otherwise known broken imports can reach a production build.
 SWEEP_CHECK = os.path.join("scripts", "check-sweep-resolves.mjs")
 SWEEP_CHECK_TIMEOUT = 900   # seconds; large concurrent sweeps can exceed five minutes.
+# The checker type-checks every swept file (plus the committed files importing them) in one
+# program; its heap grows with the size of the sweep. At node's default ~4.4 GB ceiling a large
+# sweep aborted with "FatalProcessOutOfMemory" (ship-all 2026-10-17_23-13-53, node 26.7) and
+# the sync paused. The machine has the memory; the default cap was the only limit.
+SWEEP_CHECK_HEAP_MB = 16384
 
 
 def sweep_holds():
@@ -802,10 +807,14 @@ def sweep_holds():
         say("SYNC PAUSED — sweep checker is missing (%s); release skipped." % SWEEP_CHECK)
         sys.exit(PAUSED_EXIT)
     try:
-        r = subprocess.run(["node", SWEEP_CHECK, "--json"], capture_output=True, text=True,
-                           timeout=SWEEP_CHECK_TIMEOUT)
+        r = subprocess.run(["node", "--max-old-space-size=%d" % SWEEP_CHECK_HEAP_MB, SWEEP_CHECK, "--json"],
+                           capture_output=True, text=True, timeout=SWEEP_CHECK_TIMEOUT)
         if r.returncode != 0:
-            raise RuntimeError((r.stderr or r.stdout).strip()[-600:] or "exit %d" % r.returncode)
+            # A native abort prints its reason FIRST and then a 60-frame stack; the tail alone
+            # showed only stack frames, never "FATAL ERROR: … heap out of memory".
+            text = (r.stderr or r.stdout).strip()
+            fatal = [l.strip() for l in text.splitlines() if "FATAL ERROR" in l][:2]
+            raise RuntimeError(("\n".join(fatal) + "\n" if fatal else "") + (text[-600:] or "exit %d" % r.returncode))
         data = json.loads(r.stdout.strip().splitlines()[-1])
         holds = data.get("hold")
         if (type(data.get("checked", 0)) is not int

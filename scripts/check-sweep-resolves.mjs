@@ -374,8 +374,24 @@ export function classify(root) {
   // exports (so a missing local export is still TS2305) and every `export … from` verbatim (so a
   // `export * from "@ai-matrx/…"` shim still reaches the real package), and imports nothing else.
   const realFiles = new Set(roots);
+  // ONE parse per on-disk file across every program this run builds (2026-10-17, ship-all
+  // 23-13-53: node aborted "FatalProcessOutOfMemory" at the 4.4 GB default heap). Step 3 builds a
+  // HEAD program per held edit, and each one re-parsed every node_modules / lib declaration the
+  // main program had already parsed — ~0.55 GB per held file, all live at once, so a sweep with a
+  // big main program and a few held edits ran out of heap and the sync paused. Files read from
+  // disk are the same text in every program; only the stub / HEAD-text overrides differ, and
+  // those never go through this cache. (Sharing SourceFiles across programs is what the language
+  // service's DocumentRegistry does; the options are identical here.)
+  const parsedFromDisk = new Map();
+  const sharedDiskSourceFile = (baseGetSourceFile) => (fileName, languageVersion, onError, shouldCreate) => {
+    const key = `${resolve(fileName)}\0${typeof languageVersion === "object" ? `${languageVersion.languageVersion}:${languageVersion.impliedNodeFormat}:${languageVersion.jsDocParsingMode}` : languageVersion}`;
+    if (parsedFromDisk.has(key)) return parsedFromDisk.get(key);
+    const sf = baseGetSourceFile(fileName, languageVersion, onError, shouldCreate);
+    if (sf) parsedFromDisk.set(key, sf);
+    return sf;
+  };
   const host = ts.createCompilerHost(options, true);
-  const baseGetSourceFile = host.getSourceFile.bind(host);
+  const baseGetSourceFile = sharedDiskSourceFile(host.getSourceFile.bind(host));
   const rootPrefix = root + sep;
   host.getSourceFile = (fileName, languageVersion, onError, shouldCreate) => {
     const f = resolve(fileName);
@@ -452,7 +468,7 @@ export function classify(root) {
         continue;
       }
       const headHost = ts.createCompilerHost(options, true);
-      const baseHeadGetSourceFile = headHost.getSourceFile.bind(headHost);
+      const baseHeadGetSourceFile = sharedDiskSourceFile(headHost.getSourceFile.bind(headHost));
       headHost.getSourceFile = (fileName, languageVersion, onError, shouldCreate) => {
         const source = resolve(fileName);
         if (source === f) return ts.createSourceFile(fileName, headText, languageVersion, true);
