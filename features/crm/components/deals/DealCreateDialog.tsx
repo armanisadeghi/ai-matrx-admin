@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { CURRENCY_CODES } from "@ai-matrx/chat/agents/components/inputs/input-components/CurrencyVariableInput";
-import { ALL_MY_ORGANIZATIONS, searchPartiesByName } from "../../service";
+import { searchPartiesByName } from "../../service";
 import type { PartyRef } from "../../types";
 import { createDeal } from "../../deals/service";
 import type { DealPipeline, DealRow } from "../../deals/types";
@@ -43,11 +43,11 @@ interface Props {
   /** The org the deal is stamped into (when no party picks one). */
   orgId: string | null;
   /**
-   * Search every organization of mine (D227): with no active org chosen
+   * Every org the party search may look in (D227): with no active org chosen
    * in the workspace there is no single right org to search, and the deal
-   * follows the picked party's org. Asked of the server. Defaults to `orgId`.
+   * follows the picked party's org. Defaults to `[orgId]`.
    */
-  searchAllMyOrganizations?: boolean;
+  searchOrgIds?: string[];
   /** Defaults the owner to the caller. */
   userId: string | null;
   /** Preselects the pipeline the board/list is narrowed to. */
@@ -62,7 +62,7 @@ export function DealCreateDialog({
   onOpenChange,
   pipelines,
   orgId,
-  searchAllMyOrganizations,
+  searchOrgIds,
   userId,
   defaultPipelineId,
   defaultParty,
@@ -111,9 +111,12 @@ export function DealCreateDialog({
   );
 
   // Debounced contact-only party search across the reachable orgs (D227).
-  const searchOrgs = searchAllMyOrganizations ? ALL_MY_ORGANIZATIONS : orgId;
+  const searchOrgs = useMemo(
+    () => (searchOrgIds?.length ? searchOrgIds : orgId ? [orgId] : []),
+    [searchOrgIds, orgId],
+  );
   useEffect(() => {
-    if (!open || !searchOrgs || party || !partySearch.trim()) {
+    if (!open || searchOrgs.length === 0 || party || !partySearch.trim()) {
       setPartyResults([]);
       setSearched(false);
       return;

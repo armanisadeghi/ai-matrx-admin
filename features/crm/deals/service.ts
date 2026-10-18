@@ -30,7 +30,6 @@ import {
 } from "@/features/unified-data/standard-field-columns/wholeResult";
 import { announceRecordChange } from "@/lib/records/recordChanges";
 import { supabase } from "@/utils/supabase/client";
-import { IN_MY_ORGANIZATIONS_ARM } from "@/features/organizations/service/inMyOrganizations";
 import { tryWriteOne, WriteDidNotLandError } from "@/utils/supabase/writeOne";
 import type { CrmQueryContext } from "../types";
 import type {
@@ -103,7 +102,11 @@ export function applyDealListPredicates<Q extends DealPredicateBuilder<Q>>(
       : builder.is("deleted_at", null);
 
   // Blended declared work scope: mine OR my orgs (THE VIEW LAW).
-  q = q.or(`created_by.eq.${ctx.userId},${IN_MY_ORGANIZATIONS_ARM}`);
+  q = ctx.orgIds.length
+    ? q.or(
+        `created_by.eq.${ctx.userId},organization_id.in.(${ctx.orgIds.join(",")})`,
+      )
+    : q.eq("created_by", ctx.userId);
 
   if (query.pipelineId) q = q.eq("pipeline_id", query.pipelineId);
 
@@ -217,7 +220,11 @@ export async function fetchBoardDeals(
     .select(PARTY_EMBED, { count: "exact" })
     .is("deleted_at", null)
     .eq("pipeline_id", pipelineId);
-  q = q.or(`created_by.eq.${ctx.userId},${IN_MY_ORGANIZATIONS_ARM}`);
+  q = ctx.orgIds.length
+    ? q.or(
+        `created_by.eq.${ctx.userId},organization_id.in.(${ctx.orgIds.join(",")})`,
+      )
+    : q.eq("created_by", ctx.userId);
   const { data, error, count } = await q
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("stage_entered_at", { ascending: false })

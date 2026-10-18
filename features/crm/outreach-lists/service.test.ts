@@ -80,8 +80,8 @@ describe("fetchOutreachLists", () => {
       { method: "select", args: ["*, members:outreach_list_member(count)", { count: "exact" }] },
     ]);
     expect(queryState.calls.filter((call) => call.method === "or")).toEqual([
-      { method: "or", args: ["created_by.eq.user-1,in_my_organizations.is.true"] },
-      { method: "or", args: ["created_by.eq.user-1,in_my_organizations.is.true"] },
+      { method: "or", args: ["created_by.eq.user-1,organization_id.in.(org-1)"] },
+      { method: "or", args: ["created_by.eq.user-1,organization_id.in.(org-1)"] },
     ]);
     expect(queryState.calls.filter((call) => call.method === "order")).toEqual([
       { method: "order", args: ["updated_at", { ascending: false }] },

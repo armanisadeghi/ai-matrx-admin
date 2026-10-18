@@ -58,8 +58,8 @@ export function DuplicateReviewPage() {
     if (!ctx) return;
     try {
       const [cands, recent] = await Promise.all([
-        fetchMergeCandidates(),
-        fetchRecentMerges(),
+        fetchMergeCandidates(ctx.orgIds),
+        fetchRecentMerges(ctx.orgIds),
       ]);
       setCandidates(cands);
       setMerges(recent);

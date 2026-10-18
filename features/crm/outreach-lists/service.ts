@@ -20,7 +20,6 @@
 //      silently dialed.
 
 import { supabase } from "@/utils/supabase/client";
-import { IN_MY_ORGANIZATIONS_ARM } from "@/features/organizations/service/inMyOrganizations";
 import { readAllRows } from "@ai-matrx/data/db";
 import { tryWriteOne, WriteDidNotLandError } from "@/utils/supabase/writeOne";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
@@ -90,8 +89,11 @@ export async function fetchOutreachLists(
         .is("members.deleted_at", null)
         .order("updated_at", { ascending: false })
         .order("id", { ascending: true });
-      // Mine OR my organizations - the organizations are asked of the server, never listed here.
-      q = q.or(`created_by.eq.${ctx.userId},${IN_MY_ORGANIZATIONS_ARM}`);
+      q = ctx.orgIds.length
+        ? q.or(
+            `created_by.eq.${ctx.userId},organization_id.in.(${ctx.orgIds.join(",")})`,
+          )
+        : q.eq("created_by", ctx.userId);
       return q.range(from, to);
     },
     { label: "crm.outreach_list" },

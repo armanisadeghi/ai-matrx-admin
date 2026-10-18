@@ -97,7 +97,6 @@ import {
   selectNotesListError,
   selectNotesGroupedByScope,
   selectNoteScopesLoaded,
-  selectNoteOrganizationIds,
 } from "../redux/selectors";
 import { toast } from "@/lib/toast";
 import { useNoteHomeNames } from "../homes/useNoteHomes";
@@ -143,7 +142,7 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
-import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
+import { useUserOrganizations } from "@/features/organizations/hooks";
 import { CONTEXT_MENU_HEADING_KEY } from "@ai-matrx/context-menu/engine";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
@@ -214,9 +213,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   const taskName = useAppSelector(selectTaskName);
   // Organization names appear ONLY when the person groups or filters by
   // organization (and in a General's label when her notes span several).
-  // Names only: the organizations her notes NAME, resolved by id (never her whole list).
-  const noteOrganizationIds = useAppSelector(selectNoteOrganizationIds);
-  const { organizations: memberOrgs } = useOrganizationsWith(noteOrganizationIds);
+  const { organizations: memberOrgs } = useUserOrganizations();
   const orgNameById = new Map(memberOrgs.map((o) => [o.id, o.name]));
   const homes = useNoteHomeNames(activeOrgId);
   const [orgFilter, setOrgFilter] = useOrgFilterParam([]);

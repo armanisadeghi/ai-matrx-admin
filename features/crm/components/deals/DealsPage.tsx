@@ -889,7 +889,7 @@ export function DealsPage() {
         onOpenChange={setCreateOpen}
         pipelines={pipelines}
         orgId={effectiveOrgId}
-        searchAllMyOrganizations
+        searchOrgIds={list.ctx?.orgIds}
         userId={list.ctx?.userId ?? null}
         defaultPipelineId={boardPipelineId}
         onCreated={(deal) => {

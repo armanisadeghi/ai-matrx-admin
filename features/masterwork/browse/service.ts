@@ -18,6 +18,7 @@ import type {
   EntityListSort,
   EntityScopeCounts,
 } from "@/lib/entity-list/types";
+import { getUserOrganizations } from "@/features/organizations/service";
 import { getSharedWithMe } from "@/utils/permissions/service";
 import type {
   RulebookListRow,
@@ -70,12 +71,21 @@ async function mySharedRulebookIds(): Promise<string[]> {
   return sharedIdsCache;
 }
 
-/**
- * "A row of one of my organizations that its organization's Shown-to lists to me" - asked of the
- * server (`platform.listed_in_my_organizations`, migration 20261018160000); the first page of her
- * organizations is never turned into an id list.
- */
-const LISTED_IN_MY_ORGANIZATIONS = "listed_in_my_organizations" as const;
+/** My non-personal org ids, cached per session (memberships rarely change mid-list). */
+let orgIdsCache: { ids: string[]; names: Map<string, string> } | null = null;
+
+async function myOrgs(): Promise<{ ids: string[]; names: Map<string, string> }> {
+  if (orgIdsCache) return orgIdsCache;
+  const orgs = await getUserOrganizations();
+  const names = new Map<string, string>();
+  const ids: string[] = [];
+  for (const org of orgs) {
+    ids.push(org.id);
+    names.set(org.id, org.name);
+  }
+  orgIdsCache = { ids, names };
+  return orgIdsCache;
+}
 
 /**
  * Structural query surface shared by the page and count builders. Interface
@@ -86,7 +96,6 @@ interface RulebookFilterable {
   eq(column: string, value: string | boolean): this;
   neq(column: string, value: string): this;
   in(column: string, values: string[] | boolean[]): this;
-  is(column: string, value: boolean | null): this;
   or(filters: string): this;
   gte(column: string, value: string): this;
   lt(column: string, value: string): this;
@@ -121,11 +130,13 @@ function applyScope<Q extends RulebookFilterable>(
   /** The page's ORGANIZATION FILTER (null = All organizations) — it narrows every lane. */
   orgId: string | null,
   userId: string,
+  myOrgIds: string[],
   sharedIds: string[],
   allTeamReach: TeamReachPair[] = [],
   shownTo: ShownToContext = {},
 ): Q | null {
   const q = orgId ? (base.eq("organization_id", orgId) as Q) : base;
+  const blendedOrgIds = orgId ? myOrgIds.filter((id) => id === orgId) : myOrgIds;
   const teamReach = orgId
     ? allTeamReach.filter((p) => p.organizationId === orgId)
     : allTeamReach;
@@ -134,7 +145,7 @@ function applyScope<Q extends RulebookFilterable>(
   // organizations show me (each row by ITS organization's Shown-to), what was shared with me.
   if (scope.kind === "all") {
     const arms = [`created_by.eq.${userId}`];
-    arms.push(`${LISTED_IN_MY_ORGANIZATIONS}.is.true`);
+    if (blendedOrgIds.length > 0) arms.push(shownToBlendedFilter(shownTo, blendedOrgIds, userId));
     if (sharedIds.length > 0) arms.push(`id.in.(${sharedIds.join(",")})`);
     return q.or(arms.join(",")) as Q;
   }
@@ -161,9 +172,12 @@ function applyScope<Q extends RulebookFilterable>(
   // made. The union is unchanged; only the overlap moves, so nothing becomes
   // unreachable.
   if (scope.kind === "orgs") {
-    // In one of my organizations AND listed by that organization's "Shown to" (access ladder
-    // T-11) - both answered by the server.
-    return (q.neq("created_by", userId) as Q).is(LISTED_IN_MY_ORGANIZATIONS, true);
+    const notMine = q.neq("created_by", userId) as Q;
+    if (blendedOrgIds.length === 0) return null;
+    // Access ladder T-11: each row shows only where its "Shown to" lets it.
+    return notMine
+      .in("organization_id", blendedOrgIds)
+      .or(shownToBlendedFilter(shownTo, blendedOrgIds, userId));
   }
   return applyListScope(q, scope, { userId });
 }
@@ -300,12 +314,13 @@ export async function fetchRulebookPage(
   sort: EntityListSort,
 ): Promise<EntityListPage<RulebookListRow>> {
   const userId = requireUserId();
-  const [sharedIds, teamReach, shownTo] = await Promise.all([
+  const [{ ids: blendedOrgIds }, sharedIds, teamReach, shownTo] = await Promise.all([
+    myOrgs(),
     mySharedRulebookIds(),
     query.scope.kind === "team"
       ? fetchMyTeamReach(query.orgId)
       : Promise.resolve([]),
-    query.scope.kind === "team"
+    query.scope.kind === "orgs" || query.scope.kind === "team" || query.scope.kind === "all"
       ? fetchShownToContext("rulebook")
       : Promise.resolve({}),
   ]);
@@ -314,6 +329,7 @@ export async function fetchRulebookPage(
     query.scope,
     query.orgId,
     userId,
+    blendedOrgIds,
     sharedIds,
     teamReach,
     shownTo,
@@ -347,7 +363,8 @@ export async function fetchRulebookCounts(
     narrow: {},
   };
 
-  const [sharedIds, teamReach, shownTo] = await Promise.all([
+  const [{ ids }, sharedIds, teamReach, shownTo] = await Promise.all([
+    myOrgs(),
     mySharedRulebookIds(),
     fetchMyTeamReach(null),
     fetchShownToContext("rulebook"),
@@ -357,7 +374,7 @@ export async function fetchRulebookCounts(
     scope: EntityListQuery["scope"],
   ): Promise<number> => {
     // The organization filter narrows every lane's count, as it narrows the list.
-    let q = applyScope(baseCount(), scope, query.orgId, userId, sharedIds, teamReach, shownTo);
+    let q = applyScope(baseCount(), scope, query.orgId, userId, ids, sharedIds, teamReach, shownTo);
     if (q === null) return 0;
     q = applyFilters(q, query);
     const { count, error } = await q;

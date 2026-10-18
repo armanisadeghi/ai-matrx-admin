@@ -640,7 +640,7 @@ export function CrmListPage({
   useEffect(() => {
     if (!list.ctx || list.ctx.orgIds.length === 0) return;
     let cancelled = false;
-    void fetchPendingCandidateCount()
+    void fetchPendingCandidateCount(list.ctx.orgIds)
       .then((n) => {
         if (cancelled) return;
         setDupCount(n);

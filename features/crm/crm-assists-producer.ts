@@ -57,7 +57,7 @@ export async function produceCrmDedupAssists(args: {
       console.error(`[crm] dedup scan failed for org ${orgId}:`, e);
     }
   }
-  const pending = await fetchPendingCandidateCount().catch(() => 0);
+  const pending = await fetchPendingCandidateCount(orgIds).catch(() => 0);
 
   const reviewKey = `${SOURCE_KEY}:${userId}`;
   // Receipt chips key on the merge ids — every auto-merge event is its own
