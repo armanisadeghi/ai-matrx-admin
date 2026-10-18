@@ -293,7 +293,7 @@ function scanApp(base: Baseline): BlockingResult {
           line: at + 1,
           rule: "hand-table",
           detail:
-            "Hand-built table (raw <table> or components/ui/table). New tables are MatrxDataTable — it brings copy-for-agent, search, filters, resize, saved views and the row menu for free.",
+            "Hand-built table (raw <table> or components/ui/table). Use the ladder: a list of records → RecordList (@ai-matrx/design-system/record-list); a small fully loaded set with columns or sorting → LiteTable (@ai-matrx/design-system/lite-table, same columns as the full table); filters, paging, editing or bulk actions → MatrxDataTable.",
         });
       }
     }
