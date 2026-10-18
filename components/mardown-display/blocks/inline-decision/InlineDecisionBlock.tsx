@@ -70,7 +70,7 @@ export default function InlineDecisionBlock({
       role="group"
       aria-label={decision.prompt}
       className={cn(
-        "my-2 flex flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-all duration-200",
+        "my-2 flex flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-[opacity,transform] duration-200",
         fadeOut && "-translate-y-1 scale-[0.99] opacity-0 duration-[280ms]",
       )}
     >
@@ -98,7 +98,7 @@ export default function InlineDecisionBlock({
               <div className="min-w-0 flex-1">
                 <div className="font-medium text-foreground">{option.label}</div>
                 {option.text && option.text !== option.label ? (
-                  <div className="mt-0.5 line-clamp-4 whitespace-pre-wrap text-muted-foreground">
+                  <div className="mt-0.5 whitespace-pre-wrap text-muted-foreground">
                     {option.text}
                   </div>
                 ) : null}
@@ -114,10 +114,11 @@ export default function InlineDecisionBlock({
           </div>
         ))}
 
+        <div className="flex items-start gap-1">
         <label
           data-clickable=""
           className={cn(
-            "flex items-start gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent",
+            "flex min-w-0 flex-1 items-start gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent",
             editingId === CUSTOM_ID && "border-primary",
           )}
         >
@@ -132,6 +133,9 @@ export default function InlineDecisionBlock({
           />
           <span className="font-medium text-foreground">Write my own</span>
         </label>
+        {/* Keeps this row's right edge on the option rows' (they carry a 28px pencil). */}
+        <span aria-hidden="true" className="w-7 shrink-0" />
+        </div>
       </div>
 
       {editingId !== null ? (

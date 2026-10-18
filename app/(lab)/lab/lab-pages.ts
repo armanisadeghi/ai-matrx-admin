@@ -7,4 +7,5 @@ export const LAB_PAGES: { href: string; title: string }[] = [
   { href: "/lab/search-review", title: "Review search results — window story (fixtures)" },
   { href: "/lab/welcome-people", title: "Sign-up welcome — which one is you (real anchor rounds)" },
   { href: "/lab/phone-composer", title: "Phone composer — messages composer at phone and desktop width" },
+  { href: "/lab/decision-block", title: "Decision block — the chat's pick-one control (fixtures)" },
 ];
