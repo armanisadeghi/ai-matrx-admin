@@ -108368,6 +108368,21 @@ export type Database = {
         Args: { p_id: string; p_schema: string; p_table: string }
         Returns: Record<string, unknown>
       }
+      entity_table: {
+        Args: { p_token: string }
+        Returns: {
+          custom_fields_enabled: boolean
+          has_custom_fields: boolean
+          has_deleted_at: boolean
+          has_organization: boolean
+          label: string
+          schema_name: string
+          table_name: string
+          title_column: string
+          token: string
+          type: string
+        }[]
+      }
       entity_title: { Args: { p_id: string; p_type: string }; Returns: string }
       entity_type_has_shareable_ancestor: {
         Args: { p_type: string }
@@ -151790,16 +151805,18 @@ export type Database = {
           element_id: string
           id: string
           metadata: Json
-          opinion: string | null
           opinion_reason: string | null
           organization_id: string
           origin: string
+          placement: string | null
+          recommended_placement: string | null
           test_expires_at: string | null
           test_run_id: string | null
           updated_at: string
           updated_by: string | null
           value: Json
           version: number
+          word_signals: Json
         }
         Insert: {
           brand_id: string
@@ -151814,16 +151831,18 @@ export type Database = {
           element_id: string
           id?: string
           metadata?: Json
-          opinion?: string | null
           opinion_reason?: string | null
           organization_id: string
           origin: string
+          placement?: string | null
+          recommended_placement?: string | null
           test_expires_at?: string | null
           test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           value: Json
           version?: number
+          word_signals?: Json
         }
         Update: {
           brand_id?: string
@@ -151838,16 +151857,18 @@ export type Database = {
           element_id?: string
           id?: string
           metadata?: Json
-          opinion?: string | null
           opinion_reason?: string | null
           organization_id?: string
           origin?: string
+          placement?: string | null
+          recommended_placement?: string | null
           test_expires_at?: string | null
           test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           value?: Json
           version?: number
+          word_signals?: Json
         }
         Relationships: [
           {
@@ -152238,6 +152259,89 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: []
+      }
+      brand_review: {
+        Row: {
+          author_name: string | null
+          brand_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          external_review_id: string
+          fetched_at: string
+          id: string
+          metadata: Json
+          organization_id: string
+          owner_response: string | null
+          place_id: string | null
+          published_at: string | null
+          rating: number | null
+          raw: Json
+          review_text: string | null
+          source: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          author_name?: string | null
+          brand_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          external_review_id: string
+          fetched_at?: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          owner_response?: string | null
+          place_id?: string | null
+          published_at?: string | null
+          rating?: number | null
+          raw?: Json
+          review_text?: string | null
+          source: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          author_name?: string | null
+          brand_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          external_review_id?: string
+          fetched_at?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          owner_response?: string | null
+          place_id?: string | null
+          published_at?: string | null
+          rating?: number | null
+          raw?: Json
+          review_text?: string | null
+          source?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_review_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       brand_testimony: {
         Row: {
