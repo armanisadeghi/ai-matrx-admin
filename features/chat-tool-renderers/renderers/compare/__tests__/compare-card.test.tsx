@@ -96,6 +96,16 @@ describe("no paid run before Confirm", () => {
   });
 });
 
+describe("a concept search", () => {
+  it("says how the list was found, still behind Confirm", async () => {
+    followRun.mockRejectedValue(new ComparisonRefusal("not_found", "none"));
+    const host = await mount({ ...awaiting, how_found: "Top results from a map search for bike shops near Bend.", guessed: false });
+    expect(host.querySelector("[data-compare-how]")?.textContent).toContain("map search");
+    expect(confirmButton(host)).not.toBeNull();
+    expect(startChatComparison).not.toHaveBeenCalled();
+  });
+});
+
 describe("a reload", () => {
   it("follows a run that already exists (no Confirm, no second start) and settles into the compact result", async () => {
     followRun.mockResolvedValue(RESULT);

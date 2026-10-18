@@ -33,6 +33,9 @@ export interface ParsedCompare {
   request: unknown;
   quote: ComparisonQuote | null;
   lookupPoints: number;
+  /** Concept searches only: how the list was found, in the server's words. */
+  howFound: string | null;
+  guessed: boolean;
 }
 
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
@@ -74,5 +77,7 @@ export function parseCompare(entry: ToolLifecycleEntry): ParsedCompare | null {
     request: r.request ?? null,
     quote,
     lookupPoints: num(r.lookup_points) ?? 0,
+    howFound: str(r.how_found),
+    guessed: r.guessed === true,
   };
 }
