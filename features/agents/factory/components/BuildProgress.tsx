@@ -18,6 +18,7 @@
  * Admins get a link to the full build page (the way into the admin section).
  */
 
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState } from "react";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import Link from "next/link";
@@ -203,13 +204,10 @@ function OutcomePanel({
         </div>
       ) : null}
       {!kept && (reason || state.error) ? (
-        <details className="rounded-md border border-border">
-          <summary className="px-2.5 py-1.5 type-secondary font-medium">Why</summary>
-          <p className="whitespace-pre-wrap break-words border-t border-border p-2.5 type-secondary text-muted-foreground">
-            {/* A kind carried in the reason reads as its one-line label (L-5, round 9). */}
-            {catalogProseText(reason ?? state.error)}
-          </p>
-        </details>
+        <div data-testid="build-failure-reason" className="line-clamp-3">
+          {/* A kind carried in the reason reads as its one-line label (L-5, round 9). */}
+          <ErrorNotice title="The build stopped" message={catalogProseText(reason ?? state.error)} />
+        </div>
       ) : null}
     </div>
   );
