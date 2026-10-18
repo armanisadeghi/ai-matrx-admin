@@ -15,7 +15,6 @@ import { useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   createApiVaultPort,
-  createSupabaseIdentity,
   createVaultKnobs,
   DEFAULT_LOCATION,
   locationFromParams,
@@ -38,8 +37,8 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
 import { packageKnobClient } from "@/lib/knobs/packageKnobClient";
-import { withAuthDestination } from "@/utils/auth/auth-destination";
 import { supabase } from "@/utils/supabase/client";
+import { webVaultIdentity as identity, webVaultSignIn as signIn } from "../webVaultIdentity";
 
 let sharedPort: VaultPort | null = null;
 /** One port per tab: it holds only the server client and caches, never a person's plaintext. */
@@ -51,13 +50,6 @@ function vaultPort(): VaultPort {
   });
   return sharedPort;
 }
-
-// "Continue with Google" returns through the site's one sign-in callback (the only return address
-// the auth server accepts), which lands the person back on this same vault address.
-const identity = createSupabaseIdentity(supabase.auth, {
-  redirectTo: () =>
-    `${window.location.origin}${withAuthDestination("/auth/callback", `${window.location.pathname}${window.location.search}`)}`,
-});
 
 const openUrl = (url: string) => void openOutbound(url, "_blank", "noopener");
 
@@ -78,7 +70,7 @@ function useVaultHost(organizationId: string | null): VaultHostCapabilities {
     organizationId && userId
       ? createVaultKnobs(packageKnobClient(supabase), { organizationId, userId })
       : undefined;
-  return knobs ? { identity, openUrl, knobs } : { identity, openUrl };
+  return knobs ? { identity, openUrl, signIn, knobs } : { identity, openUrl, signIn };
 }
 
 export interface WebVaultProps {

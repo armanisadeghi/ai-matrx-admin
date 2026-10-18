@@ -24,7 +24,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { VaultRevealReauthDialog } from "@/features/secrets/components/VaultRevealReauthDialog";
+import { IdentityGate, useConfirmed, wasCancelled } from "@ai-matrx/vault";
+import { webVaultIdentity } from "@/features/secrets/webVaultIdentity";
 
 import {
   fetchRecipientPhoneOnFile,
@@ -62,8 +63,21 @@ function when(iso: string | null): string {
     : d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-export function SecureLinkPanel({ resourceType, resourceId, resourceName }: SecureLinkPanelProps) {
+/**
+ * Sending a password is a reveal: it needs the SAME fresh sign-in the vault asks for, through the
+ * vault's ONE "Confirm it's you" (Google, password or an emailed code) — never a second dialog.
+ */
+export function SecureLinkPanel(props: SecureLinkPanelProps) {
+  return (
+    <IdentityGate identity={webVaultIdentity}>
+      <SecureLinkForm {...props} />
+    </IdentityGate>
+  );
+}
+
+function SecureLinkForm({ resourceType, resourceId, resourceName }: SecureLinkPanelProps) {
   const dispatch = useAppDispatch();
+  const confirmed = useConfirmed();
   const [options, setOptions] = useState<SecureDeliveryOptions | null>(null);
   const [optionsError, setOptionsError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -74,9 +88,6 @@ export function SecureLinkPanel({ resourceType, resourceId, resourceName }: Secu
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ tone: "ok" | "warn" | "error"; text: string; remedy?: string | null } | null>(null);
   const [sent, setSent] = useState<SentSecureDelivery[] | null>(null);
-  // Sending a password is a reveal: it needs the SAME fresh sign-in the vault asks for, through
-  // the vault's own re-authentication dialog — never a second one.
-  const [reauthOpen, setReauthOpen] = useState(false);
 
   const refreshSent = useCallback(() => {
     listSentSecureDeliveries(resourceType, resourceId)
@@ -147,7 +158,8 @@ export function SecureLinkPanel({ resourceType, resourceId, resourceName }: Secu
     setSending(true);
     setResult(null);
     try {
-      const receipt = await sendSecureDelivery(dispatch, {
+      // A "confirm it's you" refusal opens the gate; once confirmed the same send runs again.
+      const receipt = await confirmed(() => sendSecureDelivery(dispatch, {
         resource_type: resourceType,
         resource_id: resourceId,
         recipient_email: email.trim() || null,
@@ -155,7 +167,7 @@ export function SecureLinkPanel({ resourceType, resourceId, resourceName }: Secu
         field_keys: fields,
         link_channel: hasBoth ? linkChannel : null,
         note: note.trim() || null,
-      });
+      }));
       setResult({ tone: receipt.same_channel ? "warn" : "ok", text: receipt.sentence });
       setEmail("");
       setPhone("");
@@ -165,12 +177,8 @@ export function SecureLinkPanel({ resourceType, resourceId, resourceName }: Secu
       setFields([]);
       refreshSent();
     } catch (err: unknown) {
-      if (err instanceof SecureDeliveryRefusal && err.code === "recent_auth_required") {
-        setResult({
-          tone: "warn",
-          text: "Confirm it is you, then press Send secure link again.",
-        });
-        setReauthOpen(true);
+      if (wasCancelled(err)) {
+        setResult({ tone: "warn", text: "Not sent: it was not confirmed." });
       } else if (err instanceof SecureDeliveryRefusal) {
         setResult({ tone: "error", text: err.message, remedy: err.remedy });
       } else {
@@ -199,7 +207,6 @@ export function SecureLinkPanel({ resourceType, resourceId, resourceName }: Secu
 
   return (
     <div className="space-y-4">
-      <VaultRevealReauthDialog open={reauthOpen} onClose={() => setReauthOpen(false)} />
       <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3">
         <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
         <p className="text-xs text-muted-foreground">
