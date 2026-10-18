@@ -422,6 +422,7 @@ export function TriggersManager({
       )}
       <div className="min-h-0 flex-1">
         <MatrxDataTable
+          look="mac"
           drill={TRIGGERS_DRILL}
           data={shown}
           columns={columns}

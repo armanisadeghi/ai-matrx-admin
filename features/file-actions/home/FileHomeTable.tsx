@@ -157,7 +157,6 @@ export function FileHomeTable<Row>({
 
   return (
     <MatrxDataTable<Line<Row>>
-      look="mac"
       key={`${columnSet}-${sort}`}
       tableId={columnSet === "office" ? `${kind.kind}s/home-office` : `${kind.kind}s/home`}
       rowToken={kind.token}
