@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 1,
+  "version": 2,
   "title": "Catering Business Desk",
   "description": "Clients, catered events, menu items, prep lists and event staffing for a caterer.",
   "forWho": "Caterers and event food companies",
@@ -12,7 +12,7 @@
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
   },
-  "category": "operations",
+  "category": "hospitality",
   "tags": [
     "catering",
     "events",
@@ -2152,7 +2152,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
