@@ -129,7 +129,7 @@ export async function POST(request: Request) {
     }
 
     // This boundary resolves the verified person/program only. The worker
-    // resolves sms.owner_beta through canonical Mandate Bindings; transport
+    // resolves personal_staff.front_line through canonical Mandate Bindings; transport
     // preference rows and conversation snapshots may never choose the Holder.
     const assistantReady =
       context.assistantEnabled && context.agentMessagesEnabled;

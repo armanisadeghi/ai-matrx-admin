@@ -550,7 +550,7 @@ export async function resolveSmsInboundContext(
         contact_point_id: crmBinding.contactPointId,
         chat_conversation_id: chatConversationId,
         // Agent identity is deliberately absent at the transport boundary.
-        // The aidream worker resolves sms.owner_beta through the canonical
+        // The aidream worker resolves personal_staff.front_line through the canonical
         // system → org Binding → user Binding chain for this exact user/org.
         agent_id: null,
         canonical_agent_version_id: null,

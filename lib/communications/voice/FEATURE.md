@@ -94,7 +94,7 @@ long-lived media and agent execution stay in aidream.
   recording starts it can emit `<Connect><ConversationRelay>` with the durable one-time
   `sessionReference`. It deliberately omits the unpublished optional `events` subscription.
   The route consumes this option only after aidream independently revalidates the exact Twilio
-  signature/routing, resolves `voice.owner_beta` for the canonical actor and organization, creates
+  signature/routing, resolves `personal_staff.front_line` for the canonical actor and organization, creates
   the durable chat conversation, and idempotently issues the short-lived reference. Preparation
   failure is persisted as a structured `ops.system_error`, preserves recording, and omits the connection; absent recording readiness refuses both
   because the disclosed owner-beta program promised capture after consent. A connected relay greets

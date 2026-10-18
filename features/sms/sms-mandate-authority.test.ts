@@ -29,7 +29,7 @@ describe("SMS Mandate authority", () => {
     expect(hook).not.toContain('rpc("configure_my_sms_assistant_version"');
     expect(hook).not.toContain('rpc("disconnect_my_sms_assistant"');
     expect(settings).toContain("MandateAgentPicker");
-    expect(settings).toContain("SMS_ASSISTANT_OWNER_BETA_MANDATE");
+    expect(settings).toContain("SMS_ASSISTANT_MANDATE");
     expect(settings).not.toContain("AgentListDropdown");
     expect(settings).toContain("Holder keeps its complete tool set");
     expect(settings).toContain("consequential actions pause");

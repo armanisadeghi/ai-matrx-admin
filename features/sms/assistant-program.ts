@@ -44,7 +44,7 @@ export const SMS_ASSISTANT_TEST_BODY =
 // 2026-09-26; cut over 2026-10-03, Lane BC). Every enrolled person is bound to
 // it; the old +1 415 805 9951 keeps answering them (lib/sms/assistant-line.ts).
 export const SMS_PERSONAL_STAFF_PROGRAM = "ai_matrx_personal_staff";
-export const SMS_ASSISTANT_OWNER_BETA_MANDATE = MANDATE_KEYS.sms__owner_beta;
+export const SMS_ASSISTANT_MANDATE = MANDATE_KEYS.personal_staff__front_line;
 
 const BLOCKED_REASON_LABELS: Record<string, string> = {
   destination_not_ready: "The approved sender is not ready.",

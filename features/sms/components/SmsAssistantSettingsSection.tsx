@@ -22,7 +22,7 @@ import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import {
   assistantBlockedReasonLabel,
-  SMS_ASSISTANT_OWNER_BETA_MANDATE,
+  SMS_ASSISTANT_MANDATE,
   smsSenderProgramDisplay,
   smsPermissionLabel,
 } from "@/features/sms/assistant-program";
@@ -33,7 +33,7 @@ import { featureIntelligenceHref } from "@/features/mandates/feature-intelligenc
 /** Closed owner-beta control on the production Messaging settings surface. */
 export function SmsAssistantSettingsSection() {
   const assistant = useSmsAssistantProgram();
-  const mandate = useMandate(SMS_ASSISTANT_OWNER_BETA_MANDATE);
+  const mandate = useMandate(SMS_ASSISTANT_MANDATE);
   const state = assistant.state;
   const resolvedAgentId = mandate.mandate?.agentId ?? null;
   const selectedAgent = useAppSelector((rootState) =>
@@ -122,7 +122,7 @@ export function SmsAssistantSettingsSection() {
                 openInNewTab
               />
             ) : null}
-            <MandateAgentPicker mandateKey={SMS_ASSISTANT_OWNER_BETA_MANDATE} />
+            <MandateAgentPicker mandateKey={SMS_ASSISTANT_MANDATE} />
           </div>
         </SettingsRow>
         {/* THE DOOR LAW: deep-link filtered to this feature's domain — the
