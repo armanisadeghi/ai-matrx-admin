@@ -947,7 +947,7 @@ export async function listProjectSummariesInOrganizations(
 export async function listMyOrganizationsProjectSummaries(): Promise<ProjectSummary[]> {
   // VIEW LAW: org-scoped — her organizations, decided by the database.
   const res = await readAllRows<ProjectSummary>(
-    (from, to) =>
+    ({ from, to }) =>
       projectsDb(supabase)
         .from("projects")
         .select("id, organization_id, name, slug")
