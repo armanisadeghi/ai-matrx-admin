@@ -514,7 +514,6 @@ describe("never raw: a kind inside a simple XML tag (A8)", () => {
   const CASES: Array<[string, string]> = [
     ["<info> one-line", `<info>\nBefore the cards.\n${KIND_PAYLOAD_ONE_LINE}\nAfter the cards.\n</info>\nDone.`],
     ["<info> pretty", `<info>\nBefore the cards.\n${PRETTY}\nAfter the cards.\n</info>\nDone.`],
-    ["<thinking> one-line", `<thinking>\nWorking it out.\n${KIND_PAYLOAD_ONE_LINE}\nChecked.\n</thinking>\nDone.`],
   ];
 
   it.each(CASES)("%s: rescued live — no frame prints the kind inside the section", (_label, stream) => {
@@ -531,6 +530,25 @@ describe("never raw: a kind inside a simple XML tag (A8)", () => {
     const reloaded = splitContentIntoBlocksV2(stream).filter((b) => b.content.trim()).map(shape);
     expect(blocks).toEqual(reloaded);
     expect(blocks.filter((b) => b.startsWith("code:{"))).toHaveLength(1);
+  });
+
+  // THE MODEL'S REASONING IS NEVER AN ANSWER (Arman, 2026-10-14; rich-content a17c1dce51, 2026-10-15).
+  // A `{"__kind":…}` inside <thinking> is the model drafting. It is not lifted into a kind block (the
+  // old expectation here), so no kind loader appears in the middle of the thought and nothing vanishes
+  // when the draft later breaks. The region stays ONE thinking block, live and on reload.
+  it("<thinking> one-line: a draft kind inside the thought is never lifted — no kind block on any frame, one thinking block final and on reload", () => {
+    const stream = `<thinking>\nWorking it out.\n${KIND_PAYLOAD_ONE_LINE}\nChecked.\n</thinking>\nDone.`;
+    const frames = streamingFrames(streamCharByChar(stream, "req-xml-thinking"));
+    expect(frames.filter((b) => b.type === "thinking").length).toBeGreaterThan(0);
+    expect(frames.filter((b) => b.type !== "thinking" && b.type !== "text" && hasKindKey(b.content ?? ""))).toEqual([]);
+    expect(frames.filter((b) => b.type !== "thinking" && hasKindKey(b.content ?? "")).filter(rendersRawJson)).toEqual([]);
+
+    const finals = finalBlocks(stream, "req-xml-thinking-final");
+    expect(finals.filter((b) => b.type === "thinking")).toHaveLength(1);
+    expect(finals.find((b) => b.type === "thinking")?.content).toContain(KIND_PAYLOAD_ONE_LINE);
+    const reloaded = splitContentIntoBlocksV2(stream).filter((b) => b.content.trim());
+    expect(reloaded.map((b) => b.type)).toEqual(finals.map((b) => b.type));
+    expect(reloaded.filter((b) => b.type === "thinking")).toHaveLength(1);
   });
 });
 
@@ -857,6 +875,11 @@ describe("never raw ON SCREEN: every stream above, drawn through BlockRenderer (
         frame.live = i < liveCount;
       });
       for (const frame of transitionKindFrames(frames, (f) => f.live)) {
+        // A thinking/reasoning block IS the model's own words, shown verbatim in the reasoning
+        // disclosure — a draft `{"__kind":…}` in a thought is not an answer and is never lifted
+        // (Arman 2026-10-14; rich-content a17c1dce51). Every other block of the stream is still judged;
+        // the A8 test above proves nothing is lifted out of the thought.
+        if (frame.block.type === "thinking" || frame.block.type === "reasoning") continue;
         const verdict = await domFrameVerdict(frame.block, { isStreamActive: frame.live });
         if (verdict.failed) {
           leaks.push(
