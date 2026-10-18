@@ -489,7 +489,7 @@ export type Database = {
         Returns: string
       }
       _support_session_close: {
-        Args: { p_id: string; p_reason: string; p_via: string }
+        Args: { p_id: string; p_note?: string; p_reason: string; p_via: string }
         Returns: {
           auth_session_id: string | null
           claim_expires_at: string
@@ -523,6 +523,7 @@ export type Database = {
       _support_session_log: {
         Args: {
           p_event: string
+          p_note?: string
           p_session: Database["admin"]["Tables"]["support_sessions"]["Row"]
           p_via: string
         }
@@ -698,7 +699,10 @@ export type Database = {
           target_user_id: string
         }[]
       }
-      support_session_end: { Args: { p_id: string }; Returns: undefined }
+      support_session_end: {
+        Args: { p_id: string; p_reason?: string }
+        Returns: undefined
+      }
       support_session_extend: {
         Args: { p_id: string; p_minutes: number }
         Returns: {
