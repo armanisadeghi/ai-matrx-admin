@@ -76,3 +76,25 @@ registerKindCorrector("draft_critique", (value) => {
   const result = require("@/features/crm/draft-critique/draftCritique").correctDraftCritique(value);
   return { value: result.critique, corrections: result.corrections };
 });
+
+// THE COLD-VERDICT RULE is per kind (@ai-matrx/rich-content >= 0.2.205): "unregistered" is published only once
+// THIS kind's own lookups answered. Suites that declare "the list loaded and this kind is not in it" do it with
+// `componentRegistry.replaceDbRows([...])` (the whole tier replaced = the list landed). Honour that declaration
+// for the per-kind predicate in tests: a full replace marks the warm list landed, and a definition nobody
+// registered then reads "absent" (not "pending"). Tests of the pending state itself never call replaceDbRows.
+{
+  const { ComponentRegistry } = require("@ai-matrx/rich-content/kinds/registry/component-registry");
+  const { PackageKindRegistry } = require("@ai-matrx/rich-content/kinds/registry/package-kind-registry");
+  const landed = new WeakSet<object>();
+  const replaceDbRows = ComponentRegistry.prototype.replaceDbRows;
+  ComponentRegistry.prototype.replaceDbRows = function (this: { warmListLanded: boolean }, rows: unknown) {
+    replaceDbRows.call(this, rows);
+    this.warmListLanded = true;
+    landed.add(globalThis);
+  };
+  const schemaState = PackageKindRegistry.prototype.schemaState;
+  PackageKindRegistry.prototype.schemaState = function (this: unknown, kind: string) {
+    const state = schemaState.call(this, kind);
+    return state === "pending" && landed.has(globalThis) ? "absent" : state;
+  };
+}
