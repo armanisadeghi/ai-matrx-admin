@@ -32,7 +32,7 @@
 
 import "@/__tests__/helpers/register-chat-host";
 import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderLanded } from "@/__tests__/helpers/render-landed";
 
 jest.mock("next/dynamic", () => ({
   __esModule: true,
@@ -268,7 +268,7 @@ describe("every claimed kind renders its canonical example for real", () => {
         routeRow(kind, GENERIC_STRUCTURED_COMPONENT_KEY),
       ]);
       const routed = applyIrKindRoute(kindBlock(kind, CANONICAL[kind]));
-      const markup = renderToStaticMarkup(
+      const markup = renderLanded(
         <GenericStructuredBlock
           content={routed.content}
           metadata={routed.metadata}
@@ -298,7 +298,7 @@ describe("what the generic renderer does NOT show — recorded, not hidden", () 
     const routed = applyIrKindRoute(
       kindBlock("page_keyword_map_v1", CANONICAL.page_keyword_map_v1),
     );
-    const markup = renderToStaticMarkup(
+    const markup = renderLanded(
       <GenericStructuredBlock
         content={routed.content}
         metadata={routed.metadata}

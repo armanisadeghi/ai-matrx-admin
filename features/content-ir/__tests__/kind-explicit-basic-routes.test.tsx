@@ -21,7 +21,7 @@
 
 import "@/__tests__/helpers/register-chat-host";
 import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderLanded } from "@/__tests__/helpers/render-landed";
 import { Provider } from "react-redux";
 import { MediaProvider } from "@ai-matrx/media/core";
 import type { MediaClient } from "@ai-matrx/media";
@@ -111,7 +111,7 @@ function renderRouted(block: {
   content: string;
   metadata?: Record<string, unknown>;
 }): string {
-  return renderToStaticMarkup(
+  return renderLanded(
     <Provider store={makeStore()}>
       <MediaProvider client={TEST_MEDIA_CLIENT}>
         <GenericStructuredBlock

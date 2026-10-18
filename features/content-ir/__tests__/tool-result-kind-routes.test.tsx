@@ -28,7 +28,7 @@
 
 import "@/__tests__/helpers/register-chat-host";
 import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderLanded } from "@/__tests__/helpers/render-landed";
 
 jest.mock("next/dynamic", () => ({
   __esModule: true,
@@ -242,7 +242,7 @@ describe("the 12 tool-result kinds render their canonical example for real", () 
       registerWarmDefinition(kind);
       componentRegistry.ingestDbRows([routeRow(kind)]);
       const routed = applyIrKindRoute(kindBlock(kind, CANONICAL[kind]));
-      const markup = renderToStaticMarkup(
+      const markup = renderLanded(
         <GenericStructuredBlock
           content={routed.content}
           metadata={routed.metadata}
