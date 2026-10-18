@@ -1,3 +1,4 @@
+-- draft: AT-OAUTH lane (4aca9d01, stopped on spend limit 2026-10-18) — unfinished: new table is hand DDL with no organization_id; must go through platform.create_entity_table + iam.apply_rls and pass iam.canonical_certify_ok before it may apply
 -- additive: yes
 -- AT-OAUTH / Airtable parity "Personal access tokens / OAuth apps". A person registers an OAuth app that other people can
 -- authorize against AI Matrx (Supabase's own OAuth 2.1 server, already on: auth.oauth_clients). The client itself is made by
