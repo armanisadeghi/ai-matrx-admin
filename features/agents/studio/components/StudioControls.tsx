@@ -38,7 +38,7 @@ import { saveAgent } from "@/features/agents/redux/builder-write.thunks";
 import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
-import { debriefModelIds } from "../debrief-models";
+import { curatedDebriefModelIds, debriefModelIds } from "../debrief-models";
 import { describeVersionNote } from "../version-notes";
 import { StudioBattle } from "./StudioBattle";
 import { followServerWork } from "@/features/ai-watch/followed-work";
@@ -396,7 +396,12 @@ function DebriefTab({
   const { models: catalogModels } = useModelCatalog("user");
   const debriefIds = debriefModelIds(catalogModels);
   const [pickedModel, setPickedModel] = useState<string | null>(null);
+  const [moreModels, setMoreModels] = useState(false);
   const model = pickedModel ?? debrief?.model ?? defaultDebriefModelId(records);
+  // The menu opens on the strongest current models; "More models…" is the way out to the full text-model list.
+  const curatedIds = curatedDebriefModelIds(catalogModels);
+  const shortList = curatedIds.length > 0 && model && debriefIds.includes(model) && !curatedIds.includes(model) ? [...curatedIds, model] : curatedIds;
+  const menuIds = moreModels || shortList.length === 0 ? debriefIds : shortList;
   // The debrief runs on its own fork: Watch AI and the Builder follow that conversation too.
   const forkId = debrief?.forkConversationId ?? null;
   useEffect(() => {
@@ -460,7 +465,7 @@ function DebriefTab({
         <div className="min-w-0 flex-1" data-testid="studio-debrief-model">
           <ModelListDropdown
             aria-label="Debrief model"
-            allowedModelIds={debriefIds.length > 0 ? debriefIds : undefined}
+            allowedModelIds={menuIds.length > 0 ? menuIds : undefined}
             modelOnly
             inputModalities={[]}
             outputModalities={["text"]}
@@ -473,6 +478,11 @@ function DebriefTab({
             disabled={working}
           />
         </div>
+        {shortList.length > 0 && debriefIds.length > shortList.length ? (
+          <Button variant="quiet" disabled={working} onClick={() => setMoreModels((v) => !v)} data-testid="studio-debrief-more-models">
+            {moreModels ? "Fewer models" : "More models…"}
+          </Button>
+        ) : null}
       </TabHead>
       {working ? <Waiting text="Reading the run" /> : null}
       {debrief?.status === "done" && !parsed ? (
