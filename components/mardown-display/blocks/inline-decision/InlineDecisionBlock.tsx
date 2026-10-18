@@ -203,7 +203,7 @@ function ChoiceRow({
       <span
         aria-hidden="true"
         className={cn(
-          "mt-0.5 size-3.5 shrink-0 rounded-full border border-border",
+          "mt-0.5 size-3.5 shrink-0 rounded-full border border-muted-foreground",
           selected && "border-[4px] border-primary",
         )}
       />
