@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { InfoHint } from "@/components/official/InfoHint";
 import { Button } from "@/components/ui/button";
 import { SelectChevron } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
