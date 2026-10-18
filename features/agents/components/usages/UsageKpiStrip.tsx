@@ -38,6 +38,8 @@ interface UsageKpiStripProps {
   readState: (dimension: UsageDimension) => DimensionReadState;
   active: UsageDimension | "history" | null;
   onActiveChange: (next: UsageDimension | "history" | null) => void;
+  /** A set-aside dimension is counted here but left out of the list and moves. */
+  isSetAside?: (dimension: UsageDimension) => boolean;
 }
 
 const HISTORY_SOURCE_LABEL: Record<string, string> = {
@@ -86,6 +88,7 @@ export function UsageKpiStrip({
   readState,
   active,
   onActiveChange,
+  isSetAside,
 }: UsageKpiStripProps) {
   const historyTotal =
     history.status === "ready"
@@ -104,6 +107,7 @@ export function UsageKpiStrip({
         const count = counts[dimension];
         const Icon = meta.icon;
         const selected = active === dimension;
+        const setAside = isSetAside?.(dimension) ?? false;
         return (
           <button
             key={dimension}
@@ -117,10 +121,12 @@ export function UsageKpiStrip({
                   ? `${meta.plural}: loading…`
                   : `${count.total} ${count.total === 1 ? meta.label.toLowerCase() : meta.plural.toLowerCase()}` +
                     (count.flagged > 0 ? ` · ${count.flagged} flagged` : "") +
-                    (count.behind > 0 ? ` · ${count.behind} behind the newest version` : "")
+                    (count.behind > 0 ? ` · ${count.behind} behind the newest version` : "") +
+                    (setAside ? " · never moved in bulk" : "")
             }
             className={cn(
               "inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-md border px-2 text-xs transition-colors",
+              setAside && "border-dashed",
               selected
                 ? "border-primary bg-primary/10 text-foreground"
                 : state === "ready" && count.total === 0
