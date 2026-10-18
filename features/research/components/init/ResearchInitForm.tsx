@@ -1436,7 +1436,7 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
     // canonical active-org context — never from the selected project.
     if (!activeOrgId) {
       setError(
-        "No active organization yet. Create an organization first.",
+        "Create an organization first.",
       );
       return;
     }
@@ -1519,7 +1519,7 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
     // canonical active-org context — never from the selected project.
     if (!activeOrgId) {
       setError(
-        "No active organization yet. Create an organization first.",
+        "Create an organization first.",
       );
       return;
     }

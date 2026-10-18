@@ -1,6 +1,5 @@
 /**
- * No organization selected on /scraper: the person sees a plain prompt with
- * the organization picker — never "Select an organization before sending this
+ * No organization selected on /scraper: the person sees one quiet "Create an organization" door — never "Select an organization before sending this
  * request", a stack or Diagnostics JSON — and the scrape re-runs ONCE when
  * they pick (coordinator brief, 2026-10-05).
  */
@@ -19,6 +18,8 @@ import { ScrapeOrganizationPrompt } from "../ScrapeOrganizationPrompt";
 
 function storeWith(organizationId: string | null) {
   const store = configureStore({ reducer: { appContext: appContextReducer } });
+  // Boot has finished asking: with no organization this is the terminal "none" state, not "resolving".
+  store.dispatch({ type: "appContext/setOrgBootstrapResolved", payload: true });
   store.dispatch(setOrganization({ id: organizationId }));
   return store;
 }
