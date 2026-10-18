@@ -97,9 +97,9 @@ export function NotesWindow({
   useEffect(() => {
     if (!fetchedRef.current && userId) {
       fetchedRef.current = true;
-      dispatch(fetchNotesList());
       dispatch(fetchSharedNotesList());
-      dispatch(fetchAllNoteScopes());
+      // Scope tags are read for the notes in the store, so after the list.
+      void dispatch(fetchNotesList()).then(() => dispatch(fetchAllNoteScopes()));
       // Ensure the deep-linked note's body is hydrated even before the list
       // settles (fetchNoteContent self-guards against duplicate fetches).
       if (initialNoteId) dispatch(fetchNoteContent(initialNoteId));

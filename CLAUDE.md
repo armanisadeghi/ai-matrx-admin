@@ -5,7 +5,7 @@
 <!-- nine-laws:start -->
 ## The laws (synced from `common-docs/policies/the-nine-laws.md` — edit there, never here)
 
-1. **Done means verified, then handoff.** Build it, check types and regressions, use it in localhost as a user would, get an independent check, commit and push. Deploy agents own releases. `common-docs/policies/reality-is-the-referee.md`
+1. **Done means verified, then handoff.** Build it, check types and regressions, use it on the live site as a user would (localhost only for a quick fix-and-look loop), get an independent check, commit and push. Deploy agents own releases. `common-docs/policies/reality-is-the-referee.md`
 2. **Attack before you trust.** Plans are attacked before commitment; "done" is re-verified by someone outside the builder's frame.
 3. **Fix the class, never the instance.** Root cause, find the siblings, add a guard proven to fail then pass. A bug you hit yourself is fixed now.
 4. **Nothing fails silently.** A stand-in announces itself; a screen is honest or absent; never hide a feature to dodge a defect — fix it. In-app text is layout, not prose. `common-docs/policies/interface-text-is-layout.md`
@@ -203,6 +203,8 @@ Non-obvious homes: live `/chat` → [`../aidream/apps/shared/chat/src/agents/com
 - 🚨 **A blocker you can see and fix is YOURS — "another lane owns it" is not a finding.** Red on main too, another campaign's route, a pre-existing failing gate in your path: FIX IT in the same push, minimally and verified — never a comment naming it, never a proposed patch for someone else. **And never poll a blocker you could have fixed**: a recurring check-in whose only possible outcome is somebody else acting is a paid wake producing "nothing changed" (Arman, 2026-09-19: *"We don't 'report' things we can just fix"*). `../common-docs/policies/reality-is-the-referee.md`.
 
 ## Dev server & browser testing
+
+🚨 **Checks, tests and sign-offs run on the LIVE site (aimatrx.com + `server.app.matrxserver.com`), never on localhost** (Arman, 2026-10-18). Live has every pushed change within one release (~30 min) and is what users run. The local preview below is ONLY for a rapid fix-and-look loop on UI you are changing right now; if you are waiting on it longer than a release, test on live instead.
 
 🚨 **The shared localhost preview hot-reloads the main checkout when it is serving routes.** Before any UI work, use this checkout and `pnpm preview:status`; `pnpm preview:start` reuses its PID and prints your own session hostname. A worktree lease mismatch means only that the server cannot show files left in that worktree. Move the scoped change into main and check the route on the running preview; do not treat the mismatch as a server failure or start a private server. Details: [browser-testing.md](./docs/official/browser-testing.md).
 

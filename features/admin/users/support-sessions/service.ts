@@ -129,10 +129,11 @@ export async function extendSupportSession(id: string, minutes: number): Promise
   return data?.[0]?.expires_at ?? null;
 }
 
-export async function endSupportSession(id: string): Promise<void> {
+/** `reason` is required from the admin console (the database refuses it there without one). */
+export async function endSupportSession(id: string, reason?: string): Promise<void> {
   const { error } = await createClient()
     .schema("admin")
-    .rpc("support_session_end", { p_id: id });
+    .rpc("support_session_end", { p_id: id, ...(reason ? { p_reason: reason } : {}) });
   if (error) throw error;
 }
 

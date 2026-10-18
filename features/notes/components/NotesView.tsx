@@ -316,11 +316,13 @@ export function NotesView({
     if (fetchedUserIdRef.current !== null) dispatch(resetNotesState());
     fetchedUserIdRef.current = userId;
     dispatch(fetchNotesList());
-    dispatch(fetchSharedNotesList());
+    // "Shared with me" is NOT read here: the sidebar section reads it when it
+    // opens (load law — nothing until engaged).
   }, [authReady, dispatch, resetNotesState, userId]);
 
   // Share grants/revokes live in iam.permissions — refresh the shared list
-  // when the tab becomes visible so revoked notes leave the sidebar.
+  // (only once it has been opened) when the tab becomes visible so revoked
+  // notes leave the sidebar.
   // Min-interval gated: `focus` + `visibilitychange` both fire on every tab
   // switch, and each refetch is a full-list hydration — unthrottled, rapid
   // alt-tabbing (or a user returning to an already-struggling tab) re-fired
@@ -334,7 +336,7 @@ export function NotesView({
       const now = Date.now();
       if (now - lastSharedRefreshRef.current < MIN_REFRESH_INTERVAL_MS) return;
       lastSharedRefreshRef.current = now;
-      void dispatch(fetchSharedNotesList());
+      void dispatch(fetchSharedNotesList({ ifLoaded: true }));
     };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
@@ -458,7 +460,7 @@ export function NotesView({
       .then(() => {
         const work: Promise<unknown>[] = [
           dispatch(fetchNotesList()).unwrap(),
-          dispatch(fetchSharedNotesList()).unwrap(),
+          dispatch(fetchSharedNotesList({ ifLoaded: true })),
         ];
         // Explicit user refresh → force-refresh the canonical scope tree.
         work.push(dispatch(ensureScopeTree({ refresh: true })));

@@ -151,7 +151,7 @@ def live_values(reader: Reader, entry: Dict[str, Any]) -> Dict[str, Any]:
     kind = entry["kind"]
     if kind == "agent":
         row = reader.one("agent", "definition", entry["id"], AGENT_COLS)
-        live = {"live_version": row["version"]}
+        live: Dict[str, Any] = {"live_version": row["version"]}
         ver = reader.rows("agent", "definition_version", {"agent_id": f"eq.{entry['id']}", "version_number": f"eq.{row['version']}", "select": "id"})
         live["live_version_id"] = ver[0]["id"] if ver else None
         live.update(agent_hashes(row, reader.tools(row.get("tools") or [])))

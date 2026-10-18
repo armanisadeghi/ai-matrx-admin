@@ -63,6 +63,7 @@ const BADGE_TONE: Record<BackgroundRunPhase, BadgeTone> = {
   waiting: "neutral",
   working: "primary",
   needs_you: "neutral",
+  sleeping: "neutral",
   paused: "neutral",
   finished: "success",
   stopped: "destructive",
@@ -74,6 +75,7 @@ const BAR_TONE: Record<BackgroundRunPhase, ProgressTone> = {
   waiting: "default",
   working: "default",
   needs_you: "default",
+  sleeping: "default",
   paused: "default",
   finished: "success",
   stopped: "destructive",
@@ -87,6 +89,14 @@ function isoMs(iso: string | null): number | null {
   if (!iso) return null;
   const ms = Date.parse(iso);
   return Number.isFinite(ms) ? ms : null;
+}
+
+/** "3:40 PM" today, else "Oct 20, 3:40 PM". */
+function formatWake(iso: string): string {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "later";
+  const today = at.toDateString() === new Date().toDateString();
+  return at.toLocaleString(undefined, today ? { hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 function DoorLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -109,7 +119,7 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
   const isImport = view.kind === "import";
   const isWorkflow = view.kind === "workflow";
   const over = view.phase === "finished" || view.phase === "stopped" || view.phase === "cancelled";
-  const parked = view.phase === "needs_you" || view.phase === "paused";
+  const parked = view.phase === "needs_you" || view.phase === "paused" || view.phase === "sleeping";
   // Generic stages for a workflow with no named stage list: one per step it has started.
   const steps = isWorkflow ? workflowStages(run) : [];
   const stages = isImport ? IMPORT_STAGES : steps;
@@ -182,7 +192,7 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
             <Skeleton motion="shimmer" shape="line" width="1/3" aria-label="Waiting for the first step" />
           ) : (
             <span className="type-secondary min-w-0 flex-1 truncate text-foreground">
-              {view.phase === "waiting" ? "Waiting for a worker" : view.phase === "needs_you" ? view.ask ?? detail ?? "" : detail ?? ""}
+              {view.phase === "waiting" ? "Waiting for a worker" : view.phase === "needs_you" ? view.ask ?? detail ?? "" : view.phase === "sleeping" ? (view.wakeAt ? `Resumes ${formatWake(view.wakeAt)}` : "Resumes on its own") : detail ?? ""}
             </span>
           )}
           {counted && view.phase === "working" ? (

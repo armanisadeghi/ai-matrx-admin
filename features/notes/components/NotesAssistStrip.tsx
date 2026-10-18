@@ -47,9 +47,19 @@ export function NotesAssistStrip({ className }: { className?: string }) {
   // Self-hydrate scope assignments — the sidebar only fetches them in its
   // scope-grouping mode, and the sweep is gated on them (sweeping without
   // them would call every note unorganized). Idempotent: skipped once loaded.
+  // Read for the notes the list already loaded (never a second id read), once
+  // the page is idle — the sweep is background work, never part of first paint.
   useEffect(() => {
-    if (userId && !scopesLoaded) void dispatch(fetchAllNoteScopes());
-  }, [userId, scopesLoaded, dispatch]);
+    if (!userId || scopesLoaded || listStatus !== "loaded") return undefined;
+    if (sweptUsers.has(userId)) return undefined;
+    const run = () => void dispatch(fetchAllNoteScopes());
+    if (typeof window.requestIdleCallback === "function") {
+      const handle = window.requestIdleCallback(run, { timeout: 5000 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const timer = window.setTimeout(run, 2000);
+    return () => window.clearTimeout(timer);
+  }, [userId, scopesLoaded, listStatus, dispatch]);
 
   useEffect(() => {
     // Both halves must be loaded — sweeping before scope assignments arrive

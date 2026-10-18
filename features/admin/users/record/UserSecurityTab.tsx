@@ -24,7 +24,7 @@ import { createClient } from "@/utils/supabase/client";
 import { isJsonObject, type JsonObject } from "@/types/json";
 import { toast } from "@/lib/toast";
 import { useRecordLoad } from "./useRecordLoad";
-import { useReasonPrompt } from "./useUserActions";
+import { useReasonPrompt } from "./useReasonPrompt";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
 import { personTitle } from "./userOverview";
 import type { UserTabBodyProps } from "./UserRecordPage";

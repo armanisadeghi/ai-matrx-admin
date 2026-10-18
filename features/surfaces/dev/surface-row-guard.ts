@@ -9,8 +9,8 @@
 import {
   getGlobalSurfaceRegistry,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
+import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { getSurfaceByName } from "@ai-matrx/chat/surfaces/services/surfaces.service";
 
 export const MISSING_SURFACE_ROW_MESSAGE = (name: string): string =>
@@ -63,7 +63,8 @@ export function installSurfaceRowGuard(
   const registry = getGlobalSurfaceRegistry();
   const exists = makeSurfaceExists(
     getSurfaceByName,
-    async () => Boolean((await getClaimsUser(supabase)).data?.user?.id),
+    // The app's cached claims read verifies against the PINNED signing keys: no JWKS fetch.
+    async () => Boolean((await getClientClaimsUserCached()).data?.user?.id),
     seen,
   );
   const check = () => {
@@ -75,6 +76,16 @@ export function installSurfaceRowGuard(
       for (const name of missing) report(MISSING_SURFACE_ROW_MESSAGE(name));
     });
   };
-  check();
-  return registry.subscribe(check);
+  // Dev-only, and still never part of the first paint: the first probe waits for the late tier.
+  const controller = new AbortController();
+  let unsubscribe: (() => void) | null = null;
+  void whenLateIdle(undefined, controller.signal).then((ok) => {
+    if (!ok) return;
+    check();
+    unsubscribe = registry.subscribe(check);
+  });
+  return () => {
+    controller.abort();
+    unsubscribe?.();
+  };
 }

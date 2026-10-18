@@ -24,6 +24,7 @@
 import { Skeleton } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { noteDisplayLabel } from "@/features/notes/format";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import React, {
   useState,
   useCallback,
@@ -251,17 +252,25 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   const sharedNotes = useAppSelector(selectSharedWithMeNotes);
   const sharedError = useAppSelector(selectNotesSharedError);
   const sharedStatus = useAppSelector(selectNotesSharedStatus);
-  // The list and the shared-with-me query land at different times. Until both
-  // have settled once, the sidebar shows its own skeleton and renders the real
-  // sections in ONE commit, so nothing below them (Recent, Shared, folders) moves.
-  const [sharedSettled, setSharedSettled] = useState(false);
-  if (!sharedSettled && (sharedStatus === "loaded" || sharedStatus === "error")) setSharedSettled(true);
-  const listPending =
-    listStatus === "idle" ||
-    listStatus === "loading" ||
-    (!sharedSettled && sharedStatus === "loading");
+  const listPending = listStatus === "idle" || listStatus === "loading";
   // Closed by default; it opens itself when the active note is a shared one.
+  // "Shared with me" is read when the section opens (load law, 2026-10-18 — it
+  // used to be read on every /notes entry), or when the open note is someone
+  // else's (below). Its header is always there, so the door never depends on
+  // a read that has not happened.
   const [sharedOpen, setSharedOpen] = useState(false);
+  useEffect(() => {
+    if (sharedOpen) void dispatch(fetchSharedNotesList({ ifIdle: true }));
+  }, [dispatch, sharedOpen]);
+  const viewerId = useAppSelector(selectUserId);
+  const activeNoteOwner = useAppSelector((state) =>
+    activeTabId ? (state.notes.notes[activeTabId]?.created_by ?? null) : null,
+  );
+  useEffect(() => {
+    if (activeNoteOwner && viewerId && activeNoteOwner !== viewerId) {
+      void dispatch(fetchSharedNotesList({ ifIdle: true }));
+    }
+  }, [activeNoteOwner, dispatch, viewerId]);
   const [groupByDropdown, setGroupByDropdown] = useState(false);
 
   // Collapsible "Recent" section (default mode) — open by default, paginated.
@@ -760,7 +769,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
 
   type SidebarItem = NoteSidebarListItem &
     (
-      | { kind: "recent-header" | "recent-more" | "recent-end" | "shared-header" | "shared-end" }
+      | { kind: "recent-header" | "recent-more" | "recent-end" | "shared-header" | "shared-empty" | "shared-end" }
       | { kind: "recent-note" | "shared-note" | "flat-note"; note: NoteRecord }
       | { kind: "folder" | "folder-empty"; groupKey: string }
       | { kind: "type-header"; label: string }
@@ -779,11 +788,16 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
     }
     items.push({ key: "recent-end", kind: "recent-end" });
   }
-  if (sharedNotes.length > 0) {
+  // The header shows once the owner list is in, whether or not the shared read
+  // has run: opening it is what reads it.
+  if (listStatus === "loaded" || sharedNotes.length > 0) {
     items.push({ key: "shared-header", kind: "shared-header" });
     if (sharedOpen) {
       for (const note of sharedNotes) {
         items.push({ key: `shared:${note.id}`, noteId: note.id, kind: "shared-note", note });
+      }
+      if (sharedStatus === "loaded" && sharedNotes.length === 0) {
+        items.push({ key: "shared-empty", kind: "shared-empty" });
       }
     }
     items.push({ key: "shared-end", kind: "shared-end" });
@@ -1011,7 +1025,9 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
             <Users className="text-indigo-500 dark:text-indigo-400" />
             <span className="flex-1 text-left truncate">Shared with me</span>
             <span className="text-xs font-normal opacity-50 tabular-nums">
-              <UntrustedCount value={sharedNotes.length} trustworthy={!sharedError} label="Notes shared with me" />
+              {sharedStatus === "loaded" || sharedStatus === "error" ? (
+                <UntrustedCount value={sharedNotes.length} trustworthy={!sharedError} label="Notes shared with me" />
+              ) : null}
             </span>
           </button>
         );
@@ -1056,6 +1072,12 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
           </div>
         );
       }
+      case "shared-empty":
+        return (
+          <div className="ml-2 px-2 py-[3px] text-xs text-muted-foreground">
+            Nothing shared with you
+          </div>
+        );
       case "shared-end":
         return <div className="h-1" />;
       case "flat-note":
@@ -1430,7 +1452,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
               type="button"
               onClick={() => {
                 dispatch(fetchNotesList());
-                dispatch(fetchSharedNotesList());
+                dispatch(fetchSharedNotesList({ ifLoaded: true }));
               }}
               className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted cursor-pointer"
             >

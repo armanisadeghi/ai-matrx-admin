@@ -408,7 +408,7 @@ export const notesRealtimeMiddleware: Middleware<
         const currentUserId = (storeApi.getState() as RootState).userAuth?.id;
         if (!currentUserId || currentUserId !== subscribedUserId) return;
         void storeApi.dispatch(fetchNotesList());
-        void storeApi.dispatch(fetchSharedNotesList());
+        void storeApi.dispatch(fetchSharedNotesList({ ifLoaded: true }));
       },
     }));
   }

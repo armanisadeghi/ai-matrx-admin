@@ -132,7 +132,7 @@ export default function DeferredSingletonCore() {
       {/* G1: files any `__kind` drawn as raw text (never-raw law). */}
       <KindLeakSentinel />
       {/* Dev only: a mounted surface with no ui.ui_surface row screams in the console. */}
-      <SurfaceRowGuard />
+      {process.env.NODE_ENV !== "production" && <SurfaceRowGuard />}
       {/* Render-free until a usage limit is hit: the usage gate's boot read,
           server notifications, near/over notice and limit dialog. */}
       <UsageGateBridge />

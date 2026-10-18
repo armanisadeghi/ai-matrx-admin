@@ -16,7 +16,6 @@
 import { useState, type ReactNode } from "react";
 import { MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { TextInputDialog } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
@@ -44,6 +43,7 @@ import { sendDirectMessage } from "../service/coupons";
 import { feedbackDmKey } from "../lib/userResearch";
 import { invalidateAdminRoster } from "../adminRoster";
 import { forgetUserOverview } from "./userOverview";
+import { useReasonPrompt } from "./useReasonPrompt";
 import {
   userActionBlocked,
   userActionLabel,
@@ -85,52 +85,6 @@ export function personChanged(userId: string): void {
 }
 
 // ── the one reason prompt ───────────────────────────────────────────────────────────────────
-
-export interface ReasonRequest {
-  title: string;
-  /** The consequence, ≤2 short sentences (S1). */
-  description?: string;
-  confirmLabel: string;
-  /** Runs with the reason; throw to keep the dialog open (the error is shown as a toast). */
-  run: (reason: string) => Promise<void>;
-}
-
-export const REASON_PLACEHOLDER = "Reason (recorded in the admin history)";
-
-/** THE reason prompt every state change on a person uses: one TextInputDialog, reason required. */
-export function useReasonPrompt(): { askReason: (request: ReasonRequest) => void; reasonDialog: ReactNode } {
-  const [request, setRequest] = useState<ReasonRequest | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const confirmReason = async (reason: string) => {
-    if (!request) return;
-    setBusy(true);
-    try {
-      await request.run(reason.trim());
-      setRequest(null);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const reasonDialog = (
-    <TextInputDialog
-      open={request !== null}
-      onOpenChange={(open) => {
-        if (!open && !busy) setRequest(null);
-      }}
-      title={request?.title ?? ""}
-      description={request?.description}
-      placeholder={REASON_PLACEHOLDER}
-      confirmLabel={request?.confirmLabel}
-      busy={busy}
-      onConfirm={confirmReason}
-    />
-  );
-  return { askReason: setRequest, reasonDialog };
-}
 
 // ── the dispatch ────────────────────────────────────────────────────────────────────────────
 

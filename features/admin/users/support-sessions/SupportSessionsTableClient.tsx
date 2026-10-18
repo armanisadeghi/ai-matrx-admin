@@ -10,7 +10,8 @@ import { readOf } from "@ai-matrx/design-system";
 import { Badge, Button, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { useReasonPrompt } from "../record/useReasonPrompt";
+import { personChanged } from "../record/useUserActions";
 import { toast } from "@/lib/toast";
 import { AdminUserRef } from "../components/AdminUserRef";
 import {
@@ -134,7 +135,7 @@ function readFor(targetUserId: string | undefined) {
  * Every support session, or — with `targetUserId` — only that person's (the user record page's
  * Support tab; the Person column is then dropped as redundant).
  */
-export function SupportSessionsTableClient({ targetUserId, reloadKey = 0 }: { targetUserId?: string; reloadKey?: number } = {}) {
+export function SupportSessionsTableClient({ targetUserId, reloadKey = 0, onChanged }: { targetUserId?: string; reloadKey?: number; onChanged?: () => void } = {}) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -164,28 +165,31 @@ export function SupportSessionsTableClient({ targetUserId, reloadKey = 0 }: { ta
     };
   }, [targetUserId, reloadKey]);
 
-  const end = async (row: Row) => {
-    const ok = await confirm({
+  const { askReason, reasonDialog } = useReasonPrompt();
+  // Ending one from the console takes a reason (the database refuses it without one, F1/W3); the
+  // person's page refreshes through onChanged so Overview and the attention row drop "live" (F2).
+  const end = (row: Row) =>
+    askReason({
       title: "End this support session?",
       description: `The support window for ${row.target_email ?? "this person"} signs out now.`,
       confirmLabel: "End session",
-      variant: "destructive",
+      run: async (reason) => {
+        setEnding(row.id);
+        try {
+          await endSupportSession(row.id, reason);
+          toast.success("Support session ended");
+          personChanged(row.target_user_id);
+          onChanged?.();
+          await load();
+        } finally {
+          setEnding(null);
+        }
+      },
     });
-    if (!ok) return;
-    setEnding(row.id);
-    try {
-      await endSupportSession(row.id);
-      toast.success("Support session ended");
-      await load();
-    } catch (e) {
-      toast.error(`Could not end it: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setEnding(null);
-    }
-  };
 
   return (
     <div className={targetUserId ? "flex flex-col" : "flex h-full flex-col p-4"}>
+      {reasonDialog}
       <div className={targetUserId ? undefined : "min-h-0 flex-1"}>
         <MatrxDataTable
           {...(targetUserId ? {} : { urlState: { id: "support-sessions" } })}
@@ -205,7 +209,7 @@ export function SupportSessionsTableClient({ targetUserId, reloadKey = 0 }: { ta
                     aria-label="End session"
                     title="End session"
                     disabled={ending === row.id}
-                    onClick={() => void end(row)}
+                    onClick={() => end(row)}
                   />
                 ),
             },

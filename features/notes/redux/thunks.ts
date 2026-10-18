@@ -940,7 +940,18 @@ let sharedListFetchSeq = 0;
  * shared notes are never removed on revoke (user keeps their local edits
  * until they discard / conflict-resolve).
  */
-export const fetchSharedNotesList = createAsyncThunk<void, void>(
+/**
+ * WHEN it runs (load law, 2026-10-18): never on route entry. The sidebar's
+ * "Shared with me" section asks when it is opened (`{ ifIdle: true }`), or when
+ * the open note is someone else's; every refresh path (focus, realtime
+ * catch-up, the Refresh button) passes `{ ifLoaded: true }` so it re-reads only
+ * a list a person has already asked for.
+ */
+export const fetchSharedNotesList = createAsyncThunk<
+  void,
+  { ifIdle?: boolean; ifLoaded?: boolean } | void,
+  { state: RootState }
+>(
   "notes/fetchSharedNotesList",
   async (_, { dispatch, getState }) => {
     const seq = ++sharedListFetchSeq;
@@ -990,6 +1001,14 @@ export const fetchSharedNotesList = createAsyncThunk<void, void>(
       }
     }
   },
+  {
+    condition: (arg, { getState }) => {
+      const status = getState().notes.sharedStatus;
+      if (arg && arg.ifIdle) return status === "idle";
+      if (arg && arg.ifLoaded) return status === "loaded" || status === "error";
+      return true;
+    },
+  },
 );
 
 // ---------------------------------------------------------------------------
@@ -1017,9 +1036,9 @@ export const fetchAllNoteScopes = createAsyncThunk<
   { refresh?: boolean } | void
 >(
   "notes/fetchAllNoteScopes",
-  async () => {
+  async (_, { getState }) => {
     noteScopesInFlight += 1;
-    const run = readAllNoteScopes();
+    const run = readAllNoteScopes(getState() as RootState);
     newestNoteScopesRead = run;
     try {
       await run;
@@ -1033,23 +1052,17 @@ export const fetchAllNoteScopes = createAsyncThunk<
   },
 );
 
-async function readAllNoteScopes(): Promise<NoteScopeAssignment[]> {
-    // Tags are read from the notes' side (their outgoing scope edges), so
-    // first the ids of every note this person can see — shared ones
-    // included (row security decides). Ids only: the list read owns the rest.
-    const noteIds = (
-      await readAllRows<{ id: string }>(
-        ({ from, to }) =>
-          supabase
-            .schema("workbench")
-            .from("notes")
-            .select("id", { count: "exact" })
-            .is("deleted_at", null)
-            .order("id", { ascending: true })
-            .range(from, to),
-        { label: "workbench.notes (ids for scope tags)" },
-      )
-    ).map((row) => row.id);
+async function readAllNoteScopes(state: RootState): Promise<NoteScopeAssignment[]> {
+    // Tags are read from the notes' side (their outgoing scope edges), for the
+    // notes this person already has in the store (the sidebar list, plus any
+    // shared or opened ones). It used to re-read every visible note id first
+    // (`workbench.notes ?select=id`, up to 1000 ids, ~930 ms on every /notes
+    // entry, 2026-10-18) — the same ids the list read had just returned.
+    // Callers ask once the list is loaded (`selectNotesListStatus === "loaded"`).
+    const noteIds = Object.values(state.notes.notes)
+      .filter((note) => !note.deleted_at)
+      .map((note) => note.id);
+    if (noteIds.length === 0) return [];
     const res = await scopesService.listEntityScopeTags("note", noteIds);
     if (isRecordsErr(res)) throw new Error(res.error.message);
     return res.data.tags.map((t) => ({

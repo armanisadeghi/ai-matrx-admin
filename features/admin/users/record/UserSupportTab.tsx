@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
 import { LifeBuoy, MessageSquareWarning } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
+import { formatCount } from "@ai-matrx/kit/format";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -27,17 +28,21 @@ interface FeedbackRow {
   created_at: string;
 }
 
-async function listFeedbackBy(userId: string): Promise<FeedbackRow[]> {
-  const { data, error } = await createClient()
+const FEEDBACK_CAP = 200;
+
+/** The newest FEEDBACK_CAP items plus the full count, so a cut list says so (F8). */
+async function listFeedbackBy(userId: string): Promise<{ rows: FeedbackRow[]; total: number }> {
+  const { data, error, count } = await createClient()
     .schema("users")
     .from("user_feedback")
-    .select("id, feedback_type, status, description, route, priority, created_at")
+    .select("id, feedback_type, status, description, route, priority, created_at", { count: "exact" })
     .eq("user_id", userId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(FEEDBACK_CAP);
   if (error) throw error;
-  return (data ?? []).map((r) => ({ ...r, priority: r.priority === null ? null : String(r.priority) }));
+  const rows = (data ?? []).map((r) => ({ ...r, priority: r.priority === null ? null : String(r.priority) }));
+  return { rows, total: count ?? rows.length };
 }
 
 const FEEDBACK_COLUMNS: MatrxColumnDef<FeedbackRow>[] = [
@@ -66,13 +71,14 @@ const FEEDBACK_COLUMNS: MatrxColumnDef<FeedbackRow>[] = [
   { id: "route", accessorFn: (r) => r.route ?? "", header: "Route", width: 220 },
 ];
 
-export function UserSupportTab({ userId, version: pageVersion, actions, subject, shareForAi }: UserTabBodyProps) {
+export function UserSupportTab({ userId, version: pageVersion, reload, actions, subject, shareForAi }: UserTabBodyProps) {
   const [version, setVersion] = useState(0);
   // Start support session is the page's one action (its dialog reloads the page when it closes).
   const blocked = actions.blockedReason("support_session", subject);
 
   const { data: feedbackData, loading, error } = useRecordLoad(listFeedbackBy, userId, pageVersion + version);
-  const feedback = feedbackData ?? [];
+  const feedback = feedbackData?.rows ?? [];
+  const feedbackTotal = feedbackData?.total ?? 0;
   useEffect(() => shareForAi({ feedback }), [feedback, shareForAi]);
 
   return (
@@ -90,11 +96,18 @@ export function UserSupportTab({ userId, version: pageVersion, actions, subject,
             Start support session
           </Button>
         </div>
-        <SupportSessionsTableClient targetUserId={userId} reloadKey={pageVersion} />
+        <SupportSessionsTableClient targetUserId={userId} reloadKey={pageVersion} onChanged={reload} />
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="type-title">Feedback filed</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="type-title">Feedback filed</h3>
+          {feedbackTotal > feedback.length ? (
+            <span className="type-secondary text-muted-foreground">
+              Showing {formatCount(feedback.length)} of {formatCount(feedbackTotal)}
+            </span>
+          ) : null}
+        </div>
         <MatrxDataTable
           data={feedback}
           columns={FEEDBACK_COLUMNS}

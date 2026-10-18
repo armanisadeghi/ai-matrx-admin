@@ -208,11 +208,12 @@ export function readCopyReport(output: Record<string, unknown> | null): CopyRepo
 // ── the whole view ─────────────────────────────────────────────────────────────
 
 /**
- * "needs_you": parked on a question for the person (awaiting_input / interrupted); "paused": held
+ * "sleeping": parked on a durable timer (flow.sleep / wait_until; interrupt payload `matrx_sleep.wake_at`),
+ * resumes by itself, nothing asked of the person. "needs_you": parked on a question for the person (awaiting_input / interrupted); "paused": held
  * (paused / pausing); "cancelled": the person's own stop, not a failure. The backend never wakes the
  * chat for a park, so the card is the only signal.
  */
-export type BackgroundRunPhase = "opening" | "waiting" | "working" | "needs_you" | "paused" | "finished" | "stopped" | "cancelled";
+export type BackgroundRunPhase = "opening" | "waiting" | "working" | "needs_you" | "sleeping" | "paused" | "finished" | "stopped" | "cancelled";
 
 /** A workflow run with no named stage list: how far through its steps it is. */
 export interface WorkflowReport {
@@ -289,6 +290,8 @@ export interface BackgroundRunView {
   readFailure: string | null;
   /** The question a parked run waits on, when it names one. */
   ask: string | null;
+  /** ISO time a timer-parked run wakes at; null for any other run. */
+  wakeAt: string | null;
 }
 
 /** Which copy this run is, from what it was started with, else its node. */
@@ -320,7 +323,7 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
   const kind = runKindOf(run, hint);
   const empty: BackgroundRunView = {
     kind, phase: "opening", name: null, sample: null, lastMovedAt: null, startedAt: null, endedAt: null,
-    report: null, stoppedBecause: null, readFailure: null, ask: null,
+    report: null, stoppedBecause: null, readFailure: null, ask: null, wakeAt: null,
   };
   if (!run) return empty;
   if (kind === "workflow") return readWorkflowRun(run, empty);
@@ -349,6 +352,7 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
     stoppedBecause: phase === "stopped" ? (str(node?.error?.message) ?? errorSentence(run.error)) : null,
     readFailure: run.readFailure,
     ask: askOf(run),
+    wakeAt: wakeAtOf(run),
   };
 }
 
@@ -359,10 +363,20 @@ function askOf(run: WorkflowRunState): string | null {
   return str(payload.question) ?? str(payload.prompt) ?? str(payload.message) ?? str(payload.ask) ?? null;
 }
 
+/** A durable timer park carries `matrx_sleep` in its interrupt payload (aidream workflow_worker). */
+function sleepOf(run: WorkflowRunState): Record<string, unknown> | null {
+  return obj(run.interrupt?.payload?.matrx_sleep);
+}
+
+function wakeAtOf(run: WorkflowRunState): string | null {
+  return run.status === "interrupted" ? str(sleepOf(run)?.wake_at) : null;
+}
+
 function phaseOf(run: WorkflowRunState, progressed: boolean, stepFailed: boolean): BackgroundRunPhase {
   if (!run.statusKnown) return "opening";
   if (run.status === "cancelled") return "cancelled";
   if (runIsOver(run.status)) return run.status !== "completed" || stepFailed ? "stopped" : "finished";
+  if (run.status === "interrupted" && sleepOf(run)) return "sleeping";
   if (run.status === "awaiting_input" || run.status === "interrupted") return "needs_you";
   if (run.status === "paused" || run.status === "pausing") return "paused";
   return run.status === "pending" && !progressed ? "waiting" : "working";
@@ -385,6 +399,7 @@ function readWorkflowRun(run: WorkflowRunState, empty: BackgroundRunView): Backg
     stoppedBecause: phase === "stopped" ? (str(latest?.error?.message) ?? errorSentence(run.error)) : null,
     readFailure: run.readFailure,
     ask: askOf(run),
+    wakeAt: wakeAtOf(run),
   };
 }
 
@@ -398,6 +413,7 @@ export const STATUS_WORD: Record<BackgroundRunPhase, string> = {
   waiting: "Queued",
   working: "Working",
   needs_you: "Waiting on you",
+  sleeping: "Waiting",
   paused: "Paused",
   finished: "Finished",
   stopped: "Stopped",
@@ -405,9 +421,8 @@ export const STATUS_WORD: Record<BackgroundRunPhase, string> = {
 };
 
 /**
- * A working run quiet this long with no worker evidence is stalled. The run store carries no
- * heartbeat or lease (only events), so the card never claims it "continues by itself": it says what
- * is true, that nothing is moving and it resumes when a worker is free.
+ * A working run quiet this long gets its quiet time stated as a fact. The run store carries no
+ * heartbeat or job lease, so the card never says anything about workers.
  */
 export const STALLED_AFTER_MS = 300_000;
 
@@ -415,7 +430,7 @@ export const STALLED_AFTER_MS = 300_000;
 export function quietNote(view: Pick<BackgroundRunView, "phase" | "readFailure">, quietMs: number, formatQuiet: (ms: number) => string): string {
   if (view.readFailure) return view.readFailure;
   if (view.phase !== "working" || quietMs < QUIET_AFTER_MS) return "";
-  if (quietMs >= STALLED_AFTER_MS) return "No worker on it · it resumes when one is free";
+  if (quietMs >= STALLED_AFTER_MS) return `No progress for ${formatQuiet(quietMs)}`;
   return `Still working · last moved ${formatQuiet(quietMs)} ago`;
 }
 

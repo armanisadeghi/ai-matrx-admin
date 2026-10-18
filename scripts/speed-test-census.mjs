@@ -6,6 +6,7 @@
 //   node scripts/speed-test-census.mjs --as admin,member /speed-test /marketing/speed-test
 //   node scripts/speed-test-census.mjs --base https://www.aimatrx.com      # live, signed out only
 //   flags: --base <origin> · --as admin,member,anon · --idle <ms, default 5000> · --out <file.md> · --json <file>
+//          --caller-frames <n, default 3> (how many app frames of the initiator stack to show)
 //          --no-callers (skip the CDP async-stack capture; callers make dev timings slower still)
 //
 // Per load: TTFB (final response headers — never the 103 Early Hints), FCP, LCP, CLS, JS files + KB, and EVERY
@@ -42,6 +43,7 @@ const IDLE_MS = Number(flag("--idle", "5000"));
 const OUT = flag("--out", null);
 const JSON_OUT = flag("--json", null);
 const CALLERS = !bool("--no-callers");
+const CALLER_FRAMES = Number(flag("--caller-frames", "3")) || 3;
 
 if (!BASE) {
   const status = execFileSync("bash", [join(ROOT, "scripts/agent-dev-server.sh"), "status"], { cwd: ROOT, encoding: "utf8" });
@@ -115,9 +117,9 @@ function fileOf(url) {
 function callerOf(initiator) {
   if (!initiator) return "";
   const frames = [];
-  for (let st = initiator.stack; st && frames.length < 3; st = st.parent) {
+  for (let st = initiator.stack; st && frames.length < CALLER_FRAMES; st = st.parent) {
     for (const f of st.callFrames || []) {
-      if (frames.length >= 3) break;
+      if (frames.length >= CALLER_FRAMES) break;
       if (NOISE.test(f.url) || !f.functionName) continue;
       const label = `${f.functionName}@${fileOf(f.url)}`;
       if (!frames.includes(label)) frames.push(label);
