@@ -34,9 +34,10 @@ undeclared, and it is proven in the real UI with real data.
 
 ## The loop — build in batches, verify changed code
 
-Build and push each batch immediately. Local workers prove changed code in the managed localhost
-preview; production probes add deployed evidence when the release contains the commit. A cloud
-worker without a preview reports that exact unproven boundary to its named coordinator.
+Build and push each batch immediately. Workers prove changed code on the live site with production probes once
+the release contains the commit; the managed localhost preview is only a fix-and-look loop while
+building. A worker whose commit is not live yet reports that exact unproven boundary to its named
+coordinator.
 
 ```
 Batch 1: build 5 → check → sync → commit+push each
@@ -48,16 +49,17 @@ Batch 3: build 5 ...                                      (batch 2 is shipping)
 Last:    verify the remaining batch(es), then the independent review and integration receipts
 ```
 
-If a batch is not deployed yet, continue useful work; deployed proof does not replace required
-localhost engineering proof. Never manually release, ship, deploy, or build production here.
+If a batch is not deployed yet, continue useful work; keep building the next batch; verify it once
+released. Never manually release, ship, deploy, or build production here.
 
 ## 0. Setup (once)
 
 - Reuse the assigned checkout and read its `CLAUDE.md`; only a cloud task without a checkout
   needs the environment's repository setup and `pnpm install --frozen-lockfile`.
 - Use existing authentication and environment credentials. Never print a credential or sign-in URL.
-- Local lane: use the shared managed preview and its session localhost URL; follow the repo's
-  browser-authentication flow. Never start a second raw dev server.
+- Verification lane: the live site, signed in through `node scripts/real-tests/pw.mjs <run> signin`.
+  Fix-and-look loop only: use the shared managed preview and its session localhost URL; follow the
+  repo's browser-authentication flow. Never start a second raw dev server.
 - Supabase MCP: `project_id` `brsgrqvjdzwihsvnfqkf`.
 - Commit assigned paths and push to `origin/main` immediately. Fetch before integrating; never
   run dirty-tree `git pull --rebase` or a blanket stash/reset/restore/clean. Follow workspace
@@ -204,7 +206,7 @@ parallel workers otherwise share one browser profile and collide (keep the path 
 breaks Chromium's socket).
 
 ```bash
-pnpm surface:probe --surface <client/name> --base http://<session>.localhost:3001 \
+pnpm surface:probe --surface <client/name> --base https://www.aimatrx.com \
   --route <route> [--route <second route or /record/<real id>>] \
   [--fill '<css selector>=><text>'] --out probe-<name>.json
 ```

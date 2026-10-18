@@ -319,7 +319,7 @@ If you add a new tab with an alternate "short" id for external deep-linking, add
 - [ ] Registry entry added with `id`, `label`, Lucide `icon`, `parentId` if nested, `component: lazyTab(...)`, honest `persistence`.
 - [ ] Any new slice has a binding in `features/settings/slice-bindings.ts`.
 - [ ] FEATURE.md Change log updated if you added/removed a tab or slice binding.
-- [ ] Verified on `http://localhost:3000/settings-shell-demo` (desktop) AND at mobile viewport width.
+- [ ] Verified on the live site after the release (the settings surface, as admin@admin.com) at desktop AND mobile viewport width; `http://localhost:3000/settings-shell-demo` only for a fix-and-look loop while editing.
 
 ---
 

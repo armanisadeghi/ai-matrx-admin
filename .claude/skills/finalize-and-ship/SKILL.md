@@ -13,8 +13,9 @@ below; they do not run the feature-author checklist as an unconditional release 
 ## Before anything else: is the outcome there, from the user's seat?
 
 Finishing means the user can do what he asked, the way he meets the product — not that the
-checks are green. For changed UI, drive the changed code in an actual localhost browser and
-confirm what he will see. For non-UI work, exercise the closest real local behavior boundary.
+checks are green. For changed UI, drive the changed code on the live site (after the release carrying it, signed in as
+admin@admin.com through `node scripts/real-tests/pw.mjs <run> signin`) and confirm what he will see;
+localhost only for a rapid fix-and-look loop while editing. For non-UI work, exercise the closest real local behavior boundary.
 If you cannot, the task is not at its end, and green checks will only make the gap harder to
 notice ([reality is the referee](../../../../common-docs/policies/reality-is-the-referee.md)).
 
@@ -47,7 +48,7 @@ Defaults: scope = **this task's files**, delivery = **commit and push**. Follow 
 Run checks relevant to changed behavior. Check every touched type boundary and prove the change
 introduced no type errors; use the canonical generator for changed contracts and never suppress
 errors or hand-edit generated files. Run meaningful tests that reach the changed behavior,
-exercise changed UI in an actual localhost browser, and repair every regression your change
+exercise changed UI on the live site (localhost only for a fix-and-look loop), and repair every regression your change
 introduced before committing. Obtain independent review when the change's risk or scope requires
 it. Record unrelated ordinary findings for bounded repair; do not repeat a full `pnpm sync-types`
 until green merely to dispatch a release. Migrations belong to their own implementation: never

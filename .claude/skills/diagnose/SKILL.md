@@ -150,7 +150,7 @@ consequential design choice, packaged with evidence and a recommendation — nev
 - [ ] Commit message states the confirmed cause and the hypotheses ruled out
 - [ ] Every touched type boundary is checked without suppressing introduced errors; meaningful
   behavior tests prove the repaired path; introduced regressions are fixed
-- [ ] Changed UI is exercised in an actual localhost browser against the changed code
+- [ ] Changed UI is exercised on the live site (after the release carrying the change, signed in as admin@admin.com); localhost only for a rapid fix-and-look loop while editing
 - [ ] Independent review is obtained when the change's risk or scope requires it
 
 Deployment and production/live-surface verification belong to the release owner unless the

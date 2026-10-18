@@ -19,8 +19,9 @@ campaign ends when the census says so, not when workers say so.
   the worker brief's six-hour SQL fallback; never mix claim systems.
 - Each assigned worker fixes reviewer findings in the same assignment and returns the
   entrypoint's integration receipt. Independent certification belongs to `surface-check`.
-- Local workers prove changed code in the managed localhost preview. Cloud workers without a
-  preview can collect deployed evidence and report the named localhost boundary.
+- Workers prove changed code on the live site after the release carrying it (about 30 minutes);
+  the managed localhost preview is only a fix-and-look loop while building. A worker that cannot
+  yet see its commit live reports the release boundary.
 - Prefer focused direct transactional sync plus full live check; the worker brief defines the
   conditional SQL fallback and exact receipt when a check cannot run.
 - The completeness pass starts from rendered components, not manifest vocabulary.

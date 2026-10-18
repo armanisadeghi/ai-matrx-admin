@@ -168,9 +168,11 @@ layer, before blaming the subject.
   you toward one of these as a wall.
 - **Cheat honestly.** A browser instead of an email tool, a pasted chapter instead of the whole
   PDF — allowed, logged as a cheat in the register with what the honest version would need.
-- **Sign in without typing a password, ON YOUR OWN HOSTNAME.** Production browser pane signed out?
-  Use the local preview (`pnpm preview:start`, port 3001) and then `pnpm dev-login /<route>`, which
-  mints your session's single-use nonce and prints the URL to open. Never type a credential into a
+- **Sign in without typing a password.** Trials and checks run on the LIVE site (Arman, 2026-10-18):
+  `node scripts/real-tests/pw.mjs <run> signin`, a private headless browser; never Arman's Chrome.
+  Only in a rapid fix-and-look loop on UI being changed right now, use the local preview
+  (`pnpm preview:start`, port 3001) and then `pnpm dev-login /<route>`, which mints your session's
+  single-use nonce and prints the URL to open, ON YOUR OWN HOSTNAME. Never type a credential into a
   field.
 - **🚨 Never open `localhost:3001` — open the hostname the harness prints.** Several trials run on
   one machine at once, and cookies are scoped to a HOST and ignore the PORT: on 2026-09-12 five
@@ -190,7 +192,7 @@ layer, before blaming the subject.
   work blind in the pool. A "vibe-coded app vs. our build" comparison, or any report naming only
   two arms, is not a grade under this doctrine — see CORE.md §4 and advantage-stack.md §4.
 - **Lanes:** [subagent model ladder](/policies/subagent-model-ladder.md); driving a trial is `quick` (Sonnet) work.
-- **Done:** [deployment is the deploy agent's job](/policies/reality-is-the-referee.md) — commit, confirm on localhost, continue.
+- **Done:** [deployment is the deploy agent's job](/policies/reality-is-the-referee.md) — commit, confirm on the live site once released, continue.
 
 ## 3. The register and the bench — the single source of state and the only valid grade
 

@@ -20,15 +20,21 @@ re-testing. Full harness rules: matrx-frontend `docs/official/browser-testing.md
 section you need, not the whole file.
 
 ## Setup (once, before any test step)
-1. Server: in matrx-frontend run `pnpm preview:status`; reuse the running server or
-   `pnpm preview:start`. Open only the hostname it prints, never bare `localhost`. Never start a
-   second dev server.
+1. Site: the LIVE site, https://www.aimatrx.com (server `https://server.app.matrxserver.com`).
+   Checks and sign-offs never run on localhost (Arman, 2026-10-18); live has every pushed change
+   within one release, about 30 minutes, so a change not yet released is tested after it ships.
+   Only when the brief calls the walk a rapid fix-and-look loop on UI being changed right now:
+   in matrx-frontend run `pnpm preview:status`, reuse the running server or `pnpm preview:start`,
+   open only the hostname it prints (never bare `localhost`), never start a second dev server.
 2. Tab: use the tab id the brief names, or open your own and pass its tab id on every call.
    Never act in another tab.
 3. Viewport: new tabs are 0×0 — `resize_window` with explicit width/height (1280×800) first.
    `computer` needs the tab fronted (`tabs_select`).
-4. Sign in: `pnpm dev-login /<route>` and open the URL it prints (admin@admin.com, live DB).
-5. Warm the route with `curl` first; first compiles take 45–60 s, longer than a tool timeout.
+4. Sign in as admin@admin.com with `node scripts/real-tests/pw.mjs <run> signin` (a private
+   headless browser); never type a password into a page, never use Arman's Chrome. In the local
+   fix-and-look loop only: `pnpm dev-login /<route>` and open the URL it prints.
+5. Local fix-and-look loop only: warm the route with `curl` first; first compiles take 45–60 s,
+   longer than a tool timeout. Live needs no warm-up.
 6. AI test mode: when the brief tests screens or plumbing, not the AI, open the first URL with
    `?ai_test_mode=stand_in` (saved answers, no spend). When the brief tests the AI itself, never.
    Results badged "Baseline replay" / "Stand-in" are saved answers, never report them as AI output.
