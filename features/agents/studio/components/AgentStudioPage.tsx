@@ -604,24 +604,27 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const compactHeader = layout !== "three";
 
   const header = (
+    // Three columns: who/where | the stage steps, centered on the page | the actions. A name that
+    // loads late or a longer label never moves the steps or the actions (no layout shift).
     <div
-      className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-2"
+      className="grid h-10 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-border px-2"
       data-testid="studio-header"
       data-assist-dock-slot="header"
     >
-      <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={() => router.push(studioHref({}))} />
-      {!isMobile && <span className="shrink-0 text-sm font-semibold text-foreground">Agent Studio</span>}
-      {!compactHeader && <span className="min-w-0 max-w-[16rem] truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>}
-      <PlanBackLink state={state} />
+      <div className="flex min-w-0 items-center gap-2">
+        <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={() => router.push(studioHref({}))} />
+        {!isMobile && <span className="shrink-0 text-sm font-semibold text-foreground">Agent Studio</span>}
+        {!compactHeader && <span className="min-w-0 truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>}
+        <PlanBackLink state={state} />
+      </div>
       <StageSteps
         aria-label="Where you are"
         steps={stage.steps}
         current={stage.current}
         labels={compactHeader ? "current" : "all"}
-        className="mx-auto min-w-0"
         data-testid="studio-stage"
       />
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex min-w-0 items-center justify-end gap-2">
         <StudioCost
           buildId={state.buildId}
           buildDone={Boolean(state.agentId) || Boolean(build?.outcome)}

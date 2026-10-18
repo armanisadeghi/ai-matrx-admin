@@ -259,7 +259,7 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
               }}
               minHeight={36}
               autoGrow
-              className="min-w-0 flex-1"
+              wrapperClassName="min-w-0 flex-1"
             />
             <Button variant="outline" icon={<Send />} aria-label="Send to the assistant" title="Send to the assistant" disabled={!feedback.trim()} onClick={send} />
           </div>
