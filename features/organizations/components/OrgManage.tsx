@@ -33,6 +33,7 @@ import {
   User as UserIcon,
   KeyRound,
   CreditCard,
+  Globe,
   UserCog,
   Tags,
   Gauge,
@@ -631,6 +632,26 @@ export function OrgManage({
                 <Button asChild variant="outline">
                   <Link href={`/organizations/${slug}/settings/payments`}>
                     Open payments
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </div>
+            </SectionCard>
+          )}
+
+          {/* Domains — forms, booking pages and the portal on the organization's own address (CUSTOM-DOMAINS) */}
+          {canManageSettings && (
+            <SectionCard
+              id="domains"
+              icon={Globe}
+              title="Domains"
+              description="Show your forms, booking pages and portal on your own address."
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <p className="text-sm text-muted-foreground flex-1">Like book.yourbusiness.com.</p>
+                <Button asChild variant="outline">
+                  <Link href={`/organizations/${slug}/settings/domains`}>
+                    Open domains
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </Button>
