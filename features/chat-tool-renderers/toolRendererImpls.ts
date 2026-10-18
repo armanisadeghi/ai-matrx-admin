@@ -35,3 +35,5 @@ export { SiteDataInline } from "./renderers/site-data/SiteDataInline";
 export { CompareInline } from "./renderers/compare/CompareInline";
 // The data tools' answer bodies (records / table): rows as the table, a write as a line.
 export { RecordsAnswerBody, RefusalLine } from "@/features/records-tool-display/RecordsAnswerView";
+// Any background workflow run an agent started (`workflow_run`): the live card, by its run.
+export { BackgroundRunCard } from "@/features/records-tool-display/BackgroundRunCard";

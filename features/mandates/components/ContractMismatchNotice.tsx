@@ -24,8 +24,6 @@ import type {
 } from "@/features/mandates/contract-check";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
-import { FixWithAiButton } from "@/features/mandates/fix-with-ai/FixWithAiButton";
-import type { FixWithAiTarget } from "@/features/mandates/fix-with-ai/FixWithAiWindow";
 
 export interface ContractMismatchNoticeProps {
   /** The server's persisted verdict — preferred when present. */
@@ -39,8 +37,6 @@ export interface ContractMismatchNoticeProps {
   /** Compact = one line + actions (lists, dashboards). */
   compact?: boolean;
   className?: string;
-  /** The job and its agent Holder — Fix with AI drafts a new version that meets the contract. */
-  fix?: FixWithAiTarget | null;
 }
 
 export function ContractMismatchNotice({
@@ -50,7 +46,6 @@ export function ContractMismatchNotice({
   holderHref,
   compact = false,
   className,
-  fix,
 }: ContractMismatchNoticeProps) {
   const lines = check ? check.problems : [...(problems ?? [])];
   if ((!check || check.state !== "unmet") && lines.length === 0) return null;
@@ -87,22 +82,14 @@ export function ContractMismatchNotice({
           </ul>
         ) : null}
         <div className="flex flex-wrap items-center gap-2 pt-0.5">
-          {fix && (check?.holderType ?? "agent") === "agent" ? (
-            <FixWithAiButton
-              variant="outline"
-              icon={<INTELLIGENCE_ICON className="h-3.5 w-3.5" />}
-              target={fix}
-            />
-          ) : (
-            <Button
-              variant="outline"
-              onClick={() => void announceComingSoon("mandates.holder-auto-heal")}
-            >
-              <INTELLIGENCE_ICON className="h-3.5 w-3.5" />
-              Fix with AI
-              <ComingSoonBadge />
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            onClick={() => void announceComingSoon("mandates.holder-auto-heal")}
+          >
+            <INTELLIGENCE_ICON className="h-3.5 w-3.5" />
+            Fix with AI
+            <ComingSoonBadge />
+          </Button>
           {holderHref ? (
             <Link
               href={holderHref}

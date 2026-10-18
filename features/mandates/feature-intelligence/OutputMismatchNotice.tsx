@@ -21,7 +21,6 @@ import { declaredOutputKind } from "../contract-check";
 import { kindPhrase } from "../provision-shapes";
 import type { MandateLadderRow } from "../workspace/useMandateLadder";
 import { RUNG_LABEL } from "./job-card-parts";
-import { FixWithAiButton } from "../fix-with-ai/FixWithAiButton";
 
 interface HolderFacts {
   name: string;
@@ -94,14 +93,11 @@ export function OutputMismatchNotice({
   rung,
   expects,
   onPickAnother,
-  mandateKey,
 }: {
   rung: MandateLadderRow;
   /** What the job expects, in words ("flashcards"). */
   expects: string;
   onPickAnother: () => void;
-  /** The job — Fix with AI drafts a new version of the chosen agent for it. */
-  mandateKey?: string;
 }) {
   const facts = useHolderFacts(rung);
   const who = rung.rung === "org" ? "Your organization's choice" : rung.rung === "user" ? "Your choice" : RUNG_LABEL[rung.rung];
@@ -126,22 +122,14 @@ export function OutputMismatchNotice({
         <Button variant="outline" onClick={onPickAnother}>
           Pick another
         </Button>
-        {mandateKey && rung.holder_type === "agent" && rung.holder_id ? (
-          <FixWithAiButton
-            icon={<Wand2 />}
-            target={{ mandateKey, agentId: rung.holder_id }}
-            onUseOwn={onPickAnother}
-          />
-        ) : (
-          <Button
-            icon={<Wand2 />}
-            variant="quiet"
-            onClick={() => void announceComingSoon("mandates.fix-output-mismatch-with-ai")}
-          >
-            Fix with AI
-            <span className="ml-1 rounded bg-muted px-1 type-meta text-muted-foreground">Soon</span>
-          </Button>
-        )}
+        <Button
+          icon={<Wand2 />}
+          variant="quiet"
+          onClick={() => void announceComingSoon("mandates.fix-output-mismatch-with-ai")}
+        >
+          Fix with AI
+          <span className="ml-1 rounded bg-muted px-1 type-meta text-muted-foreground">Soon</span>
+        </Button>
       </span>
     </div>
   );
