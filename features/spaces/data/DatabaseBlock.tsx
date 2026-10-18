@@ -19,7 +19,7 @@ import { PublicFormRunner } from "@/app/(link)/f/[formId]/PublicFormRunner";
 import { spacesFormForAnswering } from "./form-actions";
 import { AutomationsPanel } from "./Automations";
 import type { RuleExpression } from "@ai-matrx/records";
-import { tableShapeChanged, useFields, useRecordsClient, useTable, type Field } from "@ai-matrx/records/react";
+import { tableShapeChanged, useFields, useRecord, useRecordsClient, useTable, type Field } from "@ai-matrx/records/react";
 import {
   ArrowDownUp,
   ArrowUpRight,
@@ -63,6 +63,7 @@ import { primeOwningRow, useOwningRow } from "./owning-row";
 import { newRowData, readRowTemplates, setDefaultRowTemplate, startNewRow, startTemplatePage, templateFor, type NewRowPick, type RowTemplateChoice } from "./row-templates";
 import type { RowPageDb } from "../embed/row-page";
 import { createClient } from "@/utils/supabase/client";
+import { RecordBodySpace } from "../embed/RecordBodySpace";
 import { resolveThisRow, thisRowValues, THIS_ROW, THIS_ROW_LABEL, usesThisRow } from "./this-row";
 import { BlockRecordsSeed } from "../page/space-seed-context";
 import { NewPropertyPanel } from "./NewProperty";
@@ -421,7 +422,7 @@ function DatabaseFrame({
       </div>
       {body}
 
-      {open ? <RecordOpen tableId={tableId} recordId={open} as={props.openAs ?? "side"} fresh={open === fresh} onClose={() => setOpen(null)} /> : null}
+      {open ? <RecordOpen tableId={tableId} recordId={open} as={props.openAs ?? "side"} fresh={open === fresh} editable={editable} onClose={() => setOpen(null)} /> : null}
 
       <Dialog open={creating !== null} onOpenChange={(o) => (o ? null : setCreating(null))}>
         <DialogContent size="lg">
@@ -970,11 +971,12 @@ function ViewSettings({
   );
 }
 
-function RecordOpen({ tableId, recordId, as, fresh, onClose }: { tableId: string; recordId: string; as: "side" | "center" | "page"; fresh: boolean; onClose: () => void }) {
+function RecordOpen({ tableId, recordId, as, fresh, editable, onClose }: { tableId: string; recordId: string; as: "side" | "center" | "page"; fresh: boolean; editable: boolean; onClose: () => void }) {
   if (as === "side") {
     return (
       <SidePeek onClose={onClose} focusFirstField={fresh}>
         <Peek tableId={tableId} recordId={recordId} onClose={onClose} />
+        <RowPageUnderPeek tableId={tableId} recordId={recordId} editable={editable} />
       </SidePeek>
     );
   }
@@ -983,7 +985,25 @@ function RecordOpen({ tableId, recordId, as, fresh, onClose }: { tableId: string
       <DialogContent size={as === "page" ? "screen" : "xl"} className="overflow-auto">
         <DialogTitle className="sr-only">Record</DialogTitle>
         <Peek tableId={tableId} recordId={recordId} onClose={onClose} onPage={as === "page"} />
+        <RowPageUnderPeek tableId={tableId} recordId={recordId} editable={editable} />
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * The row's PAGE under its fields in every peek (Notion: a database page opened as a side / center / full page
+ * shows its properties, then its body). records-ui's `Peek` draws the fields only, so the body is drawn here by
+ * the one row-page component (embed/RecordBodySpace.tsx) — the New menu's template body shows on open.
+ */
+function RowPageUnderPeek({ tableId, recordId, editable }: { tableId: string; recordId: string; editable: boolean }) {
+  const record = useRecord(recordId as never, true, { tableId: tableId as never });
+  const table = useTable(tableId);
+  const organizationId = (table.data as { organization_id?: string } | null)?.organization_id ?? null;
+  if (!record.data) return null;
+  return (
+    <div className="spaces-peek-page">
+      <RecordBodySpace tableId={tableId} recordId={recordId} record={record.data} readOnly={!editable} organizationId={organizationId} />
+    </div>
   );
 }

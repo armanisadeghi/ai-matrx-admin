@@ -1553,6 +1553,8 @@
 .spaces-peek-side:focus { outline: none; }
 .spaces-peek-bar { display: flex; align-items: center; height: 44px; padding: 0 8px; flex: none; }
 .spaces-peek-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 16px 24px; }
+/* The row's page under its fields in a peek (DatabaseBlock RowPageUnderPeek): a rule, then the body. */
+.spaces-peek-page { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--spaces-rule); }
 @media (max-width: 767px) {
   .spaces-db-frame { padding: 10px 10px 8px; }
   .spaces-db-bar { flex-wrap: wrap; }
