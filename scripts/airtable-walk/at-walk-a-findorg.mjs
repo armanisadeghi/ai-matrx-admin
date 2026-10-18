@@ -2,7 +2,7 @@ import { store } from "./store.mjs";
 import { createRecordsClient, supabaseDataSource } from "@ai-matrx/records/core";
 const { sb, client } = await store();
 const { data: u } = await sb.auth.getUser();
-const r = await sb.schema("users").from("organization_members").select("organization_id").eq("user_id", u.user.id).limit(300);
+const r = await sb.schema("organizations").from("organization_members").select("organization_id").eq("user_id", u.user.id).limit(300);
 console.log("members", r.error?.message, r.data?.length);
 const ids = (r.data ?? []).map((x) => x.organization_id);
 for (const id of ids) {
