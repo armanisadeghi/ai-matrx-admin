@@ -45,6 +45,17 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-17 — The first paint is never redrawn after hydration (lane SPACES-REDRAW). (1) A database block in the
+  static first paint is the server's HTML kept as served (`editor/server-drawn-database.tsx`: same host element,
+  contents never hydrated) — its lazy code and seed arrived after the page, its boundary stayed dehydrated, and React
+  threw it away on ANY context change above it (every block collapsed to its loading box ~2 s in; CLS 0.52 → 0.01 at
+  1600). (2) `SpacesFrame` is one tree at every width (CSS hides the sidebar under 768 px; the topbar's two sidebar
+  buttons are both drawn, `data-width`) — the phone check answering after hydration remounted the whole page.
+  (3) `SpaceSeedProvider` sets no state on mount; the seed promises and the landed list are separate contexts.
+  Guards: `editor/__tests__/a-server-drawn-database-block-is-never-drawn-again`, `workspace/__tests__/the-page-keeps-
+  its-place-when-the-phone-check-answers`, `page/__tests__/a-seed-landing-never-redraws-a-server-drawn-block`.
+  Open: with `data/server_rows` off the server draws grid/board skeletons (216/362 px), so the editor's live block
+  grows 200–260 px after reveal on a fresh page.
 - 2026-10-17 — New ▾ lists row templates (REVIEW-2 D1). The database block's chevron (`NewButton`, `data/row-templates.ts`)
   lists the table's row templates (`custom.row_templates` + `row_template_bodies` + `row_template_default`, read on open),
   the default marked, a star = "Set as default" (`row_template_declare {template_id, default:true}`), plus "Empty page".
