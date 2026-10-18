@@ -33,7 +33,7 @@ import NavLink from "@/components/navigation/NavLink";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
 import { selectThemeMode, setMode, type ThemeMode } from "@/styles/themes/themeSlice";
 import { SETTINGS_BASE } from "@/features/settings/route-shell/routing";

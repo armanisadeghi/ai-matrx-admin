@@ -11,7 +11,7 @@ import {
   type OpenMultiFileSmartCodeEditorWindowOptions,
   type MultiFileSmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/multi-file-smart-code-editor/useOpenMultiFileSmartCodeEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 export {
@@ -36,7 +36,7 @@ export function MultiFileSmartCodeEditorWindowController(
 
 export type MultiFileSmartCodeEditorWindowDefinitionData = OpenMultiFileSmartCodeEditorWindowOptions;
 
-export const multiFileSmartCodeEditorWindowOverlay = defineOverlay<MultiFileSmartCodeEditorWindowDefinitionData>()({
+export const multiFileSmartCodeEditorWindowOverlay = /* @__PURE__ */ defineOverlay<MultiFileSmartCodeEditorWindowDefinitionData>()({
   id: "multiFileSmartCodeEditorWindow",
   label: "Multi File Smart Code Editor Window",
   instance: "multi",

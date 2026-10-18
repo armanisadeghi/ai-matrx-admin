@@ -11,8 +11,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "applyToSourceReview" as const;
@@ -45,7 +45,7 @@ export function useOpenApplyToSourceReview() {
 
 export type ApplyToSourceReviewDefinitionData = OpenApplyToSourceReviewOptions;
 
-export const applyToSourceReviewOverlay = defineOverlay<ApplyToSourceReviewDefinitionData>()({
+export const applyToSourceReviewOverlay = /* @__PURE__ */ defineOverlay<ApplyToSourceReviewDefinitionData>()({
   id: "applyToSourceReview",
   label: "Apply to source",
   instance: "single",

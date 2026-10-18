@@ -12,8 +12,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon";
-import { focusWindow, restoreWindow } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 import { GSC_DEFAULT_RANGE } from "@/features/marketing/search-console/types";
 import type {
   GscCompareMode,
@@ -21,7 +21,7 @@ import type {
   GscFilters,
   GscRangeKey,
 } from "@/features/marketing/search-console/types";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "gscDrilldownWindow" as const;
@@ -107,7 +107,7 @@ export function useOpenGscDrilldownWindow() {
 
 export type GscDrilldownWindowDefinitionData = OpenGscDrilldownWindowOptions;
 
-export const gscDrilldownWindowOverlay = defineOverlay<GscDrilldownWindowDefinitionData>()({
+export const gscDrilldownWindowOverlay = /* @__PURE__ */ defineOverlay<GscDrilldownWindowDefinitionData>()({
   id: "gscDrilldownWindow",
   label: "Search Console Drill-down",
   instance: "multi",

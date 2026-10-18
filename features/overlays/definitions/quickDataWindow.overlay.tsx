@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickDataWindow" as const;
@@ -65,7 +65,7 @@ export function QuickDataWindowController(props: OpenQuickDataWindowOptions): nu
 
 export type QuickDataWindowDefinitionData = OpenQuickDataWindowOptions;
 
-export const quickDataWindowOverlay = defineOverlay<QuickDataWindowDefinitionData>()({
+export const quickDataWindowOverlay = /* @__PURE__ */ defineOverlay<QuickDataWindowDefinitionData>()({
   id: "quickDataWindow",
   label: "Quick Data Window",
   instance: "single",

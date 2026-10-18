@@ -12,9 +12,9 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AgentVariableEditorWindowData } from "@/features/agents/components/variables-management/AgentVariableEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentVariableEditorWindow" as const;
@@ -53,7 +53,7 @@ export function useOpenAgentVariableEditorWindow() {
 
 export type AgentVariableEditorWindowDefinitionData = OpenAgentVariableEditorWindowOptions;
 
-export const agentVariableEditorWindowOverlay = defineOverlay<AgentVariableEditorWindowDefinitionData>()({
+export const agentVariableEditorWindowOverlay = /* @__PURE__ */ defineOverlay<AgentVariableEditorWindowDefinitionData>()({
   id: "agentVariableEditorWindow",
   label: "Variable Editor",
   instance: "single",

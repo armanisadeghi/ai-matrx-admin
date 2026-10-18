@@ -14,8 +14,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "creatorHub" as const;
@@ -83,7 +83,7 @@ export function CreatorHubController(props: OpenCreatorHubOptions): null {
 
 export type CreatorHubDefinitionData = OpenCreatorHubOptions;
 
-export const creatorHubOverlay = defineOverlay<CreatorHubDefinitionData>()({
+export const creatorHubOverlay = /* @__PURE__ */ defineOverlay<CreatorHubDefinitionData>()({
   id: "creatorHub",
   label: "Creator Hub",
   instance: "single",

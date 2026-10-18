@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "imagePeekHost" as const;
@@ -57,7 +57,7 @@ export function ImageArrivalPeekHostController(props: OpenImageArrivalPeekHostOp
 
 export type ImagePeekHostDefinitionData = OpenImageArrivalPeekHostOptions;
 
-export const imagePeekHostOverlay = defineOverlay<ImagePeekHostDefinitionData>()({
+export const imagePeekHostOverlay = /* @__PURE__ */ defineOverlay<ImagePeekHostDefinitionData>()({
   id: "imagePeekHost",
   label: "Image Peek Host",
   instance: "single",

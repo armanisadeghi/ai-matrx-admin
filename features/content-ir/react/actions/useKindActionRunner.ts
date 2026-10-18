@@ -35,7 +35,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { useFloatingRunWindow } from "@ai-matrx/chat/agents/hooks/useFloatingAgentRun";
 import { triggerShortcut } from "@ai-matrx/chat/agents/utils/trigger-shortcut";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 import {
   livePosture,

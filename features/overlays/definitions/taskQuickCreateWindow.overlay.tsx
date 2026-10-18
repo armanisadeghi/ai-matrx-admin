@@ -13,12 +13,12 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type {
   TaskPrePopulate,
   TaskSourceInput,
 } from "@/features/tasks/widgets/quick-create/TaskQuickCreateCore";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "taskQuickCreateWindow" as const;
@@ -90,7 +90,7 @@ export function TaskQuickCreateWindowController(
 
 export type TaskQuickCreateWindowDefinitionData = OpenTaskQuickCreateWindowOptions;
 
-export const taskQuickCreateWindowOverlay = defineOverlay<TaskQuickCreateWindowDefinitionData>()({
+export const taskQuickCreateWindowOverlay = /* @__PURE__ */ defineOverlay<TaskQuickCreateWindowDefinitionData>()({
   id: "taskQuickCreateWindow",
   label: "Task Quick Create Window",
   instance: "single",

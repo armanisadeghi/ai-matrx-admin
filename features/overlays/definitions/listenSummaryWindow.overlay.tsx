@@ -16,8 +16,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "listenSummaryWindow" as const;
@@ -72,7 +72,7 @@ export function useOpenListenSummaryWindow() {
 
 export type ListenSummaryWindowDefinitionData = OpenListenSummaryWindowOptions;
 
-export const listenSummaryWindowOverlay = defineOverlay<ListenSummaryWindowDefinitionData>()({
+export const listenSummaryWindowOverlay = /* @__PURE__ */ defineOverlay<ListenSummaryWindowDefinitionData>()({
   id: "listenSummaryWindow",
   label: "Listen",
   instance: "single",

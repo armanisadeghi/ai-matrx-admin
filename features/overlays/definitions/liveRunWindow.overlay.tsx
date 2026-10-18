@@ -28,8 +28,8 @@ import { useCallback, useEffect, useRef } from "react";
 
 import type { LiveRunProgressState } from "@ai-matrx/chat/agents/components/live-run/LiveRunProgress";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "liveRunWindow" as const;
@@ -280,7 +280,7 @@ export function LiveRunWindowController(
 
 export type LiveRunWindowDefinitionData = OpenLiveRunWindowOptions;
 
-export const liveRunWindowOverlay = defineOverlay<LiveRunWindowDefinitionData>()({
+export const liveRunWindowOverlay = /* @__PURE__ */ defineOverlay<LiveRunWindowDefinitionData>()({
   id: "liveRunWindow",
   label: "AI Run",
   instance: "multi",

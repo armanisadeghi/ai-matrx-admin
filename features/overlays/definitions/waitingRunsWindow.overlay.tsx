@@ -11,8 +11,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "waitingRunsWindow" as const;
@@ -44,7 +44,7 @@ export function WaitingRunsWindowController(): null {
 
 export type WaitingRunsWindowDefinitionData = Record<string, unknown>;
 
-export const waitingRunsWindowOverlay = defineOverlay<WaitingRunsWindowDefinitionData>()({
+export const waitingRunsWindowOverlay = /* @__PURE__ */ defineOverlay<WaitingRunsWindowDefinitionData>()({
   id: "waitingRunsWindow",
   label: "Workflows waiting on you",
   instance: "single",

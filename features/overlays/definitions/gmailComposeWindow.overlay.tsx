@@ -17,10 +17,10 @@
 
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { callbackManager } from "@ai-matrx/summon/handles";
 import type { GmailDraftedBy } from "@/features/crm/gmail/types";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "gmailComposeWindow" as const;
@@ -121,7 +121,7 @@ export function useOpenGmailComposeWindow() {
 
 export type GmailComposeWindowDefinitionData = OpenGmailComposeWindowOptions;
 
-export const gmailComposeWindowOverlay = defineOverlay<GmailComposeWindowDefinitionData>()({
+export const gmailComposeWindowOverlay = /* @__PURE__ */ defineOverlay<GmailComposeWindowDefinitionData>()({
   id: "gmailComposeWindow",
   label: "Email a CRM record",
   instance: "single",

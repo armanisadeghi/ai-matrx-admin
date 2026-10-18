@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "browserWorkbenchWindow" as const;
@@ -69,7 +69,7 @@ export function BrowserWorkbenchWindowController(props: OpenBrowserWorkbenchWind
 
 export type BrowserWorkbenchWindowDefinitionData = OpenBrowserWorkbenchWindowOptions;
 
-export const browserWorkbenchWindowOverlay = defineOverlay<BrowserWorkbenchWindowDefinitionData>()({
+export const browserWorkbenchWindowOverlay = /* @__PURE__ */ defineOverlay<BrowserWorkbenchWindowDefinitionData>()({
   id: "browserWorkbenchWindow",
   label: "Browser Workbench Window",
   instance: "single",

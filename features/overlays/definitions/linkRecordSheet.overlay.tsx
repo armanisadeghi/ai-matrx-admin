@@ -8,8 +8,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "linkRecordSheet" as const;
@@ -34,7 +34,7 @@ export function useOpenLinkRecordSheet() {
 
 export type LinkRecordSheetDefinitionData = OpenLinkRecordSheetOptions;
 
-export const linkRecordSheetOverlay = defineOverlay<LinkRecordSheetDefinitionData>()({
+export const linkRecordSheetOverlay = /* @__PURE__ */ defineOverlay<LinkRecordSheetDefinitionData>()({
   id: "linkRecordSheet",
   label: "Link a record",
   instance: "single",

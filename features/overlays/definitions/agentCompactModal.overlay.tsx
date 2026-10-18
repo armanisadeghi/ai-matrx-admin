@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentCompactModal" as const;
@@ -71,7 +71,7 @@ export function AgentCompactModalController(props: OpenAgentCompactModalOptions)
 
 export type AgentCompactModalDefinitionData = OpenAgentCompactModalOptions;
 
-export const agentCompactModalOverlay = defineOverlay<AgentCompactModalDefinitionData>()({
+export const agentCompactModalOverlay = /* @__PURE__ */ defineOverlay<AgentCompactModalDefinitionData>()({
   id: "agentCompactModal",
   label: "Agent Compact Modal",
   instance: "multi",

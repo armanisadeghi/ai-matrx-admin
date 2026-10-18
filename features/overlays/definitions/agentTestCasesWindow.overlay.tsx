@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentTestCasesWindow" as const;
@@ -64,7 +64,7 @@ export function AgentTestCasesWindowController({
 
 export type AgentTestCasesWindowDefinitionData = OpenAgentTestCasesWindowOptions;
 
-export const agentTestCasesWindowOverlay = defineOverlay<AgentTestCasesWindowDefinitionData>()({
+export const agentTestCasesWindowOverlay = /* @__PURE__ */ defineOverlay<AgentTestCasesWindowDefinitionData>()({
   id: "agentTestCasesWindow",
   label: "Test Cases",
   instance: "single",

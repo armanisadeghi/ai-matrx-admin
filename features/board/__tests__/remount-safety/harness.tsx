@@ -30,7 +30,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { makeStore, type AppStore } from "@/lib/redux/store";
 import { setUserAuth } from "@/lib/redux/slices/userAuthSlice";
 import { setOrganization } from "@/lib/redux/slices/appContextSlice";
-import { closeAllOverlays } from "@ai-matrx/summon";
+import { closeAllOverlays } from "@ai-matrx/summon/open";
 import { AppProviders } from "./app-providers";
 import { SurfaceActivity, createSurfaceCapture } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { FocusHostContext, BoardCameraStoreContext } from "../../engine/react";

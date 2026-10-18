@@ -21,7 +21,7 @@ import { CheckSquare, Lightbulb, Table2, VolumeX } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import {
   listMySourceSuppressions,
   queryAssists,

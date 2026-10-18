@@ -2,7 +2,7 @@
 
 import SettingsShellOverlay from "@/features/settings/components/SettingsShellOverlay";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@ai-matrx/summon";
+import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data, instanceId, close }: OverlayRenderProps) {

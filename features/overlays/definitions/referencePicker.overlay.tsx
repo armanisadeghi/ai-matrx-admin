@@ -12,13 +12,13 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createReferencePickerCallbackGroup } from "./callbacks/referencePicker";
 import type {
   ReferenceDelivery,
   ReferencePick,
 } from "@/features/matrx-envelope/components/reference-picker/referencePickerTypes";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "referencePicker" as const;
@@ -85,7 +85,7 @@ export function useOpenReferencePicker() {
 
 export type ReferencePickerDefinitionData = OpenReferencePickerOptions;
 
-export const referencePickerOverlay = defineOverlay<ReferencePickerDefinitionData>()({
+export const referencePickerOverlay = /* @__PURE__ */ defineOverlay<ReferencePickerDefinitionData>()({
   id: "referencePicker",
   label: "Add a Reference",
   instance: "single",

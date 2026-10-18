@@ -8,11 +8,15 @@
     "^summon/url",
     "^summon/persistence",
     "^summon/(dialog|sheet|testing)",
-    "^app:features/overlays/definitions/(registry|register|overlay-definitions\\.gen|render-map)"
+    "^app:features/overlays/definitions/(registry|register|overlay-definitions\\.gen|render-map)",
+    "^summon/core/(overlaysSlice|windowManagerSlice|linksSlice|overlayStateSlice|store)\\.ts",
+    "^summon/core/(middleware|geometry)/",
+    "^summon/react/",
+    "^summon/window/"
   ],
   "routes": {
-    "(core)/notes": 147337,
-    "(core)/dashboard": 144429,
-    "(public)/pricing": 115998
+    "(core)/notes": 102243,
+    "(core)/dashboard": 99311,
+    "(public)/pricing": 70841
   }
 }

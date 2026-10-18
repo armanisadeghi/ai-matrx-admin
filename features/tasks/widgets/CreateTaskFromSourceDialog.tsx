@@ -18,7 +18,7 @@ import {
   clearPendingSource,
   selectPendingSource,
 } from "@/features/tasks/redux/taskUiSlice";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 
 export default function CreateTaskFromSourceDialog() {
   const dispatch = useAppDispatch();
