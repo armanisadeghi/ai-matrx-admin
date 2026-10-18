@@ -182,6 +182,15 @@ export const ADMIN_FEATURES_ON_USER_PAGES = {
     doors: ["chat.user_request (read, ordinary RLS)", "chat.request_snapshot (read, ordinary RLS)"],
     ruling: "Arman, 2026-10-13: \"it detects when the user is a system admin. And so I get a icon that lights up orange in my sidebar menu. And if I click on it, I see the window panel\" — \"Only system admins for now; debug mode is the switch.\"",
   },
+  "ai.watch-everything": {
+    level: "super_admin",
+    allows: "Watch AI's Everything tab: every recent AI run on the platform, newest first, including other people's and background runs, with the names of the people, organizations and agents they mention.",
+    where: "Sidebar → Watch AI → Everything (features/ai-watch/EverythingFeed.tsx, everything-feed.ts). Shown only with debug mode on.",
+    // The one registered READ of other people's rows: the feed exists to see them. Only the feed's own
+    // requests carry the lane; the rest of the page stays an ordinary member view.
+    doors: ["chat.user_request (read, admin arm)", "users.profiles / iam.organizations / agent.definition (names of what the feed shows)"],
+    ruling: "Arman, 2026-10-17: \"full visibility into every single AI integration, even when it happens in the background\".",
+  },
   "shape.promote-to-system": {
     level: "super_admin",
     allows: "Promote shapes into Matrx System — one shape from its page, or many at once from the Shapes table — with everything that belongs to them.",

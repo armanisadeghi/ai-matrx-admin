@@ -9,6 +9,11 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
+import { withAdminFeature } from "@/utils/auth/adminFeaturesOnUserPages";
+
+/** Why the feed once showed only the admin's own runs: on a user page the admin arm of RLS is closed unless the feed's own requests open the lane. */
+const everything = <B extends { setHeader(name: string, value: string): B }>(request: B): B =>
+  withAdminFeature("ai.watch-everything", request);
 
 export interface EverythingFilters {
   /** `chat.user_request.created_by` */
@@ -141,7 +146,7 @@ export async function fetchEverythingPage(
     q = q.or(`metadata->>mandate_key.eq.${filters.mandateKey},metadata->mandate_watch->>mandate_key.eq.${filters.mandateKey}`);
   }
   if (before) q = q.lt("created_at", before);
-  const { data, error } = await q.order("created_at", { ascending: false }).limit(pageSize);
+  const { data, error } = await everything(q.order("created_at", { ascending: false }).limit(pageSize));
   if (error) throw new Error(error.message);
   return ((data ?? []) as Row[]).map(everythingRow);
 }
@@ -163,10 +168,10 @@ export async function fetchEverythingNames(
   const organizations: Record<string, string> = {};
   const [p, o] = await Promise.all([
     personIds.length
-      ? supabase.schema("users").from("profiles").select("id, display_name").in("id", [...personIds])
+      ? everything(supabase.schema("users").from("profiles").select("id, display_name").in("id", [...personIds]))
       : Promise.resolve({ data: [] as Row[], error: null }),
     organizationIds.length
-      ? supabase.schema("iam").from("organizations").select("id, name").in("id", [...organizationIds])
+      ? everything(supabase.schema("iam").from("organizations").select("id, name").in("id", [...organizationIds]))
       : Promise.resolve({ data: [] as Row[], error: null }),
   ]);
   for (const r of (p.data ?? []) as Row[]) if (str(r.id) && str(r.display_name)) people[String(r.id)] = String(r.display_name);
@@ -178,7 +183,7 @@ export async function fetchEverythingNames(
 export async function fetchAgentNames(agentIds: readonly string[]): Promise<Record<string, string>> {
   const out: Record<string, string> = {};
   if (!agentIds.length) return out;
-  const { data } = await supabase.schema("agent").from("definition").select("id, name").in("id", [...agentIds]);
+  const { data } = await everything(supabase.schema("agent").from("definition").select("id, name").in("id", [...agentIds]));
   for (const r of (data ?? []) as Row[]) if (str(r.id) && str(r.name)) out[String(r.id)] = String(r.name);
   return out;
 }
