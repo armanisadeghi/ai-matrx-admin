@@ -147,35 +147,37 @@ export function TopicYouTubeLibrary({
 
   return (
     <div className="mx-auto w-full max-w-[1600px] px-4 pb-10 pt-5 sm:px-6">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <div className="mr-auto min-w-0">
+      <div className="flex flex-col gap-4">
+        <div className="min-w-0">
           {/* ui-exception: flagship stage — the library's headline count. */}
           <h1 className="text-xl font-semibold tabular-nums text-foreground">
             {videos.length.toLocaleString()} videos found
           </h1>
           <p className="type-secondary tabular-nums text-muted-foreground">{stats}</p>
         </div>
-        <SearchField
-          value={query}
-          onChange={(event) => setQuery(event.target.value, { history: "replace" })}
-          placeholder="Search videos"
-          aria-label="Search videos"
-          className="w-56"
-        />
-        <SegmentedControl
-          aria-label="Analysis status"
-          value={status}
-          onValueChange={(next) => setStatus(next)}
-          data={[
-            { value: "all", label: "All", count: videos.length },
-            { value: "analyzed", label: "Analyzed", count: analyzed },
-            { value: "unread", label: "Not analyzed", count: videos.length - analyzed },
-          ]}
-        />
-        {keywordOptions.length > 2 && (
-          <Select aria-label="Keyword" value={keyword} options={keywordOptions} onValueChange={(next) => setKeyword(next)} className="max-w-56" />
-        )}
-        <Select aria-label="Sort" value={sort} options={SORT_OPTIONS} onValueChange={(next) => setSort(next)} />
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchField
+            value={query}
+            onChange={(event) => setQuery(event.target.value, { history: "replace" })}
+            placeholder="Search videos"
+            aria-label="Search videos"
+            className="min-w-56 flex-1"
+          />
+          <SegmentedControl
+            aria-label="Analysis status"
+            value={status}
+            onValueChange={(next) => setStatus(next)}
+            data={[
+              { value: "all", label: "All", count: videos.length },
+              { value: "analyzed", label: "Analyzed", count: analyzed },
+              { value: "unread", label: "Not analyzed", count: videos.length - analyzed },
+            ]}
+          />
+          {keywordOptions.length > 2 && (
+            <Select aria-label="Keyword" value={keyword} options={keywordOptions} onValueChange={(next) => setKeyword(next)} className="max-w-56" />
+          )}
+          <Select aria-label="Sort" value={sort} options={SORT_OPTIONS} onValueChange={(next) => setSort(next)} />
+        </div>
       </div>
 
       {/* read-gate-exempt: filters over videos already loaded; the parent page owns the read and its failure */}
