@@ -31,9 +31,9 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-18-122044/pnpm-lock.yaml.held — LOCAL latest 2026-10-18 12:52; GITHUB latest 2026-10-18 12:35; LOCAL lacks 7 of GITHUB's 42 new lines; GITHUB lacks 13 of LOCAL's 48 new lines; recover: git show 26760324d8:'pnpm-lock.yaml' / 872f7c1e21:'pnpm-lock.yaml'
 
 ## Resolution log
+- 2026-10-18 12:58 PDT — Resolved `_conflicts/2026-10-18-122044/pnpm-lock.yaml.held`: sides differed only in @ai-matrx versions (LOCAL chat 0.8.196 / records-ui 0.116.23 vs GITHUB 0.8.195 / 0.116.22); ran `pnpm sync:matrx-packages`, which supersedes both; `check:matrx-packages` green (33 at npm latest, once); owner: none needed (lockfile).
 - 2026-10-18 12:15 PDT — Resolved `_conflicts/2026-10-18-115923/` `features/agent-tests/service.ts` + `components/AgentTestTables.tsx`: took LOCAL. Each side differed by one line; LOCAL's is a coherent refinement on top of GITHUB's battle-on-reload work (a cancelled run is never restored as the latest battle; a cancelled/failed unsettled battle shows "—", not "Judging"); GITHUB lacked nothing else; owner: none found (commit 101469e747c carries no session).
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
 - 2026-10-14 22:15 PDT — Claude agent resolved the three `_conflicts/2026-10-14-214146/` items by keeping live: `Automations.tsx` + its test (LOCAL was the superseded c6bb8abbe6 iteration — `useTableRights`/"Needs Editor access" — that 3fb2492162 replaced with `useMyLevel`/`whatYouMayDo`/"Needs Edit access"); `atdbfix_block_ids_green.mts` (LOCAL re-added the `.ts` import suffix that 35a2e511b5 dropped on purpose). Jest test 3/3 green; `check:matrx-imports` OK.
