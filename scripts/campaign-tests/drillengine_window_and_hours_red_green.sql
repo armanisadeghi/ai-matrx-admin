@@ -93,6 +93,50 @@ begin
   select says into v_says from platform.drill_ask(c_org, '{"kind":"entity","token":"system_errors"}',
       jsonb_build_object('lane', 'platform', 'window', jsonb_build_object('from', v_wf, 'to', v_wt))) where kind = 'total';
   insert into dek(name, ok, detail) values ('H5 a raw (not summary) definition says nothing of hours', coalesce(v_says, '') not like '%whole hours%', coalesce(v_says, 'no says'));
+
+  -- ── R. structured_logs' Requests: exact where it can be, said where it cannot
+  declare
+    c_me  constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
+    v_hto timestamptz := date_trunc('hour', now() - interval '1 hour', 'UTC');
+    v_hfr timestamptz := date_trunc('hour', now() - interval '1 hour', 'UTC') - interval '7 days';
+    v_rf  timestamptz := now() - interval '6 hours';
+    v_rt  timestamptz := now();
+    v_bad int;
+  begin
+    -- R1 ungrouped, 7 days of whole hours, platform: = the sum over hours of each hour's distinct requests
+    select (measures ->> 'requests')::numeric, says into v_n, v_says from platform.drill_ask(c_org, c_logs,
+        jsonb_build_object('lane', 'platform', 'by', '[]'::jsonb, 'show', '["count","requests"]'::jsonb, 'window', jsonb_build_object('from', v_hfr, 'to', v_hto)))
+     where kind = 'total';
+    select coalesce(sum(c), 0) into v_raw from (select count(distinct request_id) c from ops.app_log
+      where created_at >= v_hfr and created_at < v_hto group by date_trunc('hour', created_at, 'UTC')) h;
+    insert into dek(name, ok, detail) values ('R1 ungrouped Requests (7 d, platform) exact to the hour', v_n = v_raw, format('drill %s, raw per-hour %s; says %s', v_n, v_raw, coalesce(v_says, '-')));
+    -- R2 the mine lane, the same
+    perform set_config('matrx.admin_lane', 'off', true);   -- inside the admin apps an admin never counts as herself
+    select (measures ->> 'requests')::numeric into v_n from platform.drill_ask(c_org, c_logs,
+        jsonb_build_object('lane', 'mine', 'by', '[]'::jsonb, 'show', '["requests"]'::jsonb, 'window', jsonb_build_object('from', v_hfr, 'to', v_hto)))
+     where kind = 'total';
+    select coalesce(sum(c), 0) into v_raw from (select count(distinct request_id) c from ops.app_log
+      where user_id = c_me and created_at >= v_hfr and created_at < v_hto group by date_trunc('hour', created_at, 'UTC')) h;
+    perform set_config('matrx.admin_lane', 'on', true);
+    insert into dek(name, ok, detail) values ('R2 ungrouped Requests (7 d, mine) exact to the hour', v_n = v_raw, format('drill %s, raw per-hour %s', v_n, v_raw));
+    -- R3 grouped by level, 6 hours: every group's Requests and Log lines = the raw distinct count
+    select count(*) into v_bad from (select * from platform.drill_ask(c_org, c_logs,
+        jsonb_build_object('lane', 'platform', 'by', '["level"]'::jsonb, 'show', '["count","requests"]'::jsonb, 'window', jsonb_build_object('from', v_rf, 'to', v_rt)))
+        where kind = 'group') a
+      full join (select level, count(*) n, count(distinct request_id) r from ops.app_log where created_at >= v_rf and created_at < v_rt group by level) b
+        on coalesce(b.level, '') = coalesce(a.groups ->> 'level', '')
+     where (a.measures ->> 'requests')::numeric is distinct from b.r or (a.measures ->> 'count')::numeric is distinct from b.n;
+    select (measures ->> 'requests')::numeric into v_n from platform.drill_ask(c_org, c_logs,
+        jsonb_build_object('lane', 'platform', 'by', '["level"]'::jsonb, 'show', '["requests"]'::jsonb, 'window', jsonb_build_object('from', v_rf, 'to', v_rt)))
+     where kind = 'total';
+    select count(distinct request_id) into v_raw from ops.app_log where created_at >= v_rf and created_at < v_rt;
+    insert into dek(name, ok, detail) values ('R3 grouped Requests (6 h) exact per group and total', v_bad = 0 and v_n = v_raw, format('%s mismatched groups; total drill %s raw %s', v_bad, v_n, v_raw));
+    -- R4 grouped over 7 days: not exact, and said
+    select says into v_says from platform.drill_ask(c_org, c_logs,
+        jsonb_build_object('lane', 'platform', 'by', '["level"]'::jsonb, 'show', '["requests"]'::jsonb, 'window', '{"preset":"7d"}'::jsonb))
+     where kind = 'total';
+    insert into dek(name, ok, detail) values ('R4 grouped Requests (7 d) says not exact', coalesce(v_says, '') like '%not exact%', coalesce(v_says, 'no says'));
+  end;
 end $$;
 
 select n, name, ok, detail from dek order by n;
