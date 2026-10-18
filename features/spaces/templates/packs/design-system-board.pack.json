@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0363",
-  "version": 1,
+  "version": 2,
   "title": "Design system board",
   "description": "Colours, type, spacing, corners and shadows as editable sections of one board.",
   "forWho": "Product teams keeping one design system",
@@ -301,7 +301,7 @@
             "values": {
               "name": "display",
               "group": "Display",
-              "style": "{\"font\":\"Geist\",\"weight\":700,\"size\":48,\"lineHeight\":56,\"letterSpacing\":-1}",
+              "style": "{\"font\":\"system-ui\",\"weight\":700,\"size\":48,\"lineHeight\":56,\"letterSpacing\":-0.02}",
               "usage_note": "One per page at most: a landing headline."
             }
           },
@@ -310,7 +310,7 @@
             "values": {
               "name": "title",
               "group": "Headings",
-              "style": "{\"font\":\"Geist\",\"weight\":600,\"size\":30,\"lineHeight\":38,\"letterSpacing\":-0.5}",
+              "style": "{\"font\":\"system-ui\",\"weight\":600,\"size\":30,\"lineHeight\":38,\"letterSpacing\":-0.01}",
               "usage_note": "The page title."
             }
           },
@@ -319,7 +319,7 @@
             "values": {
               "name": "heading",
               "group": "Headings",
-              "style": "{\"font\":\"Geist\",\"weight\":600,\"size\":20,\"lineHeight\":28,\"letterSpacing\":-0.2}",
+              "style": "{\"font\":\"system-ui\",\"weight\":600,\"size\":20,\"lineHeight\":28,\"letterSpacing\":0}",
               "usage_note": "Section headings inside a page."
             }
           },
@@ -328,7 +328,7 @@
             "values": {
               "name": "body",
               "group": "Text",
-              "style": "{\"font\":\"Geist\",\"weight\":400,\"size\":15,\"lineHeight\":24,\"letterSpacing\":0}",
+              "style": "{\"font\":\"system-ui\",\"weight\":400,\"size\":15,\"lineHeight\":24,\"letterSpacing\":0}",
               "usage_note": "Everything people read."
             }
           },
@@ -337,7 +337,7 @@
             "values": {
               "name": "caption",
               "group": "Text",
-              "style": "{\"font\":\"Geist\",\"weight\":500,\"size\":12,\"lineHeight\":16,\"letterSpacing\":0.2}",
+              "style": "{\"font\":\"system-ui\",\"weight\":500,\"size\":12,\"lineHeight\":16,\"letterSpacing\":0.02}",
               "usage_note": "Labels over values, timestamps, small print."
             }
           },
@@ -346,7 +346,7 @@
             "values": {
               "name": "code",
               "group": "Code",
-              "style": "{\"font\":\"Geist Mono\",\"weight\":400,\"size\":13,\"lineHeight\":20,\"letterSpacing\":0}",
+              "style": "{\"font\":\"ui-monospace\",\"weight\":400,\"size\":13,\"lineHeight\":20,\"letterSpacing\":0}",
               "usage_note": "Code, ids and values people copy."
             }
           }
@@ -767,7 +767,7 @@
         "Quillan Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [],
   "board": {
