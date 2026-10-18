@@ -136,6 +136,8 @@ export interface EntityModeHeaderProps {
   actions?: EntityHeaderAction[];
   /** Desktop-only extra controls (e.g. a Switch). Hidden below sm. */
   right?: React.ReactNode;
+  /** Desktop-only control at the far right, AFTER the declarative actions (a record's Actions menu). Hidden below sm. */
+  rightEnd?: React.ReactNode;
 }
 
 function DesktopAction({ action }: { action: EntityHeaderAction }) {
@@ -292,6 +294,7 @@ export function EntityModeHeader({
   modeSwitchOnPhone,
   actions,
   right,
+  rightEnd,
 }: EntityModeHeaderProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   // On a phone the shell's ⋮ hosts this header's options directly.
@@ -474,6 +477,11 @@ export function EntityModeHeader({
                 .map((a) => (
                   <DesktopAction key={a.label} action={a} />
                 ))}
+              {rightEnd != null && rightEnd !== false ? (
+                <span data-header-extra className="flex min-w-0 items-center">
+                  {rightEnd}
+                </span>
+              ) : null}
             </div>
             {/* Mobile: one trigger, everything in the drawer */}
             {hasSheet && (

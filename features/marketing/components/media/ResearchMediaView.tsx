@@ -6,23 +6,37 @@
  * Own-domain images can be promoted straight into the brand library;
  * third-party images are inspiration — open the source, or hand the look to
  * the Generate view as a creative brief.
+ *
+ * Brand organization (2026-10-17): the Brand filter narrows the pool to images
+ * whose research topic is linked to a brand (research_topic → web_brand) or
+ * that were organized under it directly (research_media → web_brand) — this
+ * brand by default, another brand, None (no brand link at all) or All. Select
+ * images (one or many) and give them a brand-image category: one batched write
+ * links each image to this brand and to the category (research_media →
+ * category, role brand_image). All edges live in platform.associations.
  */
 
 import { useMemo, useState } from "react";
-import { ExternalLink, FolderPlus, Search } from "lucide-react";
+import { ExternalLink, FolderPlus, Search, X } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Chip,
+  ChipSet,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  type SelectOption,
+} from "@ai-matrx/design-system/controls";
+import { CategorySelect, useCategories } from "@ai-matrx/associations/react";
+import { CATEGORY_DIMENSIONS } from "@/features/scopes/categoryDimensions";
 import {
+  useBrandOptions,
   useCreateBrandAsset,
+  useResearchImageOrganization,
   useResearchImages,
+  useTagResearchImages,
+  useUntagResearchImages,
 } from "@/features/marketing/data/hooks";
 import {
   LoadingSurface,
@@ -49,13 +63,20 @@ function hostnameOf(url: string | null): string | null {
   }
 }
 
+const BRAND_NONE = "__none__";
+const BRAND_ALL = "__all__";
+const CATEGORY_ALL = "__all__";
+const CATEGORY_NONE = "__none__";
+
 export function ResearchMediaView({
   brandId,
+  brandName,
   organizationId,
   siteRootUrls,
   onUseAsBrief,
 }: {
   brandId: string;
+  brandName: string;
   organizationId: string;
   /**
    * The brand's website root URLs. "Own" is a match against ANY of them — a
@@ -73,6 +94,15 @@ export function ResearchMediaView({
   );
   const [search, setSearch] = useState("");
   const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [brandFilter, setBrandFilter] = useState<string>(brandId);
+  const [categoryFilter, setCategoryFilter] = useState<string>(CATEGORY_ALL);
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
+  const brands = useBrandOptions(organizationId);
+  const categories = useCategories({
+    dimension: CATEGORY_DIMENSIONS.brandImage,
+  });
+  const tagImages = useTagResearchImages();
+  const untagImages = useUntagResearchImages();
 
   const siteHosts = useMemo(
     () =>
@@ -82,6 +112,37 @@ export function ResearchMediaView({
     [siteRootUrls],
   );
   const rows = useMemo(() => images.data ?? [], [images.data]);
+  const imageIds = useMemo(() => rows.map((row) => row.id), [rows]);
+  const topicIds = useMemo(
+    () => [
+      ...new Set(
+        rows.flatMap((row) => (row.topicId ? [row.topicId] : [])),
+      ),
+    ],
+    [rows],
+  );
+  const organization = useResearchImageOrganization(
+    organizationId,
+    imageIds,
+    topicIds,
+  );
+  const links = organization.data;
+
+  const categoryName = useMemo(() => {
+    const byId = new Map<string, string>();
+    for (const category of categories.categories) {
+      byId.set(category.id, category.name);
+    }
+    return byId;
+  }, [categories.categories]);
+
+  const brandsOf = (row: ResearchImageRow): string[] => {
+    const fromTopic = row.topicId ? (links?.topicBrands[row.topicId] ?? []) : [];
+    const direct = links?.imageBrands[row.id] ?? [];
+    return [...new Set([...fromTopic, ...direct])];
+  };
+  const categoriesOf = (row: ResearchImageRow): string[] =>
+    links?.imageCategories[row.id] ?? [];
 
   const topics = useMemo(() => {
     const byId = new Map<string, string>();
@@ -104,6 +165,16 @@ export function ResearchMediaView({
 
   const filtered = useMemo(() => {
     let items = rows;
+    if (brandFilter === BRAND_NONE) {
+      items = items.filter((row) => brandsOf(row).length === 0);
+    } else if (brandFilter !== BRAND_ALL) {
+      items = items.filter((row) => brandsOf(row).includes(brandFilter));
+    }
+    if (categoryFilter === CATEGORY_NONE) {
+      items = items.filter((row) => categoriesOf(row).length === 0);
+    } else if (categoryFilter !== CATEGORY_ALL) {
+      items = items.filter((row) => categoriesOf(row).includes(categoryFilter));
+    }
     if (topicFilter !== "all") {
       items = items.filter((row) => row.topicId === topicFilter);
     }
@@ -123,7 +194,86 @@ export function ResearchMediaView({
       );
     }
     return items;
-  }, [rows, topicFilter, originFilter, search, isOwn]);
+  }, [
+    rows,
+    topicFilter,
+    originFilter,
+    search,
+    isOwn,
+    brandFilter,
+    categoryFilter,
+    links,
+  ]);
+
+  const brandOptions: SelectOption[] = [
+    { value: brandId, label: brandName },
+    ...(brands.data ?? [])
+      .filter((brand) => brand.id !== brandId)
+      .map((brand) => ({ value: brand.id, label: brand.name })),
+    { value: BRAND_NONE, label: "No brand" },
+    { value: BRAND_ALL, label: "All research" },
+  ];
+  const categoryOptions: SelectOption[] = [
+    { value: CATEGORY_ALL, label: "Any category" },
+    ...categories.categories.map((category) => ({
+      value: category.id,
+      label: category.name,
+    })),
+    { value: CATEGORY_NONE, label: "Uncategorized" },
+  ];
+
+  const selectedIds = [...selected].filter((id) =>
+    filtered.some((row) => row.id === id),
+  );
+  const selectedCategoryIds = [
+    ...new Set(
+      rows
+        .filter((row) => selected.has(row.id))
+        .flatMap((row) => categoriesOf(row)),
+    ),
+  ];
+  const toggleSelected = (id: string, on: boolean) => {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const applyCategory = async (categoryId: string | null) => {
+    if (!categoryId || selectedIds.length === 0) return;
+    try {
+      await tagImages.mutateAsync({
+        imageIds: selectedIds,
+        brandId,
+        categoryId,
+        organizationId,
+      });
+      toast.success(
+        `Tagged ${selectedIds.length} image${selectedIds.length === 1 ? "" : "s"}`,
+      );
+    } catch (error) {
+      toast.error("Could not tag the images", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  };
+
+  const removeCategory = async (categoryId: string) => {
+    if (selectedIds.length === 0) return;
+    try {
+      await untagImages.mutateAsync({
+        imageIds: selectedIds,
+        categoryId,
+        organizationId,
+      });
+    } catch (error) {
+      toast.error("Could not remove the category", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  };
 
   const promote = async (row: ResearchImageRow) => {
     setPromotingId(row.id);
@@ -193,40 +343,94 @@ export function ResearchMediaView({
             startIcon={<Search className="h-4 w-4 text-muted-foreground" aria-hidden />}
           />
         </div>
-        <Select value={topicFilter} onValueChange={setTopicFilter}>
-          <SelectTrigger className="w-[12rem]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="text-[11px]">
-            <SelectItem value="all">All topics</SelectItem>
-            {topics.map(([id, name]) => (
-              <SelectItem key={id} value={id}>
-                {name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <Select
+          aria-label="Brand"
+          value={brandFilter}
+          options={brandOptions}
+          onValueChange={setBrandFilter}
+          className="w-[11rem]"
+        />
+        <Select
+          aria-label="Topic"
+          value={topicFilter}
+          options={[
+            { value: "all", label: "All topics" },
+            ...topics.map(([id, name]) => ({ value: id, label: name })),
+          ]}
+          onValueChange={setTopicFilter}
+          className="w-[12rem]"
+        />
+        <Select
+          aria-label="Origin"
           value={originFilter}
+          options={[
+            { value: "all", label: "Any origin" },
+            { value: "own", label: "This brand's domains" },
+            { value: "external", label: "External (inspiration)" },
+          ]}
           onValueChange={(value) =>
             setOriginFilter(value as "all" | "own" | "external")
           }
-        >
-          <SelectTrigger className="w-[9rem]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="text-[11px]">
-            <SelectItem value="all">Any origin</SelectItem>
-            <SelectItem value="own">This brand&apos;s domains</SelectItem>
-            <SelectItem value="external">External (inspiration)</SelectItem>
-          </SelectContent>
-        </Select>
+          className="w-[9rem]"
+        />
+        <Select
+          aria-label="Category"
+          value={categoryFilter}
+          options={categoryOptions}
+          onValueChange={setCategoryFilter}
+          className="w-[10rem]"
+        />
       </div>
+
+      {selectedIds.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-2 py-1">
+          <span className="type-meta tabular-nums text-foreground">
+            {selectedIds.length} selected
+          </span>
+          <div className="w-[12rem]">
+            <CategorySelect
+              dimension={CATEGORY_DIMENSIONS.brandImage}
+              value={null}
+              onChange={(id) => void applyCategory(id)}
+              placeholder="Tag with category"
+              orgId={organizationId}
+              noun="category"
+              disabled={tagImages.isPending}
+            />
+          </div>
+          {selectedCategoryIds.length > 0 ? (
+            <ChipSet>
+              {selectedCategoryIds.map((categoryId) => (
+                <Chip
+                  key={categoryId}
+                  asChild
+                  label={categoryName.get(categoryId) ?? "Category"}
+                  icon={<X />}
+                  title="Remove from the selected images"
+                >
+                  <button
+                    type="button"
+                    disabled={untagImages.isPending}
+                    onClick={() => void removeCategory(categoryId)}
+                  />
+                </Chip>
+              ))}
+            </ChipSet>
+          ) : null}
+          <Button
+            variant="quiet"
+            className="ml-auto"
+            onClick={() => setSelected(new Set())}
+          >
+            Clear
+          </Button>
+        </div>
+      ) : null}
 
       {filtered.length === 0 ? (
         <MediaEmptyState
           title="No research images matched the current filters"
-          detail="Clear the topic, origin or search to see the full pool."
+          detail="Set Brand to All research, or clear the other filters."
         />
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -237,7 +441,15 @@ export function ResearchMediaView({
                 key={row.id}
                 className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card"
               >
-                <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-muted/40">
+                <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-muted/40">
+                  <Checkbox
+                    className="absolute left-1.5 top-1.5 z-10 bg-card"
+                    checked={selected.has(row.id)}
+                    onCheckedChange={(checked) =>
+                      toggleSelected(row.id, checked === true)
+                    }
+                    aria-label="Select image"
+                  />
                   {/* Owned uploads resolve from their file_id (the reader
                       re-mints); third-party assets render their external
                       URL. */}
@@ -285,6 +497,16 @@ export function ResearchMediaView({
                     <p className="truncate type-meta text-muted-foreground">
                       {row.topicName}
                     </p>
+                  ) : null}
+                  {categoriesOf(row).length > 0 ? (
+                    <ChipSet>
+                      {categoriesOf(row).map((categoryId) => (
+                        <Chip
+                          key={categoryId}
+                          label={categoryName.get(categoryId) ?? "Category"}
+                        />
+                      ))}
+                    </ChipSet>
                   ) : null}
                   <div className="flex items-center gap-0.5 pt-0.5">
                     {row.sourceUrl ? (

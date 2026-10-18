@@ -8,6 +8,7 @@
 import { Loader2 } from "lucide-react";
 import { useTopicContext } from "../../context/ResearchContext";
 import { TopicSettingsForm } from "./TopicSettingsForm";
+import { ResearchTopicLinks } from "../shared/ResearchTopicLinks";
 
 export default function TopicSettingsPage() {
   const { topic, refresh } = useTopicContext();
@@ -26,6 +27,11 @@ export default function TopicSettingsPage() {
         <span className="type-secondary font-medium text-foreground/80">Settings</span>
       </div>
       <TopicSettingsForm topic={topic} onSaved={refresh} />
+      <ResearchTopicLinks
+        topicId={topic.id}
+        organizationId={topic.organization_id}
+        topicName={topic.name}
+      />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { AdminUserRef } from "../components/AdminUserRef";
 import {
   endSupportSession,
   listSupportSessions,
+  listSupportSessionsForTarget,
   type SupportSessionEvent,
   type SupportSessionRow,
 } from "./service";
@@ -125,7 +126,15 @@ const COLUMNS: MatrxColumnDef<Row>[] = [
   { id: "support_ip", accessorKey: "support_ip", header: "Support IP", width: 120 },
 ];
 
-export function SupportSessionsTableClient() {
+function readFor(targetUserId: string | undefined) {
+  return targetUserId ? listSupportSessionsForTarget(targetUserId) : listSupportSessions();
+}
+
+/**
+ * Every support session, or — with `targetUserId` — only that person's (the user record page's
+ * Support tab; the Person column is then dropped as redundant).
+ */
+export function SupportSessionsTableClient({ targetUserId, reloadKey = 0 }: { targetUserId?: string; reloadKey?: number } = {}) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -135,25 +144,25 @@ export function SupportSessionsTableClient() {
     setLoading(true);
     setError(null);
     try {
-      setRows((await listSupportSessions()).map(toRow));
+      setRows((await readFor(targetUserId)).map(toRow));
     } catch (e) {
       setError(e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [targetUserId]);
 
   // First read: state starts as loading, so nothing is set until the answer arrives.
   useEffect(() => {
     let active = true;
-    listSupportSessions()
+    readFor(targetUserId)
       .then((list) => active && setRows(list.map(toRow)))
       .catch((e) => active && setError(e))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
-  }, []);
+  }, [targetUserId, reloadKey]);
 
   const end = async (row: Row) => {
     const ok = await confirm({
@@ -176,13 +185,13 @@ export function SupportSessionsTableClient() {
   };
 
   return (
-    <div className="flex h-full flex-col p-4">
-      <div className="min-h-0 flex-1">
+    <div className={targetUserId ? "flex flex-col" : "flex h-full flex-col p-4"}>
+      <div className={targetUserId ? undefined : "min-h-0 flex-1"}>
         <MatrxDataTable
-          urlState={{ id: "support-sessions" }}
+          {...(targetUserId ? {} : { urlState: { id: "support-sessions" } })}
           data={rows}
           columns={[
-            ...COLUMNS,
+            ...(targetUserId ? COLUMNS.filter((c) => c.id !== "target_email") : COLUMNS),
             {
               id: "custom-actions",
               header: "",
@@ -207,7 +216,7 @@ export function SupportSessionsTableClient() {
           read={readOf({ loading, error }, { what: "support sessions", onRetry: () => void load() })}
           emptyState={{
             title: "No support sessions yet",
-            description: "Start one from a person's menu on Accounts.",
+            description: targetUserId ? "None started for this person." : "Start one from a person's menu on Accounts.",
             icon: <LifeBuoy className="h-6 w-6 text-muted-foreground" />,
           }}
           toolbar={{ search: true, searchPlaceholder: "Search support sessions…" }}

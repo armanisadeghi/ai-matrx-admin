@@ -321,6 +321,7 @@ export function BrandAssetsWorkspace({
           ) : view === "research" && organizationId ? (
             <ResearchMediaView
               brandId={brandId}
+              brandName={current.name}
               organizationId={organizationId}
               siteRootUrls={siteRows.map((site) => site.root_url)}
               onUseAsBrief={useResearchBrief}

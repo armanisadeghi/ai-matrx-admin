@@ -263,6 +263,7 @@ describe("ResearchTopicSelect", () => {
     mockCreateTopic.mockResolvedValue({
       topic: topic(NEW_TOPIC, "Fresh topic"),
       projectLink: { ok: true },
+      brandLink: { ok: true },
     });
     const onChange = await renderSelect();
 

@@ -13,7 +13,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { toast } from "@/lib/toast";
+import { errorSentence, toast } from "@/lib/toast";
 
 import type { SpaceBlock, SpaceDoc, SpaceId, SpaceSummary } from "../contract";
 import { between, byPosition } from "../store/position";
@@ -25,7 +25,7 @@ import { hasSignedInSession, isRefusal, onSignedIn, type LoadAccess } from "./lo
 import { sampleTemplatePlan } from "./template-plan";
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
-import { installTemplateTables, makeTemplatePages, readSpaceTemplate } from "../templates/use-pack";
+import { installTemplateTables, makeTemplatePages, packRunJournal, readSpaceTemplate } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
 /** The sidebar's open rows (written by SpacesSidebar): the tree's first read loads their children too. */
@@ -542,12 +542,13 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
         template,
         tables,
         (done, total) => setPackStage(`Pages ${done}/${total}`),
+        packRunJournal(orgId, templateId),
       );
       store.notifyTree();
       reopenWith(root);
       open(root.id);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "We couldn't use this template.", {
+      toast.error(err instanceof Error && err.message ? err.message : `We couldn't use this template: ${errorSentence(err)}`, {
         duration: Infinity,
         action: { label: "Try again", onClick: () => void applyPack(templateId) },
       });

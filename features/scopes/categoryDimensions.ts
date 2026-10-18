@@ -48,6 +48,12 @@ export const CATEGORY_DIMENSIONS = {
   crmRating: "crm_rating",
   /** Web/entity classification — category + subcategory (the first canonical two-level facet). */
   webEntityType: "web_entity_type",
+  /**
+   * Marketing — how a research image relates to a brand (research_media →
+   * category, role `brand_image`). System starters: Inspiration, Our brand —
+   * keep, Our brand — replace, Avoid; organizations add their own.
+   */
+  brandImage: "brand-image",
 } as const;
 
 export type KnownCategoryDimension =

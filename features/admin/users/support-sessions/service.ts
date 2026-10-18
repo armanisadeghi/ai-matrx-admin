@@ -58,6 +58,53 @@ export async function listSupportSessions(limit = 200): Promise<SupportSessionRo
   return data ?? [];
 }
 
+/**
+ * One person's support sessions, newest first — read direct (admin.support_sessions, platform-admin
+ * read; index (target_user_id, created_at DESC)) in the same row shape support_session_list returns.
+ * Emails are null here: the table names people by id (AdminUserRef resolves them).
+ */
+export async function listSupportSessionsForTarget(targetUserId: string, limit = 200): Promise<SupportSessionRow[]> {
+  const supabase = createClient().schema("admin");
+  const swept = await supabase.rpc("support_session_close_expired");
+  if (swept.error) throw swept.error;
+  const { data, error } = await supabase
+    .from("support_sessions")
+    .select(
+      "id, status, reason, created_by, target_user_id, minutes_granted, created_at, started_at, expires_at, ended_at, end_reason, support_ip, support_user_agent, events:support_session_events!support_session_events_support_session_id_fkey(event, created_at, via, expires_at, target_live_sign_ins, target_last_active_at)",
+    )
+    .eq("target_user_id", targetUserId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((s) => ({
+    id: s.id,
+    status: s.status,
+    reason: s.reason,
+    admin_user_id: s.created_by,
+    admin_email: null,
+    target_user_id: s.target_user_id,
+    target_email: null,
+    minutes_granted: s.minutes_granted,
+    created_at: s.created_at,
+    started_at: s.started_at,
+    expires_at: s.expires_at,
+    ended_at: s.ended_at,
+    end_reason: s.end_reason,
+    support_ip: s.support_ip === null ? null : String(s.support_ip),
+    support_user_agent: s.support_user_agent,
+    events: (s.events ?? [])
+      .map((e) => ({
+        event: e.event,
+        at: e.created_at,
+        via: e.via,
+        expires_at: e.expires_at,
+        target_live_sign_ins: e.target_live_sign_ins,
+        target_last_active_at: e.target_last_active_at,
+      }))
+      .sort((a, b) => a.at.localeCompare(b.at)),
+  }));
+}
+
 export async function currentSupportSession(): Promise<CurrentSupportSession | null> {
   const { data, error } = await createClient().schema("admin").rpc("support_session_current");
   if (error) throw error;

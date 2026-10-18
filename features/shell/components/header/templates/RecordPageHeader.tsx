@@ -139,7 +139,7 @@ export function RecordPageHeader({
       activeModeHref={activeModeHref}
       onModeSelect={onModeSelect}
       actions={menuItems.length ? [...(actions ?? []), ...phoneMenuActions] : actions}
-      right={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : undefined}
+      rightEnd={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : undefined}
     />
   );
 }

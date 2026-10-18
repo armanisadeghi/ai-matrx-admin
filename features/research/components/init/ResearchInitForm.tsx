@@ -1527,7 +1527,7 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
 
     try {
       // Step 1: Create placeholder topic with the raw user input as name
-      const { topic, projectLink } = await createTopic(
+      const { topic, projectLink, brandLink } = await createTopic(
         activeOrgId,
         {
           name: subjectDescription.trim(),
@@ -1541,6 +1541,11 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
         // LOUD + RETRYABLE: topic exists; only the optional edge failed.
         toast.error(
           `Topic created, but linking it to the project failed: ${projectLink.error ?? "unknown error"}. Retry from Topic Settings.`,
+        );
+      }
+      if (!brandLink.ok) {
+        toast.error(
+          `Topic created, but linking it to the brand failed: ${brandLink.error ?? "unknown error"}. Retry from Topic Settings.`,
         );
       }
       clearDraft();

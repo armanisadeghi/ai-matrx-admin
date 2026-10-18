@@ -128,6 +128,7 @@ import { useAccess } from "@/utils/permissions/access";
 import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
 import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
+import { BrandResearchCard } from "@/features/marketing/components/brands/BrandResearchCard";
 import { BrandWebDecisionsSection } from "@/features/marketing/components/brands/BrandWebDecisionsSection";
 import { BrandFirmographicSection, BrandPresenceSection, BrandRecognitionSection } from "./BrandTempHomes";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
@@ -1387,7 +1388,14 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           {tab === "on_the_web" ? <BrandWebDecisionsSection brand={current} canEdit={canEdit} /> : null}
 
           {tab === "relationships" ? (
+          <>
           <BrandRelationsCard brand={current} canEdit={canEdit} />
+          <BrandResearchCard
+            brandId={current.id}
+            brandName={current.name}
+            organizationId={current.organization_id}
+          />
+          </>
 
           ) : null}
 

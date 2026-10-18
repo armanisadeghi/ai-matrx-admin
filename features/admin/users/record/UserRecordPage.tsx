@@ -27,6 +27,12 @@ import { ADMIN_LEVEL_LABEL } from "../constants";
 import { useUserActions } from "./useUserActions";
 import { actionSubjectOf, fetchUserOverview, isClosed, personTitle, type UserOverview } from "./userOverview";
 import { UserOverviewTab } from "./UserOverviewTab";
+import { UserOrganizationsTab } from "./UserOrganizationsTab";
+import { UserBillingTab } from "./UserBillingTab";
+import { UserPreferencesTab } from "./UserPreferencesTab";
+import { UserAcquisitionTab } from "./UserAcquisitionTab";
+import { UserSupportTab } from "./UserSupportTab";
+import { UserHistoryTab } from "./UserHistoryTab";
 import {
   USERS_HUB_PATH,
   isVisibleUserTab,
@@ -45,8 +51,16 @@ export interface UserTabBodyProps {
 }
 
 // The body of every BUILT tab (userSurfaces.ts `built: true`). Overview renders inline below because
-// it needs the page's reopen action; lane B2 adds the others here as it flips their `built` flag.
-const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps>>> = {};
+// it needs the page's reopen action. Each body mounts only while its tab is open, so it reads its
+// own data then — nothing is fetched for a closed tab.
+const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps>>> = {
+  organizations: UserOrganizationsTab,
+  billing: UserBillingTab,
+  preferences: UserPreferencesTab,
+  acquisition: UserAcquisitionTab,
+  support: UserSupportTab,
+  history: UserHistoryTab,
+};
 
 export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }) {
   const router = useRouter();
@@ -269,7 +283,7 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
               {activeTab === "overview" ? (
                 <UserOverviewTab overview={overview} onReopen={() => run("reopen")} />
               ) : Body ? (
-                <Body userId={userId} overview={overview} reload={reload} />
+                <Body key={activeTab} userId={userId} overview={overview} reload={reload} />
               ) : null}
             </>
           ) : null}

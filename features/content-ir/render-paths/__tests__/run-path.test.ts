@@ -151,6 +151,7 @@ describe("render paths report what the route actually did", () => {
     });
     seedComponent("path_root_json_kind");
     const run = runRenderPath("chat_fence", "path_root_json_kind", VALUE)!;
+    console.log("PROBE", JSON.stringify({ wire: run.wire && Object.keys(run.wire), blocks: run.blocks.map((b) => [b.type, (b.content ?? "").slice(0, 80)]), v: run.verdict }));
     expect(run.verdict.reachedRealComponent).toBe(false);
     expect(run.verdict.notes.join(" ")).toMatch(/single plain value/);
     // The reload path draws the component — and carries no such note.

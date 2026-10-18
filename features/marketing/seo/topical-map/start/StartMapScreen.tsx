@@ -59,6 +59,7 @@ import { StartMapResult } from "./StartMapResult";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { linkTopicToBrand } from "@/features/research/service";
 
 const EVERY_SITE = "__every_site__";
 const ROOT = "__root__";
@@ -181,6 +182,12 @@ export function StartMapScreen({
   const launch = async (mode: MapAuthorChangeMode | null) => {
     setLocalError(null);
     try {
+      // Research turned into this brand's map is research FOR this brand:
+      // the research_topic → web_brand edge (idempotent) is written first, so
+      // the brand's Relationships tab and Media → Research filter see it.
+      if (sourceKind === "existing_research" && researchTopicId) {
+        await linkTopicToBrand(researchTopicId, brand.id, brand.organizationId);
+      }
       run.reset();
       await run.author({
         sourceKind,

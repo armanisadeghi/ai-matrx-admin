@@ -17,19 +17,10 @@
 import { useEffect, useState } from "react";
 import { MoreHorizontal, RotateCcw, WalletCards } from "lucide-react";
 import { formatCount } from "@ai-matrx/kit/format";
-import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,16 +31,14 @@ import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
 import AppLink from "@/components/navigation/AppLink";
-import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   ChangePlanDialog,
   type ChangePlanSubject,
 } from "@/features/admin/limits/components/ChangePlanDialog";
-import { applyUsageReset } from "@/features/admin/limits/service";
 import { periodLabel } from "@/features/admin/limits/types";
-import { resetConsequence } from "@/features/admin/limits/enterpriseCustom";
 import { AdminUserRef } from "./AdminUserRef";
+import { ResetUsageDialog } from "./ResetUsageDialog";
 import { rowInSegment, type AccountSegment } from "../lib/accountSegments";
 import {
   PRIMARY_WINDOWS,
@@ -64,7 +53,6 @@ import {
 } from "../lib/usageLimits";
 import type { AdminUsageState, AdminUserRow } from "../types";
 
-import { Spinner } from "@/components/ui/loaders/Spinner";
 const SEGMENTS: ReadonlyArray<{ id: AccountSegment; label: string }> = [
   { id: "people", label: "People" },
   { id: "guests", label: "Guests" },
@@ -86,8 +74,6 @@ const STATE_BAR: Record<AdminUsageState, string> = {
   near: "bg-warning",
   over: "bg-destructive",
 };
-
-const RESET_CHOICES = ["rolling_5h", "week", "month"] as const;
 
 function displayName(row: AdminUserRow): string {
   return row.display_name?.trim() || row.email?.trim() || `${row.is_anonymous ? "guest" : "account"} ${row.id.slice(0, 8)}`;
@@ -121,100 +107,6 @@ function WindowCell({ row, period }: { row: AdminUserRow; period: string }) {
         </span>
       </div>
     </div>
-  );
-}
-
-function ResetDialog({
-  row,
-  onClose,
-  onDone,
-}: {
-  row: AdminUserRow | null;
-  onClose: () => void;
-  onDone: (row: AdminUserRow, fresh: unknown) => void;
-}) {
-  const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [all, setAll] = useState(false);
-  const [note, setNote] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [seededFor, setSeededFor] = useState<string | null>(null);
-  if (row && seededFor !== row.id) {
-    setSeededFor(row.id);
-    setPicked(new Set());
-    setAll(false);
-    setNote("");
-  }
-  const periods = all ? null : RESET_CHOICES.filter((p) => picked.has(p));
-  const ready = all || (periods?.length ?? 0) > 0;
-  const name = row ? displayName(row) : "";
-
-  const toggle = (period: string, on: boolean) => {
-    setPicked((prev) => {
-      const next = new Set(prev);
-      if (on) next.add(period);
-      else next.delete(period);
-      return next;
-    });
-  };
-
-  const submit = async () => {
-    if (!row || !ready) return;
-    setSaving(true);
-    try {
-      const fresh = await applyUsageReset(row.id, periods, note.trim() || null);
-      onDone(row, fresh);
-      toast.success("Usage reset");
-      onClose();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open={row !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Reset AI usage</DialogTitle>
-          <DialogDescription className="truncate">{name}</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            {RESET_CHOICES.map((period) => (
-              <label key={period} className="flex items-center gap-1.5 text-sm">
-                <Checkbox
-                  checked={all || picked.has(period)}
-                  disabled={all}
-                  onCheckedChange={(v) => toggle(period, v === true)}
-                  aria-label={periodLabel(period)}
-                />
-                {periodLabel(period)}
-              </label>
-            ))}
-            <label className="flex items-center gap-1.5 text-sm">
-              <Checkbox checked={all} onCheckedChange={(v) => setAll(v === true)} aria-label="All windows" />
-              All
-            </label>
-          </div>
-          <label className="block space-y-1 text-xs text-muted-foreground">
-            <span>Note (optional)</span>
-            <Input value={note} placeholder="Support: stuck after a failed run" onChange={(e) => setNote(e.target.value)} />
-          </label>
-          <p className={cn("type-body", ready ? "text-foreground" : "text-muted-foreground")}>
-            {ready ? resetConsequence(name, periods) : "Pick the windows to clear."}
-          </p>
-        </div>
-        <DialogFooter>
-          <Button variant="quiet" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button icon={saving && <Spinner size="xs" className="text-current" />} variant="danger" onClick={() => void submit()} disabled={saving || !ready}>
-            Reset usage
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -442,11 +334,11 @@ export function UsageLimitsClient() {
         onClose={() => setPlanTarget(null)}
         onChanged={() => setRefreshKey((k) => k + 1)}
       />
-      <ResetDialog
-        row={resetTarget}
+      <ResetUsageDialog
+        person={resetTarget ? { id: resetTarget.id, label: displayName(resetTarget) } : null}
         onClose={() => setResetTarget(null)}
-        onDone={(row, fresh) =>
-          setRows((prev) => prev.map((r) => (r.id === row.id ? applyFreshUsage(r, fresh) : r)))
+        onDone={(id, fresh) =>
+          setRows((prev) => prev.map((r) => (r.id === id ? applyFreshUsage(r, fresh) : r)))
         }
       />
     </div>

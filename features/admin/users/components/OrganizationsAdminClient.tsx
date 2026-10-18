@@ -71,6 +71,7 @@ import {
 import { fetchOrgPlanAssignments, fetchPlans } from "@/features/admin/limits/service";
 import { audienceLabel, type OrgPlanAssignment, type Plan } from "@/features/admin/limits/types";
 import { EnterpriseCustomLimitsEditor } from "@/features/admin/limits/components/EnterpriseCustomLimitsEditor";
+import { mutateOrgMembership } from "@/features/admin/users/service/orgMembership";
 
 interface MemberDisplayRow extends AdminOrganizationMembershipRow {
   email: string | null;
@@ -310,13 +311,7 @@ export function OrganizationsAdminClient() {
     method: "POST" | "PATCH" | "DELETE",
     body: { organizationId: string; userId: string; role?: OrgRole },
   ) {
-    const response = await fetch("/api/admin/users/organizations", {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const json = await response.json();
-    if (!response.ok) throw new Error(json.error ?? "Membership change failed");
+    await mutateOrgMembership(method, body);
     setRefreshKey((current) => current + 1);
   }
 

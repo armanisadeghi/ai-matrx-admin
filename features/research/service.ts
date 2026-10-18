@@ -262,6 +262,41 @@ export interface CreateTopicResult {
    * `setTopicProject`).
    */
   projectLink: { ok: boolean; error?: string };
+  /**
+   * Outcome of the `research_topic → web_brand` edge written when the topic
+   * starts from a brand (`subject.brand_id`). Same loud-but-non-fatal rule.
+   */
+  brandLink: { ok: boolean; error?: string };
+}
+
+/**
+ * Link a research topic to a brand — the canonical `research_topic →
+ * web_brand` edge (idempotent). Written when research starts from a brand and
+ * when research is turned into that brand's topical map; people add or remove
+ * it on the topic's Settings → Links and the brand's Relationships tab.
+ */
+export async function linkTopicToBrand(
+  topicId: string,
+  brandId: string,
+  organizationId: string,
+): Promise<void> {
+  assocData(
+    await associationsService.add({
+      sourceType: RESEARCH_TOPIC,
+      sourceId: topicId,
+      targetType: "web_brand",
+      targetId: brandId,
+      orgId: organizationId,
+    }),
+  );
+}
+
+function subjectBrandId(subject: TopicCreate["subject"]): string | null {
+  if (!subject || typeof subject !== "object" || Array.isArray(subject)) {
+    return null;
+  }
+  const value = (subject as Record<string, unknown>).brand_id;
+  return typeof value === "string" && value ? value : null;
 }
 
 /**
@@ -334,7 +369,20 @@ export async function createTopic(
     }
   }
 
-  return { topic, projectLink };
+  let brandLink: CreateTopicResult["brandLink"] = { ok: true };
+  const brandId = subjectBrandId(input.subject);
+  if (brandId) {
+    try {
+      await linkTopicToBrand(topic.id, brandId, organizationId);
+    } catch (linkError) {
+      brandLink = {
+        ok: false,
+        error: linkError instanceof Error ? linkError.message : String(linkError),
+      };
+    }
+  }
+
+  return { topic, projectLink, brandLink };
 }
 
 export async function getTopic(topicId: string): Promise<ResearchTopic | null> {

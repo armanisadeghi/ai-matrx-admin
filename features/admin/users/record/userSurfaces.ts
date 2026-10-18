@@ -56,12 +56,12 @@ export interface UserTab {
 
 export const USER_TABS: readonly UserTab[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, built: true },
-  { id: "organizations", label: "Organizations", icon: Building2, built: false },
-  { id: "billing", label: "Billing & usage", icon: WalletCards, built: false },
-  { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: false },
-  { id: "acquisition", label: "Acquisition", icon: UserPlus, built: false },
-  { id: "support", label: "Support sessions", icon: LifeBuoy, built: false },
-  { id: "history", label: "Admin history", icon: History, built: false },
+  { id: "organizations", label: "Organizations", icon: Building2, built: true },
+  { id: "billing", label: "Billing & usage", icon: WalletCards, built: true },
+  { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: true },
+  { id: "acquisition", label: "Acquisition", icon: UserPlus, built: true },
+  { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
+  { id: "history", label: "Admin history", icon: History, built: true },
 ];
 
 const TAB_IDS = new Set<string>(USER_TABS.map((t) => t.id));

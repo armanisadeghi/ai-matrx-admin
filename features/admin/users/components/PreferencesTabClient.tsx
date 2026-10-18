@@ -382,7 +382,7 @@ function summarize(value: unknown): string {
   return keys.length ? keys.join(", ") : "{}";
 }
 
-function UserPreferencesView({ userId }: { userId: string }) {
+export function UserPreferencesView({ userId }: { userId: string }) {
   const router = useRouter();
   const [rows, setRows] = useState<ModuleRow[]>([]);
   const [meta, setMeta] = useState<{

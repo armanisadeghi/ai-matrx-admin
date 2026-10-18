@@ -120,8 +120,11 @@ import {
   updateSiteIdentity,
 } from "@/features/marketing/data/service";
 import {
+  fetchResearchImageOrganization,
   fetchResearchImages,
   saveSiteMediaStandards,
+  tagResearchImages,
+  untagResearchImages,
 } from "@/features/marketing/data/media-library";
 import {
   getPagePerformance,
@@ -167,6 +170,8 @@ export const marketingKeys = {
     [...marketingKeys.site(siteId), "videos"] as const,
   researchImages: (organizationId: string) =>
     [...marketingKeys.root, "research-images", organizationId] as const,
+  researchImageOrganization: (organizationId: string) =>
+    [...marketingKeys.root, "research-image-organization", organizationId] as const,
   siteStructure: (siteId: string) =>
     [...marketingKeys.site(siteId), "structure"] as const,
   homepageMeta: (siteId: string) =>
@@ -741,6 +746,55 @@ export function useResearchImages(organizationId: string | null) {
     queryFn: ({ signal }) => fetchResearchImages(organizationId ?? "", signal),
     enabled: Boolean(organizationId),
     staleTime: 120_000,
+  });
+}
+
+/**
+ * Brand links + categories for the research images on screen (one batched
+ * association read per edge kind). Keyed by organization; invalidated by the
+ * tag/untag mutations below.
+ */
+export function useResearchImageOrganization(
+  organizationId: string | null,
+  imageIds: string[],
+  topicIds: string[],
+) {
+  return useQuery({
+    queryKey: [
+      ...marketingKeys.researchImageOrganization(organizationId ?? "none"),
+      imageIds.length,
+      imageIds[0] ?? "",
+      topicIds.length,
+    ] as const,
+    queryFn: () => fetchResearchImageOrganization(imageIds, topicIds),
+    enabled: Boolean(organizationId) && (imageIds.length > 0 || topicIds.length > 0),
+    staleTime: 30_000,
+  });
+}
+
+export function useTagResearchImages() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: tagResearchImages,
+    onSettled: (_data, _error, input) =>
+      queryClient.invalidateQueries({
+        queryKey: marketingKeys.researchImageOrganization(input.organizationId),
+      }),
+  });
+}
+
+export function useUntagResearchImages() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      imageIds: string[];
+      categoryId: string;
+      organizationId: string;
+    }) => untagResearchImages(input),
+    onSettled: (_data, _error, input) =>
+      queryClient.invalidateQueries({
+        queryKey: marketingKeys.researchImageOrganization(input.organizationId),
+      }),
   });
 }
 

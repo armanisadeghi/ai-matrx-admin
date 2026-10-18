@@ -72,6 +72,13 @@ function requestLabel(id: string): Promise<AdminUserLabel> {
   });
 }
 
+/** Many people's words at once, through the same batched, cached lookup (for sortable text columns). */
+export async function resolveAdminUserLabels(ids: readonly string[]): Promise<Map<string, AdminUserLabel>> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  const values = await Promise.all(unique.map((id) => requestLabel(id)));
+  return new Map(unique.map((id, i) => [id, values[i]]));
+}
+
 /** The person behind `userId` — null fields until resolved, or when `skip` (the caller has a name). */
 export function useAdminUserLabel(userId: string | null | undefined, skip: boolean): AdminUserLabel {
   const [value, setValue] = useState<AdminUserLabel>(() =>

@@ -18,6 +18,10 @@ import type { MarketingSite } from "@/features/marketing/types";
 import { SITE_COLUMNS } from "@/features/marketing/data/service";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { guardedUpdate } from "@ai-matrx/data/db";
+import {
+  associationsHelpers,
+  associationsService,
+} from "@/features/scopes/service/associationsService";
 
 // ============================================================================
 // Research images — inspiration + reuse candidates for this brand's org
@@ -111,6 +115,117 @@ export async function fetchResearchImages(
     sourceHostname: row.rs_source?.hostname ?? null,
     sourceTitle: row.rs_source?.title ?? null,
   }));
+}
+
+// ============================================================================
+// Research images — brand organization (platform.associations)
+//
+// Three canonical edges, all written through the associations chokepoint:
+//   research_topic → web_brand   the research is about / for the brand
+//   research_media → web_brand   one image organized under the brand
+//   research_media → category    role `brand_image`, dimension `brand-image`
+//                                (system starters: Inspiration, Our brand —
+//                                keep / replace, Avoid; people add their own)
+// Pairs registered in platform.association_types 2026-10-17.
+// ============================================================================
+
+export const BRAND_IMAGE_CATEGORY_ROLE = "brand_image";
+
+export interface ResearchImageOrganization {
+  /** topic id → brand ids it is linked to. */
+  topicBrands: Record<string, string[]>;
+  /** image id → brand ids it is organized under. */
+  imageBrands: Record<string, string[]>;
+  /** image id → brand-image category ids. */
+  imageCategories: Record<string, string[]>;
+}
+
+function pushTo(map: Record<string, string[]>, key: string, value: string) {
+  const list = map[key] ?? (map[key] = []);
+  if (!list.includes(value)) list.push(value);
+}
+
+function edgesOrThrow<T>(
+  result: { ok: true; data: T } | { ok: false; error: { message: string } },
+): T {
+  if (!result.ok) throw new Error(result.error.message);
+  return result.data;
+}
+
+export async function fetchResearchImageOrganization(
+  imageIds: string[],
+  topicIds: string[],
+): Promise<ResearchImageOrganization> {
+  const out: ResearchImageOrganization = {
+    topicBrands: {},
+    imageBrands: {},
+    imageCategories: {},
+  };
+  const [topicEdges, imageBrandEdges, imageCategoryEdges] = await Promise.all([
+    topicIds.length
+      ? associationsService.listForSources("research_topic", topicIds, "web_brand")
+      : Promise.resolve({ ok: true as const, data: { edges: [] } }),
+    imageIds.length
+      ? associationsService.listForSources("research_media", imageIds, "web_brand")
+      : Promise.resolve({ ok: true as const, data: { edges: [] } }),
+    imageIds.length
+      ? associationsService.listForSources("research_media", imageIds, "category")
+      : Promise.resolve({ ok: true as const, data: { edges: [] } }),
+  ]);
+  for (const edge of edgesOrThrow(topicEdges).edges) {
+    pushTo(out.topicBrands, edge.sourceId, edge.targetId);
+  }
+  for (const edge of edgesOrThrow(imageBrandEdges).edges) {
+    pushTo(out.imageBrands, edge.sourceId, edge.targetId);
+  }
+  for (const edge of edgesOrThrow(imageCategoryEdges).edges) {
+    if (edge.role !== BRAND_IMAGE_CATEGORY_ROLE) continue;
+    pushTo(out.imageCategories, edge.sourceId, edge.targetId);
+  }
+  return out;
+}
+
+/** Organize images under a brand with one category — one batched write per edge kind. */
+export async function tagResearchImages(input: {
+  imageIds: string[];
+  brandId: string;
+  categoryId: string;
+  organizationId: string;
+}): Promise<void> {
+  const sources = input.imageIds.map((id) => ({
+    type: "research_media" as const,
+    id,
+  }));
+  edgesOrThrow(
+    await associationsHelpers.linkManyToOne({
+      sources,
+      target: { type: "web_brand", id: input.brandId },
+      attrs: { orgId: input.organizationId },
+    }),
+  );
+  edgesOrThrow(
+    await associationsHelpers.linkManyToOne({
+      sources,
+      target: { type: "category", id: input.categoryId },
+      attrs: { orgId: input.organizationId, role: BRAND_IMAGE_CATEGORY_ROLE },
+    }),
+  );
+}
+
+/** Take one category off images (the brand edge stays). */
+export async function untagResearchImages(input: {
+  imageIds: string[];
+  categoryId: string;
+}): Promise<void> {
+  edgesOrThrow(
+    await associationsHelpers.unlinkEdges(
+      input.imageIds.map((id) => ({
+        source: { type: "research_media" as const, id },
+        target: { type: "category" as const, id: input.categoryId },
+        role: BRAND_IMAGE_CATEGORY_ROLE,
+      })),
+    ),
+  );
 }
 
 // ============================================================================

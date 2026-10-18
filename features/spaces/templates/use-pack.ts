@@ -17,7 +17,7 @@ import { storeDoors, supabaseDataSource } from "@ai-matrx/records/core";
 
 import { packPageSettings, packPagesInOrder, resolvePackBlocks, type ResolvedTable, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 import type { AppDispatch } from "@/lib/redux/store";
-import { toast } from "@/lib/toast";
+import { errorSentence, toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 
 import type { SpaceDoc, SpaceId, SpacesStore } from "../contract";
@@ -177,9 +177,34 @@ export async function installTemplateTables(t: SpaceTemplateFull, organizationId
 }
 
 /**
+ * The page set of a "Use template" run that has not finished: its root page id, kept while the run works.
+ * TEMPLATE-INSTALL-3: a run cut off after its first pages (Oak Street Studio, Fundraising CRM: three empty
+ * pages, a second press made a full new set beside them) leaves its root here; the next run moves that
+ * unfinished set to Trash before it starts, so a retry never leaves a duplicate.
+ */
+export interface PackRunJournal {
+  read(): SpaceId | null;
+  write(rootId: SpaceId | null): void;
+}
+
+/** A browser-tab journal for one template in one organization (an in-flight run is specific to this client). */
+export function packRunJournal(organizationId: string, templateId: string): PackRunJournal {
+  const key = `matrx:spaces:pack-run:${organizationId}:${templateId}`;
+  const storage = () => (typeof window === "undefined" ? null : window.localStorage);
+  return {
+    read: () => storage()?.getItem(key) ?? null,
+    write: (rootId) => (rootId ? storage()?.setItem(key, rootId) : storage()?.removeItem(key)),
+  };
+}
+
+const reasonOf = (err: unknown) => (err instanceof Error && err.message ? err.message : errorSentence(err));
+
+/**
  * Makes the template's pages in `organizationId`: the root at the top level (through `createRoot`), every
  * sub-page under its parent in order, then each page's content with the tokens swapped for the made
  * tables and pages (each write lands on the page's current version). Answers the root.
+ * ALL OR NOTHING: a failure part-way moves the pages already made to Trash (the root takes its sub-pages)
+ * and throws the reason; an earlier run that never finished (closed tab, reload) is moved to Trash first.
  */
 export async function makeTemplatePages(
   store: SpacesStore,
@@ -187,11 +212,49 @@ export async function makeTemplatePages(
   t: SpaceTemplateFull,
   tables: Record<string, ResolvedTable>,
   onProgress?: (done: number, total: number) => void,
+  journal?: PackRunJournal,
 ): Promise<SpaceDoc> {
+  const unfinished = journal?.read();
+  if (unfinished) {
+    try {
+      await store.archive(unfinished);
+    } catch (err) {
+      toast.warning(`An earlier unfinished copy of this template could not be moved to Trash: ${reasonOf(err)}`);
+    }
+    journal?.write(null);
+  }
   const ordered = packPagesInOrder(t.pack.pages);
+  const root = await createRoot(ordered[0].title);
+  journal?.write(root.id);
+  try {
+    const made = await fillTemplatePages(store, root, ordered, tables, onProgress);
+    journal?.write(null);
+    return made;
+  } catch (err) {
+    let undone = true;
+    try {
+      await store.archive(root.id);
+    } catch {
+      undone = false;
+    }
+    if (undone) journal?.write(null);
+    throw new Error(
+      `The template's pages were not finished (${reasonOf(err)}). ${
+        undone ? "The pages made so far were moved to Trash; use the template again." : "Use the template again; the unfinished pages will be moved to Trash first."
+      }`,
+    );
+  }
+}
+
+async function fillTemplatePages(
+  store: SpacesStore,
+  root: SpaceDoc,
+  ordered: ReturnType<typeof packPagesInOrder>,
+  tables: Record<string, ResolvedTable>,
+  onProgress?: (done: number, total: number) => void,
+): Promise<SpaceDoc> {
   const ids: Record<string, SpaceId> = {};
   const lastChild = new Map<string, SpaceId>();
-  const root = await createRoot(ordered[0].title);
   ids[ordered[0].key] = root.id;
   onProgress?.(1, ordered.length);
   for (const [i, p] of ordered.slice(1).entries()) {
