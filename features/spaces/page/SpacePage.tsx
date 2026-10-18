@@ -76,8 +76,6 @@ import { copyToClipboard } from "@/lib/clipboard/copy";
 
 /** The longest the static first paint stays once the editor is built behind it. */
 const REVEAL_CAP_MS = 2500;
-/** The room's body can arrive later than the cap on a slow link: the static body stays until it has (nothing moves), at most this long. */
-const ROOM_BODY_CAP_MS = 20_000;
 
 type Editable = Pick<SpaceDoc, "title" | "icon" | "cover" | "settings" | "blocks" | "properties">;
 
@@ -722,14 +720,6 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
       // Every React block drawn (BlockNote paints them a frame after the text) and the heights agree.
       const pending = behind.querySelector(".react-renderer:empty, .spaces-db-loading");
       same = !pending && Math.abs(behind.scrollHeight - shown.getBoundingClientRect().height) <= 1 ? same + 1 : 0;
-      // With a room the editor holds one placeholder line until its first sync. Revealing it then draws the
-      // page empty and the body arrives under the reader (CLS 0.4+ on a slow link, member 768): wait for it.
-      const waitingOnRoom =
-        !!behind.querySelector('.bn-block-outer[data-id="initialBlockId"]') && (docRef.current?.blocks.length ?? 0) > 1 && performance.now() - started < ROOM_BODY_CAP_MS;
-      if (waitingOnRoom) {
-        same = 0;
-        return void requestAnimationFrame(tick);
-      }
       if (same >= 2 || performance.now() - started > REVEAL_CAP_MS) return setRevealed(true);
       requestAnimationFrame(tick);
     };
