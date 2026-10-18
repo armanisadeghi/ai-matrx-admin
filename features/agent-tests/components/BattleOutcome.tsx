@@ -154,7 +154,9 @@ function PairLine({
   if (verdict.winner === null) return <ShimmerText text="Comparing answers" />;
   const head = verdict.winner === "tie" ? "Even" : `${labelOf(verdict.winner)} better`;
   const rounds = verdict.judge.challenger + verdict.judge.baseline + verdict.judge.ties;
-  const why = verdict.byVote ? "Your vote" : verdict.reasons[0] ?? "";
+  const rationale = verdict.byVote ? "Your vote" : verdict.rationales[0] ?? "";
+  // The judge's rationale for a win, not a failure.
+  const judgeNotes = verdict.rationales.join("\n");
   return (
     <div className="flex min-w-0 items-center gap-1.5" data-testid="battle-case-pair">
       <Badge tone={verdict.winner === "tie" ? "neutral" : "info"}>{head}</Badge>
@@ -163,8 +165,8 @@ function PairLine({
           {Math.max(verdict.judge.challenger, verdict.judge.baseline)}/{rounds}
         </span>
       ) : null}
-      <span className="min-w-0 flex-1 truncate text-muted-foreground" title={verdict.reasons.join("\n")}>
-        {why}
+      <span className="min-w-0 flex-1 truncate text-muted-foreground" title={judgeNotes}>
+        {rationale}
       </span>
     </div>
   );
