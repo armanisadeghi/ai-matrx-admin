@@ -16,6 +16,7 @@ import {
 } from "@/features/marketing/discovery/youtube/service";
 import { enumUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { useTopicId } from "../../context/ResearchContext";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { useResearchKeywords } from "../../hooks/useResearchState";
 import { TopicYouTubeLibrary } from "./TopicYouTubeLibrary";
 import { loadTopicVideoLibrary, type RankedTopicVideo } from "./topicVideoLibrary";
@@ -25,6 +26,7 @@ const ANALYSIS_CONCURRENCY = 3;
 
 export default function ResearchYouTubePage() {
   const dispatch = useAppDispatch();
+  const openLiveRun = useOpenLiveRunWindow();
   const topicId = useTopicId();
   const keywords = useResearchKeywords(topicId);
   // The topic's own videos are the page; Discover is the way to add more.
@@ -108,7 +110,17 @@ export default function ResearchYouTubePage() {
   const processVideos = async (videoIds: string[]) => {
     if (videoIds.length === 0) return;
     setAnalyzing((current) => new Set([...current, ...videoIds]));
-    setBatchProgress(`Connecting to ${videoIds.length} videos…`);
+    // A single analysis streams into the floating live run window (never a
+    // spinner while AI works); a batch keeps its progress button instead of
+    // stacking one window per video.
+    const single = videoIds.length === 1 ? videoIds[0] : null;
+    const singleTitle = single
+      ? (videos.find((entry) => entry.video.youtube_video_id === single)?.video.title ?? "video")
+      : null;
+    const runWindow = single
+      ? openLiveRun({ instanceId: `research-video-${single}`, label: `Analyzing ${singleTitle}`, pending: true })
+      : null;
+    if (!single) setBatchProgress(`Connecting to ${videoIds.length} videos…`);
     try {
       let completed = 0;
       const result = await runWithConcurrency(
@@ -124,10 +136,15 @@ export default function ResearchYouTubePage() {
               abortController,
               onAdopted: ({ requestId }) => {
                 adoptedRequestId = requestId;
-                adoptedRequestIdsRef.current.add(requestId);
+                if (runWindow) {
+                  // The window owns this run's rows from here; they outlive the page.
+                  runWindow.update({ requestId, pending: false });
+                } else {
+                  adoptedRequestIdsRef.current.add(requestId);
+                }
               },
               onEvent: (event) => {
-                if (event.event === "info" && event.data.user_message) {
+                if (!runWindow && event.event === "info" && event.data.user_message) {
                   setBatchProgress(
                     `${completed}/${videoIds.length} finished · ${event.data.user_message}`,
                   );
@@ -142,6 +159,12 @@ export default function ResearchYouTubePage() {
                   : entry,
               ),
             );
+          } catch (caught) {
+            runWindow?.update({
+              pending: false,
+              failure: caught instanceof Error ? caught.message : "The analysis could not finish.",
+            });
+            throw caught;
           } finally {
             completed += 1;
             setAnalyzing((current) => {
@@ -149,9 +172,9 @@ export default function ResearchYouTubePage() {
               next.delete(videoId);
               return next;
             });
-            setBatchProgress(`${completed}/${videoIds.length} finished`);
+            if (!runWindow) setBatchProgress(`${completed}/${videoIds.length} finished`);
             streamAbortControllersRef.current.delete(abortController);
-            if (adoptedRequestId) {
+            if (adoptedRequestId && !runWindow) {
               adoptedRequestIdsRef.current.delete(adoptedRequestId);
               dispatch(removeRequest(adoptedRequestId));
             }
@@ -169,7 +192,7 @@ export default function ResearchYouTubePage() {
         setSelected(new Set());
       }
     } finally {
-      setBatchProgress(null);
+      if (!runWindow) setBatchProgress(null);
     }
   };
 

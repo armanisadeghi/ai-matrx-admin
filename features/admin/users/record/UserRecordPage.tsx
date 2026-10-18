@@ -136,7 +136,12 @@ export function UserRecordPage({ userId, tab: tabProp }: { userId: string; tab?:
   const requestedAction = searchParams.get(USER_ACTION_PARAM);
   const handledAction = useRef<string | null>(null);
   useEffect(() => {
-    if (!requestedAction || !subject || handledAction.current === requestedAction) return;
+    // Once the parameter is gone the next `?do=` (even the same action) runs again (F7).
+    if (!requestedAction) {
+      handledAction.current = null;
+      return;
+    }
+    if (!subject || handledAction.current === requestedAction) return;
     handledAction.current = requestedAction;
     const id = isUserActionId(requestedAction) ? requestedAction : null;
     void Promise.resolve().then(() => {

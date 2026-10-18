@@ -3,6 +3,8 @@
 /**
  * The chip's panel: the block's current text, which level/variant runs, Declare (typed by hand),
  * Make my own (a personal override with the same name), Open in library.
+ * Which block runs is the SERVER's answer (`GET /prompt-blocks/resolve`, naming this agent so its own
+ * organization's blocks count); the browser never re-derives the ladder.
  */
 import { useCallback, useEffect, useState } from "react";
 import { Popover, PopoverAnchor, PopoverContent } from "@ai-matrx/design-system";
@@ -11,8 +13,9 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
 import { createBlock, listBlocksNamed, listVariants } from "../service";
-import { invalidateBlocks, winningRowId } from "../blocksCache";
-import { BLOCK_LANE_LABEL, SYSTEM_ORG_ID, laneOf } from "../lanes";
+import { invalidateBlocks } from "../blocksCache";
+import { SYSTEM_ORG_ID } from "../lanes";
+import { blockLevelLabel } from "@/features/agents/components/model-view/modelViewLogic";
 import { resolveBlocks } from "../resolveBlocks";
 import { describeCondition, parseCondition } from "../conditions";
 import type { PromptBlockRow, PromptBlockVariantRow } from "../types";
@@ -29,6 +32,8 @@ interface Props {
   modelName?: string | null;
   creatorId?: string | null;
   organizationId: string | null;
+  /** The agent being edited: the server reads its owning organization for the agent-organization rung. */
+  agentId?: string | null;
   onDeclare: (name: string) => Promise<void>;
   onClose: () => void;
   onChanged: () => void;
@@ -36,15 +41,16 @@ interface Props {
 
 interface Shown {
   rows: PromptBlockRow[];
+  /** The row the server says runs (null when the person cannot read it, or nothing runs). */
   winner: PromptBlockRow | null;
+  /** The server's rung for the block that runs; null when no block runs. */
+  level: string | null;
   variants: PromptBlockVariantRow[];
   variantLabel: string | null;
-  /** The server confirmed which variant runs; when false only the default text is known. */
-  checked: boolean;
   text: string;
 }
 
-export function BlockChipPanel({ target, declared, modelName, creatorId, organizationId, onDeclare, onClose, onChanged }: Props) {
+export function BlockChipPanel({ target, declared, modelName, creatorId, organizationId, agentId, onDeclare, onClose, onChanged }: Props) {
   const dispatch = useAppDispatch();
   const meId = useAppSelector(selectUserId);
   const orgId = organizationId;
@@ -56,30 +62,21 @@ export function BlockChipPanel({ target, declared, modelName, creatorId, organiz
   const load = useCallback(async () => {
     if (!name) return;
     try {
-      const rows = await listBlocksNamed(name);
-      const winnerId = winningRowId(rows, name, meId, SYSTEM_ORG_ID, orgId);
-      const winner = rows.find((r) => r.id === winnerId) ?? null;
+      const [rows, res] = await Promise.all([
+        listBlocksNamed(name),
+        resolveBlocks(dispatch, { names: [name], model: modelName ?? "", creator: creatorId ?? undefined, agentId }),
+      ]);
+      const entry = res.report.find((r) => r.name === name) ?? null;
+      const winner = entry ? (rows.find((r) => r.id === entry.block_id) ?? null) : null;
       const variants = winner ? await listVariants(winner.id) : [];
-      let text = winner?.content ?? "";
-      let variantLabel: string | null = null;
-      let checked = false;
-      if (winner && modelName) {
-        try {
-          const res = await resolveBlocks(dispatch, { names: [name], model: modelName, creator: creatorId ?? undefined });
-          const entry = res.report.find((r) => r.name === name);
-          if (res.blocks[name]) text = res.blocks[name];
-          checked = !!entry;
-          if (entry?.variant_id) variantLabel = variants.find((v) => v.id === entry.variant_id)?.label || "Variant";
-        } catch {
-          // The server check is optional here: the default text of the winning row stands.
-        }
-      }
-      setShown({ rows, winner, variants, variantLabel, checked, text });
+      const variantLabel = entry?.variant_id ? variants.find((v) => v.id === entry.variant_id)?.label || "Variant" : null;
+      const text = res.blocks[name] ?? "";
+      setShown({ rows, winner, level: entry?.level ?? null, variants, variantLabel, text });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load the block");
     }
-  }, [name, meId, orgId, modelName, creatorId, dispatch]);
+  }, [name, modelName, creatorId, agentId, dispatch]);
 
   useEffect(() => {
     setShown(null);
@@ -134,21 +131,21 @@ export function BlockChipPanel({ target, declared, modelName, creatorId, organiz
       <PopoverContent align="start" className="w-96 p-3" data-testid="prompt-block-panel">
         <div className="mb-2 flex items-center gap-2">
           <span className="font-mono text-sm">{name}</span>
-          {shown?.winner && <Badge data-testid="prompt-block-panel-level">{BLOCK_LANE_LABEL[laneOf(shown.winner, meId)]}</Badge>}
-          {shown?.winner && (
+          {shown?.level && <Badge data-testid="prompt-block-panel-level">{blockLevelLabel(shown.level)}</Badge>}
+          {shown?.level && (
             <Badge tone={shown.variantLabel ? "info" : "neutral"} data-testid="prompt-block-panel-variant">
-              {shown.variantLabel ?? (shown.checked || shown.variants.length === 0 ? "Default text" : "Variant not checked")}
+              {shown.variantLabel ?? "Default text"}
             </Badge>
           )}
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
         {!error && !shown && <p className="text-xs text-muted-foreground">Loading</p>}
-        {shown && !shown.winner && (
+        {shown && !shown.level && (
           <p className="text-xs text-destructive" data-testid="prompt-block-panel-missing">
             No block named {name} at any level. A run is refused until one exists.
           </p>
         )}
-        {shown?.winner && (
+        {shown?.level && (
           <pre className="max-h-56 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs" data-testid="prompt-block-panel-text">
             {shown.text || "(empty)"}
           </pre>
@@ -200,7 +197,7 @@ export function BlockChipPanel({ target, declared, modelName, creatorId, organiz
               Open in library
             </Button>
           )}
-          {shown && !shown.winner && (
+          {shown && !shown.level && (
             <Button variant="quiet" onClick={() => openOutbound(`/agents/prompt-blocks/new?name=${encodeURIComponent(name ?? "")}`, "_blank")}>
               Create it
             </Button>

@@ -96,3 +96,16 @@ it("the resolve call names the agent (and a version), never an organization", ()
   expect(q.get("agent_is_version")).toBe("true");
   expect([...q.keys()].some((k) => k.includes("organization"))).toBe(false);
 });
+
+it("the picker's badge ranks the agent's organization after the active one, before system", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { winningRowId } = require("../blocksCache");
+  const SYS = "39c38960-d30c-4840-b0c1-c9960de95582";
+  const rows = [
+    { id: "sys", name: "lane_rules", organization_id: SYS, visibility: "internal", created_by: null },
+    { id: "agent", name: "lane_rules", organization_id: AGENT_ORG, visibility: "internal", created_by: null },
+  ];
+  expect(winningRowId(rows, "lane_rules", "me-1", SYS, ACTIVE_ORG, AGENT_ORG)).toBe("agent");
+  const withActive = [...rows, { id: "active", name: "lane_rules", organization_id: ACTIVE_ORG, visibility: "internal", created_by: null }];
+  expect(winningRowId(withActive, "lane_rules", "me-1", SYS, ACTIVE_ORG, AGENT_ORG)).toBe("active");
+});

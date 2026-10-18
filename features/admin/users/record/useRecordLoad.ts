@@ -8,12 +8,13 @@ type Settled<T> = { token: string; data: T | null; error: unknown };
  * One load for a record-page tab: `fetcher(userId)` runs when the person or `version` changes.
  * Every tab passes the PAGE's version (plus its own), so a header action refreshes the open tab.
  * `loading` is derived (the settled result belongs to a different request), so the effect only
- * sets state from the async callback. Pass a stable module-level `fetcher`.
+ * sets state from the async callback. Pass a stable module-level `fetcher`. A tab that pages
+ * (Load older) folds its window into `version` (e.g. `"3:400"`), so the new window shows loading.
  */
 export function useRecordLoad<T>(
   fetcher: (userId: string) => Promise<T>,
   userId: string,
-  version: number,
+  version: number | string,
   enabled = true,
 ): { data: T | null; loading: boolean; error: unknown } {
   const token = `${userId}|${version}`;

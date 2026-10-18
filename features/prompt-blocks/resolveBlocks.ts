@@ -13,19 +13,33 @@ export interface ResolvedBlocks {
   missing: string[];
 }
 
-export function resolveQueryPath(args: { names: readonly string[]; model: string; reasoning?: string | null; creator?: string | null }): string {
+export interface ResolveArgs {
+  names: readonly string[];
+  model: string;
+  reasoning?: string | null;
+  creator?: string | null;
+  /** The agent (or version) whose blocks these are: the server reads its owning organization itself. */
+  agentId?: string | null;
+  agentIsVersion?: boolean;
+}
+
+export function resolveQueryPath(args: ResolveArgs): string {
   const q = new URLSearchParams();
   for (const n of args.names) q.append("names", n);
   q.set("model", args.model);
   if (args.reasoning) q.set("reasoning", args.reasoning);
   if (args.creator) q.set("creator", args.creator);
+  if (args.agentId) {
+    q.set("agent_id", args.agentId);
+    if (args.agentIsVersion) q.set("agent_is_version", "true");
+  }
   return `/prompt-blocks/resolve?${q.toString()}`;
 }
 
 /** Server refusal names the missing blocks (422 `prompt_block_missing`); the resolve call reports them as absent from `report`. */
 export async function resolveBlocks(
   dispatch: AppDispatch,
-  args: { names: readonly string[]; model: string; reasoning?: string | null; creator?: string | null },
+  args: ResolveArgs,
 ): Promise<ResolvedBlocks> {
   if (args.names.length === 0) return { blocks: {}, report: [], missing: [] };
   const result = await dispatch(

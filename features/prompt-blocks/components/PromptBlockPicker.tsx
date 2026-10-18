@@ -27,11 +27,13 @@ interface PromptBlockPickerProps {
   anchor: PickerAnchor | null;
   initialQuery?: string;
   declared: ReadonlySet<string>;
+  /** The organization that owns the agent being edited (its blocks rank after the active organization's). */
+  agentOrganizationId?: string | null;
   onPick: (row: PromptBlockRow) => void;
   onClose: () => void;
 }
 
-export function PromptBlockPicker({ open, anchor, initialQuery = "", declared, onPick, onClose }: PromptBlockPickerProps) {
+export function PromptBlockPicker({ open, anchor, initialQuery = "", declared, agentOrganizationId = null, onPick, onClose }: PromptBlockPickerProps) {
   const meId = useAppSelector(selectUserId);
   const orgId = useAppSelector(selectActiveOrganizationId);
   const [rows, setRows] = useState<PromptBlockRow[] | null>(null);
@@ -64,9 +66,9 @@ export function PromptBlockPicker({ open, anchor, initialQuery = "", declared, o
   // The row that runs for each name; a row is "Overridden" only when a different row of its name runs.
   const winnerByName = useMemo(() => {
     const map = new Map<string, string | null>();
-    for (const r of rows ?? []) if (!map.has(r.name)) map.set(r.name, winningRowId(rows ?? [], r.name, meId, SYSTEM_ORG_ID, orgId));
+    for (const r of rows ?? []) if (!map.has(r.name)) map.set(r.name, winningRowId(rows ?? [], r.name, meId, SYSTEM_ORG_ID, orgId, agentOrganizationId));
     return map;
-  }, [rows, meId, orgId]);
+  }, [rows, meId, orgId, agentOrganizationId]);
 
   return (
     <Popover open={open} onOpenChange={(o) => !o && onClose()}>

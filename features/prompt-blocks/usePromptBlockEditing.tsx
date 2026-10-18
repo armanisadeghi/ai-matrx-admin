@@ -157,6 +157,7 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
         anchor={picker?.anchor ?? null}
         initialQuery={picker?.trigger?.query ?? ""}
         declared={declared}
+        agentOrganizationId={organizationId}
         onPick={(row) => void pick(row.name)}
         onClose={() => setPicker(null)}
       />
@@ -166,6 +167,7 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
         modelName={modelName}
         creatorId={creatorId}
         organizationId={organizationId}
+        agentId={agentId}
         onDeclare={blocks.declare}
         onClose={() => setChip(null)}
         onChanged={() => void blocks.refresh()}

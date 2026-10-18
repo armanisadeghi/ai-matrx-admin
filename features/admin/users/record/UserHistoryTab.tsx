@@ -49,6 +49,12 @@ function operationOf(metadata: Json | null | undefined): string | null {
   return isJsonObject(metadata) && typeof metadata.operation === "string" ? metadata.operation : null;
 }
 
+/** The organization an org-scoped platform row is about (memberships); a platform row's own
+ * organization_id is always the Matrx System tenant, so it is never linked (F6). */
+function metadataOrganization(metadata: Json | null | undefined): string | null {
+  return isJsonObject(metadata) && typeof metadata.organization_id === "string" ? metadata.organization_id : null;
+}
+
 /** metadata.admin_user_id names the admin on rows whose actor column is empty (support sessions). */
 function metadataActor(metadata: Json | null | undefined): string | null {
   return isJsonObject(metadata) && typeof metadata.admin_user_id === "string" ? metadata.admin_user_id : null;
@@ -95,11 +101,17 @@ export async function listUserAdminHistory(userId: string, limit = HISTORY_PAGE)
       actor_id: r.actor_user_id ?? metadataActor(r.metadata),
       actor: "",
       reason: reasonOf(r.metadata, r.after),
-      organization_id: r.organization_id,
+      organization_id: metadataOrganization(r.metadata),
       before: r.before,
       after: r.after,
     })),
-    ...(org.data ?? []).map((r) => ({
+    // A super-admin membership change writes BOTH audits in one transaction; the platform row is the
+    // canonical one, so its org twin (same instant, same verb) is skipped — one event, one row (F4).
+    ...(org.data ?? []).filter((r) => {
+      if (!r.action.startsWith("super_admin_membership_")) return true;
+      const verb = `org_membership_${r.action.slice("super_admin_membership_".length)}`;
+      return !(platform.data ?? []).some((p) => p.action === verb && p.created_at === r.created_at);
+    }).map((r) => ({
       id: `o:${r.id}`,
       at: r.created_at,
       source: "Organization" as const,
@@ -214,7 +226,7 @@ export function UserHistoryTab({ userId, version: pageVersion, shareForAi }: Use
   const [version, setVersion] = useState(0);
   const [limit, setLimit] = useState(HISTORY_PAGE);
 
-  const { data, loading, error } = useRecordLoad(historyFor(limit), userId, pageVersion + version);
+  const { data, loading, error } = useRecordLoad(historyFor(limit), userId, `${pageVersion + version}:${limit}`);
   const rows = data?.rows ?? [];
   useEffect(() => shareForAi({ history: rows }), [rows, shareForAi]);
 

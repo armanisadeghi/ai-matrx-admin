@@ -18,13 +18,18 @@ export function invalidateBlocks(): void {
   cache = null;
 }
 
-/** For the name `name`, which of `rows` runs for this person: personal (mine) > organization > system. */
+/**
+ * The picker's "Overridden" badge only: for the name `name`, which of `rows` runs for this person —
+ * personal (mine) > the run's organization > the agent's own organization > system. The chip panel
+ * never uses this; it shows the server's answer (`resolveBlocks`).
+ */
 export function winningRowId(
   rows: readonly Pick<PromptBlockRow, "id" | "name" | "organization_id" | "visibility" | "created_by">[],
   name: string,
   meId: string | null,
   systemOrgId: string,
   runOrgId: string | null,
+  agentOrgId: string | null = null,
 ): string | null {
   const same = rows.filter((r) => r.name === name);
   const personal = runOrgId
@@ -45,5 +50,10 @@ export function winningRowId(
       )
     : undefined;
   if (org) return org.id;
+  const agentOrg =
+    agentOrgId && agentOrgId !== runOrgId
+      ? same.find((r) => r.organization_id !== systemOrgId && r.visibility !== "personal" && r.organization_id === agentOrgId)
+      : undefined;
+  if (agentOrg) return agentOrg.id;
   return same.find((r) => r.organization_id === systemOrgId)?.id ?? null;
 }
