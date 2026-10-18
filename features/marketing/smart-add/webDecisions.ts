@@ -422,13 +422,11 @@ export function webDecisionSummary(
   visit: WebChoice[],
   saved: Pick<WebDecisionRow, "relationKey" | "mark">[] | null,
   kinds: Pick<BrandRelationKind, "key" | "label">[],
-  /** Ask me later / Ignore given on this visit (they are saved too, with no relationship). */
-  visitMarks = 0,
 ): { total: number; parts: { label: string; count: number }[]; thisVisit: number; tail: string } {
-  const thisVisit = visit.length + visitMarks;
+  const thisVisit = visit.length;
   if (!saved) {
     const own = webDecisionCounts(visit, kinds);
-    return { total: thisVisit, parts: own.parts, thisVisit, tail: thisVisit ? "decided this visit" : "" };
+    return { total: own.total, parts: own.parts, thisVisit, tail: own.total ? "answered this visit" : "" };
   }
   const label = new Map(kinds.map((k) => [k.key, k.label]));
   const counts = new Map<string, number>();

@@ -19,11 +19,16 @@
  * reported through `onChange` as a `BoardDocument` (the saved form).
  */
 
-import { type ComponentType, type DragEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ExternalLink, ListTree, PanelRight, Plus } from "lucide-react";
+import { type ComponentType, type DragEvent, createContext, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { ListTree, PanelRight, Plus } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { EntityCommentPopover } from "@/components/comments/EntityCommentPopover";
+import { useComments } from "@ai-matrx/associations/react";
+import { partKeyOf } from "@ai-matrx/associations";
+import { RecordCommentThread } from "@/features/rich-document/annotations/comment-remarks";
+import type { TileMenuComment } from "../components/TileMenu";
+import { chapterIconName, frameMembers, framesNamedByTile, tileChrome, tileIconHint } from "../engine/tile-chrome";
+import type { ChapterIcon } from "../components/BoardOutline";
 import { BOARD_TOKEN } from "../persistence/boardsService";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
@@ -78,7 +83,7 @@ import {
   type ItemSurfaceIndex,
   type StoredBasics,
 } from "../tools/item-surfaces";
-import { BOARD_ITEM_TYPES, itemTypeFor } from "../items/catalog";
+import { BOARD_ITEM_TYPES, itemTypeByKey, itemTypeFor } from "../items/catalog";
 import { startNewEntries, type BoardItemType, type ItemBasicValues, type PickerProps, type PlacedItem, type StartNewEntry } from "../items/types";
 import { filesToBoardItems } from "../items/file-drop";
 import { noteSeedEdit } from "../items/work-sources";
@@ -98,7 +103,6 @@ import { runArrange, SHAPE_ARRANGE_GROUPS, SHAPE_GROUP_LABEL } from "../board/ar
 import { groupMoveSet } from "../engine/selection";
 import type { ArrangeCommand } from "../engine/arrange";
 import type { ItemStatus, ItemStatusDoor } from "../items/types";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface UserBoardTile {
   id: string;
@@ -194,6 +198,11 @@ export function UserBoard({
     shapes: doc.shapes,
   }));
   const layout = useBoardLayout(board);
+  // Never a name twice: a frame whose tile carries the same name shows no label of its own.
+  const namedFrames = useNamedFrames(board);
+  const chapterIcons = useChapterIcons(board);
+  // The board's own thread, read ONCE: each board-only tile's count is its part's share of it.
+  const boardCommentCounts = useBoardCommentCounts(boardId);
   const tileLayers = useMemo(() => new Map(layout.tileIds.map((tid, i) => [tid, i] as const)), [layout.tileIds]);
   // "On N boards": one read of every saved board's tiles (not for a meeting guest or an unsaved board).
   const reuseIndex = useReuseIndex(boardId, !guest);
@@ -823,6 +832,22 @@ export function UserBoard({
     editTile: (tile, input) => agentEdit(tile, input),
     describe: (tile) => describeItem(tile.source),
     ...(pagesHost ? { pages: { ...pagesHost, setLayout: pageLayout.switchLayout } } : {}),
+    // The same threads each tile's comment door opens (`useTileComment`).
+    ...(boardId && !guest
+      ? {
+          comments: {
+            boardId,
+            organizationId: boardOrganizationId ?? null,
+            threadOf: (tileId: string) => {
+              const t = board.getTile(tileId);
+              const type = t ? itemTypeFor(t.source) : null;
+              if (!t || !type) return null;
+              if (type.comments) return type.comments(t.source);
+              return { token: BOARD_TOKEN, id: boardId, part: { key: `tile:${tileId}`, label: t.title } };
+            },
+          },
+        }
+      : {}),
   };
 
 
@@ -885,6 +910,7 @@ export function UserBoard({
           layout={layoutMode}
           pages={outline.pages}
           onMoveChapter={layoutMode === "page" ? pageLayout.moveChapter : undefined}
+          chapterIcons={chapterIcons}
           onClose={() => outline.onOpenChange(false)}
         />
       )}
@@ -1015,15 +1041,19 @@ export function UserBoard({
               <BoardFrameView
                 key={f.id}
                 {...f}
+                page={layoutMode === "page"}
+                labelHidden={namedFrames.has(f.id)}
                 onResize={board.resizeTile}
                 onRename={(id, next) => board.updateFrame(id, { title: next })}
               />
             ))}
             <TileLayersContext.Provider value={tileLayers}>
+              <BoardCommentCountsContext.Provider value={boardCommentCounts}>
               {layout.tileIds.map((id) => (
                 <BoardItemTile
                   key={id}
                   id={id}
+                  layoutMode={layoutMode}
                   board={board}
                   boardRecord={boardId ? { id: boardId, title } : null}
                   itemSurfaces={itemSurfaces}
@@ -1031,6 +1061,7 @@ export function UserBoard({
                   onConnect={onConnect}
                 />
               ))}
+              </BoardCommentCountsContext.Provider>
             </TileLayersContext.Provider>
             {/* Drawings render ABOVE tiles (frames < tiles < drawings), so a stroke over a tile stays visible. */}
             <ShapesLayer board={board} />
@@ -1159,6 +1190,7 @@ const isEmptyEntity = (s: NodeSource): boolean => s.kind === "entity" && s.id ==
  */
 function BoardItemTile({
   id,
+  layoutMode,
   board,
   boardRecord,
   itemSurfaces,
@@ -1166,6 +1198,7 @@ function BoardItemTile({
   onConnect,
 }: {
   id: string;
+  layoutMode: BoardLayoutMode;
   board: BoardStore<UserBoardTile>;
   /** The saved board (comments on board-only tiles go on its thread). */
   boardRecord: { id: string; title: string } | null;
@@ -1182,10 +1215,12 @@ function BoardItemTile({
   // agent can read and act on it without the person switching to it.
   const [capture] = useState(createSurfaceCapture);
   useEffect(() => itemSurfaces.set(id, capture), [itemSurfaces, id, capture]);
+  const tileType = tile ? itemTypeFor(tile.source) : null;
+  const comment = useTileComment(id, tileType, tile?.source ?? null, tile?.title ?? "", boardRecord);
   if (!tile) return null;
   const source = tile.source;
   const title = tile.title;
-  const type = itemTypeFor(source);
+  const type = tileType;
   const href = type?.href?.(source) ?? null;
   const onSource = (next: NodeSource, nextTitle?: string) => {
     board.updateTile(id, nextTitle ? { source: next, title: nextTitle } : { source: next }, { history: false });
@@ -1221,19 +1256,18 @@ function BoardItemTile({
           <>
             {type?.HeaderAction && <type.HeaderAction tileId={id} source={source} width={tile.rect.w} onSource={onSource} />}
             <ReusedMarker source={source} />
-            <TileCommentDoor tileId={id} type={type} source={source} title={title} boardRecord={boardRecord} />
-            {href ? (
-            <OutboundLink
-              href={href}
-              title="Open in its own page"
-              aria-label={`Open ${title} in its own page`}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-            </OutboundLink>
-            ) : null}
           </>
         }
+        menu={{
+          href,
+          comment,
+          actions: type?.menuActions?.({ tileId: id, source, title, onSource }) ?? [],
+        }}
+        chrome={tileChrome(layoutMode, { namesItself: type?.namesItself?.(source), autoHeight: type?.autoHeight?.(source) })}
+        onAutoHeight={(tid, h) => {
+          const now = board.getTile(tid);
+          if (now) board.reflow([{ id: tid, x: now.rect.x, y: now.rect.y, w: now.rect.w, h }]);
+        }}
       >
         {(tier) => (
           <TileContent
@@ -1253,42 +1287,99 @@ function BoardItemTile({
 }
 
 /**
- * The tile's ONE comment door. A record tile opens its record's own thread —
- * the same thread its page shows. Board-only content (a write-up, an image, a
- * web page) and record types with no thread of their own comment on the board
- * record, anchored to the tile (`part_anchor` `tile:<tile id>`): the tile's
- * thread shows only that tile's comments, and the remark names the tile. A
- * record that does not exist yet (a draft) has nothing to comment on: no door.
+ * The tile's ONE comment door, as its "…" menu's Comment entry. A record tile opens its record's own
+ * thread — the same thread its page shows (its count once that thread has been read). Board-only content
+ * (a write-up, an image, a section of a table) and record types with no thread of their own comment on
+ * the board record, anchored to the tile (`part_anchor` `tile:<tile id>`): the count is the tile's share
+ * of the board's thread, read once per board. A record that does not exist yet (a draft) has nothing to
+ * comment on: no entry.
  */
-function TileCommentDoor({
-  tileId,
-  type,
-  source,
-  title,
-  boardRecord,
-}: {
-  tileId: string;
-  type: BoardItemType | null;
-  source: NodeSource;
-  title: string;
-  boardRecord: { id: string; title: string } | null;
-}) {
-  if (!type) return null;
+const BoardCommentCountsContext = createContext<ReadonlyMap<string, number> | null>(null);
+
+function useBoardCommentCounts(boardId: string | null): ReadonlyMap<string, number> | null {
+  const thread = useComments({ token: BOARD_TOKEN, id: boardId, autoLoad: boardId !== null });
+  if (thread.status !== "ready" && thread.comments.length === 0) return null;
+  const counts = new Map<string, number>();
+  for (const c of thread.comments) {
+    const key = partKeyOf(c);
+    if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function useTileComment(
+  tileId: string,
+  type: BoardItemType | null,
+  source: NodeSource | null,
+  title: string,
+  boardRecord: { id: string; title: string } | null,
+): TileMenuComment | null {
+  const record = type?.comments && source ? type.comments(source) : null;
+  // Never loads on its own (a tile row must not fan out one read per record); counts once read.
+  const own = useComments({ token: record?.token ?? BOARD_TOKEN, id: record?.id ?? null, autoLoad: false });
+  const boardCounts = useContext(BoardCommentCountsContext);
+  if (!type || !source) return null;
   if (type.comments) {
-    const record = type.comments(source);
-    return record ? <EntityCommentPopover token={record.token} id={record.id} title={title} className="h-7" /> : null;
+    if (!record) return null;
+    return {
+      count: own.status === "ready" ? own.comments.length : null,
+      thread: <RecordCommentThread token={record.token} id={record.id} title={title} showHeader={false} />,
+    };
   }
   if (!boardRecord) return null;
-  return (
-    <EntityCommentPopover
-      token={BOARD_TOKEN}
-      id={boardRecord.id}
-      title={`${boardRecord.title} — tile “${title}”`}
-      part={{ key: `tile:${tileId}`, label: title }}
-      showCount={false}
-      className="h-7"
-    />
+  const part = { key: `tile:${tileId}`, label: title };
+  return {
+    count: boardCounts ? (boardCounts.get(part.key) ?? 0) : null,
+    note: "Kept on the board",
+    thread: (
+      <RecordCommentThread token={BOARD_TOKEN} id={boardRecord.id} title={`${boardRecord.title} — tile “${title}”`} part={part} showHeader={false} />
+    ),
+  };
+}
+
+/**
+ * Each chapter's own icon (never one icon down the whole outline): the frame's own `icon`, else what its
+ * tiles hold (a section's look, a note, a sample), else its first tile's type icon. Kept as a stable key.
+ */
+function useChapterIcons(board: BoardStore<UserBoardTile>): Readonly<Record<string, ChapterIcon>> {
+  const key = useSyncExternalStore(
+    board.subscribe,
+    () => {
+      const now = board.read();
+      const byId = new Map(now.tiles.map((t) => [t.id, t]));
+      const parts: string[] = [];
+      for (const [fid, ids] of frameMembers(now.frames, now.tiles)) {
+        const frame = now.frames.find((f) => f.id === fid);
+        const tiles = ids.map((id) => byId.get(id)).filter((t): t is UserBoardTile => !!t);
+        const typeKey = tiles.map((t) => itemTypeFor(t.source)?.key).find(Boolean);
+        const hints = [...tiles.map((t) => tileIconHint(t.source)), typeKey ? `type:${typeKey}` : null];
+        parts.push(`${fid}=${chapterIconName({ icon: frame?.icon }, hints)}`);
+      }
+      return parts.join("|");
+    },
+    () => "",
   );
+  return useMemo(() => {
+    const out: Record<string, ChapterIcon> = {};
+    for (const part of key ? key.split("|") : []) {
+      const [fid, name] = part.split("=");
+      out[fid] = name.startsWith("type:") ? (itemTypeByKey(name.slice(5))?.icon ?? name) : name;
+    }
+    return out;
+  }, [key]);
+}
+
+/** Frames whose label hides (a tile inside carries the same name), as a stable key so a move never re-renders the host. */
+function useNamedFrames(board: BoardStore<UserBoardTile>): ReadonlySet<string> {
+  const key = useSyncExternalStore(
+    board.subscribe,
+    () => {
+      const now = board.read();
+      return [...framesNamedByTile(now.frames, now.tiles)].sort().join(",");
+    },
+    () => "",
+  );
+  return useMemo(() => new Set(key ? key.split(",") : []), [key]);
 }
 
 /** What a tile shows. Its props never include the rect, so a move or resize

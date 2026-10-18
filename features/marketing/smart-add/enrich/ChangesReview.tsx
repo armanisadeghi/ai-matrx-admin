@@ -31,8 +31,6 @@ import { listBrandWebDecisions, webDecisionSummary, type WebSaveStatus } from ".
 /** Enrich's "On the web" answers: already saved on the brand as they were given; Apply only makes sure of it. */
 export interface EnrichWebReview {
   choices: WebChoice[];
-  /** How many results got Ask me later / Ignore on this visit (saved too, but with no relationship). */
-  markCount: number;
   statuses: Record<string, WebSaveStatus>;
   flush: () => Promise<{ saved: string[]; failed: { key: string; error: string }[] }>;
 }
@@ -62,7 +60,7 @@ function WebDecisionsRow({
     refetchOnMount: "always",
     enabled: saving === 0,
   });
-  const counts = webDecisionSummary(web.choices, savedQuery.data ?? null, kinds, web.markCount);
+  const counts = webDecisionSummary(web.choices, savedQuery.data ?? null, kinds);
   if (!counts.total) return null;
   const failed = result ? result.failed.length : states.filter((s) => s.state === "failed").length;
   return (
@@ -202,7 +200,7 @@ export function ChangesReview({
   const choiceOf = (c: EnrichChange) => choices[c.id] ?? c.defaultChoice;
   const set = (id: string, c: ChangeChoice) => setChoices((cur) => ({ ...cur, [id]: c }));
   const pending = changes.filter((c) => c.kind !== "unchanged" && choiceOf(c) === "apply").length;
-  const webCount = (web?.choices.length ?? 0) + (web?.markCount ?? 0);
+  const webCount = web?.choices.length ?? 0;
   const conflicts = changes.filter((c) => c.kind === "conflict");
   const replaces = changes.filter((c) => c.kind === "replace");
   const adds = changes.filter((c) => c.kind === "add");

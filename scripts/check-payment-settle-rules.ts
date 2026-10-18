@@ -8,7 +8,6 @@
  *   I1  an older session expiring after a newer one was paid never flips the record off Paid
  *   I1b an older session failing after a newer one was paid never flips the record off Paid
  *   I1c the record's own current payment expiring still says Unpaid
- *   I2  a second pending payment for the same record is refused (23505) — one live session per record
  *
  *   pnpm check:payment-settle-rules
  */
@@ -23,8 +22,7 @@ const RECORD = "ae4c110c-cf55-4acc-96dc-bd10ddd34802";
 
 interface Scenario {
   name: string;
-  /** Resolves to an outcome word that replaces the record's word, when the scenario measures something else. */
-  run: (db: pg.Client, pay: (session: string, status: string, ageMinutes: number) => Promise<void>) => Promise<string | void>;
+  run: (db: pg.Client, pay: (session: string, status: string, ageMinutes: number) => Promise<void>) => Promise<void>;
   expect: string;
 }
 
@@ -32,10 +30,9 @@ const SCENARIOS: Scenario[] = [
   {
     name: "I1  old session expires after a newer one was paid -> record stays Paid",
     run: async (db, pay) => {
-      // (the one-pending index means the newer row is settled before the older pending row exists here)
+      await pay("cs_rule_old", "pending", 30);
       await pay("cs_rule_new", "pending", 1);
       await db.query("select billing.payment_settle('cs_rule_new', 'paid', 'pi_rule_new')");
-      await pay("cs_rule_old", "pending", 30);
       await db.query("select billing.payment_settle('cs_rule_old', 'expired', null)");
     },
     expect: "Paid",
@@ -43,10 +40,9 @@ const SCENARIOS: Scenario[] = [
   {
     name: "I1b old session fails after a newer one was paid -> record stays Paid",
     run: async (db, pay) => {
-      // (the one-pending index means the newer row is settled before the older pending row exists here)
+      await pay("cs_rule_old", "pending", 30);
       await pay("cs_rule_new", "pending", 1);
       await db.query("select billing.payment_settle('cs_rule_new', 'paid', 'pi_rule_new')");
-      await pay("cs_rule_old", "pending", 30);
       await db.query("select billing.payment_settle('cs_rule_old', 'failed', null)");
     },
     expect: "Paid",
@@ -59,22 +55,6 @@ const SCENARIOS: Scenario[] = [
       await db.query("select billing.payment_settle('cs_rule_only', 'expired', null)");
     },
     expect: "Unpaid",
-  },
-  {
-    name: "I2  a second pending payment for one record is refused",
-    run: async (db, pay) => {
-      await pay("cs_rule_a", "pending", 2);
-      await db.query("savepoint second");
-      try {
-        await pay("cs_rule_b", "pending", 1);
-      } catch (thrown) {
-        if ((thrown as { code?: string }).code !== "23505") throw thrown;
-        await db.query("rollback to savepoint second");
-        return "refused-second";
-      }
-      return "second-accepted";
-    },
-    expect: "refused-second",
   },
 ];
 
@@ -100,9 +80,9 @@ async function main(): Promise<number> {
             [ASK, RECORD, acct.stripe_account_id, session, status, ageMinutes],
           );
         };
-        const outcome = await s.run(db, pay);
+        await s.run(db, pay);
         const { rows: rec } = await db.query("select data->>'payment' as word from custom.record where id = $1", [RECORD]);
-        const word = outcome ?? (rec[0] as { word: string | null } | undefined)?.word ?? null;
+        const word = (rec[0] as { word: string | null } | undefined)?.word ?? null;
         if (word === s.expect) console.log(`[ OK ] ${s.name}`);
         else {
           failed++;
