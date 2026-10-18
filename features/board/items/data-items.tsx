@@ -22,7 +22,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Database, DownloadCloud, LayoutList, Rows3, Table2 } from "lucide-react";
-import { Peek, RecordsMount, SectionCard, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { Peek, RecordsMount, SectionCard, TableTokensProvider, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { recordsDataSource, rowName } from "@ai-matrx/records-ui/helpers";
 import { useFields, useRecords, useTable } from "@ai-matrx/records/react";
 
@@ -52,6 +52,7 @@ import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
 import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
 import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, tableLookHint } from "./table-tile";
 import { useTileAutoHeight } from "../components/BoardTile";
+import { useBoardTokenTables } from "./board-token-tables";
 
 
 function tableSource(id: string | null): NodeSource {
@@ -232,6 +233,17 @@ export function tableMenuActions({ source, onSource }: TileMenuContext): TileMen
   ];
 }
 
+/**
+ * A section drawn in its BOARD'S design system: every component sample in it reads the board's token
+ * tables (`useBoardTokenTables`, reading order) as CSS variables. Off a board, or a board with no token
+ * tables, it is the plain section (samples keep the app's own tokens).
+ */
+export function SectionWithBoardTokens({ tableId }: { tableId: string }) {
+  const tokenTables = useBoardTokenTables();
+  const card = <SectionCard tableId={tableId} />;
+  return tokenTables.length > 0 ? <TableTokensProvider tableIds={tokenTables}>{card}</TableTokensProvider> : card;
+}
+
 export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBodyProps & { id: string }) {
   const mount = useUnifiedTable({ tableId: id, address: NO_ADDRESS });
   // A table made by "Get data" (anywhere) says where its rows came from, with Refresh and Get more.
@@ -259,7 +271,7 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
             <AdoptTableLook tableId={id} source={source} onSource={onSource} />
           </>
         }
-        {...(section ? { content: <SectionCard tableId={id} /> } : {})}
+        {...(section ? { content: <SectionWithBoardTokens tableId={id} /> } : {})}
       />
     </div>
   );

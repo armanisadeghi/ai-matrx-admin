@@ -85,6 +85,7 @@ import {
 } from "../tools/item-surfaces";
 import { BOARD_ITEM_TYPES, itemTypeByKey, itemTypeFor } from "../items/catalog";
 import { coverOf, coverSource } from "../items/cover-source";
+import { BoardTokenTablesContext, boardTokenTableIds } from "../items/board-token-tables";
 import { startNewEntries, type BoardItemType, type ItemBasicValues, type PickerProps, type PlacedItem, type StartNewEntry } from "../items/types";
 import { filesToBoardItems } from "../items/file-drop";
 import { noteSeedEdit } from "../items/work-sources";
@@ -202,6 +203,8 @@ export function UserBoard({
   // Never a name twice: a frame whose tile carries the same name shows no label of its own.
   const namedFrames = useNamedFrames(board);
   const chapterIcons = useChapterIcons(board);
+  // The board's own design tokens: component samples on it draw in them.
+  const tokenTables = useTokenTables(board);
   // The board's own thread, read ONCE: each board-only tile's count is its part's share of it.
   const boardCommentCounts = useBoardCommentCounts(boardId);
   const tileLayers = useMemo(() => new Map(layout.tileIds.map((tid, i) => [tid, i] as const)), [layout.tileIds]);
@@ -1050,6 +1053,7 @@ export function UserBoard({
             ))}
             <TileLayersContext.Provider value={tileLayers}>
               <BoardCommentCountsContext.Provider value={boardCommentCounts}>
+              <BoardTokenTablesContext.Provider value={tokenTables}>
               {layout.tileIds.map((id) => (
                 <BoardItemTile
                   key={id}
@@ -1062,6 +1066,7 @@ export function UserBoard({
                   onConnect={onConnect}
                 />
               ))}
+              </BoardTokenTablesContext.Provider>
               </BoardCommentCountsContext.Provider>
             </TileLayersContext.Provider>
             {/* Drawings render ABOVE tiles (frames < tiles < drawings), so a stroke over a tile stays visible. */}
@@ -1368,6 +1373,12 @@ function useChapterIcons(board: BoardStore<UserBoardTile>): Readonly<Record<stri
     }
     return out;
   }, [key]);
+}
+
+/** The board's design-token tables in reading order (`boardTokenTableIds`), as a stable key so a move never re-renders the host. */
+function useTokenTables(board: BoardStore<UserBoardTile>): readonly string[] {
+  const key = useSyncExternalStore(board.subscribe, () => boardTokenTableIds(board.read().tiles).join(","), () => "");
+  return useMemo(() => (key ? key.split(",") : []), [key]);
 }
 
 /** Frames whose label hides (a tile inside carries the same name), as a stable key so a move never re-renders the host. */
