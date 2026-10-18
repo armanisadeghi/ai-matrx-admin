@@ -67,14 +67,14 @@ const PRIMITIVES = new Set([
   "Table",
   "TableBody",
   "TableRow",
-  // Light table / list pieces — keep in step with aidream design-system `src/index.ts` + `src/data-table/index.ts`.
-  "MatrxLightTable",
-  "LightTable",
-  "MatrxLightList",
-  "LightList",
+  // Light pieces (design-system lite-table / record-list entries) and MatrxDataTable modes.
+  "LiteTable",
   "RecordList",
+  "MatrxComparisonTable",
+  "MatrxBatchGrid",
+  "MatrxDetailGrid",
 ]);
-const PRIMITIVE_MODULES = /(^|\/)(matrx-data-table|entity-list)(\/|$)|@ai-matrx\/design-system\/(data-table|item)/;
+const PRIMITIVE_MODULES = /(^|\/)(matrx-data-table|entity-list)(\/|$)|@ai-matrx\/design-system\/(data-table|item|lite-table|record-list)/;
 
 const BORDER = /(^|\s)(border(-[tb])?(\s|$)|border-[tbxy]-|border-border|divide-)/;
 const HOVER = /(^|\s|:)hover:/;
