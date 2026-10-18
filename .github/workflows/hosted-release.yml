@@ -103,8 +103,11 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           mkdir -p tmp/checks
-          # Memory every 20 s (uploaded below): the next interruption names its own cause.
-          ( while sleep 20; do echo "$(date -u +%T) $(free -m | awk '/^Mem:/{m="used_mb="$3" available_mb="$7} /^Swap:/{s=" swap_used_mb="$3} END{print m s}')"; done ) > tmp/checks/memory.log 2>&1 &
+          # Memory every 20 s, into the artifact AND this step's own log: run 39162960893's abort
+          # skipped every later step (its post steps too), so an artifact alone would not survive
+          # the failure it is meant to explain. The loop writes to the step log, never to the tee'd
+          # release stdout the verdict parses.
+          ( while sleep 20; do echo "[mem] $(date -u +%T) $(free -m | awk '/^Mem:/{m="used_mb="$3" available_mb="$7} /^Swap:/{s=" swap_used_mb="$3} END{print m s}')"; done ) 2>&1 | tee tmp/checks/memory.log &
           set -o pipefail
           bash scripts/release.sh --no-migrate --with-checks | tee "$RUNNER_TEMP/hosted-release.stdout"
       - name: Verdict — pushed, live, and every after-phase finding
