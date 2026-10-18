@@ -169,7 +169,8 @@ source "$REPO_ROOT/scripts/agent-harness/stale-sessions.sh"
 # The watchdog's revision: preview:status flags a monitor older than this (pnpm preview:monitor-repair).
 #   2 (2026-10-17): writes the machine-memory reading every tick, prunes dead/idle holds and closes
 #                   orphaned Playwright browsers every 30 s.
-MONITOR_REV=2
+#   3 (2026-10-18): also ensures the one pending-import checker every 30 s.
+MONITOR_REV=3
 MONITOR_FILE="$BASE.monitor"
 
 log() { printf '[preview] %s\n' "$1"; }
