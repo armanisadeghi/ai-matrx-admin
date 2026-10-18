@@ -116,6 +116,17 @@ against production at once (Arman: "default 4").
 - **Knobs:** `ops.agent_walks.production_concurrent_cap` (4) and
   `ops.agent_walks.activity_window_minutes` (10), read once per 60 s. A missing
   knob screams in the log and the gate fails OPEN.
+- **Burst slots (2026-10-17):** up to `production_burst_cap` (8) hosts while
+  memory is spare — `burst_admit_available_gb` (64) free, normal macOS
+  pressure, preview under `burst_admit_preview_gb` (32). Under
+  `burst_shed_available_gb` (32), at pressure warn/critical, or with the preview
+  at `burst_shed_preview_gb` (40), extra hosts are paused one per 5 s (idle
+  first); a base host never is. A missing burst knob screams `BURST OFF` and the
+  cap stays at 4. Memory comes from the watchdog (`<state dir>/memory`, every 2 s);
+  the walks it admitted are published to `<state dir>/walks.json` for
+  `pnpm preview:status`. Holds end with their runner process or after
+  `hold_idle_expire_minutes` (20) without a signed-in request; orphaned
+  Playwright browsers are closed by the watchdog (`scripts/agent-harness/stale-sessions.sh`).
 - **Scope:** development server only, and only when `NEXT_PUBLIC_SUPABASE_URL`
   is production. A production build drops the code.
 - **Refused?** Wait for a walk to go idle, then reload.

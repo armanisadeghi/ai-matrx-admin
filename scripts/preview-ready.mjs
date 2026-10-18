@@ -382,8 +382,11 @@ for (let attempt = 1; attempt <= 2; attempt++) {
   // production at once. Our hold keeps us in once admitted; while every slot is busy, wait for one.
   if (r.status === 503 && r.headers?.["x-matrx-walk-cap"] === "refused" && left() > 25000) {
     if (Date.now() - capWaitSaid > 60000) {
-      const holders = [...(r.body || "").matchAll(/<code>([^<]+\.localhost[^<]*)<\/code> — last signed-in request ([^<]+)</g)].map((m) => `${m[1]} (${m[2]})`);
-      say(`walk cap: every live-database slot is in use${holders.length ? ` — ${holders.join(", ")}` : ""}; waiting for one (${secs()}s)`);
+      // The refusal page lists "<code>host</code> — last page 1m 5s ago, …" and, with burst slots, why the
+      // extra slots are closed (utils/supabase/walkCap.ts refusalPage).
+      const holders = [...(r.body || "").matchAll(/<code>([^<]+\.localhost[^<]*)<\/code> — last page ([^,<]+)/g)].map((m) => `${m[1]} (${m[2]})`);
+      const extra = /Extra slots are closed right now: ([^<]+?)\.<\/p>/.exec(r.body || "")?.[1];
+      say(`walk cap: every live-database slot is in use${holders.length ? ` — ${holders.join(", ")}` : ""}${extra ? `; extra slots closed: ${extra}` : ""}; waiting for one (${secs()}s)`);
       capWaitSaid = Date.now();
     }
     await sleep(20000);
