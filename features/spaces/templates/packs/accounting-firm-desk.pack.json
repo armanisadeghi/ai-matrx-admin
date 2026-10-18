@@ -1,0 +1,3308 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0457",
+  "version": 1,
+  "title": "Accounting Firm Desk",
+  "description": "Clients, monthly closes, filing deadlines and document requests for an accounting firm.",
+  "forWho": "Bookkeeping and accounting firms",
+  "icon": {
+    "emoji": "🧮"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "accounting",
+    "bookkeeping",
+    "monthly close",
+    "deadlines"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-accounting-firm-desk",
+    "catalogueId": "SP0457",
+    "useCase": "Winifred Okpara-Lund runs a small accounting firm and uses this to see which monthly closes are late, which filing deadlines are coming up and which clients still owe documents. It tracks work only and gives no tax or financial advice.",
+    "industry": "cross_industry",
+    "vertical": "Accounting firm",
+    "job": "compliance_quality",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Merrow & Pike Accounting",
+      "describes": "A six-person bookkeeping and tax practice serving small businesses, nonprofits and a few households on monthly and annual engagements.",
+      "address": {
+        "line1": "150 Linden Terrace",
+        "city": "Madison",
+        "region": "WI",
+        "postalCode": "53703",
+        "country": "US"
+      },
+      "phone": "(608) 555-0172",
+      "website": "merrowpike.net",
+      "email": "office@merrowpike.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-accounting-firm-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The businesses, nonprofits and households the firm serves.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Onboarding",
+              "Current",
+              "Ended"
+            ],
+            "choiceColors": {
+              "Onboarding": "slate",
+              "Current": "blue",
+              "Ended": "amber"
+            },
+            "required": true,
+            "default": "Onboarding",
+            "statusGroups": {
+              "Onboarding": "todo",
+              "Current": "in_progress",
+              "Ended": "done"
+            }
+          },
+          {
+            "key": "entity",
+            "label": "Entity type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sole proprietor",
+              "LLC",
+              "S corporation",
+              "Nonprofit",
+              "Partnership",
+              "Household"
+            ],
+            "choiceColors": {
+              "Sole proprietor": "slate",
+              "LLC": "blue",
+              "S corporation": "amber",
+              "Nonprofit": "violet",
+              "Partnership": "teal",
+              "Household": "orange"
+            }
+          },
+          {
+            "key": "service",
+            "label": "Service",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Bookkeeping",
+              "Payroll",
+              "Tax only",
+              "Full service"
+            ],
+            "choiceColors": {
+              "Bookkeeping": "slate",
+              "Payroll": "blue",
+              "Tax only": "amber",
+              "Full service": "violet"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Monthly fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Accountant",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "closes_late",
+            "label": "Closes still in progress",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "closes",
+            "pick": "close_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Waiting on documents",
+                "Bookkeeping",
+                "Review"
+              ]
+            }
+          },
+          {
+            "key": "requests_waiting",
+            "label": "Documents requested",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "requests",
+            "pick": "request_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Requested",
+                "Reminded"
+              ]
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_close",
+            "label": "Start a close",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "close",
+              "template": "New monthly close",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_request",
+            "label": "Request documents",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "request",
+              "template": "New document request",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Onboarding"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Engagement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the firm does for them, scope and deliverables."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Systems"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Bookkeeping software, bank feeds, payroll provider and who has access."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contacts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who sends documents, who approves, and best times to reach them."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Foxglove Floral Studio",
+              "status": "Current",
+              "entity": "LLC",
+              "service": "Full service",
+              "fee": 1150,
+              "contact_email": "owner@foxglovefloral.net",
+              "since": "@today-540d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Brightwater Dental Group",
+              "status": "Current",
+              "entity": "S corporation",
+              "service": "Full service",
+              "fee": 2400,
+              "contact_email": "office@brightwaterdental.net",
+              "since": "@today-900d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Cedar Hollow Community Garden",
+              "status": "Current",
+              "entity": "Nonprofit",
+              "service": "Bookkeeping",
+              "fee": 420,
+              "contact_email": "treasurer@cedarhollowgarden.net",
+              "since": "@today-300d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Alder & Vine Wine Bar",
+              "status": "Current",
+              "entity": "LLC",
+              "service": "Payroll",
+              "fee": 780,
+              "contact_email": "kitchen@aldervinebar.net",
+              "since": "@today-210d",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Odell Handyman Services",
+              "status": "Current",
+              "entity": "Sole proprietor",
+              "service": "Bookkeeping",
+              "fee": 360,
+              "contact_email": "odell@odellhandyman.net",
+              "since": "@today-120d",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Kimura-Reyes Household",
+              "status": "Current",
+              "entity": "Household",
+              "service": "Tax only",
+              "fee": 200,
+              "contact_email": "kimurareyes@mailpost.net",
+              "since": "@today-700d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Pinecone Playschool",
+              "status": "Onboarding",
+              "entity": "Nonprofit",
+              "service": "Full service",
+              "fee": 950,
+              "contact_email": "director@pineconeplay.net",
+              "since": "@today-14d",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Westfield Tool & Die",
+              "status": "Ended",
+              "entity": "S corporation",
+              "service": "Full service",
+              "fee": 1800,
+              "contact_email": "books@westfieldtool.net",
+              "since": "@today-1200d",
+              "owner": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "close",
+        "name": "Monthly closes",
+        "labelSingular": "Monthly close",
+        "labelPlural": "Monthly closes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "close_name",
+        "describes": "One close per client per month, from documents in to package delivered.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "close_name",
+            "label": "Close",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Waiting on documents",
+              "Bookkeeping",
+              "Review",
+              "Delivered"
+            ],
+            "choiceColors": {
+              "Waiting on documents": "slate",
+              "Bookkeeping": "blue",
+              "Review": "amber",
+              "Delivered": "green"
+            },
+            "required": true,
+            "default": "Waiting on documents",
+            "statusGroups": {
+              "Waiting on documents": "todo",
+              "Bookkeeping": "in_progress",
+              "Review": "in_progress",
+              "Delivered": "done"
+            }
+          },
+          {
+            "key": "docs_due",
+            "label": "Documents due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Package due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "delivered_on",
+            "label": "Package delivered",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "unreconciled",
+            "label": "Unreconciled items",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "preparer",
+            "label": "Preparer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_deliver_package",
+            "label": "Deliver package",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "close_deliver_package"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "preparer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "docs_due",
+            "due_on"
+          ],
+          [
+            "docs_due",
+            "delivered_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New monthly close",
+            "values": {
+              "close_name": "New monthly close",
+              "status": "Waiting on documents"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Bank and card feeds reconciled, payroll posted, sales tax checked, adjusting entries made."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Questions for the client"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Unusual transactions and missing receipts."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Package notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What changed this month and what to watch."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "close-1",
+            "values": {
+              "close_name": "Foxglove: last month close",
+              "status": "Bookkeeping",
+              "docs_due": "@today-6d",
+              "due_on": "@today+4d",
+              "unreconciled": 14,
+              "client": "client-1",
+              "preparer": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "close-2",
+            "values": {
+              "close_name": "Brightwater Dental: last month close",
+              "status": "Review",
+              "docs_due": "@today-8d",
+              "due_on": "@mon+3d",
+              "unreconciled": 3,
+              "client": "client-2",
+              "preparer": "tm-2"
+            }
+          },
+          {
+            "key": "close-3",
+            "values": {
+              "close_name": "Cedar Hollow: last month close",
+              "status": "Waiting on documents",
+              "docs_due": "@today-1d",
+              "due_on": "@today+8d",
+              "unreconciled": 32,
+              "client": "client-3",
+              "preparer": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "close-4",
+            "values": {
+              "close_name": "Alder & Vine: last month close",
+              "status": "Bookkeeping",
+              "docs_due": "@today-7d",
+              "due_on": "@today-1d",
+              "unreconciled": 9,
+              "client": "client-4",
+              "preparer": "tm-3"
+            }
+          },
+          {
+            "key": "close-5",
+            "values": {
+              "close_name": "Odell: last month close",
+              "status": "Delivered",
+              "docs_due": "@today-12d",
+              "due_on": "@today-2d",
+              "delivered_on": "@today-3d",
+              "unreconciled": 0,
+              "client": "client-5",
+              "preparer": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "close-6",
+            "values": {
+              "close_name": "Foxglove: previous month close",
+              "status": "Delivered",
+              "docs_due": "@today-36d",
+              "due_on": "@today-26d",
+              "delivered_on": "@today-27d",
+              "unreconciled": 0,
+              "client": "client-1",
+              "preparer": "tm-3"
+            }
+          },
+          {
+            "key": "close-7",
+            "values": {
+              "close_name": "Brightwater Dental: previous month close",
+              "status": "Delivered",
+              "docs_due": "@today-38d",
+              "due_on": "@today-28d",
+              "delivered_on": "@today-29d",
+              "unreconciled": 0,
+              "client": "client-2",
+              "preparer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "close-8",
+            "values": {
+              "close_name": "Pinecone Playschool: opening balances",
+              "status": "Waiting on documents",
+              "docs_due": "@today+2d",
+              "due_on": "@today+14d",
+              "unreconciled": 60,
+              "client": "client-7",
+              "preparer": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "deadline",
+        "name": "Filing deadlines",
+        "labelSingular": "Filing deadline",
+        "labelPlural": "Filing deadlines",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "alarm-clock",
+        "titleField": "deadline_name",
+        "describes": "Tax and compliance dates the firm prepares and files for each client.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "deadline_name",
+            "label": "Deadline",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Upcoming",
+              "Prepared",
+              "Filed"
+            ],
+            "choiceColors": {
+              "Upcoming": "slate",
+              "Prepared": "blue",
+              "Filed": "amber"
+            },
+            "required": true,
+            "default": "Upcoming",
+            "statusGroups": {
+              "Upcoming": "todo",
+              "Prepared": "in_progress",
+              "Filed": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sales tax",
+              "Payroll tax",
+              "Income tax",
+              "Extension",
+              "Annual filing"
+            ],
+            "choiceColors": {
+              "Sales tax": "slate",
+              "Payroll tax": "blue",
+              "Income tax": "amber",
+              "Extension": "violet",
+              "Annual filing": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "filed_on",
+            "label": "Filed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_left",
+            "label": "Days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "preparer",
+            "label": "Preparer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_record_filing",
+            "label": "Record filing",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deadline_record_filing"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "preparer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Filed"
+            ],
+            "filled": [
+              "filed_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "filed_on",
+            "due_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New filing deadline",
+            "values": {
+              "deadline_name": "New filing deadline",
+              "status": "Upcoming"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is needed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Documents and figures required before this can be prepared."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Filing notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Method, confirmation number and where the copy is saved."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "deadline-1",
+            "values": {
+              "deadline_name": "Alder & Vine: quarterly payroll filing",
+              "status": "Prepared",
+              "kind": "Payroll tax",
+              "due_on": "@today+6d",
+              "client": "client-4",
+              "preparer": "tm-3"
+            }
+          },
+          {
+            "key": "deadline-2",
+            "values": {
+              "deadline_name": "Foxglove: sales tax return",
+              "status": "Upcoming",
+              "kind": "Sales tax",
+              "due_on": "@today+9d",
+              "client": "client-1",
+              "preparer": "tm-3"
+            }
+          },
+          {
+            "key": "deadline-3",
+            "values": {
+              "deadline_name": "Brightwater Dental: quarterly estimates",
+              "status": "Upcoming",
+              "kind": "Income tax",
+              "due_on": "@today+19d",
+              "client": "client-2",
+              "preparer": "tm-4"
+            }
+          },
+          {
+            "key": "deadline-4",
+            "values": {
+              "deadline_name": "Cedar Hollow: annual nonprofit filing",
+              "status": "Upcoming",
+              "kind": "Annual filing",
+              "due_on": "@today+45d",
+              "client": "client-3",
+              "preparer": "tm-4"
+            }
+          },
+          {
+            "key": "deadline-5",
+            "values": {
+              "deadline_name": "Kimura-Reyes: household return",
+              "status": "Prepared",
+              "kind": "Income tax",
+              "due_on": "@today+2d",
+              "client": "client-6",
+              "preparer": "tm-4"
+            }
+          },
+          {
+            "key": "deadline-6",
+            "values": {
+              "deadline_name": "Odell: quarterly estimates",
+              "status": "Filed",
+              "kind": "Income tax",
+              "due_on": "@today-8d",
+              "filed_on": "@today-10d",
+              "client": "client-5",
+              "preparer": "tm-4"
+            }
+          },
+          {
+            "key": "deadline-7",
+            "values": {
+              "deadline_name": "Alder & Vine: sales tax return",
+              "status": "Filed",
+              "kind": "Sales tax",
+              "due_on": "@today-12d",
+              "filed_on": "@today-13d",
+              "client": "client-4",
+              "preparer": "tm-3"
+            }
+          },
+          {
+            "key": "deadline-8",
+            "values": {
+              "deadline_name": "Pinecone: state registration renewal",
+              "status": "Upcoming",
+              "kind": "Annual filing",
+              "due_on": "@today-3d",
+              "client": "client-7",
+              "preparer": "tm-2"
+            }
+          },
+          {
+            "key": "deadline-9",
+            "values": {
+              "deadline_name": "Foxglove: payroll year-end forms",
+              "status": "Upcoming",
+              "kind": "Payroll tax",
+              "due_on": "@mon+4d",
+              "client": "client-1",
+              "preparer": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "request",
+        "name": "Document requests",
+        "labelSingular": "Document request",
+        "labelPlural": "Document requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-question",
+        "titleField": "request_name",
+        "describes": "Documents the firm has asked each client to send.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "request_name",
+            "label": "Request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Reminded",
+              "Received"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Reminded": "blue",
+              "Received": "amber"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "todo",
+              "Reminded": "in_progress",
+              "Received": "done"
+            }
+          },
+          {
+            "key": "asked_on",
+            "label": "Asked on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Needed by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_log_arrival",
+            "label": "Log arrival",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "request_log_arrival"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "asked_on",
+            "due_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New document request",
+            "values": {
+              "request_name": "New document request",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we need"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "List each document and the period it covers."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "request-1",
+            "values": {
+              "request_name": "Bank statements, all accounts",
+              "status": "Reminded",
+              "asked_on": "@today-9d",
+              "due_on": "@today-2d",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "request-2",
+            "values": {
+              "request_name": "Credit card statements",
+              "status": "Requested",
+              "asked_on": "@today-2d",
+              "due_on": "@today+5d",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "request-3",
+            "values": {
+              "request_name": "Payroll register and tip reports",
+              "status": "Received",
+              "asked_on": "@today-10d",
+              "due_on": "@today-5d",
+              "client": "client-4"
+            }
+          },
+          {
+            "key": "request-4",
+            "values": {
+              "request_name": "Receipts for equipment purchases",
+              "status": "Requested",
+              "asked_on": "@today-1d",
+              "due_on": "@today+6d",
+              "client": "client-5"
+            }
+          },
+          {
+            "key": "request-5",
+            "values": {
+              "request_name": "Prior year return and loan documents",
+              "status": "Reminded",
+              "asked_on": "@today-14d",
+              "due_on": "@today-4d",
+              "client": "client-7"
+            }
+          },
+          {
+            "key": "request-6",
+            "values": {
+              "request_name": "Charitable giving receipts",
+              "status": "Requested",
+              "asked_on": "@today-3d",
+              "due_on": "@today+7d",
+              "client": "client-6"
+            }
+          },
+          {
+            "key": "request-7",
+            "values": {
+              "request_name": "Supplier invoices over 500 dollars",
+              "status": "Received",
+              "asked_on": "@today-8d",
+              "due_on": "@today-3d",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "request-8",
+            "values": {
+              "request_name": "Practice management export",
+              "status": "Requested",
+              "asked_on": "@today-2d",
+              "due_on": "@mon+4d",
+              "client": "client-2"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one accountant.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each monthly close belongs to one client.",
+        "fromTable": "close",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "closes"
+      },
+      {
+        "describes": "Each monthly close belongs to one preparer.",
+        "fromTable": "close",
+        "fromField": "preparer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "close_by_preparer"
+      },
+      {
+        "describes": "Each filing deadline belongs to one client.",
+        "fromTable": "deadline",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deadlines"
+      },
+      {
+        "describes": "Each filing deadline belongs to one preparer.",
+        "fromTable": "deadline",
+        "fromField": "preparer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deadline_by_preparer"
+      },
+      {
+        "describes": "Each document request belongs to one client.",
+        "fromTable": "request",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "requests"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Winifred Okpara-Lund",
+              "role": "Managing partner",
+              "work_email": "winifred@merrowpike.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Leandro Castellanos",
+              "role": "Senior accountant",
+              "work_email": "leandro@merrowpike.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Ingrid Halvorsen",
+              "role": "Bookkeeper",
+              "work_email": "ingrid@merrowpike.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Prakash Venkatesan",
+              "role": "Tax preparer",
+              "work_email": "prakash@merrowpike.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Marguerite Delacroix-Tan",
+              "role": "Client coordinator",
+              "work_email": "marguerite@merrowpike.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "request_intake",
+        "name": "Request documents",
+        "describes": "Ask a client for documents and track when they arrive.",
+        "audience": "staff",
+        "table": "request",
+        "fields": [
+          {
+            "fieldKey": "request_name",
+            "ask": "What do you need?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which client?",
+            "required": true
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "By when?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is logged as Requested."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "close_deliver_package",
+        "table": "close",
+        "name": "Deliver package",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deadline_record_filing",
+        "table": "deadline",
+        "name": "Record filing",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Filed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "request_log_arrival",
+        "table": "request",
+        "name": "Log arrival",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_close",
+        "name": "All monthly closes",
+        "table": "close",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "close_board",
+        "name": "Monthly closes board",
+        "table": "close",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "close_cal",
+        "name": "Monthly closes calendar",
+        "table": "close",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "close_over",
+        "name": "Overdue",
+        "table": "close",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Waiting on documents",
+            "Bookkeeping",
+            "Review"
+          ]
+        }
+      },
+      {
+        "token": "close_week",
+        "name": "Due this week",
+        "table": "close",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Waiting on documents",
+            "Bookkeeping",
+            "Review"
+          ]
+        }
+      },
+      {
+        "token": "close_next7",
+        "name": "Next 7 days",
+        "table": "close",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Waiting on documents",
+            "Bookkeeping",
+            "Review"
+          ]
+        }
+      },
+      {
+        "token": "close_mine",
+        "name": "My monthly closes",
+        "table": "close",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_deadline",
+        "name": "All filing deadlines",
+        "table": "deadline",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "deadline_board",
+        "name": "Filing deadlines board",
+        "table": "deadline",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "deadline_cal",
+        "name": "Filing deadlines calendar",
+        "table": "deadline",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "deadline_over",
+        "name": "Overdue",
+        "table": "deadline",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Upcoming",
+            "Prepared"
+          ]
+        }
+      },
+      {
+        "token": "deadline_week",
+        "name": "Due this week",
+        "table": "deadline",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Upcoming",
+            "Prepared"
+          ]
+        }
+      },
+      {
+        "token": "deadline_next7",
+        "name": "Next 7 days",
+        "table": "deadline",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Upcoming",
+            "Prepared"
+          ]
+        }
+      },
+      {
+        "token": "all_request",
+        "name": "All document requests",
+        "table": "request",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "request_board",
+        "name": "Document requests board",
+        "table": "request",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "request_cal",
+        "name": "Document requests calendar",
+        "table": "request",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "request_over",
+        "name": "Overdue",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Reminded"
+          ]
+        }
+      },
+      {
+        "token": "request_week",
+        "name": "Due this week",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Reminded"
+          ]
+        }
+      },
+      {
+        "token": "request_next7",
+        "name": "Next 7 days",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Reminded"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Accounting Firm Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "close",
+          "describes": "One close per client per month, from documents in to package delivered."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many closes are in bookkeeping?",
+        "whyItMatters": "The bookkeeper plans the week around closes in bookkeeping.",
+        "expect": {
+          "table": "close",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Bookkeeping"
+          },
+          "answer": 2,
+          "unit": "monthly closes"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open monthly closes.",
+        "action": {
+          "kind": "open",
+          "surface": "close_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "close_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open filing deadlines.",
+        "action": {
+          "kind": "open",
+          "surface": "deadline_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "deadline_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "merrowpike.net"
+      ],
+      "fictionalStreets": [
+        "Linden Terrace"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "accounting-firm-desk",
+      "parent": null,
+      "title": "Accounting Firm Desk",
+      "icon": {
+        "emoji": "🧮"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This page is where the practice keeps its calendar honest: clients and engagements, the monthly close for each, the filing deadlines coming up and the documents still owed. It tracks work only and gives no tax or financial advice. Start on the Dashboard, then work Overdue and Mine."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:monthly-close-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:deadline-calendar"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:client-onboarding"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:document-chasing"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The businesses, nonprofits and households the firm serves."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly closes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One close per client per month, from documents in to package delivered."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "close",
+              "view": "close_board"
+            },
+            "inline": true,
+            "title": "Monthly closes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "clo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "clo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "clo-t",
+                "name": "All monthly closes",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "clo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Waiting on documents",
+                    "Bookkeeping",
+                    "Review"
+                  ]
+                }
+              },
+              {
+                "id": "clo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Waiting on documents",
+                    "Bookkeeping",
+                    "Review"
+                  ]
+                }
+              },
+              {
+                "id": "clo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Waiting on documents",
+                    "Bookkeeping",
+                    "Review"
+                  ]
+                }
+              },
+              {
+                "id": "clo-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "clo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Filing deadlines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tax and compliance dates the firm prepares and files for each client."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deadline",
+              "view": "deadline_board"
+            },
+            "inline": true,
+            "title": "Filing deadlines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dea-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "dea-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "dea-t",
+                "name": "All filing deadlines",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "dea-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Upcoming",
+                    "Prepared"
+                  ]
+                }
+              },
+              {
+                "id": "dea-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Upcoming",
+                    "Prepared"
+                  ]
+                }
+              },
+              {
+                "id": "dea-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Upcoming",
+                    "Prepared"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dea-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Document requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Documents the firm has asked each client to send."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "request_board"
+            },
+            "inline": true,
+            "title": "Document requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "req-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "req-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "req-t",
+                "name": "All document requests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "req-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Reminded"
+                  ]
+                }
+              },
+              {
+                "id": "req-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Reminded"
+                  ]
+                }
+              },
+              {
+                "id": "req-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Reminded"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "req-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "accounting-firm-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Closes, deadlines and documents at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "close",
+                      "view": "all_close"
+                    },
+                    "inline": true,
+                    "title": "Closes by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Closes by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deadline",
+                      "view": "all_deadline"
+                    },
+                    "inline": true,
+                    "title": "Deadlines by kind",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Deadlines by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_request"
+                    },
+                    "inline": true,
+                    "title": "Document requests by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Document requests by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Monthly fees by service (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Monthly fees by service (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "service",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closes past their package date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "close",
+              "view": "all_close"
+            },
+            "inline": true,
+            "title": "Closes past their package date",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Closes past their package date",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Waiting on documents",
+                    "Bookkeeping",
+                    "Review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deadlines in the next 14 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deadline",
+              "view": "all_deadline"
+            },
+            "inline": true,
+            "title": "Deadlines in the next 14 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Deadlines in the next 14 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Upcoming",
+                    "Prepared"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Documents overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "all_request"
+            },
+            "inline": true,
+            "title": "Documents overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Documents overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Reminded"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Due date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 7 with the deadline still Upcoming means start preparing today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Documents requested"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Requests still Requested or Reminded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over three per client means call rather than email"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Unreconciled items"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Entries not yet matched to a bank line"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Zero before a close moves to Review"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Closes still in progress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Closes not yet delivered for a client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Aim for none past the package date"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "monthly-close-routine",
+      "parent": "accounting-firm-desk",
+      "title": "Monthly close routine",
+      "icon": {
+        "emoji": "📅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A repeatable close is the product. Clients buy not having to think about it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day one to three"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the close row for each client and set Documents due and Package due."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the document request with a clear list and a date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Chase anything missing on day three with a phone call, not another email."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bookkeeping"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reconcile every bank and card account to the statement."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review uncategorized transactions and ask the client about anything unusual."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Post payroll and check sales tax accounts."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reconciliations tie to statements"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No unexplained balances"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Month-over-month changes explained"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A second person has looked at the numbers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivery"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send the package with two or three sentences on what changed, then press Deliver package."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "deadline-calendar",
+      "parent": "accounting-firm-desk",
+      "title": "Keeping the deadline calendar",
+      "icon": {
+        "emoji": "⏰"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add every recurring deadline per client at onboarding: payroll, sales tax, estimates and annual filings."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give each a preparer and a due date, and confirm both with the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Working it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check Deadlines in the next 14 days every Monday."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anything Upcoming within seven days gets a preparer and a plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When a deadline cannot be met, record an extension request and tell the client why."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After filing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press Record filing and note the confirmation number."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Save the copy in the client folder."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This template tracks the work. The rules for each filing come from your professional guidance and the authorities concerned."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "client-onboarding",
+      "parent": "accounting-firm-desk",
+      "title": "Onboarding a new client",
+      "icon": {
+        "emoji": "🚪"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Engagement letter signed and fee set on the client row"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Access to bank feeds and accounting software confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prior year records and opening balances requested"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deadlines for the year added to the calendar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week two"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review the books they already have and list every clean-up item."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree the document routine: where files go, who sends, by which day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First close"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Run the first close slowly. Write down every question you had to ask, and turn the answers into the checklist on the client page."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "document-chasing",
+      "parent": "accounting-firm-desk",
+      "title": "Chasing missing documents",
+      "icon": {
+        "emoji": "📨"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The ladder"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "0"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send a request with a list and a date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Friendly reminder; set the row to Reminded"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "7"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phone call, and offer to help locate the file"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Escalate to the owner and warn what will be late"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it easier"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for a few documents at a time, not thirty."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer a secure upload link and say how long it takes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thank them as soon as something arrives, and press Log arrival."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

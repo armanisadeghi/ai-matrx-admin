@@ -1,0 +1,3674 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0460",
+  "version": 1,
+  "title": "IT Managed Services Desk",
+  "description": "Clients, devices, support tickets, contract renewals and scheduled maintenance for an MSP.",
+  "forWho": "Managed IT service providers and IT consultancies",
+  "icon": {
+    "emoji": "🖧"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "it",
+    "msp",
+    "tickets",
+    "assets"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-it-managed-services-desk",
+    "catalogueId": "SP0460",
+    "useCase": "Casimir Oduya-Lind runs a managed services provider and uses this to see which tickets are about to breach their response time, which warranties are ending and which contracts renew next.",
+    "industry": "software_it",
+    "vertical": "IT managed services provider",
+    "job": "customer_service",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Ironwood Technology Partners",
+      "describes": "An eight-person managed services provider supporting small offices with help desk, device management, backups and security on fixed monthly plans.",
+      "address": {
+        "line1": "930 Bellamy Street",
+        "city": "Tacoma",
+        "region": "WA",
+        "postalCode": "98402",
+        "country": "US"
+      },
+      "phone": "(253) 555-0166",
+      "website": "ironwoodtech.net",
+      "email": "support@ironwoodtech.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-it-managed-services-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The offices the provider supports under managed plans.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Onboarding",
+              "Healthy",
+              "At risk",
+              "Ended"
+            ],
+            "choiceColors": {
+              "At risk": "red",
+              "Onboarding": "slate",
+              "Healthy": "blue",
+              "Ended": "amber"
+            },
+            "required": true,
+            "default": "Onboarding",
+            "statusGroups": {
+              "Onboarding": "todo",
+              "Healthy": "in_progress",
+              "At risk": "in_progress",
+              "Ended": "done"
+            }
+          },
+          {
+            "key": "plan",
+            "label": "Plan",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Essentials",
+              "Standard",
+              "Premium"
+            ],
+            "choiceColors": {
+              "Essentials": "slate",
+              "Standard": "blue",
+              "Premium": "amber"
+            }
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "fee",
+            "label": "Monthly fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "contract_start",
+            "label": "Contract start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "renews_on",
+            "label": "Renews on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_renewal",
+            "label": "Days to renewal",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Renews on}, 'days')"
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Account manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "tickets_waiting",
+            "label": "Tickets in progress",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tickets",
+            "pick": "ticket_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "New",
+                "In progress",
+                "Waiting on client"
+              ]
+            }
+          },
+          {
+            "key": "device_count",
+            "label": "Devices",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "assets",
+            "pick": "asset_name",
+            "agg": "count"
+          },
+          {
+            "key": "needs_attention",
+            "label": "Devices needing attention",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "assets",
+            "pick": "asset_name",
+            "agg": "count",
+            "filter": {
+              "status": "Needs attention"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_ticket",
+            "label": "Open a ticket",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "ticket",
+              "template": "New ticket",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_asset",
+            "label": "Add a device",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "asset",
+              "template": "New device",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "contract_start",
+            "renews_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Onboarding"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Environment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Network, servers, cloud services and line-of-business software."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contacts and access"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who approves changes and who to call after hours."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agreed service"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Plan, response targets and exclusions."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Larkin & Boyd Law",
+              "status": "Healthy",
+              "plan": "Premium",
+              "seats": 18,
+              "fee": 3150,
+              "contract_start": "@today-700d",
+              "renews_on": "@today+28d",
+              "contact_email": "office@larkinboydlaw.net",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Cobalt Print Works",
+              "status": "Healthy",
+              "plan": "Standard",
+              "seats": 11,
+              "fee": 1540,
+              "contract_start": "@today-400d",
+              "renews_on": "@today+160d",
+              "contact_email": "admin@cobaltprint.net",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Hawthorne Veterinary Clinic",
+              "status": "At risk",
+              "plan": "Standard",
+              "seats": 9,
+              "fee": 1260,
+              "contract_start": "@today-900d",
+              "renews_on": "@today+12d",
+              "contact_email": "desk@hawthornevet.net",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Eastside Architects Collective",
+              "status": "Healthy",
+              "plan": "Premium",
+              "seats": 14,
+              "fee": 2450,
+              "contract_start": "@today-200d",
+              "renews_on": "@today+165d",
+              "contact_email": "studio@eastsidearch.net",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Pelican Bay Realty",
+              "status": "Onboarding",
+              "plan": "Essentials",
+              "seats": 7,
+              "fee": 630,
+              "contract_start": "@today-8d",
+              "renews_on": "@today+357d",
+              "contact_email": "office@pelicanbayrealty.net",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Granger Family Dental",
+              "status": "Healthy",
+              "plan": "Standard",
+              "seats": 10,
+              "fee": 1400,
+              "contract_start": "@today-500d",
+              "renews_on": "@today-6d",
+              "contact_email": "frontdesk@grangerdental.net",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Old Mill Bookkeeping",
+              "status": "Ended",
+              "plan": "Essentials",
+              "seats": 4,
+              "fee": 360,
+              "contract_start": "@today-1000d",
+              "renews_on": "@today-120d",
+              "contact_email": "info@oldmillbooks.net",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "asset",
+        "name": "Devices",
+        "labelSingular": "Device",
+        "labelPlural": "Devices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "laptop",
+        "titleField": "asset_name",
+        "describes": "Every device the provider manages, with warranty and condition.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "asset_name",
+            "label": "Device",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Condition",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In service",
+              "Needs attention",
+              "Retired"
+            ],
+            "choiceColors": {
+              "In service": "slate",
+              "Needs attention": "blue",
+              "Retired": "amber"
+            },
+            "required": true,
+            "default": "In service",
+            "statusGroups": {
+              "In service": "todo",
+              "Needs attention": "in_progress",
+              "Retired": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Laptop",
+              "Desktop",
+              "Server",
+              "Firewall",
+              "Switch",
+              "Printer",
+              "Phone"
+            ],
+            "choiceColors": {
+              "Laptop": "slate",
+              "Desktop": "blue",
+              "Server": "amber",
+              "Firewall": "violet",
+              "Switch": "teal",
+              "Printer": "orange",
+              "Phone": "pink"
+            }
+          },
+          {
+            "key": "serial",
+            "label": "Serial number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "user",
+            "label": "Used by",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "purchased_on",
+            "label": "Purchased",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "warranty_ends",
+            "label": "Warranty ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_retire_device",
+            "label": "Retire device",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "asset_retire_device"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "purchased_on",
+            "warranty_ends"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New device",
+            "values": {
+              "asset_name": "New device",
+              "status": "In service"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Image used, software installed, user and location."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Service history"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Repairs, replacements and notable incidents."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "asset-1",
+            "values": {
+              "asset_name": "Reception laptop",
+              "status": "In service",
+              "kind": "Laptop",
+              "serial": "LB-4821-KR",
+              "user": "Front desk",
+              "purchased_on": "@today-700d",
+              "warranty_ends": "@today+60d",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "asset-2",
+            "values": {
+              "asset_name": "Partner laptop, Yamamoto",
+              "status": "Needs attention",
+              "kind": "Laptop",
+              "serial": "LB-4822-KR",
+              "user": "Associate attorney",
+              "purchased_on": "@today-1100d",
+              "warranty_ends": "@today-40d",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "asset-3",
+            "values": {
+              "asset_name": "Office server",
+              "status": "In service",
+              "kind": "Server",
+              "serial": "LB-0017-SV",
+              "user": "Shared",
+              "purchased_on": "@today-1300d",
+              "warranty_ends": "@today+200d",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "asset-4",
+            "values": {
+              "asset_name": "Plate-making workstation",
+              "status": "Needs attention",
+              "kind": "Desktop",
+              "serial": "CP-3310-DX",
+              "user": "Production",
+              "purchased_on": "@today-1500d",
+              "warranty_ends": "@today-200d",
+              "client": "client-2"
+            }
+          },
+          {
+            "key": "asset-5",
+            "values": {
+              "asset_name": "Edge firewall",
+              "status": "In service",
+              "kind": "Firewall",
+              "serial": "CP-0009-FW",
+              "user": "Shared",
+              "purchased_on": "@today-500d",
+              "warranty_ends": "@today+700d",
+              "client": "client-2"
+            }
+          },
+          {
+            "key": "asset-6",
+            "values": {
+              "asset_name": "Exam room 2 PC",
+              "status": "In service",
+              "kind": "Desktop",
+              "serial": "HV-2204-DX",
+              "user": "Clinical",
+              "purchased_on": "@today-800d",
+              "warranty_ends": "@today+20d",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "asset-7",
+            "values": {
+              "asset_name": "Imaging workstation",
+              "status": "Needs attention",
+              "kind": "Desktop",
+              "serial": "HV-2205-DX",
+              "user": "Clinical",
+              "purchased_on": "@today-1400d",
+              "warranty_ends": "@today-70d",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "asset-8",
+            "values": {
+              "asset_name": "Studio render server",
+              "status": "In service",
+              "kind": "Server",
+              "serial": "EA-0102-SV",
+              "user": "Shared",
+              "purchased_on": "@today-600d",
+              "warranty_ends": "@today+400d",
+              "client": "client-4"
+            }
+          },
+          {
+            "key": "asset-9",
+            "values": {
+              "asset_name": "Core switch",
+              "status": "In service",
+              "kind": "Switch",
+              "serial": "EA-0044-SW",
+              "user": "Shared",
+              "purchased_on": "@today-900d",
+              "warranty_ends": "@today+300d",
+              "client": "client-4"
+            }
+          },
+          {
+            "key": "asset-10",
+            "values": {
+              "asset_name": "Sales laptop, Delgado",
+              "status": "In service",
+              "kind": "Laptop",
+              "serial": "PB-7711-KR",
+              "user": "Agent",
+              "purchased_on": "@today-5d",
+              "warranty_ends": "@today+1090d",
+              "client": "client-5"
+            }
+          },
+          {
+            "key": "asset-11",
+            "values": {
+              "asset_name": "Front desk printer",
+              "status": "Retired",
+              "kind": "Printer",
+              "serial": "GD-5502-PR",
+              "user": "Front desk",
+              "purchased_on": "@today-2000d",
+              "warranty_ends": "@today-900d",
+              "client": "client-6"
+            }
+          }
+        ]
+      },
+      {
+        "token": "ticket",
+        "name": "Tickets",
+        "labelSingular": "Ticket",
+        "labelPlural": "Tickets",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "life-buoy",
+        "titleField": "ticket_title",
+        "describes": "Support requests with priority, response target and who is fixing it.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "ticket_title",
+            "label": "Ticket",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "In progress",
+              "Waiting on client",
+              "Resolved"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "In progress": "blue",
+              "Waiting on client": "amber",
+              "Resolved": "green"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "In progress": "in_progress",
+              "Waiting on client": "in_progress",
+              "Resolved": "done"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Urgent",
+              "High",
+              "Normal",
+              "Low"
+            ],
+            "choiceColors": {
+              "Urgent": "slate",
+              "High": "blue",
+              "Normal": "amber",
+              "Low": "violet"
+            }
+          },
+          {
+            "key": "opened_on",
+            "label": "Opened",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "due_on",
+            "label": "Respond by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "resolved_on",
+            "label": "Resolved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "hours",
+            "label": "Hours spent",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "asset",
+            "label": "Device",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "asset",
+            "relationMax": 1
+          },
+          {
+            "key": "tech",
+            "label": "Technician",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_fix_confirmed",
+            "label": "Fix confirmed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ticket_fix_confirmed"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "asset": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Resolved"
+            ],
+            "filled": [
+              "resolved_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "opened_on",
+            "due_on"
+          ],
+          [
+            "opened_on",
+            "resolved_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New ticket",
+            "values": {
+              "ticket_title": "New ticket",
+              "status": "New"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the user sees"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Symptoms, error messages and when it started."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Steps taken and results."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything to monitor or prevent next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ticket-1",
+            "values": {
+              "ticket_title": "Cannot print to the office printer",
+              "status": "In progress",
+              "priority": "Normal",
+              "opened_on": "@today-2d 09:10",
+              "due_on": "@today+1d 12:00",
+              "hours": 1,
+              "client": "client-3",
+              "asset": "asset-6",
+              "tech": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "ticket-2",
+            "values": {
+              "ticket_title": "Imaging software crashes on open",
+              "status": "New",
+              "priority": "High",
+              "opened_on": "@today-1d 14:20",
+              "due_on": "@today+0d 17:00",
+              "client": "client-3",
+              "asset": "asset-7",
+              "tech": "tm-3"
+            }
+          },
+          {
+            "key": "ticket-3",
+            "values": {
+              "ticket_title": "New hire laptop setup",
+              "status": "In progress",
+              "priority": "Normal",
+              "opened_on": "@today-3d 10:00",
+              "due_on": "@today+2d 12:00",
+              "hours": 2,
+              "client": "client-5",
+              "asset": "asset-10",
+              "tech": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "ticket-4",
+            "values": {
+              "ticket_title": "Backup job failed overnight",
+              "status": "In progress",
+              "priority": "Urgent",
+              "opened_on": "@today-1d 07:45",
+              "due_on": "@today-1d 11:45",
+              "hours": 2.5,
+              "client": "client-1",
+              "asset": "asset-3",
+              "tech": "tm-3"
+            }
+          },
+          {
+            "key": "ticket-5",
+            "values": {
+              "ticket_title": "Slow file server after update",
+              "status": "Waiting on client",
+              "priority": "Normal",
+              "opened_on": "@today-4d 15:30",
+              "due_on": "@today+3d 12:00",
+              "hours": 1.5,
+              "client": "client-4",
+              "asset": "asset-8",
+              "tech": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "ticket-6",
+            "values": {
+              "ticket_title": "Shared mailbox permissions request",
+              "status": "New",
+              "priority": "Low",
+              "opened_on": "@today-0d 08:30",
+              "due_on": "@today+4d 12:00",
+              "client": "client-2",
+              "tech": "tm-4"
+            }
+          },
+          {
+            "key": "ticket-7",
+            "values": {
+              "ticket_title": "Laptop battery swelling",
+              "status": "New",
+              "priority": "High",
+              "opened_on": "@today-0d 09:05",
+              "due_on": "@today+1d 12:00",
+              "client": "client-1",
+              "asset": "asset-2",
+              "tech": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "ticket-8",
+            "values": {
+              "ticket_title": "Password reset for the plate workstation",
+              "status": "Resolved",
+              "priority": "Normal",
+              "opened_on": "@today-5d 11:00",
+              "due_on": "@today-4d 12:00",
+              "resolved_on": "@today-5d 11:40",
+              "hours": 0.5,
+              "client": "client-2",
+              "asset": "asset-4",
+              "tech": "tm-4"
+            }
+          },
+          {
+            "key": "ticket-9",
+            "values": {
+              "ticket_title": "Firewall rule change for remote access",
+              "status": "Resolved",
+              "priority": "Normal",
+              "opened_on": "@today-8d 10:15",
+              "due_on": "@today-6d 12:00",
+              "resolved_on": "@today-7d 16:00",
+              "hours": 1.5,
+              "client": "client-2",
+              "asset": "asset-5",
+              "tech": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "ticket-10",
+            "values": {
+              "ticket_title": "VPN keeps disconnecting",
+              "status": "Resolved",
+              "priority": "High",
+              "opened_on": "@today-10d 13:10",
+              "due_on": "@today-9d 17:00",
+              "resolved_on": "@today-9d 15:00",
+              "hours": 2,
+              "client": "client-4",
+              "asset": "asset-9",
+              "tech": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "maintenance",
+        "name": "Scheduled work",
+        "labelSingular": "Scheduled job",
+        "labelPlural": "Scheduled work",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "job_name",
+        "describes": "Patching windows, reviews and project work booked in advance.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Job",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Done"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Patching",
+              "Backup test",
+              "Security review",
+              "Hardware swap",
+              "Migration"
+            ],
+            "choiceColors": {
+              "Patching": "slate",
+              "Backup test": "blue",
+              "Security review": "amber",
+              "Hardware swap": "violet",
+              "Migration": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Planned for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "tech",
+            "label": "Technician",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_job_complete",
+            "label": "Job complete",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "maintenance_job_complete"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New scheduled job",
+            "values": {
+              "job_name": "New scheduled job",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Steps, rollback plan and who must be told."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was done and any follow-up."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "maintenance-1",
+            "values": {
+              "job_name": "Server patch window",
+              "status": "Scheduled",
+              "kind": "Patching",
+              "due_on": "@mon+5d",
+              "client": "client-1",
+              "tech": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-2",
+            "values": {
+              "job_name": "Quarterly backup restore test",
+              "status": "Scheduled",
+              "kind": "Backup test",
+              "due_on": "@today+9d",
+              "client": "client-1",
+              "tech": "tm-3"
+            }
+          },
+          {
+            "key": "maintenance-3",
+            "values": {
+              "job_name": "Workstation OS updates",
+              "status": "Scheduled",
+              "kind": "Patching",
+              "due_on": "@today+3d",
+              "client": "client-3",
+              "tech": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-4",
+            "values": {
+              "job_name": "Replace imaging workstation",
+              "status": "Scheduled",
+              "kind": "Hardware swap",
+              "due_on": "@today+11d",
+              "client": "client-3",
+              "tech": "tm-3"
+            }
+          },
+          {
+            "key": "maintenance-5",
+            "values": {
+              "job_name": "Security awareness session",
+              "status": "Scheduled",
+              "kind": "Security review",
+              "due_on": "@today+16d",
+              "client": "client-4",
+              "tech": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-6",
+            "values": {
+              "job_name": "Mail migration cutover",
+              "status": "Scheduled",
+              "kind": "Migration",
+              "due_on": "@today+6d",
+              "client": "client-5",
+              "tech": "tm-3"
+            }
+          },
+          {
+            "key": "maintenance-7",
+            "values": {
+              "job_name": "Firewall firmware update",
+              "status": "Done",
+              "kind": "Patching",
+              "due_on": "@today-10d",
+              "client": "client-2",
+              "tech": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "maintenance-8",
+            "values": {
+              "job_name": "Retire print server",
+              "status": "Done",
+              "kind": "Migration",
+              "due_on": "@today-18d",
+              "client": "client-6",
+              "tech": "tm-4"
+            }
+          },
+          {
+            "key": "maintenance-9",
+            "values": {
+              "job_name": "Annual access review",
+              "status": "Scheduled",
+              "kind": "Security review",
+              "due_on": "@today-3d",
+              "client": "client-2",
+              "tech": "tm-3",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one account manager.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each device belongs to one client.",
+        "fromTable": "asset",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "assets"
+      },
+      {
+        "describes": "Each ticket belongs to one client.",
+        "fromTable": "ticket",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tickets"
+      },
+      {
+        "describes": "Each ticket belongs to one device.",
+        "fromTable": "ticket",
+        "fromField": "asset",
+        "toTable": "asset",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tickets"
+      },
+      {
+        "describes": "Each ticket belongs to one technician.",
+        "fromTable": "ticket",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "ticket_by_tech"
+      },
+      {
+        "describes": "Each scheduled job belongs to one client.",
+        "fromTable": "maintenance",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each scheduled job belongs to one technician.",
+        "fromTable": "maintenance",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "job_by_tech"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Casimir Oduya-Lind",
+              "role": "Founder and strategy",
+              "work_email": "casimir@ironwoodtech.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-11y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Brigid Tanaka",
+              "role": "Service desk lead",
+              "work_email": "brigid@ironwoodtech.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Hamza Rutherford",
+              "role": "Systems engineer",
+              "work_email": "hamza@ironwoodtech.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Delphine Kowalski",
+              "role": "Technician",
+              "work_email": "delphine@ironwoodtech.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Ozzie Fernandez-Park",
+              "role": "Account manager",
+              "work_email": "ozzie@ironwoodtech.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "ticket_intake",
+        "name": "Report a problem",
+        "describes": "Take in a support request.",
+        "audience": "staff",
+        "table": "ticket",
+        "fields": [
+          {
+            "fieldKey": "ticket_title",
+            "ask": "What is wrong?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which client?",
+            "required": true
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          },
+          {
+            "fieldKey": "asset",
+            "ask": "Which device?"
+          }
+        ],
+        "submitLabel": "Send the ticket",
+        "confirmation": "Thanks. The ticket is logged as New."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "asset_retire_device",
+        "table": "asset",
+        "name": "Retire device",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Retired"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ticket_fix_confirmed",
+        "table": "ticket",
+        "name": "Fix confirmed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Resolved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "maintenance_job_complete",
+        "table": "maintenance",
+        "name": "Job complete",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_cal",
+        "name": "Clients calendar",
+        "table": "client",
+        "kind": "calendar",
+        "dateField": "renews_on",
+        "allDay": true
+      },
+      {
+        "token": "client_over",
+        "name": "Overdue",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Onboarding",
+            "Healthy",
+            "At risk"
+          ]
+        }
+      },
+      {
+        "token": "client_week",
+        "name": "Due this week",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Onboarding",
+            "Healthy",
+            "At risk"
+          ]
+        }
+      },
+      {
+        "token": "client_next7",
+        "name": "Next 7 days",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Onboarding",
+            "Healthy",
+            "At risk"
+          ]
+        }
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_asset",
+        "name": "All devices",
+        "table": "asset",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "asset_board",
+        "name": "Devices board",
+        "table": "asset",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "asset_cal",
+        "name": "Devices calendar",
+        "table": "asset",
+        "kind": "calendar",
+        "dateField": "warranty_ends",
+        "allDay": true
+      },
+      {
+        "token": "asset_over",
+        "name": "Overdue",
+        "table": "asset",
+        "kind": "grid",
+        "within": {
+          "warranty_ends": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "In service",
+            "Needs attention"
+          ]
+        }
+      },
+      {
+        "token": "asset_week",
+        "name": "Due this week",
+        "table": "asset",
+        "kind": "grid",
+        "within": {
+          "warranty_ends": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "In service",
+            "Needs attention"
+          ]
+        }
+      },
+      {
+        "token": "asset_next7",
+        "name": "Next 7 days",
+        "table": "asset",
+        "kind": "grid",
+        "within": {
+          "warranty_ends": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "In service",
+            "Needs attention"
+          ]
+        }
+      },
+      {
+        "token": "asset_w90",
+        "name": "Warranty ending in 90 days",
+        "table": "asset",
+        "kind": "grid",
+        "within": {
+          "warranty_ends": {
+            "relative": "next_days",
+            "n": 90
+          }
+        }
+      },
+      {
+        "token": "all_ticket",
+        "name": "All tickets",
+        "table": "ticket",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "ticket_board",
+        "name": "Tickets board",
+        "table": "ticket",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "ticket_cal",
+        "name": "Tickets calendar",
+        "table": "ticket",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "ticket_over",
+        "name": "Overdue",
+        "table": "ticket",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress",
+            "Waiting on client"
+          ]
+        }
+      },
+      {
+        "token": "ticket_week",
+        "name": "Due this week",
+        "table": "ticket",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress",
+            "Waiting on client"
+          ]
+        }
+      },
+      {
+        "token": "ticket_next7",
+        "name": "Next 7 days",
+        "table": "ticket",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "In progress",
+            "Waiting on client"
+          ]
+        }
+      },
+      {
+        "token": "ticket_mine",
+        "name": "My tickets",
+        "table": "ticket",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_maintenance",
+        "name": "All scheduled work",
+        "table": "maintenance",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "maintenance_board",
+        "name": "Scheduled work board",
+        "table": "maintenance",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "maintenance_cal",
+        "name": "Scheduled work calendar",
+        "table": "maintenance",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "maintenance_over",
+        "name": "Overdue",
+        "table": "maintenance",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "maintenance_week",
+        "name": "Due this week",
+        "table": "maintenance",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "maintenance_next7",
+        "name": "Next 7 days",
+        "table": "maintenance",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "maintenance_mine",
+        "name": "My scheduled work",
+        "table": "maintenance",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "IT Managed Services Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "ticket",
+          "describes": "Support requests with priority, response target and who is fixing it."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many tickets are new?",
+        "whyItMatters": "The service desk lead triages new tickets first each morning.",
+        "expect": {
+          "table": "ticket",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "New"
+          },
+          "answer": 3,
+          "unit": "tickets"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open devices.",
+        "action": {
+          "kind": "open",
+          "surface": "asset_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "asset_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open tickets.",
+        "action": {
+          "kind": "open",
+          "surface": "ticket_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "ticket_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "ironwoodtech.net"
+      ],
+      "fictionalStreets": [
+        "Bellamy Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "it-managed-services-desk",
+      "parent": null,
+      "title": "IT Managed Services Desk",
+      "icon": {
+        "emoji": "🖧"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything the service team needs: clients on plans, the device inventory with warranty dates, support tickets with response targets, and scheduled maintenance. Start on the Dashboard, clear the tickets that are past their response time, then check Devices with warranty ending in 90 days."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:client-onboarding"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:ticket-triage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:asset-lifecycle"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:renewal-conversations"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The offices the provider supports under managed plans."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "renews_on"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "renews_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Onboarding",
+                    "Healthy",
+                    "At risk"
+                  ]
+                }
+              },
+              {
+                "id": "cli-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "renews_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Onboarding",
+                    "Healthy",
+                    "At risk"
+                  ]
+                }
+              },
+              {
+                "id": "cli-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Onboarding",
+                    "Healthy",
+                    "At risk"
+                  ]
+                }
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Devices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every device the provider manages, with warranty and condition."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "asset",
+              "view": "asset_board"
+            },
+            "inline": true,
+            "title": "Devices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ass-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "ass-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "warranty_ends"
+              },
+              {
+                "id": "ass-t",
+                "name": "All devices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ass-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "warranty_ends": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In service",
+                    "Needs attention"
+                  ]
+                }
+              },
+              {
+                "id": "ass-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "warranty_ends": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In service",
+                    "Needs attention"
+                  ]
+                }
+              },
+              {
+                "id": "ass-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "warranty_ends": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In service",
+                    "Needs attention"
+                  ]
+                }
+              },
+              {
+                "id": "ass-w90",
+                "name": "Warranty ending in 90 days",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "warranty_ends": {
+                    "relative": "next_days",
+                    "n": 90
+                  }
+                }
+              }
+            ],
+            "activeViewId": "ass-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tickets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Support requests with priority, response target and who is fixing it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ticket",
+              "view": "ticket_board"
+            },
+            "inline": true,
+            "title": "Tickets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tic-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tic-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tic-t",
+                "name": "All tickets",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tic-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "tic-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "tic-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "tic-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tic-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scheduled work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Patching windows, reviews and project work booked in advance."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "maintenance",
+              "view": "maintenance_board"
+            },
+            "inline": true,
+            "title": "Scheduled work",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "mai-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "mai-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "mai-t",
+                "name": "All scheduled work",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "mai-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "mai-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "mai-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "mai-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "mai-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "it-managed-services-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The service desk and the base of devices at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "ticket",
+                      "view": "all_ticket"
+                    },
+                    "inline": true,
+                    "title": "Tickets by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Tickets by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "ticket",
+                      "view": "all_ticket"
+                    },
+                    "inline": true,
+                    "title": "Tickets by priority",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Tickets by priority",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "priority",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "asset",
+                      "view": "all_asset"
+                    },
+                    "inline": true,
+                    "title": "Devices by condition",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Devices by condition",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Monthly fees by plan (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Monthly fees by plan (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "plan",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Past their response time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ticket",
+              "view": "all_ticket"
+            },
+            "inline": true,
+            "title": "Past their response time",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Past their response time",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Warranty ending in 90 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "asset",
+              "view": "all_asset"
+            },
+            "inline": true,
+            "title": "Warranty ending in 90 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Warranty ending in 90 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "warranty_ends": {
+                    "relative": "next_days",
+                    "n": 90
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In service",
+                    "Needs attention"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contracts renewing in 60 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Contracts renewing in 60 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Contracts renewing in 60 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 60
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to renewal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Renewal date minus today; negative means past due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Start the review 90 days out and bring the ticket and uptime history"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tickets in progress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tickets New, In progress or Waiting on client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over ten per client suggests a root cause worth fixing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Devices needing attention"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Devices marked Needs attention"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quote a replacement before the warranty ends"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Respond by"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Time the plan promises a first response"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Missed response times show up in Past their response time"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "client-onboarding",
+      "parent": "it-managed-services-desk",
+      "title": "Client onboarding",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Onboarding is where trust is won. Be thorough, predictable and visible."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Contract and plan on the client row, renewal date set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Contacts and after-hours numbers collected"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Admin credentials moved into the password vault"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Devices inventoried and added to Devices"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Backups checked and a restore test scheduled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week two"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Install monitoring and patch agents on every device."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review security basics: multi-factor sign-in, backups, admin accounts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree how people ask for help and what the response times are."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week four"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review the first month's tickets with the client contact."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List risks found: old hardware, missing backups, shared passwords."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree a twelve-month improvement plan."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ticket-triage",
+      "parent": "it-managed-services-desk",
+      "title": "Ticket triage and response targets",
+      "icon": {
+        "emoji": "🎫"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Priority guide"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Priority"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First response"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Urgent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Business cannot work or data is at risk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "30 minutes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "High"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One person or key system is down"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Normal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Something is broken but there is a workaround"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 working hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Low"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A request or improvement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 working days"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Triage steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the ticket and set the priority honestly."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Attach the device if there is one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign a technician and set Respond by."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reply to the client with who has it and when to expect news."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press Fix confirmed once the client agrees, and record hours spent."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "asset-lifecycle",
+      "parent": "it-managed-services-desk",
+      "title": "Device lifecycle and replacement planning",
+      "icon": {
+        "emoji": "♻️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lifecycle"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Laptops and desktops: plan a refresh at about four years."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Servers and network gear: review at five years or when warranty ends."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every quarter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Warranty ending in 90 days and group by client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check condition and open tickets for each device."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send each client a short replacement plan with rough costs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When retiring a device"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wipe the storage and keep the certificate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press Retire device and note where it went."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "renewal-conversations",
+      "parent": "it-managed-services-desk",
+      "title": "Contract renewal conversations",
+      "icon": {
+        "emoji": "📆"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ninety days before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open the client row and read Tickets in progress, Devices needing attention and Days to renewal."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Prepare a one-page summary of the year: tickets solved, improvements made, risks outstanding."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sixty days before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Hold the review call with the decision maker."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Share the summary and proposed changes to the plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree the new fee and term in writing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Update the plan, fee and renewal date on the client row the same day."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clients renew when they feel looked after, not when the contract says so."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

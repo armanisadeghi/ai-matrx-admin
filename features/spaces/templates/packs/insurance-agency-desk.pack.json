@@ -1,0 +1,3342 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0459",
+  "version": 1,
+  "title": "Insurance Agency Desk",
+  "description": "Insureds, policies, renewals, claims and follow-ups for an independent insurance agency.",
+  "forWho": "Independent insurance agencies and brokers",
+  "icon": {
+    "emoji": "🛡️"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "insurance",
+    "policies",
+    "renewals",
+    "claims"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-insurance-agency-desk",
+    "catalogueId": "SP0459",
+    "useCase": "Barnaby Quinlan-Osei runs an independent agency and uses this to see which policies renew soon, which claims are open, and which follow-up tasks are late. It tracks work only and gives no coverage advice.",
+    "industry": "cross_industry",
+    "vertical": "Insurance agency",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Wexford & Day Insurance Agency",
+      "describes": "A seven-person independent agency placing home, auto and small-business coverage with several carriers, with a focus on timely renewals.",
+      "address": {
+        "line1": "26 Chandler Plaza",
+        "city": "Omaha",
+        "region": "NE",
+        "postalCode": "68102",
+        "country": "US"
+      },
+      "phone": "(402) 555-0157",
+      "website": "wexfordday.net",
+      "email": "service@wexfordday.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-insurance-agency-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Insureds",
+        "labelSingular": "Insured",
+        "labelPlural": "Insureds",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "The households and businesses the agency insures.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Insured",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Insured",
+              "Lapsed"
+            ],
+            "choiceColors": {
+              "Lapsed": "red",
+              "Prospect": "slate",
+              "Insured": "blue"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Insured": "in_progress",
+              "Lapsed": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Household",
+              "Business"
+            ],
+            "choiceColors": {
+              "Household": "slate",
+              "Business": "blue"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Insured since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "manager",
+            "label": "Account manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "policy_count",
+            "label": "Policies",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "policies",
+            "pick": "policy_name",
+            "agg": "count"
+          },
+          {
+            "key": "premium_total",
+            "label": "Premium in force (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "policies",
+            "pick": "premium",
+            "agg": "sum",
+            "filter": {
+              "status": "In force"
+            }
+          },
+          {
+            "key": "claims_open",
+            "label": "Claims in progress",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "claims_by_insured",
+            "pick": "claim_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Reported",
+                "Investigating"
+              ]
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_policy",
+            "label": "New policy",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "policy",
+              "template": "New policy",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "manager": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New insured",
+            "values": {
+              "client_name": "New insured",
+              "status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who they are"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Household members or business operations, in plain words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they have"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Policies in force and carriers."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Communication preferences and anything sensitive."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "The Halloran household",
+              "status": "Insured",
+              "kind": "Household",
+              "email": "halloran.home@mailpost.net",
+              "phone": "(402) 555-0171",
+              "since": "@today-1500d",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Greer & Osei Dental",
+              "status": "Insured",
+              "kind": "Business",
+              "email": "office@greerosei.net",
+              "phone": "(402) 555-0172",
+              "since": "@today-900d",
+              "manager": "tm-2"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Parisa Mohammadi",
+              "status": "Insured",
+              "kind": "Household",
+              "email": "p.mohammadi@mailpost.net",
+              "phone": "(402) 555-0173",
+              "since": "@today-400d",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Riverbend Roofing",
+              "status": "Insured",
+              "kind": "Business",
+              "email": "owner@riverbendroofing.net",
+              "phone": "(402) 555-0174",
+              "since": "@today-1200d",
+              "manager": "tm-2"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "The Lindqvist-Banks household",
+              "status": "Insured",
+              "kind": "Household",
+              "email": "lindqvistbanks@mailpost.net",
+              "phone": "(402) 555-0175",
+              "since": "@today-300d",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Tallgrass Bakery",
+              "status": "Insured",
+              "kind": "Business",
+              "email": "hello@tallgrassbakery.net",
+              "phone": "(402) 555-0176",
+              "since": "@today-200d",
+              "manager": "tm-2"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Desmond Achterberg",
+              "status": "Lapsed",
+              "kind": "Household",
+              "email": "d.achterberg@mailpost.net",
+              "phone": "(402) 555-0177",
+              "since": "@today-1000d",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Sunrise Learning Center",
+              "status": "Prospect",
+              "kind": "Business",
+              "email": "admin@sunriselearning.net",
+              "phone": "(402) 555-0178",
+              "manager": "tm-5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "policy",
+        "name": "Policies",
+        "labelSingular": "Policy",
+        "labelPlural": "Policies",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "policy_name",
+        "describes": "Each policy placed, with carrier, term dates and renewal status.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "policy_name",
+            "label": "Policy",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Quote",
+              "In force",
+              "Renewing",
+              "Lapsed"
+            ],
+            "choiceColors": {
+              "Lapsed": "red",
+              "Quote": "slate",
+              "In force": "blue",
+              "Renewing": "amber"
+            },
+            "required": true,
+            "default": "Quote",
+            "statusGroups": {
+              "Quote": "todo",
+              "In force": "in_progress",
+              "Renewing": "in_progress",
+              "Lapsed": "done"
+            }
+          },
+          {
+            "key": "line",
+            "label": "Line",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Auto",
+              "Home",
+              "Renters",
+              "Commercial property",
+              "General liability",
+              "Workers compensation",
+              "Umbrella"
+            ],
+            "choiceColors": {
+              "Auto": "slate",
+              "Home": "blue",
+              "Renters": "amber",
+              "Commercial property": "violet",
+              "General liability": "teal",
+              "Workers compensation": "orange",
+              "Umbrella": "pink"
+            }
+          },
+          {
+            "key": "carrier",
+            "label": "Carrier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "premium",
+            "label": "Annual premium (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "effective_on",
+            "label": "Effective",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_renewal",
+            "label": "Days to renewal",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Expires}, 'days')"
+          },
+          {
+            "key": "claims_count",
+            "label": "Claims",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "claims",
+            "pick": "claim_name",
+            "agg": "count"
+          },
+          {
+            "key": "client",
+            "label": "Insured",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "rep",
+            "label": "Account manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_start_renewal",
+            "label": "Start renewal",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "policy_start_renewal"
+            }
+          },
+          {
+            "key": "add_claim",
+            "label": "Log a claim",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "claim",
+              "template": "New claim",
+              "prefill": {
+                "policy": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_task",
+            "label": "Add follow-up",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New follow-up",
+              "prefill": {
+                "policy": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "rep": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "effective_on",
+            "expires_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New policy",
+            "values": {
+              "policy_name": "New policy",
+              "status": "Quote"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Coverage summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Limits, deductibles and endorsements in plain words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Renewal plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Remarketing needs, pricing notes and who contacts the insured."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Documents"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Dec page, application and signed forms with locations."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "policy-1",
+            "values": {
+              "policy_name": "Halloran home",
+              "status": "In force",
+              "line": "Home",
+              "carrier": "Pinnacle Mutual",
+              "premium": 1840,
+              "effective_on": "@today-340d",
+              "expires_on": "@today+25d",
+              "client": "client-1",
+              "rep": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "policy-2",
+            "values": {
+              "policy_name": "Halloran auto, two vehicles",
+              "status": "Renewing",
+              "line": "Auto",
+              "carrier": "Harborview Insurance",
+              "premium": 2210,
+              "effective_on": "@today-350d",
+              "expires_on": "@today+15d",
+              "client": "client-1",
+              "rep": "tm-3"
+            }
+          },
+          {
+            "key": "policy-3",
+            "values": {
+              "policy_name": "Greer & Osei commercial property",
+              "status": "In force",
+              "line": "Commercial property",
+              "carrier": "Northgate Casualty",
+              "premium": 3650,
+              "effective_on": "@today-200d",
+              "expires_on": "@today+165d",
+              "client": "client-2",
+              "rep": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "policy-4",
+            "values": {
+              "policy_name": "Greer & Osei general liability",
+              "status": "In force",
+              "line": "General liability",
+              "carrier": "Northgate Casualty",
+              "premium": 1420,
+              "effective_on": "@today-200d",
+              "expires_on": "@today+165d",
+              "client": "client-2",
+              "rep": "tm-2"
+            }
+          },
+          {
+            "key": "policy-5",
+            "values": {
+              "policy_name": "Mohammadi renters",
+              "status": "In force",
+              "line": "Renters",
+              "carrier": "Sable Ridge Insurance",
+              "premium": 310,
+              "effective_on": "@today-100d",
+              "expires_on": "@today+265d",
+              "client": "client-3",
+              "rep": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "policy-6",
+            "values": {
+              "policy_name": "Riverbend workers compensation",
+              "status": "Renewing",
+              "line": "Workers compensation",
+              "carrier": "Northgate Casualty",
+              "premium": 9800,
+              "effective_on": "@today-358d",
+              "expires_on": "@today+7d",
+              "client": "client-4",
+              "rep": "tm-2"
+            }
+          },
+          {
+            "key": "policy-7",
+            "values": {
+              "policy_name": "Riverbend general liability",
+              "status": "In force",
+              "line": "General liability",
+              "carrier": "Harborview Insurance",
+              "premium": 4100,
+              "effective_on": "@today-358d",
+              "expires_on": "@today+7d",
+              "client": "client-4",
+              "rep": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "policy-8",
+            "values": {
+              "policy_name": "Lindqvist-Banks home and umbrella",
+              "status": "In force",
+              "line": "Home",
+              "carrier": "Pinnacle Mutual",
+              "premium": 2480,
+              "effective_on": "@today-120d",
+              "expires_on": "@today+245d",
+              "client": "client-5",
+              "rep": "tm-3"
+            }
+          },
+          {
+            "key": "policy-9",
+            "values": {
+              "policy_name": "Tallgrass commercial package",
+              "status": "In force",
+              "line": "Commercial property",
+              "carrier": "Sable Ridge Insurance",
+              "premium": 2760,
+              "effective_on": "@today-60d",
+              "expires_on": "@today+305d",
+              "client": "client-6",
+              "rep": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "policy-10",
+            "values": {
+              "policy_name": "Achterberg auto",
+              "status": "Lapsed",
+              "line": "Auto",
+              "carrier": "Harborview Insurance",
+              "premium": 1480,
+              "effective_on": "@today-420d",
+              "expires_on": "@today-55d",
+              "client": "client-7",
+              "rep": "tm-3"
+            }
+          },
+          {
+            "key": "policy-11",
+            "values": {
+              "policy_name": "Sunrise Learning general liability quote",
+              "status": "Quote",
+              "line": "General liability",
+              "carrier": "Northgate Casualty",
+              "premium": 3100,
+              "effective_on": "@today+10d",
+              "expires_on": "@today+375d",
+              "client": "client-8",
+              "rep": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "policy-12",
+            "values": {
+              "policy_name": "Parisa Mohammadi auto",
+              "status": "In force",
+              "line": "Auto",
+              "carrier": "Harborview Insurance",
+              "premium": 1320,
+              "effective_on": "@today-330d",
+              "expires_on": "@mon+4d",
+              "client": "client-3",
+              "rep": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "claim",
+        "name": "Claims",
+        "labelSingular": "Claim",
+        "labelPlural": "Claims",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "alert-triangle",
+        "titleField": "claim_name",
+        "describes": "Claims reported on policies, tracked until the carrier closes them.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "claim_name",
+            "label": "Claim",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Reported",
+              "Investigating",
+              "Settled",
+              "Denied"
+            ],
+            "choiceColors": {
+              "Denied": "red",
+              "Reported": "slate",
+              "Investigating": "blue",
+              "Settled": "green"
+            },
+            "required": true,
+            "default": "Reported",
+            "statusGroups": {
+              "Reported": "todo",
+              "Investigating": "in_progress",
+              "Settled": "done",
+              "Denied": "done"
+            }
+          },
+          {
+            "key": "loss_on",
+            "label": "Date of loss",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "claimed",
+            "label": "Claimed amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000000
+              }
+            ]
+          },
+          {
+            "key": "adjuster",
+            "label": "Carrier adjuster",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "policy",
+            "label": "Policy",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "policy",
+            "relationMax": 1
+          },
+          {
+            "key": "insured",
+            "label": "Insured",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "policy": "Either record can be created or change status before the other.",
+          "insured": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Reported",
+              "Investigating",
+              "Settled",
+              "Denied"
+            ],
+            "filled": [
+              "reported_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "loss_on",
+            "reported_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New claim",
+            "values": {
+              "claim_name": "New claim",
+              "status": "Reported"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What happened"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The loss in the insured's words and the date."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Carrier contact"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Claim number, adjuster and what was sent."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Updates"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Dated notes after every call."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "claim-1",
+            "values": {
+              "claim_name": "Hail damage to roof",
+              "status": "Investigating",
+              "loss_on": "@today-20d",
+              "reported_on": "@today-18d",
+              "claimed": 14200,
+              "adjuster": "M. Sorensen",
+              "policy": "policy-1",
+              "insured": "client-1"
+            }
+          },
+          {
+            "key": "claim-2",
+            "values": {
+              "claim_name": "Rear-end collision, Halloran car",
+              "status": "Settled",
+              "loss_on": "@today-110d",
+              "reported_on": "@today-109d",
+              "claimed": 3850,
+              "adjuster": "A. Wanjiru",
+              "policy": "policy-2",
+              "insured": "client-1"
+            }
+          },
+          {
+            "key": "claim-3",
+            "values": {
+              "claim_name": "Water damage in kitchen",
+              "status": "Reported",
+              "loss_on": "@today-4d",
+              "reported_on": "@today-3d",
+              "claimed": 6100,
+              "adjuster": "To be assigned",
+              "policy": "policy-8",
+              "insured": "client-5"
+            }
+          },
+          {
+            "key": "claim-4",
+            "values": {
+              "claim_name": "Worker injury, ladder fall",
+              "status": "Investigating",
+              "loss_on": "@today-33d",
+              "reported_on": "@today-32d",
+              "claimed": 28400,
+              "adjuster": "D. Petrakis",
+              "policy": "policy-6",
+              "insured": "client-4"
+            }
+          },
+          {
+            "key": "claim-5",
+            "values": {
+              "claim_name": "Customer slip at entrance",
+              "status": "Denied",
+              "loss_on": "@today-90d",
+              "reported_on": "@today-88d",
+              "claimed": 5200,
+              "adjuster": "R. Lindholm",
+              "policy": "policy-4",
+              "insured": "client-2"
+            }
+          },
+          {
+            "key": "claim-6",
+            "values": {
+              "claim_name": "Stolen laptop from office",
+              "status": "Settled",
+              "loss_on": "@today-150d",
+              "reported_on": "@today-149d",
+              "claimed": 1800,
+              "adjuster": "A. Wanjiru",
+              "policy": "policy-3",
+              "insured": "client-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Follow-ups",
+        "labelSingular": "Follow-up",
+        "labelPlural": "Follow-ups",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Calls, quotes and documents the team owes insureds.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Follow-up",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "Doing",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Doing": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Doing": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Renewal call",
+              "Quote",
+              "Document",
+              "Review"
+            ],
+            "choiceColors": {
+              "Renewal call": "slate",
+              "Quote": "blue",
+              "Document": "amber",
+              "Review": "violet"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "policy",
+            "label": "Policy",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "policy",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_tick_done",
+            "label": "Tick done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_tick_done"
+            }
+          }
+        ],
+        "independentOf": {
+          "policy": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New follow-up",
+            "values": {
+              "task_name": "New follow-up",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was said and what happens next."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "task-1",
+            "values": {
+              "task_name": "Renewal call about auto premium change",
+              "status": "To do",
+              "kind": "Renewal call",
+              "due_on": "@today+4d",
+              "policy": "policy-2",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-2",
+            "values": {
+              "task_name": "Remarket workers compensation",
+              "status": "Doing",
+              "kind": "Quote",
+              "due_on": "@today+2d",
+              "policy": "policy-6",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "task-3",
+            "values": {
+              "task_name": "Send claim photos to carrier",
+              "status": "To do",
+              "kind": "Document",
+              "due_on": "@today+1d",
+              "policy": "policy-1",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-4",
+            "values": {
+              "task_name": "Review home coverage after kitchen renovation",
+              "status": "To do",
+              "kind": "Review",
+              "due_on": "@today+20d",
+              "policy": "policy-8",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "task-5",
+            "values": {
+              "task_name": "Renewal call for home policy",
+              "status": "To do",
+              "kind": "Renewal call",
+              "due_on": "@today+14d",
+              "policy": "policy-1",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-6",
+            "values": {
+              "task_name": "Collect signed application for liability quote",
+              "status": "Doing",
+              "kind": "Document",
+              "due_on": "@mon+3d",
+              "policy": "policy-11",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "task-7",
+            "values": {
+              "task_name": "Confirm lapsed auto policy status",
+              "status": "Done",
+              "kind": "Review",
+              "due_on": "@today-8d",
+              "policy": "policy-10",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-8",
+            "values": {
+              "task_name": "Annual review call for dental office",
+              "status": "To do",
+              "kind": "Review",
+              "due_on": "@today-2d",
+              "policy": "policy-3",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "task-9",
+            "values": {
+              "task_name": "Send certificate of insurance request",
+              "status": "Done",
+              "kind": "Document",
+              "due_on": "@today-3d",
+              "policy": "policy-9",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each insured belongs to one account manager.",
+        "fromTable": "client",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "insured_by_manager"
+      },
+      {
+        "describes": "Each policy belongs to one insured.",
+        "fromTable": "policy",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "policies"
+      },
+      {
+        "describes": "Each policy belongs to one account manager.",
+        "fromTable": "policy",
+        "fromField": "rep",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "policy_by_rep"
+      },
+      {
+        "describes": "Each claim belongs to one policy.",
+        "fromTable": "claim",
+        "fromField": "policy",
+        "toTable": "policy",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "claims"
+      },
+      {
+        "describes": "Each claim belongs to one insured.",
+        "fromTable": "claim",
+        "fromField": "insured",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "claims_by_insured"
+      },
+      {
+        "describes": "Each follow-up belongs to one policy.",
+        "fromTable": "task",
+        "fromField": "policy",
+        "toTable": "policy",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each follow-up belongs to one owner.",
+        "fromTable": "task",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "task_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Barnaby Quinlan-Osei",
+              "role": "Agency principal",
+              "work_email": "barnaby@wexfordday.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-12y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Rosalind Gutierrez",
+              "role": "Account manager, commercial",
+              "work_email": "rosalind@wexfordday.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Tomasz Wieczorek",
+              "role": "Account manager, personal",
+              "work_email": "tomasz@wexfordday.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Priyanka Nakamura",
+              "role": "Service representative",
+              "work_email": "priyanka@wexfordday.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Colm Fairweather",
+              "role": "Producer",
+              "work_email": "colm@wexfordday.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "policy_intake",
+        "name": "Request a quote",
+        "describes": "Take in a quote request before it is assigned.",
+        "audience": "staff",
+        "table": "policy",
+        "fields": [
+          {
+            "fieldKey": "policy_name",
+            "ask": "What coverage is needed?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "line",
+            "ask": "Which line?"
+          },
+          {
+            "fieldKey": "effective_on",
+            "ask": "When should it start?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is logged as a quote."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "policy_start_renewal",
+        "table": "policy",
+        "name": "Start renewal",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Renewing"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_tick_done",
+        "table": "task",
+        "name": "Tick done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All insureds",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Insureds board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My insureds",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_policy",
+        "name": "All policies",
+        "table": "policy",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "policy_board",
+        "name": "Policies board",
+        "table": "policy",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "policy_cal",
+        "name": "Policies calendar",
+        "table": "policy",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true
+      },
+      {
+        "token": "policy_over",
+        "name": "Overdue",
+        "table": "policy",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "In force",
+            "Renewing"
+          ]
+        }
+      },
+      {
+        "token": "policy_week",
+        "name": "Due this week",
+        "table": "policy",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "In force",
+            "Renewing"
+          ]
+        }
+      },
+      {
+        "token": "policy_next7",
+        "name": "Next 7 days",
+        "table": "policy",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "In force",
+            "Renewing"
+          ]
+        }
+      },
+      {
+        "token": "policy_r60",
+        "name": "Expiring in 60 days",
+        "table": "policy",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 60
+          }
+        }
+      },
+      {
+        "token": "policy_mine",
+        "name": "My policies",
+        "table": "policy",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_claim",
+        "name": "All claims",
+        "table": "claim",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "claim_board",
+        "name": "Claims board",
+        "table": "claim",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "claim_cal",
+        "name": "Claims calendar",
+        "table": "claim",
+        "kind": "calendar",
+        "dateField": "reported_on",
+        "allDay": true
+      },
+      {
+        "token": "claim_month",
+        "name": "Reported this month",
+        "table": "claim",
+        "kind": "grid",
+        "within": {
+          "reported_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "all_task",
+        "name": "All follow-ups",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_board",
+        "name": "Follow-ups board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_cal",
+        "name": "Follow-ups calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_mine",
+        "name": "My follow-ups",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Insurance Agency Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "policy",
+          "describes": "Each policy placed, with carrier, term dates and renewal status."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many policies are in renewal?",
+        "whyItMatters": "The account managers prioritise renewals by expiry date.",
+        "expect": {
+          "table": "policy",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Renewing"
+          },
+          "answer": 2,
+          "unit": "policies"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open insureds.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open policies.",
+        "action": {
+          "kind": "open",
+          "surface": "policy_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "policy_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open claims.",
+        "action": {
+          "kind": "open",
+          "surface": "claim_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "claim_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "wexfordday.net"
+      ],
+      "fictionalStreets": [
+        "Chandler Plaza"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "insurance-agency-desk",
+      "parent": null,
+      "title": "Insurance Agency Desk",
+      "icon": {
+        "emoji": "🛡️"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The agency's book in one place: insureds, every policy with its expiry and days to renewal, claims in progress, and the follow-ups the team owes. It tracks work only and gives no coverage advice. Start with Expiring in 60 days, then clear Mine."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:renewal-workflow"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:claims-handling"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:new-business-intake"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:weekly-service-rhythm"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Insureds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The households and businesses the agency insures."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Insureds",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All insureds",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Policies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each policy placed, with carrier, term dates and renewal status."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "policy",
+              "view": "policy_board"
+            },
+            "inline": true,
+            "title": "Policies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pol-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pol-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "pol-t",
+                "name": "All policies",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pol-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In force",
+                    "Renewing"
+                  ]
+                }
+              },
+              {
+                "id": "pol-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In force",
+                    "Renewing"
+                  ]
+                }
+              },
+              {
+                "id": "pol-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In force",
+                    "Renewing"
+                  ]
+                }
+              },
+              {
+                "id": "pol-r60",
+                "name": "Expiring in 60 days",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 60
+                  }
+                }
+              },
+              {
+                "id": "pol-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pol-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Claims reported on policies, tracked until the carrier closes them."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "claim_board"
+            },
+            "inline": true,
+            "title": "Claims",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cla-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cla-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "reported_on"
+              },
+              {
+                "id": "cla-t",
+                "name": "All claims",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cla-month",
+                "name": "Reported this month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "reported_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "cla-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-ups"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Calls, quotes and documents the team owes insureds."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Follow-ups",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tas-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tas-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tas-t",
+                "name": "All follow-ups",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tas-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tas-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "insurance-agency-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The renewal book and open claims."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "policy",
+                      "view": "all_policy"
+                    },
+                    "inline": true,
+                    "title": "Policies by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Policies by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "policy",
+                      "view": "all_policy"
+                    },
+                    "inline": true,
+                    "title": "Premium by line (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Premium by line (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "line",
+                          "op": "sum",
+                          "field": "premium"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "claim",
+                      "view": "all_claim"
+                    },
+                    "inline": true,
+                    "title": "Claims by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Claims by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Follow-ups by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Follow-ups by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expiring in the next 30 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "policy",
+              "view": "all_policy"
+            },
+            "inline": true,
+            "title": "Expiring in the next 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Expiring in the next 30 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "In force",
+                    "Renewing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Claims in progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "all_claim"
+            },
+            "inline": true,
+            "title": "Claims in progress",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Claims in progress",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Reported",
+                    "Investigating"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-ups overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Follow-ups overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Follow-ups overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to renewal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Expiry date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Start the renewal 60 to 90 days out; negative means the term has ended"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Premium in force (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Annual premium on policies marked In force"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare by line to see where the book is concentrated"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Claims in progress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Claims Reported or Investigating on the insured"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the insured every two weeks until the carrier settles"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Follow-ups overdue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tasks past their due date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clear before any new quote work"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "renewal-workflow",
+      "parent": "insurance-agency-desk",
+      "title": "Renewal workflow",
+      "icon": {
+        "emoji": "🔄"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Renewals are where an agency earns its keep. A calm sixty days beats a frantic five."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Timeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "90"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Review the policy and the insured's changes; add a renewal follow-up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "60"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Request the renewal quote and any updated applications"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "45"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Remarket if the premium rose sharply"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the insured with the options and a recommendation"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "15"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Collect signatures and payment details"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "0"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirm the new term is in force and update the row"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tracking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Use Expiring in 60 days every Monday."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Start renewal when work begins so the status reads Renewing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log every conversation in the policy page."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "claims-handling",
+      "parent": "insurance-agency-desk",
+      "title": "Supporting an insured through a claim",
+      "icon": {
+        "emoji": "🧯"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Express care before process. Ask if anyone is hurt and if the damage is contained."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect what happened, when, and the photos they have."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give the carrier's claim line and report the claim the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "While the claim is open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the claim with the date of loss and reported date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the carrier's claim number and adjuster to the row."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the insured every two weeks even if there is no news."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm the settlement matches the policy language."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Note anything the insured should change at renewal."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Say what you know, say what you do not know, and say when you will call again."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "new-business-intake",
+      "parent": "insurance-agency-desk",
+      "title": "New business intake",
+      "icon": {
+        "emoji": "🆕"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Information to collect"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Contact details and the effective date they need."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Business: operations, payroll, revenue range, locations, vehicles."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Household: property details, drivers, prior claims."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the insured and a policy at Quote."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Gather applications and send them for signature."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Submit to the carriers you place that line with."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Present options in plain language, with differences in cover listed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When bound, change the status to In force and set the dates."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This template tracks workflow only; coverage advice follows your licence and the carrier rules."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-service-rhythm",
+      "parent": "insurance-agency-desk",
+      "title": "Weekly service rhythm",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review Expiring in 60 days and assign renewals."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review Claims in progress and agree who calls whom."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Work Mine from the top; anything overdue is first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log every call on the policy page before moving on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Friday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tick off finished follow-ups."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move statuses so the dashboard is true."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write down the three things Monday needs to start with."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
