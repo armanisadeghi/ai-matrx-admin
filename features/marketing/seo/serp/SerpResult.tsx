@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 /**
  * SerpResult — the canonical "simulated Google search result".
@@ -128,6 +129,8 @@ export function SerpResult({
   const domain = parseSerpDomain(url);
   const breadcrumb = parseSerpBreadcrumb(url);
   const faviconChar = domain.charAt(0).toUpperCase() || "·";
+  // The letter is only the stand-in for a site with no icon of its own.
+  const LetterMark = () => <span>{faviconChar}</span>;
 
   const hasTitle = Boolean(title && title.trim());
   const hasDescription = Boolean(description && description.trim());
@@ -152,7 +155,7 @@ export function SerpResult({
             t.favicon,
           )}
         >
-          {faviconChar}
+          <SiteIcon site={url} fallback={LetterMark} size={size === "lg" ? 18 : 16} />
         </div>
         <div className="min-w-0">
           <div
