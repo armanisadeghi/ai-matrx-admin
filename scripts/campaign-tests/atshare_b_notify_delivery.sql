@@ -42,17 +42,17 @@ begin
   perform set_config('role','postgres', true);
   select count(*), max(n.body) into v_n, v_body from communication.notification n
    where n.organization_id = v_org and n.recipient_user_id = c_test and n.channel = 'in_app' and n.target_id = v_r2;
-  if v_n < 1 then raise exception 'CLAUSE 2 FAILED: no in-app notice for test@test.com on the new record % (write said %)', v_r2, v_out; end if;
+  if v_n < 1 then raise exception 'CLAUSE 2 FAILED: no in-app notice for test@test.com on the new record %', v_r2; end if;
   raise notice 'CLAUSE 2 OK: new record %, % in-app notice(s): %', v_r2, v_n, v_body;
   perform set_config('role','authenticated', true);
 
   -- CLAUSE 3 — an EXISTING record edited to put test@test.com in the column files their notice too.
   v_r3 := custom.record_write(v_org, v_t, jsonb_build_object('title','Take out the bins'));
-  v_out := custom.record_update(v_org, v_r3, jsonb_build_object('owner', c_test::text), null);
+  perform custom.record_update(v_org, v_r3, jsonb_build_object('owner', c_test::text), null);
   perform set_config('role','postgres', true);
   select count(*) into v_n from communication.notification n
    where n.organization_id = v_org and n.recipient_user_id = c_test and n.channel = 'in_app' and n.target_id = v_r3;
-  if v_n < 1 then raise exception 'CLAUSE 3 FAILED: no notice after assigning on an existing record % (update said %)', v_r3, v_out; end if;
+  if v_n < 1 then raise exception 'CLAUSE 3 FAILED: no notice after assigning on an existing record % ', v_r3; end if;
   raise notice 'CLAUSE 3 OK: edited record %, % in-app notice(s)', v_r3, v_n;
   select count(*) into v_n from communication.notification n where n.organization_id = v_org and n.channel = 'sms';
   if v_n <> 0 then raise exception 'SMS FOUND: %', v_n; end if;
