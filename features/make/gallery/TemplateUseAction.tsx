@@ -48,3 +48,20 @@ export function OwnTemplateFallback({ templateId }: { templateId: string }) {
   }
   return <TemplatePreview templateId={templateId} />;
 }
+
+/**
+ * "Use this template" on a Space template's page: signed in, the in-app landing that installs it into the active
+ * organization and opens its first page (/spaces/use-template); a guest signs up first and lands there.
+ */
+export function SpaceTemplateUseAction({ useHref, signUpHref }: { useHref: string; signUpHref: string }) {
+  const signedIn = useSignedIn();
+  return (
+    <Link
+      href={signedIn ? useHref : signUpHref}
+      data-public-template-use={signedIn ? "install" : "sign-up"}
+      className="inline-flex h-10 items-center self-start rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+    >
+      Use this template
+    </Link>
+  );
+}
