@@ -2,7 +2,7 @@ import "server-only";
 
 import { join } from "path";
 import { listAppDir } from "./app-tree";
-import { isPageFile } from "./scan-fs";
+import { isPageFile, shouldSkipDir } from "./scan-fs";
 
 export {
   scanRoutesFs as scanRoutes,
@@ -34,7 +34,7 @@ export async function scanRoutesShallow(dir: string): Promise<string[]> {
     const entries = await listAppDir(dir);
 
     for (const entry of entries) {
-      if (!entry.isDirectory() || entry.name.startsWith("_")) continue;
+      if (!entry.isDirectory() || shouldSkipDir(entry.name)) continue;
 
       const subDir = join(dir, entry.name);
       try {

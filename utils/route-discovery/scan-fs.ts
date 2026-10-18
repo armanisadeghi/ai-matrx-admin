@@ -19,8 +19,11 @@ export function isPageFile(name: string): boolean {
   return PAGE_FILE.test(name);
 }
 
-function shouldSkipDir(name: string): boolean {
-  return name.startsWith("_");
+/** Real routes that never appear in generated menus: the empty baseline page (lib/perf/SpeedTestPage.tsx). */
+const HIDDEN_ROUTE_DIRS: ReadonlySet<string> = new Set(["speed-test"]);
+
+export function shouldSkipDir(name: string): boolean {
+  return name.startsWith("_") || HIDDEN_ROUTE_DIRS.has(name);
 }
 
 /**
