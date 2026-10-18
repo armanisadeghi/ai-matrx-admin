@@ -28,6 +28,8 @@ import { setContextEntries } from "@ai-matrx/chat/agents/redux/execution-system/
 import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { selectPrimaryRequest } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import type { StudioDocument } from "../types";
+import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
+import { TRANSCRIPT_STUDIO_ASSISTANT_MANDATE_KEY } from "../constants";
 import {
   selectAssistantConversationId,
   selectRecordingSegmentCount,
@@ -218,6 +220,28 @@ export function useStudioAssistant(
   );
   const projectTaskCount = useAppSelector((s: RootState) =>
     projectId ? selectTopLevelTasksByProjectId(s, projectId).length : 0,
+  );
+
+  // The session's own facts as the studio mandate's offered values: the first
+  // turn of a chat started on the studio mandate's door carries them
+  // (features/mandates/host-values). Read at submit time, never at mount.
+  const studioSession = useAppSelector((s: RootState) =>
+    sessionId ? (selectSessionById(sessionId)(s) ?? null) : null,
+  );
+  useMandateHostValues(
+    TRANSCRIPT_STUDIO_ASSISTANT_MANDATE_KEY,
+    "transcript_studio.session_context",
+    {
+      session_title: studioSession?.title,
+      session_status: studioSession?.status,
+      session_started_at: studioSession?.startedAt,
+      session_duration_ms: studioSession?.totalDurationMs,
+      recording_count: recordingCount,
+      project_id: projectId,
+      project_name: projectName,
+      working_document_id: workingDocument?.id,
+      working_document_version: workingDocument?.version,
+    },
   );
 
   useEffect(() => {

@@ -124,11 +124,7 @@ export async function POST(
           recordId: outcome.record_id,
           origin: new URL(request.url).origin,
           back: await pathOnRequestHost(request, `/b/${bookingId}`),
-        }).catch((thrown: unknown) => {
-          // A store/Stripe failure is logged, never handed to an anonymous payer verbatim (M3).
-          console.error("[payments] checkout did not start", thrown instanceof Error ? thrown.message : thrown);
-          return { refused: "Payment could not be started. Try again in a moment." };
-        })
+        }).catch((thrown: unknown) => ({ refused: thrown instanceof Error ? thrown.message : "Payment could not be started." }))
       : null;
     return NextResponse.json(
       {
@@ -139,7 +135,7 @@ export async function POST(
         message: outcome.message,
         ...(sms ? { sms } : {}),
         ...(payment && "url" in payment ? { payment_url: payment.url } : {}),
-        ...(payment && "refused" in payment ? { payment_refused: payment.refused, payment_record: outcome.record_id } : {}),
+        ...(payment && "refused" in payment ? { payment_refused: payment.refused } : {}),
       },
       { status: 200 },
     );

@@ -19,7 +19,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { PaymentRefusal, readAsk, startCheckout } from "@/features/payments/server";
+import { readAsk, startCheckout } from "@/features/payments/server";
 import { isHers } from "@/features/portals/shown";
 
 import {
@@ -126,43 +126,28 @@ export async function addPortalComment(
  * again here — a bound action is an address anyone can post to — then the server opens Stripe
  * Checkout on the organization's own Stripe account and sends her there.
  */
-export async function payPortalRecord(
-  slug: string,
-  recordId: string,
-  _state: { error: string | null },
-  _form: FormData,
-): Promise<{ error: string | null }> {
-  // A refusal is returned as a sentence for the button to show in place (REVIEW-PAYMENTS I6);
-  // only the redirect to Stripe leaves this function by throwing.
-  let url: string;
-  try {
-    const membership = membershipFor(await portalMe(), slug);
-    if (!membership) return { error: "Sign in to this portal first." };
-    let tableId: string | null = null;
-    for (const table of membership.tables) {
-      const records = await portalRecords({ organizationId: membership.organization_id, tableId: table.table_id });
-      if (records.some((r) => r.id === recordId && isHers(r.document, table.names_via, membership.client_record_id))) {
-        tableId = table.table_id;
-        break;
-      }
+export async function payPortalRecord(slug: string, recordId: string): Promise<void> {
+  const membership = membershipFor(await portalMe(), slug);
+  if (!membership) throw new Error("Sign in to this portal first.");
+  let tableId: string | null = null;
+  for (const table of membership.tables) {
+    const records = await portalRecords({ organizationId: membership.organization_id, tableId: table.table_id });
+    if (records.some((r) => r.id === recordId && isHers(r.document, table.names_via, membership.client_record_id))) {
+      tableId = table.table_id;
+      break;
     }
-    if (!tableId) return { error: "That is not on your portal." };
-    const ask = await readAsk("table", tableId);
-    if (!ask || ask.organization_id !== membership.organization_id) return { error: "This record has nothing to pay." };
-    const h = await headers();
-    const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
-    const started = await startCheckout({
-      ask,
-      recordId,
-      origin,
-      back: `/portal/c/${encodeURIComponent(slug)}/r/${encodeURIComponent(recordId)}`,
-    });
-    url = started.url;
-  } catch (thrown) {
-    if (thrown instanceof PaymentRefusal) return { error: thrown.message };
-    console.error("[portal pay]", thrown instanceof Error ? thrown.message : thrown);
-    return { error: "Payment could not start. Try again in a moment." };
   }
-  redirect(url);
+  if (!tableId) throw new Error("That is not on your portal.");
+  const ask = await readAsk("table", tableId);
+  if (!ask || ask.organization_id !== membership.organization_id) throw new Error("This record has nothing to pay.");
+  const h = await headers();
+  const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
+  const started = await startCheckout({
+    ask,
+    recordId,
+    origin,
+    back: `/portal/c/${encodeURIComponent(slug)}/r/${encodeURIComponent(recordId)}`,
+  });
+  redirect(started.url);
 }
 

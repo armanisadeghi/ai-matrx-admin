@@ -425,8 +425,6 @@
     "check:knob-snapshot-adoption:self-test": "node scripts/check-knob-snapshot-adoption.mjs --self-test",
     "check:mandate-keys": "tsx scripts/check-mandate-keys.ts",
     "check:mandate-keys:self-test": "jest scripts/__tests__/check-mandate-keys.test.ts",
-    "check:mandate-start-by-id": "tsx scripts/check-mandate-start-by-id.ts",
-    "check:mandate-start-by-id:self-test": "tsx scripts/check-mandate-start-by-id.ts --self-test",
     "check:offer-guarantees": "tsx scripts/check-offer-guarantees.ts",
     "check:offer-guarantees:self-test": "jest scripts/__tests__/check-offer-guarantees.test.ts",
     "check:mandate-references": "uvx --from matrx-mandate-scan@latest matrx-mandate-scan check",

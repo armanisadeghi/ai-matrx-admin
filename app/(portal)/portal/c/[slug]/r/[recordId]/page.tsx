@@ -44,10 +44,10 @@ import { detailFieldKeys } from "@/features/portals/blocks";
 import { isHers, readable, shownFields } from "@/features/portals/shown";
 
 import { addPortalComment, payPortalRecord, savePortalField } from "./actions";
-import { readAsk, recordPaymentStatus } from "@/features/payments/server";
-import { PortalPayButton } from "@/features/portals/PortalPayButton";
+import { readAsk, latestPaymentStatus } from "@/features/payments/server";
 import { resolveAmountCents } from "@/features/payments/amount";
 import { formatMoney } from "@ai-matrx/kit/format";
+import { Button } from "@ai-matrx/design-system/controls";
 
 export const dynamic = "force-dynamic";
 
@@ -158,7 +158,7 @@ export default async function PortalRecordPage({
   // PAYMENTS-CONNECT: a table that asks for payment offers Pay until the record is paid.
   // The amount shown is the ask's; the server recomputes it from the stored record at checkout.
   const payAsk = await readAsk("table", table.table_id).catch(() => null);
-  const payStatus = payAsk ? await recordPaymentStatus(membership.organization_id, recordId).catch(() => null) : null;
+  const payStatus = payAsk ? await latestPaymentStatus(membership.organization_id, recordId).catch(() => null) : null;
   const payAmount = payAsk ? resolveAmountCents(payAsk, document) : null;
   const payLabel =
     payAsk && payAmount?.ok
@@ -250,10 +250,11 @@ export default async function PortalRecordPage({
             {payStatus === "paid" || payStatus === "refunded" ? (
               <span className="text-sm font-medium text-muted-foreground">{payStatus === "paid" ? "Paid" : "Refunded"}</span>
             ) : (
-              <PortalPayButton
-                label={payStatus === "expired" || payStatus === "failed" || payStatus === "pending" ? payLabel.replace(/^Pay/, "Pay again") : payLabel}
-                action={payPortalRecord.bind(null, membership.slug, recordId)}
-              />
+              <form action={payPortalRecord.bind(null, membership.slug, recordId)}>
+                <Button type="submit" variant="primary">
+                  {payLabel}
+                </Button>
+              </form>
             )}
           </section>
         ) : null}
