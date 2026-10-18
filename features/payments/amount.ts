@@ -120,22 +120,3 @@ export function settledStatusOf(session: Pick<Stripe.Checkout.Session, "status" 
   if (session.status === "expired") return "expired";
   return null;
 }
-
-/**
- * Where the return route may send a payer: a path on THIS site only (REVIEW-PAYMENTS I3). The WHATWG
- * URL parser treats a backslash, tab or newline like a slash, so "/\\evil.com" or "/\t/evil.com"
- * would leave the site; anything with a backslash or a control character is refused, and the
- * parsed result must keep the site's own origin. Returns a relative path, or "/".
- */
-export function safeReturnPath(raw: string | null, origin: string): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
-  if (/[\\\u0000-\u001f\u007f]/.test(raw)) return "/";
-  let parsed: URL;
-  try {
-    parsed = new URL(raw, origin);
-  } catch {
-    return "/";
-  }
-  if (parsed.origin !== new URL(origin).origin) return "/";
-  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-}

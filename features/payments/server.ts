@@ -179,111 +179,6 @@ export interface CheckoutStarted {
   currency: string;
 }
 
-interface PaymentRow {
-  id: string;
-  status: string;
-  amount_cents: number;
-  currency: string;
-  stripe_account_id: string;
-  stripe_checkout_session_id: string | null;
-  created_at: string;
-}
-
-/** Every live (not deleted) payment for one record, newest first. */
-async function paymentsOfRecord(organizationId: string, recordId: string): Promise<PaymentRow[]> {
-  const { data, error } = await billing().from("payment")
-    .select("id, status, amount_cents, currency, stripe_account_id, stripe_checkout_session_id, created_at")
-    .eq("organization_id", organizationId).eq("record_id", recordId).is("deleted_at", null)
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(`Reading the record's payments failed: ${error.message}`);
-  return (data as PaymentRow[] | null) ?? [];
-}
-
-/** A pending row that never got its Stripe session (a crash mid-start) stops blocking after this. */
-const STALE_START_MS = 2 * 60_000;
-
-async function reuseOrClearPending(ask: PaymentAsk, recordId: string, cents: number, accountId: string): Promise<CheckoutStarted | null> {
-  const rows = await paymentsOfRecord(ask.organization_id, recordId);
-  if (rows.some((r) => r.status === "paid")) throw new PaymentRefusal("This is already paid.");
-  const pending = rows.find((r) => r.status === "pending");
-  if (!pending) return null;
-
-  if (!pending.stripe_checkout_session_id) {
-    if (Date.now() - new Date(pending.created_at).getTime() < STALE_START_MS) {
-      throw new PaymentRefusal("A payment for this is already starting. Try again in a moment.");
-    }
-    const { error } = await billing().from("payment")
-      .update({ status: "expired", updated_at: new Date().toISOString() })
-      .eq("id", pending.id).eq("status", "pending");
-    if (error) throw new Error(`Clearing a stalled payment failed: ${error.message}`);
-    return null;
-  }
-
-  const sessionId = pending.stripe_checkout_session_id;
-  const stripe = getStripe();
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {}, { stripeAccount: pending.stripe_account_id });
-  const settled = settledStatusOf(session);
-  if (settled) {
-    await settle(sessionId, settled, intentOfSession(session));
-    if (settled === "paid") throw new PaymentRefusal("This is already paid.");
-    return null;
-  }
-  const same = pending.amount_cents === cents && pending.currency === ask.currency && pending.stripe_account_id === accountId;
-  if (session.status === "open" && same && session.url) {
-    return { paymentId: pending.id, url: session.url, amountCents: pending.amount_cents, currency: pending.currency };
-  }
-  // The amount, currency or account changed since that session opened: close it on Stripe first,
-  // so the payer can never pay the old one.
-  try {
-    await stripe.checkout.sessions.expire(sessionId, {}, { stripeAccount: pending.stripe_account_id });
-  } catch {
-    const again = await stripe.checkout.sessions.retrieve(sessionId, {}, { stripeAccount: pending.stripe_account_id });
-    if (settledStatusOf(again) === "paid") {
-      await settle(sessionId, "paid", intentOfSession(again));
-      throw new PaymentRefusal("This is already paid.");
-    }
-    if (again.status !== "expired") throw new PaymentRefusal("The earlier payment for this could not be closed. Try again in a moment.");
-  }
-  await settle(sessionId, "expired", null);
-  return null;
-}
-
-function intentOfSession(session: Stripe.Checkout.Session): string | null {
-  return typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null;
-}
-
-/** Every check before money is asked for; throws PaymentRefusal with the sentence the payer sees. */
-async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ account: OrgPaymentAccount; amount: { ok: true; cents: number } }> {
-  const account = await readOrgAccount(ask.organization_id);
-  if (!account || account.disconnected_at) throw new PaymentRefusal("This organization has not connected a Stripe account yet.");
-  if (account.livemode !== isLive()) throw new PaymentRefusal("The connected Stripe account is in the other mode (test vs live).");
-  if (!account.charges_enabled) throw new PaymentRefusal("The connected Stripe account cannot take payments until its setup is finished.");
-
-  const record = await recordValues(ask.organization_id, recordId);
-  if (!record || record.table_id !== ask.table_id) throw new PaymentRefusal("That record is not one this payment is for.", 404);
-  const amount = resolveAmountCents(ask, record.data);
-  if (!amount.ok) throw new PaymentRefusal(amount.message, 400);
-  return { account, amount };
-}
-
-/**
- * Why a payment for this record cannot start right now, or null when it can (REVIEW-PAYMENTS I5):
- * the payer's page says the store's own sentence instead of a silent thank-you.
- */
-export async function checkoutRefusal(subjectKind: PaymentSubjectKind, subjectId: string, recordId: string): Promise<string | null> {
-  const ask = await readAsk(subjectKind, subjectId);
-  if (!ask) return "This no longer asks for payment.";
-  try {
-    await readyToCharge(ask, recordId);
-    const rows = await paymentsOfRecord(ask.organization_id, recordId);
-    if (rows.some((r) => r.status === "paid")) return "This is already paid.";
-    return null;
-  } catch (thrown) {
-    if (thrown instanceof PaymentRefusal) return thrown.message;
-    throw thrown;
-  }
-}
-
 /**
  * Open a Stripe Checkout Session on the business's own account for one record. The amount is
  * computed HERE from the ask and the stored record, never taken from a browser. Marks the record
@@ -296,14 +191,15 @@ export async function startCheckout(input: {
   back: string;
 }): Promise<CheckoutStarted> {
   const { ask } = input;
-  const { account, amount } = await readyToCharge(ask, input.recordId);
+  const account = await readOrgAccount(ask.organization_id);
+  if (!account || account.disconnected_at) throw new PaymentRefusal("This organization has not connected a Stripe account yet.");
+  if (account.livemode !== isLive()) throw new PaymentRefusal("The connected Stripe account is in the other mode (test vs live).");
+  if (!account.charges_enabled) throw new PaymentRefusal("The connected Stripe account cannot take payments until its setup is finished.");
 
-  // ONE LIVE SESSION PER RECORD (REVIEW-PAYMENTS I2): a paid record is refused, an open session
-  // for the same amount is handed back (double click, Pay again after cancel, a stale tab), and a
-  // stale one is expired before a new one opens. The partial unique index
-  // billing.payment_one_pending_per_record refuses a second pending row raced in beside this one.
-  const reused = await reuseOrClearPending(ask, input.recordId, amount.cents, account.stripe_account_id);
-  if (reused) return reused;
+  const record = await recordValues(ask.organization_id, input.recordId);
+  if (!record || record.table_id !== ask.table_id) throw new PaymentRefusal("That record is not one this payment is for.", 404);
+  const amount = resolveAmountCents(ask, record.data);
+  if (!amount.ok) throw new PaymentRefusal(amount.message, 400);
 
   const description = ask.description?.trim() || "Payment";
   const { data: inserted, error } = await billing().from("payment").insert({
@@ -318,7 +214,6 @@ export async function startCheckout(input: {
     stripe_account_id: account.stripe_account_id,
     livemode: account.livemode,
   }).select("id").single();
-  if (error?.code === "23505") throw new PaymentRefusal("A payment for this is already starting. Try again in a moment.");
   if (error || !inserted) throw new Error(`Recording the payment failed: ${error?.message ?? "no row"}`);
   const paymentId = (inserted as { id: string }).id;
 
@@ -404,27 +299,10 @@ export async function sessionForPaymentIntent(paymentIntentId: string): Promise<
   return (data as { stripe_checkout_session_id: string | null } | null)?.stripe_checkout_session_id ?? null;
 }
 
-/**
- * What a record's payments say, for the portal Pay button: "paid" when ANY live payment for it is
- * paid (a stray newer row never brings Pay back for a paid record), otherwise the newest row's status.
- */
-export async function recordPaymentStatus(organizationId: string, recordId: string): Promise<string | null> {
-  const rows = await paymentsOfRecord(organizationId, recordId);
-  if (rows.some((r) => r.status === "paid")) return "paid";
-  return rows[0]?.status ?? null;
-}
-
-/**
- * What the payer's page may say after Stripe sent them back (REVIEW-PAYMENTS I4): read from the
- * payment row on the server, never from the address bar. Null unless the payment exists, is live,
- * and belongs to this subject (the form or booking page the payer is on).
- */
-export async function verifiedReturn(subjectId: string, paymentId: string | null | undefined): Promise<{ status: string; recordId: string } | null> {
-  if (!paymentId || !/^[0-9a-f-]{36}$/i.test(paymentId)) return null;
-  const { data, error } = await billing().from("payment").select("status, record_id, subject_id")
-    .eq("id", paymentId).is("deleted_at", null).maybeSingle();
-  if (error) throw new Error(`Reading the payment failed: ${error.message}`);
-  const row = data as { status: string; record_id: string; subject_id: string } | null;
-  if (!row || row.subject_id !== subjectId) return null;
-  return { status: row.status, recordId: row.record_id };
+/** The latest payment for a record (portal Pay button state). */
+export async function latestPaymentStatus(organizationId: string, recordId: string): Promise<string | null> {
+  const { data } = await billing().from("payment").select("status")
+    .eq("organization_id", organizationId).eq("record_id", recordId)
+    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  return (data as { status: string } | null)?.status ?? null;
 }

@@ -19,6 +19,8 @@ export interface HostValueSite {
   status: "wired" | "open";
   /** Open only: why it is not wired yet. */
   reason?: string;
+  /** Wired through a carrier other than the channel itself. */
+  via?: "contextItems";
 }
 
 export const HOST_VALUE_SITES: readonly HostValueSite[] = [
@@ -40,25 +42,39 @@ export const HOST_VALUE_SITES: readonly HostValueSite[] = [
     site: "data formula box",
     mandateKey: "data.formula_writing",
     provision: "data.formula_box",
+    // ProTextareaAgentPanel sends its contextItems as `variables` (and context)
+    // on the mandate door — proven 2026-10-18 (conversation 46558aa1).
     file: "features/data-tables/records-ui-host/recordsAgentPorts.tsx",
-    status: "open",
-    reason: "values ride ProTextareaAgentPanel contextItems (context, not variables); target_column_* not held by the port",
+    status: "wired",
+    via: "contextItems",
   },
   {
-    site: "war room room/master",
+    site: "war room room",
     mandateKey: "war_room.room",
     provision: "war_room.room_context",
     file: "features/war-room/hooks/useRoomAgent.ts",
-    status: "open",
-    reason: "runs on the agent door (edge-recorded agent); moving new chats to the mandate door needs a proof that the pinned `war_room` context satisfies the guaranteed value",
+    status: "wired",
+  },
+  {
+    site: "war room master",
+    mandateKey: "war_room.master",
+    provision: "war_room.room_context",
+    file: "features/war-room/hooks/useMasterAgent.ts",
+    status: "wired",
   },
   {
     site: "war room thread",
     mandateKey: "war_room.thread",
     provision: "war_room.thread_context",
     file: "features/war-room/components/thread/ThreadAgentPanel.tsx",
-    status: "open",
-    reason: "same agent-door routing as the room agent",
+    status: "wired",
+  },
+  {
+    site: "transcript studio",
+    mandateKey: "transcript_studio.document_edit",
+    provision: "transcript_studio.session_context",
+    file: "features/transcript-studio/hooks/useStudioAssistant.ts",
+    status: "wired",
   },
   {
     site: "voice tutor",
@@ -69,30 +85,15 @@ export const HOST_VALUE_SITES: readonly HostValueSite[] = [
     reason: "realtime voice session: never passes /ai/mandates, so no request carries offered values (server realtime door needed)",
   },
   {
-    site: "transcript studio",
-    mandateKey: "transcript_studio.document_edit",
-    provision: "transcript_studio.session_context",
-    file: "features/transcript-studio/hooks/useStudioAssistant.ts",
-    status: "open",
-    reason: "values pushed as context entries; mandate-door routing of the studio conversation not yet confirmed",
-  },
-  {
-    site: "CleanupPad",
-    mandateKey: "transcript_studio.document_edit",
-    provision: "transcript_studio.session_context",
-    file: "features/transcription-cleanup/components/CleanupPad.tsx",
-    status: "open",
-    reason: "launch path not yet traced",
-  },
-  {
-    site: "page guidance live values",
-    mandateKey: "ambient.page_guidance",
+    site: "page guidance record in view",
+    mandateKey: "notes.page_guidance",
     provision: "ambient.page_guidance",
-    file: "aidream/apps/shared/chat/src/agents/components/ambient-assistant/ScrollAssistantLauncherImpl.tsx",
-    status: "open",
-    reason: "route/module/section/org already ride the mandate door; record-in-view values need each page to call useMandateHostValues for the answering rung",
+    // One provider per rung of the page's chain; pages call
+    // usePageGuidanceRecord (first: features/notes/hooks/useNotesSurfaceScope.ts).
+    file: "features/mandates/host-values/usePageGuidanceRecord.ts",
+    status: "wired",
   },
 ];
 
 /** The open list only shrinks. */
-export const OPEN_SITE_CEILING = 7;
+export const OPEN_SITE_CEILING = 1;

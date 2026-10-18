@@ -20,7 +20,6 @@
 // button. The only thing this file adds is the VISITOR'S TIMEZONE, which is a
 // display concern: the same instant, said the way the person reads a clock.
 
-import { PaymentNotice } from "@/features/payments/PaymentNotice";
 import { useEffect, useMemo, useState } from "react";
 
 import { coerceTypedAnswer, fieldKindFor, type Field, type FieldKind } from "@ai-matrx/records";
@@ -43,9 +42,6 @@ interface ConfirmAnswer {
   message?: string | null;
   /** PAYMENTS-CONNECT: Stripe Checkout on the organization's own account, when the page asks for payment. */
   payment_url?: string | null;
-  /** The page asks for payment but it could not start (REVIEW-PAYMENTS I5): said, with Pay now. */
-  payment_refused?: string | null;
-  payment_record?: string | null;
   /** BOOKING-NOTIFY: how "Text me reminders" went; `say` is present only when it did not. */
   sms?: { recorded: boolean; say?: string } | null;
 }
@@ -59,7 +55,7 @@ type Stage =
   | { kind: "holding"; slotKey: string }
   | { kind: "details"; slot: BookingSlot; holdId: string; expiresAt: string | null }
   | { kind: "sending"; slot: BookingSlot; holdId: string; expiresAt: string | null }
-  | { kind: "booked"; slot: BookingSlot; ref: string | null; textNote?: string | null; payment?: { reason: string; recordId: string | null } | null }
+  | { kind: "booked"; slot: BookingSlot; ref: string | null; textNote?: string | null }
   | { kind: "sent"; message: string };
 
 /**
@@ -249,13 +245,7 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
       return;
     }
     if (answer.state === "booked") {
-      setStage({
-        kind: "booked",
-        slot: stage.slot,
-        ref: answer.booking_ref ?? null,
-        textNote: answer.sms?.say ?? null,
-        payment: answer.payment_refused ? { reason: answer.payment_refused, recordId: answer.payment_record ?? null } : null,
-      });
+      setStage({ kind: "booked", slot: stage.slot, ref: answer.booking_ref ?? null, textNote: answer.sms?.say ?? null });
       return;
     }
     if (answer.state === "held") {
@@ -281,14 +271,6 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
           {thanks?.body ? ` — ${thanks.body}` : ""}
         </p>
         {stage.textNote ? <p className="type-body text-muted-foreground">{stage.textNote}</p> : null}
-        {stage.payment ? (
-          <PaymentNotice
-            outcome="refused"
-            reason={stage.payment.reason}
-            note="Your time is booked but unpaid."
-            retry={stage.payment.recordId ? { subjectId: page.form_id, recordId: stage.payment.recordId, back: `/b/${page.form_id}` } : null}
-          />
-        ) : null}
         {stage.ref ? (
           // THE LINK IS SHOWN, NOT ONLY EMAILED. An email can be lost and a
           // confirmation page is the one moment we know the person is looking.

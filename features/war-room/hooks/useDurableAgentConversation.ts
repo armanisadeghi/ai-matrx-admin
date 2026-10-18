@@ -40,6 +40,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { createManualInstance } from "@ai-matrx/chat/agents/redux/execution-system/thunks/create-instance.thunk";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { followWhatIsStillInFlight } from "@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight";
@@ -63,6 +64,13 @@ export interface UseDurableAgentConversationConfig {
   defaultAgentId: string | null;
   /** Inline tool names to arm on the active conversation. */
   toolNames: readonly string[];
+  /**
+   * The tier's AGENT MANDATE. A conversation freshly minted for
+   * `defaultAgentId` starts on its MANDATE DOOR, so the tier's host values
+   * (features/mandates/host-values) reach the binding. Other agents, and
+   * every stored conversation, stay on the agent door.
+   */
+  mandateKey?: AnyMandateKey | null;
 }
 
 export interface UseDurableAgentConversationReturn {
@@ -128,7 +136,7 @@ const inFlight = new Map<string, Promise<string | null>>();
 export function useDurableAgentConversation(
   config: UseDurableAgentConversationConfig,
 ): UseDurableAgentConversationReturn {
-  const { storageKey, defaultAgentId, toolNames } = config;
+  const { storageKey, defaultAgentId, toolNames, mandateKey = null } = config;
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -192,6 +200,7 @@ export function useDurableAgentConversation(
         const newId = await dispatch(
           createManualInstance({
             agentId: forAgentId,
+            ...(mandateKey && forAgentId === defaultAgentId ? { mandateKey } : {}),
             apiEndpointMode: "agent",
             sourceFeature: "agent-runner",
             allowChat: true,
@@ -210,7 +219,7 @@ export function useDurableAgentConversation(
       });
       return flight;
     },
-    [dispatch, store, defaultAgentId],
+    [dispatch, store, defaultAgentId, mandateKey],
   );
 
   // ── Resolve on mount / when the scope changes ────────────────────────────
