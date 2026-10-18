@@ -37,6 +37,7 @@ import {
 } from "./content-sources";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON, AGENT_ICON_NAME } from "@/components/icons/domain-icons";
+import { displayId } from "@ai-matrx/design-system";
 
 const ICONS: Record<string, LucideIcon> = {
   FileText,
@@ -175,7 +176,7 @@ export function SourcePickerPanel({
             className="w-full"
             onClick={() => pick(pastedId)}
           >
-            Open {def.label.toLowerCase()} {pastedId.slice(0, 8)}…
+            Open {def.label.toLowerCase()} {displayId(pastedId)}…
           </Button>
         )}
       </div>

@@ -38,6 +38,7 @@ import { parseSemver } from "@/features/admin/applications/version";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { extractErrorMessage } from "@/utils/errors";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { RecordId } from "@ai-matrx/design-system";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -398,7 +399,7 @@ export function ToolEditPage({ tool }: Props) {
           <span className="block font-medium text-foreground mb-1">
             Tool ID
           </span>
-          <span className="font-mono break-all">{tool.id}</span>
+          <RecordId value={tool.id} label="Tool" show="full" />
         </div>
         <div>
           <span className="block font-medium text-foreground mb-1">

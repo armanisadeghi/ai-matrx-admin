@@ -51,11 +51,6 @@ export function clockWords(iso: string, timeZone?: string | undefined): string {
   return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...(timeZone ? { timeZone } : {}) });
 }
 
-/** An id nothing names reads as its first eight characters (the whole id in the cell's tooltip). */
-export function shortId(value: string): string | null {
-  return isUuidShape(value) ? value.slice(0, 8) : null;
-}
-
 /**
  * A finding's count: the groups that meet its rule, true even past the door's group cap (the door's
  * `distinct_groups`), and how many of them the list could hold.

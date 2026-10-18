@@ -35,6 +35,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
+import { displayId } from "@ai-matrx/design-system";
 // context-menu-exempt: entity — a Redux state dump of the instanceUIState slice, not a persisted record; the underlying conversation/agent already has its own doors elsewhere
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -155,7 +156,7 @@ function TabItem({
   onClose: () => void;
 }) {
   const instanceTitle = useAppSelector(selectInstanceTitle(tabId));
-  const label = instanceTitle ?? tabId.slice(0, 8) + "…";
+  const label = instanceTitle ?? displayId(tabId) + "…";
 
   return (
     <div

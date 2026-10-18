@@ -17,6 +17,7 @@ import { voiceImages, defaultVoiceImage } from "./voiceImages";
 import { useCartesia } from "@/hooks/tts/useCartesia";
 import { VoiceOptions, VoiceSpeed } from "@/lib/cartesia/cartesia.types";
 import { AiVoice } from "@/types/aiAudioTypes";
+import { RecordId } from "@ai-matrx/design-system";
 
 interface VoiceModalProps {
   voice: AiVoice;
@@ -116,7 +117,7 @@ const VoiceModal: React.FC<VoiceModalProps> = ({ voice, onClose }) => {
           <div className="bg-muted p-4 rounded-lg">
             <h4 className="font-semibold mb-2">Voice Details</h4>
             <p>
-              <strong>ID:</strong> <Badge variant="outline">{voice.id}</Badge>
+              <strong>ID:</strong> <RecordId value={voice.id} label="Voice" show="full" look="chip" />
             </p>
             <p>
               <strong>Type:</strong> AI-generated

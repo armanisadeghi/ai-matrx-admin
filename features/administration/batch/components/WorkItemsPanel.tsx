@@ -53,7 +53,7 @@ import {
   fmtStamp,
 } from "./presentation";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { readOf } from "@ai-matrx/design-system";
+import { readOf, displayId } from "@ai-matrx/design-system";
 
 const ANY = "__any__";
 
@@ -380,7 +380,7 @@ export function WorkItemsPanel({
             <EntityRef
               token={row.link_kind}
               id={row.link_id}
-              name={`${row.link_kind} ${row.link_id.slice(0, 8)}`}
+              name={`${row.link_kind} ${displayId(row.link_id)}`}
               openInNewTab
             />
           ) : (
@@ -640,7 +640,7 @@ function WorkItemDetail({
               className="underline decoration-dotted underline-offset-2 hover:text-primary"
               title="Open this submission on the Provider batches tab"
             >
-              {row.provider_batch_row_id.slice(0, 8)} · open submission
+              {displayId(row.provider_batch_row_id)} · open submission
             </button>
           ) : (
             "not grouped yet"

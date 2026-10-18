@@ -44,7 +44,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
-import { Skeleton } from "@ai-matrx/design-system";
+import { Skeleton, RecordId } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import {
@@ -840,17 +840,13 @@ export default function SandboxDetailPage() {
                       <span className="text-xs font-medium text-muted-foreground block mb-0.5">
                         Instance ID
                       </span>
-                      <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded break-all">
-                        {instance.id}
-                      </code>
+                      <RecordId value={instance.id} label="Instance" show="full" look="chip" />
                     </div>
                     <div>
                       <span className="text-xs font-medium text-muted-foreground block mb-0.5">
                         Sandbox ID
                       </span>
-                      <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded break-all">
-                        {instance.sandbox_id}
-                      </code>
+                      <RecordId value={instance.sandbox_id} label="Sandbox" show="full" look="chip" />
                     </div>
                     {instance.container_id && (
                       <div>
@@ -866,9 +862,7 @@ export default function SandboxDetailPage() {
                       <span className="text-xs font-medium text-muted-foreground block mb-0.5">
                         User ID
                       </span>
-                      <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded break-all">
-                        {instance.user_id}
-                      </code>
+                      <RecordId value={instance.user_id} label="User" show="full" look="chip" />
                     </div>
                     <div>
                       <span className="text-xs font-medium text-muted-foreground block mb-0.5">

@@ -57,7 +57,7 @@ import {
 import type { ActiveRequest } from "@ai-matrx/chat/agents/types/request.types";
 import type { MandateRunData } from "@ai-matrx/agents/generated/stream-events";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
-import { cn, ErrorNotice } from "@ai-matrx/design-system";
+import { cn, ErrorNotice, displayId } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -679,7 +679,7 @@ function MandateSection({
             <Metric label="Agent">
               {record?.agentId ? (
                 <Link className="text-primary underline" href={`/agents/${record.agentId}`}>
-                  {record.agentName ?? record.agentId.slice(0, 8)}
+                  {record.agentName ?? displayId(record.agentId)}
                 </Link>
               ) : (
                 "—"
@@ -726,7 +726,7 @@ function MandateSection({
           <Metric label="Agent">
             {frame.holder_id ? (
               <Link className="text-primary underline" href={`/agents/${frame.holder_id}`}>
-                {version?.name ?? frame.holder_id.slice(0, 8)}
+                {version?.name ?? displayId(frame.holder_id)}
               </Link>
             ) : (
               "—"

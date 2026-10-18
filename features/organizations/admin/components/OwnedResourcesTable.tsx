@@ -13,6 +13,7 @@ import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/dat
 import type { MatrxDataTableRead } from "@ai-matrx/design-system/data-table/types";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
+import { displayId } from "@ai-matrx/design-system";
 
 export interface OwnedResourceItem {
   id: string;
@@ -111,7 +112,7 @@ function NewestList({ row }: { row: OwnedResourceRow }) {
           <EntityRef
             token={row.resourceType}
             id={item.id}
-            name={item.name || `${row.displayLabel} ${item.id.slice(0, 8)}`}
+            name={item.name || `${row.displayLabel} ${displayId(item.id)}`}
             href={ownedItemHref(row, item.id)}
             openInNewTab
           />
@@ -172,7 +173,7 @@ export function OwnedResourcesTable({ tableId, rows, read, isLoading, isFetching
             <EntityRef
               token={row.resourceType}
               id={first.id}
-              name={first.name || `${row.displayLabel} ${first.id.slice(0, 8)}`}
+              name={first.name || `${row.displayLabel} ${displayId(first.id)}`}
               href={ownedItemHref(row, first.id)}
               openInNewTab
             />

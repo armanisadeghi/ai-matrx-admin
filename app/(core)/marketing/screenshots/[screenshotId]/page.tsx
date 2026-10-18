@@ -7,6 +7,7 @@ import { EntityCustomFields } from "@/features/unified-data/components/EntityCus
 import { createClient } from "@/utils/supabase/server";
 import { webDb } from "@/utils/supabase/webDb";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { RecordId } from "@ai-matrx/design-system";
 
 export default async function MarketingScreenshotPage({
   params,
@@ -45,7 +46,7 @@ export default async function MarketingScreenshotPage({
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Web screenshot</p>
             <h1 className="text-2xl font-semibold capitalize">{name}</h1>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">{screenshot.id}</p>
+            <RecordId value={screenshot.id} label="Screenshot" show="full" className="mt-1" />
           </div>
           <ShareButton resourceType="web_screenshot" resourceId={screenshot.id} resourceName={name} />
         </header>

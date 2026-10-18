@@ -40,10 +40,11 @@ import { asOfPage, doorWhere, type DrillNameResolver, type DrillRecordOpener, ty
 import type { DrillCarried } from "./questionParts";
 import { recordsColumnDimension, recordsColumnHeader } from "./recordsColumns";
 import { plainWords } from "./dimensionWords";
-import { grainNoun, isMoment, measureFactWords, momentWords, pluralNoun, shortId, drillFailureWords } from "./explorerWords";
+import { grainNoun, isMoment, measureFactWords, momentWords, pluralNoun, drillFailureWords } from "./explorerWords";
 import { formatCount } from "@ai-matrx/kit/format";
 
 import { Badge, Button } from "@ai-matrx/design-system/controls";
+import { RecordId, isRecordUuid } from "@ai-matrx/design-system";
 const PAGE = 100;
 /** Sums the header row names at most (the first Measures the question shows). */
 const SUMS_SHOWN = 3;
@@ -282,8 +283,7 @@ export function DrillRecords({
         // a code no Dimension names ("landed_only") reads in plain words, never as the code
         if (typeof v === "string" && /^[a-z]+(_[a-z0-9]+)+$/.test(v)) return <span>{plainWords(v)}</span>;
         // an id nothing names reads short (the whole id in its tooltip), never a whole UUID leading a row
-        const short = typeof v === "string" ? shortId(v) : null;
-        if (short) return <span className="font-mono text-muted-foreground" title={String(v)}>{short}</span>;
+        if (typeof v === "string" && isRecordUuid(v)) return <RecordId value={String(v)} />;
         return <span className={typeof v === "number" ? "tabular-nums" : undefined}>{typeof v === "object" ? JSON.stringify(v) : String(v)}</span>;
       },
     };

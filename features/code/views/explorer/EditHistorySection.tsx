@@ -26,7 +26,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useStore } from "react-redux";
 import { cn } from "@/lib/utils";
-import { UntrustedCount } from "@ai-matrx/design-system";
+import { UntrustedCount, displayId } from "@ai-matrx/design-system";
 import type { AppStore } from "@/lib/redux/store";
 import {
   selectSnapshotsForConversation,
@@ -261,11 +261,11 @@ export const EditHistorySection: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleScrollToMessage(row.messageId)}
-                    title={`Scroll to message ${row.messageId.slice(0, 8)}`}
+                    title={`Scroll to message ${displayId(row.messageId)}`}
                     className="flex min-w-0 flex-1 items-center gap-1 truncate text-left text-neutral-800 hover:text-blue-700 dark:text-neutral-200 dark:hover:text-blue-300"
                   >
                     <span className="font-mono text-[10px] text-neutral-500 dark:text-neutral-500">
-                      {row.messageId.slice(0, 8)}
+                      {displayId(row.messageId)}
                     </span>
                     <span className="truncate">
                       {row.files.length} file{row.files.length === 1 ? "" : "s"}

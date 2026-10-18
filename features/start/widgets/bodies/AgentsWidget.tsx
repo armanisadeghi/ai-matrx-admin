@@ -17,6 +17,7 @@ import { useAccessStates } from "@/features/access-gate/hooks/useAccessStates";
 import { searchItemsAsPerson } from "@/features/board/tools/search-items";
 import type { StartWidgetBodyProps } from "../types";
 import { WidgetList, slotRows, type WidgetRow } from "../frame";
+import { displayId } from "@ai-matrx/design-system";
 
 const agentIdOf = (id: string) => (id.startsWith("agent:") ? id.slice(6) : id);
 
@@ -39,7 +40,7 @@ export function openableRecentAgents<R extends { entity_id: string; title: strin
   return open.map((r) => ({
     ...r,
     label: r.title || "Untitled agent",
-    tell: (counts.get(r.title || "") ?? 0) > 1 ? r.subtitle || r.entity_id.slice(0, 8) : null,
+    tell: (counts.get(r.title || "") ?? 0) > 1 ? r.subtitle || displayId(r.entity_id) : null,
   }));
 }
 

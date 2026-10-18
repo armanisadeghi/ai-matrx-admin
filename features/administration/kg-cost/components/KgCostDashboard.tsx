@@ -45,7 +45,7 @@ import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@ai-matrx/design-system";
+import { Skeleton, displayId } from "@ai-matrx/design-system";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -592,7 +592,7 @@ function OrgDetailDialog({
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>
-            {detail?.organization_name ?? orgId?.slice(0, 8) ?? "Organization"}{" "}
+            {detail?.organization_name ?? (orgId ? displayId(orgId) : null) ?? "Organization"}{" "}
             cost detail
           </DialogTitle>
         </DialogHeader>

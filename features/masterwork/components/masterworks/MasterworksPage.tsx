@@ -3,7 +3,7 @@
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useCallback, useEffect, useState } from "react";
-import { StaleDataNotice } from "@ai-matrx/design-system";
+import { StaleDataNotice, displayId } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -670,7 +670,7 @@ export function MasterworksPage({
                               isOwner
                                 ? () =>
                                     setFeedbackSeed(
-                                      `I just looked at a run of the "${masterwork.name}" Masterwork (${runWhen(run)}, run ${run.id.slice(0, 8)}) and something came out wrong. Here's what it got wrong: `,
+                                      `I just looked at a run of the "${masterwork.name}" Masterwork (${runWhen(run)}, run ${displayId(run.id)}) and something came out wrong. Here's what it got wrong: `,
                                     )
                                 : undefined
                             }

@@ -46,7 +46,7 @@ jest.mock("@ai-matrx/design-system/data-table", () => {
 
 import { drillKnobAddress, readDrillKnob } from "../drillKnob";
 import { DRILL_KNOB_READS, drillKnobsOf } from "../useDrillKnobs";
-import { findingCount, grainNoun, isMoment, momentWords, pluralNoun, shortId } from "../explorerWords";
+import { findingCount, grainNoun, isMoment, momentWords, pluralNoun } from "../explorerWords";
 import { tipWords } from "../DrillExplorerNotes";
 import { drillReconcileChip } from "../useDrillReconcile";
 import { DrillRecords } from "../DrillRecords";
@@ -108,12 +108,10 @@ describe("the small words, from data", () => {
     expect(pluralNoun("entry", 2)).toBe("entries");
   });
 
-  it("F4/F8: a moment reads as a date and time in the calendar it is cut in; an unnamed id reads short", () => {
+  it("F4/F8: a moment reads as a date and time in the calendar it is cut in", () => {
     expect(isMoment("2026-09-12T23:59:36.392599+00:00")).toBe(true);
     expect(isMoment("claude-opus-5")).toBe(false);
     expect(momentWords("2026-09-12T23:59:36.392599+00:00", "UTC")).toMatch(/Sep 12, 11:59\s?PM/);
-    expect(shortId("0b6a1c2e-9f7d-4c1e-8a55-5a6f0e3d2b11")).toBe("0b6a1c2e");
-    expect(shortId("Verification Desk")).toBeNull();
   });
 
   it("F5: a finding past the cap counts the door's distinct groups", () => {

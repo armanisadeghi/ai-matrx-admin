@@ -22,6 +22,7 @@ import { InfoHint } from "@/components/official/InfoHint";
 import { useRecordActors } from "@/components/official/record-stamps/useRecordActors";
 import { resolveUserName } from "@/components/user/UserIdentity";
 import type { DetailRow } from "@ai-matrx/detail";
+import { RecordId } from "@ai-matrx/design-system";
 
 /**
  * The organization whose members are the directory we may legitimately read: the
@@ -59,7 +60,7 @@ export function HistoryActorName({
     <span
       className="font-mono text-[10px]"
     >
-      {actorId}
+      <RecordId value={actorId} label="User" show="full" />
       <InfoHint
         text="We could not find the person behind this id; they are not a member of this record's organization."
         label="About this id"

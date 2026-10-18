@@ -25,8 +25,8 @@ import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { useOpenNotesWindow } from "@ai-matrx/chat/host/window-openers";
 
 import { useNoteToolData, type NoteToolMode } from "./useNoteToolData";
+import { RecordId } from "@ai-matrx/design-system";
 import {
-  IdCopyChip,
   ModeToggle,
   NoteEditArea,
   NoteIdentityHeader,
@@ -113,7 +113,7 @@ export const NoteToolInline: React.FC<ToolRendererProps> = ({
 
       {/* Metadata + actions — stacked; id first with copy */}
       <div className="flex flex-col gap-1 border-t border-border/60 pt-1.5 text-[11px] text-muted-foreground">
-        <IdCopyChip id={data.noteId} />
+        <RecordId value={data.noteId} label="Note" token="note" show="full" look="chip" />
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
           {data.updatedAt ? (
             <span title={data.updatedAt}>

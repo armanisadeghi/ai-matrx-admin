@@ -14,6 +14,7 @@
 import { cn } from "@/utils/cn";
 import { ContextValueDisplay } from "@/features/scopes/components/reference/ContextValueDisplay";
 import type { ContextFieldKind, ContextValue } from "@ai-matrx/records/scopes";
+import { displayId } from "@ai-matrx/design-system";
 
 export interface ContextValueRowProps {
   value: ContextValue;
@@ -43,7 +44,7 @@ export function ContextValueRow({
       )}
     >
       <div className="w-1/3 shrink-0 truncate text-muted-foreground">
-        {label ?? (value.key || value.field_id.slice(0, 8))}
+        {label ?? (value.key || displayId(value.field_id))}
       </div>
       <div className="flex-1 break-words text-foreground">
         <ContextValueDisplay value={value} kind={kind} />

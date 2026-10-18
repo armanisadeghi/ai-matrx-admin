@@ -25,7 +25,7 @@ import { UnifiedVideoBlockRenderer } from "@/features/files/blocks/video/Unified
 import { EpisodeContentStudio } from "@/features/podcasts/studio/components/EpisodeContentStudio";
 import { EpisodeChaptersPanel } from "@/features/podcasts/studio/components/EpisodeChaptersPanel";
 import { EpisodeTitlePanel } from "@/features/podcasts/studio/components/EpisodeTitlePanel";
-import { Skeleton } from "@ai-matrx/design-system";
+import { Skeleton, RecordId } from "@ai-matrx/design-system";
 import { PodcastAudioPlayer } from "@/features/podcasts/components/player/PodcastAudioPlayer";
 import type { PodcastAudioPlayerHandle } from "@/features/podcasts/components/player/PodcastAudioPlayer";
 import { LiveAudioPlayer } from "@ai-matrx/media/live-audio-react";
@@ -444,7 +444,7 @@ export function StudioRunView({ runId }: { runId: string }) {
                       <span className="font-medium text-foreground/70">
                         Episode ID:
                       </span>{" "}
-                      {state.episodeId}
+                      <RecordId value={state.episodeId} label="Episode" show="full" />
                     </p>
                   )}
                   {publicLink && (

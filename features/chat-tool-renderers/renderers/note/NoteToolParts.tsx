@@ -7,10 +7,8 @@
  * (NotebookPen) plus the notes route accent color (see NOTE_ACCENT).
  */
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useEffect, useRef, useState } from "react";
-import { Check, Copy, Eye, FileText, Loader2, NotebookPen } from "lucide-react";
+import { Check, Eye, FileText, Loader2, NotebookPen } from "lucide-react";
 
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -270,36 +268,6 @@ export function NoteEditArea({
 // ─────────────────────────────────────────────────────────────────────────────
 // Metadata atoms
 // ─────────────────────────────────────────────────────────────────────────────
-
-/** Full note UUID + always-visible copy affordance. */
-export function IdCopyChip({ id }: { id: string }) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    if (!(await copyText(id, "Note ID copied"))) return;
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={copy}
-      title="Copy note ID"
-      className="group inline-flex w-full max-w-full items-start gap-1.5 rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-left font-mono text-[10.5px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-    >
-      <span className="min-w-0 flex-1 break-all">{id}</span>
-      {copied ? (
-        <Check className="h-3 w-3 shrink-0 text-primary" />
-      ) : (
-        <Copy className="h-3 w-3 shrink-0 text-muted-foreground" />
-      )}
-    </button>
-  );
-}
 
 /** Labeled metadata cell for the overlay's grid. */
 export function MetaItem({

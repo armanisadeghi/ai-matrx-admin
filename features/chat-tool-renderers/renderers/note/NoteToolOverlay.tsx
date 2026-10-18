@@ -20,8 +20,8 @@ import { formatAbsoluteDate, formatRelativeTime } from "@ai-matrx/kit/format";
 import { useOpenNotesWindow } from "@ai-matrx/chat/host/window-openers";
 
 import { useNoteToolData, type NoteToolMode } from "./useNoteToolData";
+import { RecordId } from "@ai-matrx/design-system";
 import {
-  IdCopyChip,
   MetaItem,
   ModeToggle,
   NoteEditArea,
@@ -104,7 +104,7 @@ export const NoteToolOverlay: React.FC<ToolRendererProps> = ({
       <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2">
         <div className="flex flex-col gap-2">
           <MetaItem label="Note ID">
-            <IdCopyChip id={data.noteId} />
+            <RecordId value={data.noteId} label="Note" token="note" show="full" look="chip" />
           </MetaItem>
           {data.updatedAt ? (
             <MetaItem label="Updated">

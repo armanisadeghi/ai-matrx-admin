@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
 import { webDb } from "@/utils/supabase/webDb";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { RecordId } from "@ai-matrx/design-system";
 
 export default async function MarketingSnapshotPage({
   params,
@@ -59,9 +60,7 @@ export default async function MarketingSnapshotPage({
               <h1 className="truncate text-xl font-semibold">
                 {snapshot.final_url || snapshot.id}
               </h1>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">
-                {snapshot.id}
-              </p>
+              <RecordId value={snapshot.id} label="Snapshot" show="full" className="mt-1" />
             </div>
             <ShareButton
               resourceType="web_snapshot"

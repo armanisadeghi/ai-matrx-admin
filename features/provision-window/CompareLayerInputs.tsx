@@ -8,7 +8,7 @@
  */
 import { useState } from "react";
 import { Button } from "@ai-matrx/design-system/controls";
-import { ErrorNotice } from "@ai-matrx/design-system";
+import { ErrorNotice, displayId } from "@ai-matrx/design-system";
 import { extractErrorMessage } from "@/utils/errors";
 import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -29,7 +29,7 @@ function PointRow({ pointKey, runId, organizationId }: { pointKey: CompareLayerP
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [captured, setCaptured] = useState(0);
-  const title = `${COMPARE_LAYER_POINTS[pointKey]}: run ${runId.slice(0, 8)}`;
+  const title = `${COMPARE_LAYER_POINTS[pointKey]}: run ${displayId(runId)}`;
   const capture = async () => {
     setBusy(true);
     setError(null);

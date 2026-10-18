@@ -57,6 +57,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { displayId } from "@ai-matrx/design-system";
 
 const USER_CLIENT_PREFIX = "matrx-user/";
 
@@ -382,7 +383,7 @@ function RoleRow({
                 )}
                 <span className="truncate text-xs text-foreground">
                   {effective
-                    ? (agentName ?? effective.agentId.slice(0, 8))
+                    ? (agentName ?? displayId(effective.agentId))
                     : "Choose agent"}
                 </span>
               </button>

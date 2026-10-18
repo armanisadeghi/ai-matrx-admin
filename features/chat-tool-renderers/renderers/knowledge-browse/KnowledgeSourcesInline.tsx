@@ -22,6 +22,7 @@ import { useOpenCitation } from "@/features/rag/components/source-inspector/useO
 import { citationHrefFor, type RagSearchHit } from "@/features/rag/api/search";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { displayId } from "@ai-matrx/design-system";
 
 /**
  * Inline renderer for `knowledge_browse(action="sources")` — the user's indexed knowledge as a
@@ -130,7 +131,7 @@ function SourceRow({ source }: { source: ParsedSource }) {
     (isFile ? normalizeSourceName(file?.fileName, source.sourceId) : null);
   const kindLabel = KIND_LABELS[source.sourceKind] ?? source.sourceKind;
   const displayName =
-    resolvedName ?? `${kindLabel} · ${source.sourceId.slice(0, 8)}`;
+    resolvedName ?? `${kindLabel} · ${displayId(source.sourceId)}`;
   const Icon = KIND_ICONS[source.sourceKind] ?? FileText;
   const openCitation = useOpenCitation();
   const href = hrefForSource(source);

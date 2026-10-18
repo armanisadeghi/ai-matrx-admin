@@ -41,6 +41,7 @@ import type { ExamplesState } from "@/features/content-ir/studio/kind-examples";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEngineeringDetail } from "@/features/content-ir/studio/use-engineering-detail";
+import { displayId } from "@ai-matrx/design-system";
 
 const PASTED = "__pasted__";
 
@@ -181,7 +182,7 @@ export default function KindGateTab({
           rows[0].data,
           rows[0].isCanonical
             ? "canonical example"
-            : `example ${rows[0].id.slice(0, 8)}`,
+            : `example ${displayId(rows[0].id)}`,
           emittedJsonSchema,
           family,
         )
@@ -218,7 +219,7 @@ export default function KindGateTab({
       computeGateRun(
         kind,
         row.data,
-        row.isCanonical ? "canonical example" : `example ${row.id.slice(0, 8)}`,
+        row.isCanonical ? "canonical example" : `example ${displayId(row.id)}`,
         emittedJsonSchema,
         family,
       ),
@@ -239,7 +240,7 @@ export default function KindGateTab({
           options={[
             ...rows.map((r) => ({
               value: r.id,
-              label: `${r.isCanonical ? "canonical" : r.source} · ${r.label ?? r.id.slice(0, 8)} · ${r.validationStatus}`,
+              label: `${r.isCanonical ? "canonical" : r.source} · ${r.label ?? displayId(r.id)} · ${r.validationStatus}`,
             })),
             { value: PASTED, label: "Pasted sample" },
           ]}

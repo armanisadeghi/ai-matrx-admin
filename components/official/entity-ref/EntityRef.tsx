@@ -40,6 +40,7 @@ import { openResourcePeek } from "@/features/organizations/peek/resourcePeekStor
 import { allowNativeNewTab } from "@/utils/navigation/should-open-in-new-tab";
 import { cn } from "@/lib/utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { displayId } from "@ai-matrx/design-system";
 
 export interface EntityRefProps {
   /** Canonical entity token (`agent`, `note`, `task`, …). */
@@ -210,7 +211,7 @@ export function EntityRef({
   // translate — `peekKeyForToken` existed only to bridge the legacy
   // catalogue vocabulary and is deleted.
   const canPeek = !disablePeek && hasPeek(canonicalToken);
-  const label = name?.trim() || `${id.slice(0, 8)}…`;
+  const label = name?.trim() || `${displayId(id)}…`;
   // `label` stays the ACCESSIBLE name (title/aria) even when children
   // replace what is drawn — a tooltip reading "Open" tells nobody anything.
   const labelBody = children ?? label;

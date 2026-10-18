@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { useScopeTree } from "@/features/scopes/hooks/useScopeTree";
 import { resolveColor } from "@/features/scopes/constants/scope-colors";
 import { formatOrgDisplayName } from "@/features/scopes/utils/formatOrgDisplayName";
+import { displayId } from "@ai-matrx/design-system";
 
 export interface ContextSummaryInput {
   organizationId?: string | null;
@@ -62,7 +63,7 @@ export function ContextSummaryChips({
       label:
         type && scope
           ? `${type.label_singular}: ${scope.name}`
-          : id.slice(0, 8),
+          : displayId(id),
       fg: c?.fg,
       border: c?.border,
     };

@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 import { listInterviews, setInterviewArchived } from "../data/interviews";
 import type { InterviewListRow } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { RecordId } from "@ai-matrx/design-system";
 
 export function InterviewListClient() {
   const [archived, setArchived] = useState<ArchiveFilterValue>(
@@ -131,10 +132,8 @@ export function InterviewListClient() {
             {row.respondentEmail}
           </span>
         ) : (
-          <span
-            className="block truncate font-mono text-[11px] text-muted-foreground"
-          >
-            {row.respondent_user_id.slice(0, 8)}…
+          <span className="flex min-w-0 items-center">
+            <RecordId value={row.respondent_user_id} label="User" />
             <InfoHint
               text="This account's address could not be read; the id is shown instead."
               label="About this id"

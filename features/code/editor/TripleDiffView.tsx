@@ -42,6 +42,7 @@ import { fileIdentityToTabId } from "../utils/fileIdentity";
 import { parseHistoryTripleTabId } from "./historyTripleTab";
 import type { EditorFile } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { RecordId } from "@ai-matrx/design-system";
 
 interface TripleDiffViewProps {
   tab: EditorFile;
@@ -160,9 +161,7 @@ export const TripleDiffView: React.FC<TripleDiffViewProps> = ({ tab }) => {
           <span className="font-medium text-neutral-900 dark:text-neutral-100">
             History · {snapshot.filePath.split("/").pop()}
           </span>
-          <span className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
-            msg {snapshot.messageId.slice(0, 8)}
-          </span>
+          <RecordId value={snapshot.messageId} label="Message" labelled />
           <LegacyDiffChip
             className="ml-auto"
             label="Monaco 3-way"

@@ -89,6 +89,7 @@ import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { RecordId } from "@ai-matrx/design-system";
 
 const MODES: { value: ProofRunMode; label: string; hint: string }[] = [
   {
@@ -933,7 +934,7 @@ export default function ProofRunsClient() {
               {openRun ? (
                 <div className="space-y-2 rounded-md border border-border p-3">
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-                    <span className="font-mono">{openRun.id}</span>
+                    <RecordId value={openRun.id} label="Run" show="full" />
                     <span>trigger {openRun.trigger_source}</span>
                     {openRun.git_sha ? (
                       <span>git {openRun.git_sha}</span>
