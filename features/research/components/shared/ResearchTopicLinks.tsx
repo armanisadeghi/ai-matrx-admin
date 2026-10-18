@@ -16,10 +16,10 @@
 
 import {
   AssociationList,
+  useContainerLinksAdapter,
   type PrimaryEntity,
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { useNeutralLinksAdapter } from "@/features/scopes/hooks/useNeutralLinksAdapter";
 
 const TOPIC_LINK_TOKENS = [
   "web_brand",
@@ -44,7 +44,7 @@ export function ResearchTopicLinks({
     label: topicName,
     direction: "outgoing",
   };
-  const adapter = useNeutralLinksAdapter(container, TOPIC_LINK_TOKENS);
+  const adapter = useContainerLinksAdapter(container, TOPIC_LINK_TOKENS);
   return (
     <section className="space-y-1.5">
       <h3 className="type-secondary font-semibold text-foreground">Links</h3>

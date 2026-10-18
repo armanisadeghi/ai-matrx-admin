@@ -10,10 +10,10 @@
 
 import {
   AssociationList,
+  useContainerLinksAdapter,
   type PrimaryEntity,
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { useNeutralLinksAdapter } from "@/features/scopes/hooks/useNeutralLinksAdapter";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 const RESEARCH_TOKENS: readonly EntityTypeToken[] = ["research_topic"];
@@ -33,7 +33,7 @@ export function BrandResearchCard({
     orgId: organizationId,
     label: brandName,
   };
-  const adapter = useNeutralLinksAdapter(container, RESEARCH_TOKENS);
+  const adapter = useContainerLinksAdapter(container, RESEARCH_TOKENS);
   return (
     <SectionCard
       title="Research"
