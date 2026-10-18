@@ -1,6 +1,6 @@
 // THE ONE client door for platform-admin membership changes (add / change role / remove), shared by
 // Users & Access › Organizations and a person's Organizations tab. Server side:
-// app/api/admin/users/organizations → admin_manage_organization_membership (writes the audit row).
+// app/api/admin/users/organizations → iam.admin_manage_organization_membership (writes the audit row; reason required).
 //
 // One person's memberships are read direct from the database (iam.memberships, platform-admin RLS),
 // never through the whole-directory route.
