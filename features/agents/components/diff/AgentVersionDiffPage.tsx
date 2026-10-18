@@ -41,7 +41,7 @@ import { toast } from "@ai-matrx/chat/host/notify";
 import { AgentDiffViewer, buildAgentAdapterRegistry } from "@/features/agents/components/diff/AgentDiffViewer";
 import { VersionHistoryTimeline } from "@/features/agents/components/diff/VersionHistoryTimeline";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
-import { VersionIdBadge } from "@/features/agents/components/diff/VersionIdBadge";
+import { RecordId } from "@ai-matrx/design-system";
 import { promoteFailureMessage } from "@/features/agents/components/diff/promote-failure-message";
 import { compareAgentDefinitions } from "@/features/agents/components/diff/compare-agent-definitions";
 import { useDiffEnrichment } from "@ai-matrx/chat/agents/hooks/useDiffEnrichment";
@@ -522,7 +522,7 @@ export function AgentVersionDiffPage({
 
               {selectedVersionItem && (
                 <div className="flex items-center gap-2 type-secondary text-muted-foreground">
-                  <VersionIdBadge versionId={selectedVersionItem.version_id} />
+                  <RecordId value={selectedVersionItem.version_id} label="Version" look="chip" />
                 </div>
               )}
             </>

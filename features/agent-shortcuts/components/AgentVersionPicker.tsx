@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentVersionHistory } from "@/features/agents/redux/builder-versions.thunks";
 import { type AgentVersionHistoryItem } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { CopyableUuid } from "./CopyableUuid";
+import { RecordId } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";
 
@@ -324,7 +324,7 @@ export function AgentVersionPicker({
           )}
         </div>
         <div className="shrink-0 pt-0.5">
-          <CopyableUuid value={agentId} label="id" />
+          <RecordId value={agentId} label="Agent" token="agent" look="chip" />
         </div>
       </div>
 
@@ -416,9 +416,10 @@ export function AgentVersionPicker({
               </span>
             )}
           </span>
-          <CopyableUuid
+          <RecordId
             value={useLatest ? null : agentVersionId}
-            label="version id"
+            label="Version"
+            look="chip"
           />
         </div>
       </div>

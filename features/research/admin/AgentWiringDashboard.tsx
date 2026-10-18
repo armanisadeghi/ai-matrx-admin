@@ -1,12 +1,10 @@
 'use client';
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SurfaceRuntimeProvider } from '@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext';
 import { ADMIN_KNOWLEDGE_SURFACE_NAME, createAdminKnowledgeScope } from '@/features/surfaces/manifests/admin-knowledge.manifest';
 import {
-    RefreshCw, Check, Copy, ExternalLink, ChevronDown, ChevronUp,
+    RefreshCw, ExternalLink, ChevronDown, ChevronUp,
     Loader2, AlertCircle, CheckCircle2, Edit2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,7 +32,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { } from '@ai-matrx/chat/agents/redux/agent-definition/selectors';
 import { } from '@ai-matrx/chat/agents/redux/agent-definition/thunks';
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
-import { UntrustedCount } from "@ai-matrx/design-system";
+import { UntrustedCount, RecordId } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { useBuiltinAgents } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
 import { ensureAgentCatalog } from "@ai-matrx/chat/agents/identity/agent-identity";
@@ -42,9 +40,6 @@ import { ensureAgentCatalog } from "@ai-matrx/chat/agents/identity/agent-identit
 const SYSTEM_AGENT_TAB = ['system'] as const;
 
 export function AgentWiringDashboard() {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
     const dispatch = useAppDispatch();
     const [templates, setTemplates] = useState<ResearchTemplate[]>([]);
     const [builtinNames, setBuiltinNames] = useState<Record<string, string>>({});
@@ -53,7 +48,6 @@ export function AgentWiringDashboard() {
     const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
     const [editingCell, setEditingCell] = useState<{ templateId: string; key: AgentConfigKey } | null>(null);
     const [saving, setSaving] = useState(false);
-    const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const { toast } = useToast();
 
@@ -111,11 +105,6 @@ export function AgentWiringDashboard() {
         }
     };
 
-    const copyId = async (id: string) => {
-        if (!(await copyText(id))) return;
-        setCopiedId(id);
-        setTimeout(() => setCopiedId(null), 2000);
-    };
 
     const toggleTemplate = (id: string) => {
         setExpandedTemplates(prev => {
@@ -182,13 +171,7 @@ export function AgentWiringDashboard() {
                                             {builtinNames[constant.defaultValue] ?? 'Unknown builtin'}
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            <code className="type-meta text-muted-foreground">{constant.defaultValue.slice(0, 12)}...</code>
-                                            <button onClick={() => copyId(constant.defaultValue)} className="p-0.5 hover:bg-muted rounded">
-                                                {copiedId === constant.defaultValue
-                                                    ? <Check className="h-3 w-3 text-green-500" />
-                                                    : <Copy className="h-3 w-3 text-muted-foreground" />
-                                                }
-                                            </button>
+                                            <RecordId value={constant.defaultValue} label="Agent" token="agent" />
                                         </div>
                                     </div>
                                     <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
@@ -339,16 +322,9 @@ export function AgentWiringDashboard() {
                                                                         'type-secondary truncate',
                                                                         val ? 'text-foreground' : 'text-muted-foreground',
                                                                     )}>
-                                                                        {val ? (builtinNames[val] ?? val.slice(0, 12) + '...') : 'Using system default'}
+                                                                        {val ? (builtinNames[val] ?? <RecordId value={val} label="Agent" token="agent" />) : 'Using system default'}
                                                                     </span>
-                                                                    {val && (
-                                                                        <button onClick={() => copyId(val)} className="p-0.5 hover:bg-muted rounded shrink-0">
-                                                                            {copiedId === val
-                                                                                ? <Check className="h-3 w-3 text-green-500" />
-                                                                                : <Copy className="h-3 w-3 text-muted-foreground" />
-                                                                            }
-                                                                        </button>
-                                                                    )}
+                                                                    {val && builtinNames[val] ? <RecordId value={val} label="Agent" token="agent" /> : null}
                                                                 </div>
                                                             )}
                                                         </div>

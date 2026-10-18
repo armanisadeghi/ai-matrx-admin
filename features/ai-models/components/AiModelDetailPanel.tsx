@@ -4,7 +4,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { readOf } from "@ai-matrx/design-system";
+import { readOf, RecordId } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -167,7 +167,7 @@ function OfferingPricingReadOnly({
           <div key={o.id} className="rounded-md border p-2.5 space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
               <Badge variant="outline" className="font-mono">
-                {o.provider_model_id ?? o.id.slice(0, 8)}
+                {o.provider_model_id ?? <RecordId value={o.id} label="Offering" />}
               </Badge>
               {o.usage_basis && (
                 <span className="text-muted-foreground">{o.usage_basis}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReadFailure } from "@ai-matrx/design-system";
+import { ReadFailure, RecordId } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -392,9 +392,7 @@ function UsageSection({
       accessorFn: (item) => item.id,
       width: 120,
       cell: (item) => (
-        <span className="font-mono text-muted-foreground" title={item.id}>
-          {item.id.slice(0, 8)}…
-        </span>
+        <RecordId value={item.id} label="Usage" />
       ),
     },
     ...(linkBase

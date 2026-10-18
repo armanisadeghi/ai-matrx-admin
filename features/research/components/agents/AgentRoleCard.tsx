@@ -11,9 +11,9 @@
  * pre-flight blocks a non-conforming candidate before the write).
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ClipboardCopy,
   CopyPlus,
   Hash,
   KeyRound,
@@ -25,8 +25,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@ai-matrx/chat/agents/redux/agent-definition/thunks";
@@ -40,7 +38,6 @@ import { useCopyMandateAgent } from "@/features/mandates/useCopyMandateAgent";
 import { ContractItem } from "@/features/mandates/components/ContractItem";
 import { MandateAgentPicker } from "@/features/mandates/components/MandateAgentPicker";
 import type { AgentRoleDefinition } from "./constants";
-import { shortUuid } from "./utils";
 
 // ─── Status pills ──────────────────────────────────────────────────────────
 
@@ -99,9 +96,6 @@ export function AgentRoleCard({
   onRemove,
 }: AgentRoleCardProps) {
   const dispatch = useAppDispatch();
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const Icon = role.icon;
   const { copying, copyAndOpen } = useCopyMandateAgent();
 
@@ -155,9 +149,6 @@ export function AgentRoleCard({
     );
   };
 
-  const copyId = (id: string) => {
-    void copyText(id, "Copied agent ID");
-  };
 
   // Header pill state
   const overrideActive = !!currentOverrideId && !role.systemOnly;
@@ -220,7 +211,7 @@ export function AgentRoleCard({
               Required contract
             </h4>
             <span className="font-mono text-[10.5px] text-muted-foreground/60">
-              {systemAgent?.name ?? shortUuid(role.systemAgentId)}
+              {systemAgent?.name ?? <RecordId value={role.systemAgentId} label="Agent" token="agent" />}
             </span>
           </div>
 
@@ -280,15 +271,7 @@ export function AgentRoleCard({
               {role.systemOnly ? "Configuration" : "Override"}
             </h4>
             {overrideActive && currentOverrideId ? (
-              <button
-                type="button"
-                onClick={() => copyId(currentOverrideId)}
-                className="inline-flex items-center gap-1 font-mono text-[10.5px] text-muted-foreground/70 hover:text-foreground"
-                title="Copy agent ID"
-              >
-                <ClipboardCopy className="h-2.5 w-2.5" />
-                {shortUuid(currentOverrideId)}
-              </button>
+              <RecordId value={currentOverrideId} label="Agent" token="agent" />
             ) : null}
           </div>
 
@@ -455,9 +438,7 @@ function CurrentOverridePanel({
           >
             {agentName ?? "Custom agent"}
           </p>
-          <p className="font-mono text-[10.5px] text-muted-foreground/70">
-            {shortUuid(agentId)}
-          </p>
+          <RecordId value={agentId} label="Agent" token="agent" />
         </div>
         <Button
           icon={<Trash2 />}
@@ -482,9 +463,9 @@ function SystemOnlyPanel({ agentId }: { agentId: string }) {
         backend, not from <code className="font-mono">rs_topic.agent_config</code>.
         Per-topic override isn&apos;t available yet.
       </p>
-      <p className="mt-2 font-mono text-[10.5px] text-muted-foreground/70">
-        {shortUuid(agentId)}
-      </p>
+      <div className="mt-2">
+        <RecordId value={agentId} label="Agent" token="agent" />
+      </div>
     </div>
   );
 }

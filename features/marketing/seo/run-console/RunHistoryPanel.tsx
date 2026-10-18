@@ -18,6 +18,7 @@
  * without saying how much. Filters and the open run live in the URL.
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -283,7 +284,7 @@ function AiCallCard({ call, index }: { call: RunAiCall; index: number }) {
               <EntityRef
                 token="conversation"
                 id={call.conversation_id}
-                name={call.conversation_id.slice(0, 8)}
+                name={null}
                 showIcon={false}
               />
             ) : (
@@ -332,9 +333,7 @@ function RunDetail({
           {run.label}
         </span>
         <StatusBadge status={run.status} group={run.status_group} />
-        <span className="font-mono text-[10px] text-muted-foreground">
-          {run.execution_id?.slice(0, 8)}
-        </span>
+        <RecordId value={run.execution_id} label="Execution" />
         <span className="ml-auto text-[10px] tabular-nums text-muted-foreground">
           {calls.isError ? (
             "AI calls unavailable"
@@ -698,9 +697,7 @@ function RunRow({
           {run.ai_call_count} AI call{run.ai_call_count === 1 ? "" : "s"}
         </Badge>
       ) : null}
-      <span className="font-mono text-[10px] text-muted-foreground">
-        {run.execution_id?.slice(0, 8)}
-      </span>
+      <RecordId value={run.execution_id} label="Execution" />
       <span className="ml-auto flex items-center gap-2 text-[10px] tabular-nums text-muted-foreground">
         {run.total_cost > 0 ? (
           <span className="flex items-center gap-0.5">
@@ -803,7 +800,7 @@ export function RunHistoryPanel() {
       return (
         <p className="flex items-center gap-1 p-2 text-xs text-muted-foreground">
           <Loader2 className="h-3 w-3 animate-spin" /> Opening run{" "}
-          {selectedRef.id.slice(0, 8)}
+          <RecordId value={selectedRef.id} label="Run" />
         </p>
       );
     }

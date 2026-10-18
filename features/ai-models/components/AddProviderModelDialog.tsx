@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import React, { useMemo, useState } from "react";
 import {
   Dialog,
@@ -224,12 +225,7 @@ export default function AddProviderModelDialog({
                   <p className="text-[10px] text-muted-foreground">
                     provider_id
                   </p>
-                  <p
-                    className="text-[10px] font-mono text-muted-foreground truncate"
-                    title={providerId}
-                  >
-                    {providerId.slice(0, 8)}…
-                  </p>
+                  <RecordId value={providerId} label="Provider" />
                 </div>
               </div>
             </section>

@@ -5,7 +5,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Copy, ExternalLink, MousePointerClick, X } from "lucide-react";
+import { Copy, ExternalLink, MousePointerClick, X } from "lucide-react";
 import {
   MatrxDataTable,
   type MatrxColumnDef,
@@ -47,7 +47,7 @@ import {
   createTableRowMenuDescriptor,
 } from "@ai-matrx/context-menu/engine";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
-import { readOf } from "@ai-matrx/design-system";
+import { RecordId, readOf } from "@ai-matrx/design-system";
 
 export interface ShortcutDirectoryProps {
   mode: ShortcutDirectoryMode;
@@ -82,7 +82,6 @@ export function ShortcutDirectory({
     "all" | "active" | "inactive"
   >("all");
   const [groupBy, setGroupBy] = useState<ShortcutDirectoryGroupBy>("none");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const scopeOptions = [...new Set(rows.map((row) => row.scopeType))].sort();
   const agentOptions = [
@@ -168,14 +167,6 @@ export function ShortcutDirectory({
     }
     startTransition(() => router.push(resolveShortcutDirectUrl(id, mode)));
   };
-  const copyId = async (id: string) => {
-    if (!(await copyText(id, "Shortcut ID copied", "Unable to copy ID"))) return;
-    setCopiedId(id);
-    setTimeout(
-      () => setCopiedId((current) => (current === id ? null : current)),
-      1800,
-    );
-  };
 
   const columns: MatrxColumnDef<ShortcutDirectoryRow>[] = [
     {
@@ -186,24 +177,7 @@ export function ShortcutDirectory({
       width: 112,
       sortable: false,
       cellKind: "text",
-      cell: (row) => (
-        <Button
-          icon={copiedId === row.id ? (
-            <Check className="text-success" />
-          ) : (
-            <Copy />
-          )}
-          variant="quiet"
-          className="w-full justify-start"
-          title={`Copy full shortcut ID: ${row.id}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            void copyId(row.id);
-          }}
-        >
-          <span>{row.id.slice(0, 8)}</span>
-        </Button>
-      ),
+      cell: (row) => <RecordId value={row.id} label="Shortcut" />,
     },
     {
       id: "label",
@@ -237,7 +211,7 @@ export function ShortcutDirectory({
           <EntityRef
             token="agent"
             id={row.agentId}
-            name={row.agentName ?? row.agentId.slice(0, 8)}
+            name={row.agentName}
             href={resolveAgentUrl(row.agentId, mode)}
             showIcon={false}
             className="max-w-[180px] text-sm"
@@ -351,7 +325,7 @@ export function ShortcutDirectory({
         label: "Copy ID",
         icon: Copy,
         onSelect: () => {
-          void copyId(row.id);
+          void copyText(row.id, "Shortcut ID copied", "Unable to copy ID");
         },
       },
     ];
@@ -435,7 +409,7 @@ export function ShortcutDirectory({
               <EntityRef
                 token="agent"
                 id={first.agentId}
-                name={first.agentName ?? first.agentId.slice(0, 8)}
+                name={first.agentName}
                 href={resolveAgentUrl(first.agentId, mode)}
                 showIcon={false}
                 className="font-semibold"

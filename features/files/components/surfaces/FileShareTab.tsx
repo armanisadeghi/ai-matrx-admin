@@ -27,6 +27,7 @@
 
 "use client";
 
+import { RecordId } from "@ai-matrx/design-system";
 import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useCallback, useState } from "react";
 import {
@@ -141,11 +142,7 @@ export function FileShareTab({ fileId, className }: FileShareTabProps) {
             label="Owner"
             value={
               <span className="inline-flex items-center gap-1.5">
-                <span className="font-mono text-[11px] text-foreground/80">
-                  {file.ownerId
-                    ? `${file.ownerId.slice(0, 8)}…${file.ownerId.slice(-4)}`
-                    : "—"}
-                </span>
+                <RecordId value={file.ownerId} label="Owner" />
                 {isOwner ? <OwnerBadge /> : null}
               </span>
             }

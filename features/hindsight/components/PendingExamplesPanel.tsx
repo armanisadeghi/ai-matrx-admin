@@ -15,6 +15,7 @@
  * Shared by the admin console (`EnrollmentDetailPanel`) and the product
  * improvement workspace (`EnrollmentSidebar`) — one honesty surface, not two.
  */
+import { RecordId } from "@ai-matrx/design-system";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Clock, Eye, Repeat2 } from "lucide-react";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
@@ -166,8 +167,8 @@ export function PendingExamplesPanel({
               className="min-w-0 space-y-2 rounded-md border border-border px-2 py-1.5"
             >
               <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="font-mono text-[11px] text-muted-foreground">
-                  {ex.kind} {ex.id.slice(0, 8)}
+                <span className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
+                  {ex.kind} <RecordId value={ex.id} label={ex.kind} />
                 </span>
                 <span className="text-[11px] text-muted-foreground">
                   {fmtDate(ex.at)}

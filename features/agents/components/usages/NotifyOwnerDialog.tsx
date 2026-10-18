@@ -24,7 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { RecordId } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -150,15 +150,7 @@ export function NotifyOwnerDialog({ open, target, onClose }: NotifyOwnerDialogPr
                 note the user may have typed, and a same-tab navigation unmounts
                 it and loses that prose. `alwaysShowActions` because the row has
                 nothing to hover. */}
-            <span className="font-mono text-muted-foreground">
-              {target.drift.agentId.slice(0, 8)}…
-            </span>
-            <EntityDoorControls
-              token="agent"
-              id={target.drift.agentId}
-              alwaysShowActions
-              className="shrink-0"
-            />
+            <RecordId value={target.drift.agentId} label="Agent" token="agent" />
           </div>
         ) : null}
 

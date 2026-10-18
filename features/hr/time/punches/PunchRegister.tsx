@@ -54,7 +54,7 @@ import { punchMenuContent, buildPunchMenuSection } from "../shared/punch-menu";
 import { PunchCorrectionDialog, type PunchCorrectionMode } from "./PunchCorrectionDialog";
 import { PunchRegisterScopePicker } from "./PunchRegisterScopePicker";
 import { downloadPunchRegisterCsv, punchRegisterToCsv } from "./registerCsv";
-import { readOf } from "@ai-matrx/design-system";
+import { readOf, RecordId } from "@ai-matrx/design-system";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -415,8 +415,8 @@ function punchColumns(
               <span className="block text-muted-foreground">{row.voidedReason}</span>
             ) : null}
             {row.voidedByPunchId ? (
-              <span className="block font-mono text-[10px] text-muted-foreground">
-                replaced by {row.voidedByPunchId.slice(0, 8)}
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                replaced by <RecordId value={row.voidedByPunchId} label="Punch" />
               </span>
             ) : null}
           </span>

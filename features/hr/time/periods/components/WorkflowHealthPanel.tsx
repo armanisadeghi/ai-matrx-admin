@@ -31,6 +31,7 @@
  * NO CLIENT COMPUTES ANYTHING: every count and classification is the server's.
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
 import { AlertTriangle, CheckCircle2, CircleDashed, Clock, ShieldAlert, UserX } from "lucide-react";
 
@@ -265,24 +266,29 @@ export function WorkflowHealthPanel({ workflow, hrefForEmployment }: WorkflowHea
                   rule), never a client-side join. When it is null the viewer may not have the
                   name, so the id stays as a bare REFERENCE rather than the panel inventing one.
                 */}
-                {hrefForEmployment ? (
+                {!row.subjectName ? (
+                  <RecordId
+                    value={row.employmentId}
+                    label="Employment"
+                    {...(hrefForEmployment
+                      ? { onOpen: () => void announceComingSoon("hr.employment-record") }
+                      : {})}
+                  />
+                ) : hrefForEmployment ? (
                   <Button
                     type="button"
                     variant="outline"
                     title={`Record reference ${row.employmentId}`}
                     onClick={() => void announceComingSoon("hr.employment-record")}
                   >
-                    {row.subjectName ?? `${row.employmentId.slice(0, 8)}…`}
+                    {row.subjectName}
                   </Button>
                 ) : (
                   <span
-                    className={cn(
-                      "text-[11px] text-foreground",
-                      !row.subjectName && "font-mono text-[10px] text-muted-foreground",
-                    )}
+                    className="text-[11px] text-foreground"
                     title={`Record reference ${row.employmentId}`}
                   >
-                    {row.subjectName ?? `${row.employmentId.slice(0, 8)}…`}
+                    {row.subjectName}
                   </span>
                 )}
 

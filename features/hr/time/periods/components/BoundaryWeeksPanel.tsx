@@ -19,11 +19,11 @@
  * NO CLIENT COMPUTES ANYTHING: `boundaryWorkweekIds` is the server's list.
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
 import { CalendarRange } from "lucide-react";
 
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
-import { Button } from "@/components/ui/button";
 import { boundaryWeeksSentence } from "../periodStateMachine";
 
 export interface BoundaryWeeksPanelProps {
@@ -103,13 +103,12 @@ export function BoundaryWeeksPanel({
         {boundaryWorkweekIds.map((id) => (
           <li key={id}>
             {/* An identity the UI names must open. The workweek detail is a tracked promise. */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void announceComingSoon("hr.workweek-detail")}
-            >
-              {id.slice(0, 8)}…
-            </Button>
+            <RecordId
+              value={id}
+              label="Workweek"
+              look="chip"
+              onOpen={() => void announceComingSoon("hr.workweek-detail")}
+            />
           </li>
         ))}
       </ul>

@@ -608,7 +608,7 @@ export function FactoryBuildPage({ buildId }: { buildId: string }) {
             {state.agent_id ? (
               <span className="ml-auto flex items-center gap-1.5 type-secondary">
                 <span className="text-muted-foreground">Agent</span>
-                <EntityRef token="agent" id={state.agent_id} name={state.agent_id.slice(0, 8)} />
+                <EntityRef token="agent" id={state.agent_id} name={null} />
               </span>
             ) : null}
           </div>
