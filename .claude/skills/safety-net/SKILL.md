@@ -45,7 +45,7 @@ safety net"; there was no weakness list, no sealed check, and the tests were edi
 | Briefs that can return what you do not already believe | reality-is-the-referee · `subagent-dispatch` §1 |
 | Realistic data and people | test-data-looks-real · `@ai-matrx/records/use-cases` · persona factory · aidream `scripts/pick_test_subject.py` (businesses and people to test on) |
 | The database tests run on | the live database, as `admin@admin.com`, on disposable records. The nightly clone is only for rehearsing destructive migrations or jobs that lock live 10+ minutes (`operations/clone/CURRENT.md`) |
-| A working localhost before any runner | §4a below; matrx-frontend `pnpm preview:ready`; memory rules in `operations/real-tests/RUNNER-ADDENDUM.md` |
+| Where tests run | the **live** product: aimatrx.com and `server.app.matrxserver.com`, as `admin@admin.com`. Never localhost (§4a) |
 
 ## 0. Pick the scenario first — it decides what "before" means
 
@@ -232,10 +232,10 @@ sink.
   default ([his words](/operations/real-tests/VISION.md)).
   Raise it to Sonnet only when a run is INCONCLUSIVE for reasons of the runner, never of the product.
   The agents under test default to Haiku 5.5 too, unless the playbook tests a specific model.
-- **Gets:** the STEPS half, its own localhost hostname and the dev-login route, signed in as `admin@admin.com`, plus the
+- **Gets:** the STEPS half, the live URL (aimatrx.com) signed in as `admin@admin.com` in the in-app browser, or the API sender for a no-screen playbook, plus the
   read queries the steps name. **Never gets:** the checks, the markers' expected placement,
   whether a fault is planted, the diff, or the change's purpose.
-- **Tools:** the provider's in-app browser on the runner's own hostname, and read-only queries on the
+- **Tools:** the provider's in-app browser on the live site, and read-only queries on the
   live database. No write tools, no file edits, no API calls outside the product. With only the product in
   hand, the end state can be made true only by the product doing its job.
 - **Returns** raw observations in the ledger's run shape, or "could not complete step N because…".
@@ -244,10 +244,11 @@ sink.
   produced the wrong state), or **INCONCLUSIVE** (the runner did not finish). INCONCLUSIVE is never a
   pass. Twice on one playbook, for reasons other than the environment (§4a), means the steps are unclear or the product is unusable at that step,
   and you find out which.
-- The product under test is localhost (the page, the local aidream, the one database at `https://db.matrxserver.com`), signed in as
-  `admin@admin.com` (live, never the clone). The runner touches only
-  that account's disposable records. A run during which another session changed the shared localhost server's build is
-  INCONCLUSIVE. Never Arman's Chrome. Never a sign-in or sign-out on a Matrx host outside the runner's own hostname.
+- The product under test is the **live** product users run: aimatrx.com, `server.app.matrxserver.com` and the one
+  database, signed in as `admin@admin.com` (never the clone). The runner touches only that account's disposable
+  records. Record the live server build (`/health/version`) in every run row; a run during which the live build
+  changed is INCONCLUSIVE. A change not yet released is tested after the next release (about 30 minutes), never on
+  localhost. Never Arman's Chrome; never a sign-out.
 - **Test subjects** (businesses, people) are never chosen by the agent
   ([his words](/systems/marketing/websites-and-brands/projects/smart-add-brand/VISION.md)). They come from aidream `scripts/pick_test_subject.py --category/--tag --claim "<run>"`, drawn at random
   from `operations/real-tests/SUBJECT-POOL.md`; a claimed subject is never reused. Every build is followed by a
@@ -277,16 +278,15 @@ land, and treat "page changed by itself" as INCONCLUSIVE.
 On 2026-10-15 three runs of one playbook spent about 25 minutes and 320k tokens and finished nothing:
 the preview had stopped itself after 30 idle minutes, then the in-app browser pane crashed from page
 memory twice. A runner is dispatched only after the grader has shown, in this turn:
-For a no-screen playbook the preflight is the AI Dream MCP `server_status` healthy plus one harmless
-call through the same door that returns; for a browser playbook:
-1. `pnpm preview:ready <the sheet's first route>` in matrx-frontend (`--hold <minutes>` for the run's
-   length) says READY. It repairs what it can, waits out a running install, and says READY only after a
-   verified **signed-in page load** of that route without a build-error overlay. A curl of `/login`, or
-   `preview:status` alone, is not proof.
-2. A build error is diagnosed before it is blamed: an export missing right after a package install is
-   a stale install (restart the preview), not another lane's edit.
-3. The browser pane is open and showing (`preview_start` with a url brings it back).
-4. The memory rules in `RUNNER-ADDENDUM.md` (watcher, heap per step, test-only reset) are in the brief.
+**Real tests run on the live product, never on localhost** (Arman, 2026-10-18: localhost is
+"for when you're actively fixing the ui or a quick bug"; a test there runs in an environment users never
+see and misses the biggest problems). Preflight:
+1. Note the live server build (`GET https://server.app.matrxserver.com/health/version`) and whether the
+   change under test is in it. If not, wait for the next release (about 30 minutes) — never test it locally.
+2. No-screen playbook: the AI Dream MCP `server_status` healthy plus one harmless call through the same door.
+3. Browser playbook: the in-app browser opens the sheet's first route on aimatrx.com signed in as
+   `admin@admin.com`, with no error page.
+4. The memory rules in `RUNNER-ADDENDUM.md` (watcher, heap per step) are in the brief.
 
 **Two INCONCLUSIVE runs from the environment on one net → stop dispatching** (a crash that happened
 with the memory rules followed counts too). Fix the environment, or
@@ -301,7 +301,7 @@ Each FAIL or surprise is one of three, decided from the captures and written in 
 - **Playbook wrong** (a control renamed, a step the intended behavior no longer has) → edit the
   playbook with a ledger row saying what changed and why, **citing the capture that shows it**, then rerun. Never after a FAIL whose cause
   is the product.
-- **Environment** (preview down, build error, pane crash, hot reload, a 500 on every page) →
+- **Environment** (live server down or mid-deploy, pane crash, a 500 on every page) →
   INCONCLUSIVE; §4a; never recorded as a baseline.
 
 Never rerun hoping it comes back green, and never call a red run "flaky" without the captures that
@@ -357,10 +357,9 @@ cannot vouch for the fix. Method and proof: the retired data-doctrine lane repor
 **Runners on one machine.** The provider's in-app browser pane is one per machine: every runner and every fixer takes
 a lock before its first browser step — `mkdir /tmp/matrx-browser-lane.lock && echo <name> > …/owner` — checks the
 owner is itself before every browser step, releases only its own lock, and never removes another's (2026-10-01: a
-fixer tested without the lock and deleted a runner's; the runner's tab was navigated away twice). Each seat gets its
-own preview hostname (`MATRX_PREVIEW_SESSION=<name> pnpm dev-login …`); the plain host is shared and other
-sessions navigate it. A run during which the shared preview changed database mode, or another lane's edit raised a
-build error, is INCONCLUSIVE; say so and rerun.
+fixer tested without the lock and deleted a runner's; the runner's tab was navigated away twice). Each seat drives its own private headless browser on the live site (matrx-frontend
+`node scripts/real-tests/pw.mjs <run> signin` then `goto https://www.aimatrx.com/<route>`), signed in by the helper,
+never by typing a password. A run during which the live build changed is INCONCLUSIVE; say so and rerun.
 
 **Many playbooks, one lane: the owner serialises, the runner never parks.** Eight runners dispatched at once
 on 2026-10-02 did eight minutes of work: one took the lane, the other seven started a background wait for the
@@ -416,6 +415,7 @@ Never "tests pass" or "fixes pushed" as the report, and never a pointer to the l
 | "Stale tests, not app defects" — then the tests were edited until green (npm campaign, 2026-10-12) | §4b: classify from the captures first. A playbook changes only for intended behavior, with a ledger row. |
 | Fixer brief citing W-01…W-22 before any playbook existed (agent variables, 2026-10-15) | §1: the run proves the bug and the rerun proves the fix. A fix from the list alone proves neither. |
 | "Another lane's import" — it was a stale install (agent variables, 2026-10-15) | §4a step 2: diagnose before blaming. |
+| "I'll test it on localhost first" / "waiting for the preview" | Live has the code within one release (about 30 minutes) and is what users run. Localhost is only a fix-and-look loop (§4a). |
 | "I'll wait in the background and resume when notified" (2026-10-02) | A background wait dies with the turn; wait in the foreground. |
 
 ## Red flags — thoughts that precede the violation

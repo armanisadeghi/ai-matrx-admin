@@ -1,5 +1,7 @@
 # Browser testing — the one harness, and its verified mechanics
 
+> **Checks, tests and sign-offs run on the LIVE site, not here** (Arman, 2026-10-18). This harness is for a rapid fix-and-look loop on UI you are changing right now. Real tests use `scripts/real-tests/pw.mjs` against https://www.aimatrx.com.
+
 Every rule here was verified live on 2026-08-09 against production and localhost. Deviating costs you a rediscovery cycle.
 
 ## THE ONE DEV SERVER LAW
