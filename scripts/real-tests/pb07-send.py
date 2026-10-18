@@ -3,8 +3,8 @@
 """Send real test PB-07 (core-chain, nothing undeclared reaches the model) to the LIVE server as admin@admin.com.
 
 It only SENDS. It asserts nothing and prints no pass or fail: a runner executes it, a grader runs
-pb07-provenance.py over the output directory. Spec: common-docs/operations/real-tests/core-chain/
-PB-07-nothing-undeclared.md; fixture ids: core-chain LEDGER.md "PB-07 fixtures".
+pb07-provenance.py over the output directory. Before it sends it prints and saves (run-identity.json) the
+live server's commit, the UTC start time and the fixture ids it uses.
 
 The same typed message and the same variable value go through every door, one call per door. For each
 door that has a dry run, the same body is also sent with `dry_run: true` (no model call, nothing stored)
@@ -30,9 +30,6 @@ Usage:
   pb07-send.py                      every door, real call then dry run
   pb07-send.py --only chat          one door
   pb07-send.py --dry-only           dry runs only (no model call, nothing stored): install check
-  pb07-send.py --fault              FAULT RUN: the builder-run door only, its turn declared on the surface
-                                    matrx-user/canvas-viewer, whose manifest declares one system note
-                                    (render_environment_note); saved as door "builder-run-fault"
   pb07-send.py --out DIR            write the files to DIR (default: a new temp dir)
 
 Writes one JSON file per call (<door>.json, <door>.dry.json) and manifest.json (door -> conversation id,
@@ -43,12 +40,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import tempfile
 import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from run_identity import record_run_identity  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests
@@ -151,8 +152,6 @@ def build(door: str) -> tuple[str, dict, str, str | None]:
         return f"/ai/agents/{CANARY}", agent_body(cid, None), CANARY, cid
     if door == "builder-run":
         return "/ai/manual", manual_body(cid, "matrx-user/agent-builder"), CANARY, cid
-    if door == "builder-run-fault":
-        return "/ai/manual", manual_body(cid, "matrx-user/canvas-viewer"), CANARY, cid
     if door == "mandate-client":
         return f"/ai/mandates/{MANDATE}", agent_body(cid, None), CANARY, cid
     if door == "mandate-try":
@@ -190,26 +189,23 @@ def record(out: Path, manifest: dict, door: str, kind: str, token: str) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--only", choices=DOORS, help="send one door")
     ap.add_argument("--dry-only", action="store_true", help="dry runs only (no model call, nothing stored)")
-    ap.add_argument("--fault", action="store_true", help="fault run: builder-run on the canvas-viewer surface")
     ap.add_argument("--out", help="directory for the files (default: a new temp dir)")
     args = ap.parse_args()
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb07-"))
     out.mkdir(parents=True, exist_ok=True)
     manifest = json.loads((out / "manifest.json").read_text()) if (out / "manifest.json").exists() else {}
+    record_run_identity("pb07-send", SERVER, {"organization": ORG, "canary": CANARY, "canary_together": CANARY_T,
+                                              "caller": CALLER, "workflow": WORKFLOW, "mandate": MANDATE, "scope": SCOPE,
+                                              "model": HAIKU}, out)
     token = admin_token()
-    if args.fault:
+    for door in [args.only] if args.only else DOORS:
         if not args.dry_only:
-            record(out, manifest, "builder-run-fault", "real", token)
-        record(out, manifest, "builder-run-fault", "dry", token)
-    else:
-        for door in [args.only] if args.only else DOORS:
-            if not args.dry_only:
-                record(out, manifest, door, "real", token)
-            if door in HAS_DRY:
-                record(out, manifest, door, "dry", token)
+            record(out, manifest, door, "real", token)
+        if door in HAS_DRY:
+            record(out, manifest, door, "dry", token)
     print(f"files in {out}")
 
 

@@ -4,13 +4,12 @@
 as admin@admin.com, and capture what the server writes into the conversation BY ITSELF afterwards.
 
 It only SENDS, WAITS and SAVES. It asserts nothing and prints no pass or fail: a runner executes it, a grader
-reads the database. Spec: common-docs/operations/real-tests/core-chain/PB-08-background-agents.md (STEPS);
-fixture ids: core-chain LEDGER.md "PB-08 fixtures".
+reads the database. Before it sends it prints and saves (run-identity.json) the live server's commit, the
+UTC start time and the fixture ids it uses.
 
 A run is ONE stored conversation with Halcyon Ops Lead (active organization Safety Net Real Tests):
   turn 1  POST /ai/agents/<lead>               the foreground drill
-  turn 2  POST /ai/conversations/<id>          two background helpers; then a quiet-wait while the server
-                                                writes their results back on its own
+  turn 2  POST /ai/conversations/<id>          two background helpers; then a quiet-wait
   turn 3..7 POST /ai/conversations/<id>        follow-up, steer, stop, fork, sleep-and-wake
 After turn 7 it polls the stored conversation for --final-poll seconds (default 240) without sending anything.
 
@@ -29,9 +28,7 @@ Usage:
   pb08-send.py                          one run (seven turns, waits, final poll)
   pb08-send.py --out DIR                write the files to DIR
   pb08-send.py --read <conversation>    write final.json for an existing conversation; sends nothing
-  pb08-send.py --lead-tools all         store the lead's five tools (restore), print what is stored; sends no turn
-  pb08-send.py --lead-tools without-task_stop
-                                        store the lead's tools minus task_stop, print what is stored; sends no turn
+  pb08-send.py --lead-tools all         store the lead's start tools, print what is stored; sends no turn
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
 (matrx-frontend/.env.local, never printed), the same way pb04-send.py does.
@@ -40,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import tempfile
 import time
 import urllib.error
@@ -48,6 +46,9 @@ import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from run_identity import record_run_identity  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
@@ -288,8 +289,8 @@ def write_final(s: Session, cid: str, out: Path) -> None:
     print(f"wrote {out / 'final.json'}")
 
 
-def set_lead_tools(s: Session, which: str) -> None:
-    names = list(TOOL_IDS) if which == "all" else [n for n in TOOL_IDS if n != "task_stop"]
+def set_lead_tools(s: Session, names: list) -> None:
+    """Store exactly these tools on the lead and print what the row holds afterwards."""
     status, raw = rest(s, "PATCH", "agent", f"definition?id=eq.{LEAD}", {"tools": [TOOL_IDS[n] for n in names]})
     print(f"agent.definition PATCH tools: HTTP {status}")
     stored = rows(s, "agent", "definition", {"id": f"eq.{LEAD}", "select": "id,name,version,tools"})
@@ -299,21 +300,24 @@ def set_lead_tools(s: Session, which: str) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--out", help="directory for the files (default: a new temp dir)")
     ap.add_argument("--settle", type=int, default=150, help="max seconds to wait for quiet after a turn (default 150)")
     ap.add_argument("--final-poll", type=int, default=240, help="seconds to poll after turn 7 (default 240)")
     ap.add_argument("--read", metavar="CONVERSATION", help="write final.json for an existing conversation; send nothing")
-    ap.add_argument("--lead-tools", choices=["all", "without-task_stop"], help="store the lead's tools and print them; send nothing")
+    ap.add_argument("--lead-tools", choices=["all"], help="store the lead's start tools and print them; send nothing")
     args = ap.parse_args()
-    s = Session()
+    fixtures = {"organization": ORG, "lead_agent": LEAD, **{f"tool_{k}": v for k, v in TOOL_IDS.items()}}
 
     if args.lead_tools:
-        set_lead_tools(s, args.lead_tools)
+        record_run_identity("pb08-send --lead-tools", SERVER, fixtures)
+        set_lead_tools(Session(), list(TOOL_IDS))
         return
 
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb08-"))
     out.mkdir(parents=True, exist_ok=True)
+    record_run_identity("pb08-send --read" if args.read else "pb08-send", SERVER, fixtures, out)
+    s = Session()
 
     if args.read:
         write_final(s, args.read, out)
@@ -324,12 +328,12 @@ def main() -> None:
     for n, text in enumerate(TURNS, start=1):
         cid = send_turn(s, out, n, cid, text)
         if n == 2:
-            # the server writes both helpers' results back by itself; nothing is sent meanwhile
+            # nothing is sent while this waits
             wait(s, cid, "after turn 2 (background results)", out, max_s=args.settle, min_s=20)
         elif n == 4:
             wait(s, cid, "after turn 4 (steered helper)", out, max_s=args.settle, min_s=20)
         elif n == 5:
-            # the stopped helper must stay silent; watch long enough for a 3,000-word essay to have finished
+            # a fixed 90 s window, whatever arrives in it
             wait(s, cid, "after turn 5 (stopped helper)", out, max_s=90, full_window=True)
         elif n == 7:
             wait(s, cid, "after turn 7 (scheduled wake-up)", out, max_s=args.final_poll, full_window=True)
