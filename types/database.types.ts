@@ -497,6 +497,66 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: Record<string, unknown>
       }
+      _user_activity_account: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_admin: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_billing: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_conversation: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_error: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_feedback: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_item: {
+        Args: {
+          p_actor: string
+          p_at: string
+          p_detail: string
+          p_key: string
+          p_kind: string
+          p_record: Json
+          p_title: string
+        }
+        Returns: Json
+      }
+      _user_activity_notification: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_org_admin: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_run: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_sign_in: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_sms: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
+      _user_activity_support: {
+        Args: { p_before: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
       set_top_tier_model_access: {
         Args: { p_enabled: boolean; p_note?: string; p_user: string }
         Returns: Json
@@ -578,7 +638,30 @@ export type Database = {
           user_id: string
         }[]
       }
+      user_activity: {
+        Args: {
+          p_before?: string
+          p_kinds?: string[]
+          p_limit?: number
+          p_user: string
+        }
+        Returns: Json
+      }
       user_overview: { Args: { p_user: string }; Returns: Json }
+      user_owned_resources: {
+        Args: { p_budget_ms?: number; p_user: string }
+        Returns: Json
+      }
+      user_owned_resources_shard: {
+        Args: {
+          p_budget_ms?: number
+          p_shard: number
+          p_shards: number
+          p_user: string
+        }
+        Returns: Json
+      }
+      user_security: { Args: { p_user: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
@@ -2958,6 +3041,7 @@ export type Database = {
           agent_tags: string[] | null
           agent_type: string | null
           agent_variable_definitions: Json | null
+          agent_version_id: string | null
           auto_run: boolean | null
           created_at: string | null
           created_by: string | null
@@ -31298,6 +31382,10 @@ export type Database = {
         Args: { p_kind_definition_id: string }
         Returns: Json
       }
+      in_my_organizations: {
+        Args: { r: Database["content_ir"]["Tables"]["kind_instance"]["Row"] }
+        Returns: boolean
+      }
       kind_component_layer_guard_status: { Args: never; Returns: Json }
       kind_example_candidates: {
         Args: { p_kind_definition_id: string; p_limit?: number }
@@ -31593,6 +31681,71 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: []
+      }
+      system_context_item_org_value: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          system_context_item_id: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          system_context_item_id: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          system_context_item_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_context_item_org_value_system_context_item_id_fkey"
+            columns: ["system_context_item_id"]
+            isOneToOne: false
+            referencedRelation: "system_context_item"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       template_context_items: {
         Row: {
@@ -31916,6 +32069,7 @@ export type Database = {
         Returns: string
       }
       slugify: { Args: { p: string }; Returns: string }
+      system_item_org_values: { Args: { p_org: string }; Returns: Json }
       system_item_refs_or_defaults: {
         Args: { p_refs: string[] }
         Returns: string[]
@@ -34867,6 +35021,19 @@ export type Database = {
         }
         Returns: Json
       }
+      in_my_organizations:
+        | {
+            Args: { r: Database["crm"]["Tables"]["outreach_list"]["Row"] }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: crm.in_my_organizations(r => outreach_list), crm.in_my_organizations(r => party). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+        | {
+            Args: { r: Database["crm"]["Tables"]["party"]["Row"] }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: crm.in_my_organizations(r => outreach_list), crm.in_my_organizations(r => party). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
       issue_unsubscribe_token: {
         Args: {
           p_contact_medium_id: string
@@ -39456,6 +39623,7 @@ export type Database = {
         Returns: Json
       }
       _ctx_store_value: { Args: { p_org: string; p_row: Json }; Returns: Json }
+      _ctx_system_value_write: { Args: { p_payload: Json }; Returns: Json }
       _ctx_table_fields: {
         Args: { p_org: string; p_type: string }
         Returns: Json
@@ -40020,6 +40188,10 @@ export type Database = {
       _pick_list_index_of: {
         Args: { p_me: string; p_organization_id: string }
         Returns: Json
+      }
+      _pick_list_items_apply: {
+        Args: { p_items: Json; p_list_id: string; p_org: string }
+        Returns: undefined
       }
       _pipeline_gate:
         | {
@@ -84796,6 +84968,10 @@ export type Database = {
             }
             Returns: string[]
           }
+      admin_confirm_email: {
+        Args: { p_reason?: string; p_user: string }
+        Returns: Json
+      }
       admin_policy_findings: {
         Args: { p_tbl: unknown }
         Returns: {
@@ -85097,6 +85273,10 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["permission_level"]
       }
+      end_session: {
+        Args: { p_reason?: string; p_session: string; p_user: string }
+        Returns: Json
+      }
       entity_read_equivalence: {
         Args: {
           p_baseline?: string
@@ -85392,6 +85572,10 @@ export type Database = {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
       }
+      is_my_organization: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
       is_org_manager: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
@@ -85587,6 +85771,7 @@ export type Database = {
         Args: { p_resource_id: string; p_resource_type: string }
         Returns: Json
       }
+      my_organization_ids: { Args: never; Returns: string[] }
       my_organizations_by_ids: { Args: { p_ids: string[] }; Returns: Json }
       my_organizations_page: {
         Args: {
@@ -86000,6 +86185,10 @@ export type Database = {
         }
         Returns: Json
       }
+      remove_mfa_factor: {
+        Args: { p_factor: string; p_reason?: string; p_user: string }
+        Returns: Json
+      }
       reopen_account: {
         Args: { p_reason?: string; p_user: string }
         Returns: Json
@@ -86037,6 +86226,10 @@ export type Database = {
           table_id: string
           title: string
         }[]
+      }
+      revoke_api_key_for_person: {
+        Args: { p_key: string; p_reason?: string; p_user: string }
+        Returns: Json
       }
       role_label: { Args: { p_role: string }; Returns: string }
       role_vocabulary_offenders: {
@@ -89879,6 +90072,10 @@ export type Database = {
         }
         Returns: string
       }
+      ensure_test_seat_bindings: {
+        Args: { p_only_user?: string }
+        Returns: number
+      }
       generate_app_mandate_key: {
         Args: { p_name: string; p_slug: string }
         Returns: string
@@ -90832,7 +91029,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      in_my_organizations: {
+        Args: { r: Database["media"]["Tables"]["source_library"]["Row"] }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
@@ -105550,6 +105750,31 @@ export type Database = {
         }[]
       }
       home_scope_org: { Args: { p_scope: string }; Returns: string }
+      in_my_organizations:
+        | {
+            Args: { r: Database["platform"]["Tables"]["judge_verdict"]["Row"] }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: platform.in_my_organizations(r => outcome_event), platform.in_my_organizations(r => judge_verdict), platform.in_my_organizations(r => saved_view), platform.in_my_organizations(r => tag). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+        | {
+            Args: { r: Database["platform"]["Tables"]["outcome_event"]["Row"] }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: platform.in_my_organizations(r => outcome_event), platform.in_my_organizations(r => judge_verdict), platform.in_my_organizations(r => saved_view), platform.in_my_organizations(r => tag). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+        | {
+            Args: { r: Database["platform"]["Tables"]["saved_view"]["Row"] }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: platform.in_my_organizations(r => outcome_event), platform.in_my_organizations(r => judge_verdict), platform.in_my_organizations(r => saved_view), platform.in_my_organizations(r => tag). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+        | {
+            Args: { r: Database["platform"]["Tables"]["tag"]["Row"] }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: platform.in_my_organizations(r => outcome_event), platform.in_my_organizations(r => judge_verdict), platform.in_my_organizations(r => saved_view), platform.in_my_organizations(r => tag). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
       is_client_channel: { Args: never; Returns: boolean }
       is_computer_instance: { Args: { p_platform: string }; Returns: boolean }
       is_general_scope: {
@@ -156409,6 +156634,10 @@ export type Database = {
       engram_recount_successes: {
         Args: { p_definition_id: string }
         Returns: number
+      }
+      in_my_organizations: {
+        Args: { r: Database["workflow"]["Tables"]["definition"]["Row"] }
+        Returns: boolean
       }
       public_card_rows: {
         Args: never
