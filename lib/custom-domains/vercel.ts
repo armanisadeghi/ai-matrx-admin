@@ -80,11 +80,11 @@ async function readState(host: string, tryVerify: boolean): Promise<DomainState>
 
 export async function addDomain(host: string): Promise<DomainState> {
   const added = await call<ProjectDomain>("POST", `/v10/projects/${PROJECT_ID}/domains`, { name: host });
-  // 409 domain_already_in_use on THIS project is fine (a retry); anything else is the answer.
-  if (added.status >= 400 && added.data.error?.code !== "domain_already_exists") {
-    fail("add", added.status, added.data);
-  }
-  return readState(host, false);
+  if (added.status < 400) return readState(host, false);
+  // Already on THIS project (a retry) is fine; on another project or account it is Vercel's refusal.
+  const existing = await readState(host, false);
+  if (existing.onProject) return existing;
+  fail("add", added.status, added.data);
 }
 
 export async function checkDomain(host: string): Promise<DomainState> {
