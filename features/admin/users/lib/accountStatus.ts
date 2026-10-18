@@ -36,13 +36,30 @@ export const ACCOUNT_STATUS_COLUMN = "status";
 
 type StatusRow = Pick<AdminUserRow, "banned" | "is_anonymous" | "admin_level" | "plan">;
 
-/** Every status true of this row, in chip order. */
+/** What `personStatus` needs: the roster row, the record page's action subject and the peek all carry it. */
+export type PersonStatusFacts = Pick<AdminUserRow, "banned" | "is_anonymous" | "admin_level">;
+
+export type PersonStatusTone = "destructive" | "neutral" | "info" | "success";
+
+/**
+ * THE one status word for a person (S3): the roster's first chip, the record page's header badge,
+ * the peek's Status line and the Overview's Account line all read this, so a person is never
+ * "Open" on one screen and "Active" on the next. Closed wins; then Guest; then Admin; else Active.
+ */
+export function personStatus(facts: PersonStatusFacts): { id: AccountStatus; label: string; tone: PersonStatusTone } {
+  const id: AccountStatus = facts.banned ? "closed" : facts.is_anonymous ? "guest" : facts.admin_level ? "admin" : "active";
+  const tone: PersonStatusTone = id === "closed" ? "destructive" : id === "admin" ? "info" : id === "active" ? "success" : "neutral";
+  return { id, label: ACCOUNT_STATUS_LABEL[id], tone };
+}
+
+/** Every status true of this row, in chip order (the first is always `personStatus`). */
 export function accountStatuses(row: StatusRow): AccountStatus[] {
   const out: AccountStatus[] = [];
-  if (row.banned) out.push("closed");
-  else if (!row.is_anonymous) out.push("active");
-  if (row.is_anonymous) out.push("guest");
-  if (row.admin_level) out.push("admin");
+  const primary = personStatus(row).id;
+  out.push(primary);
+  // An open, signed-up admin is also Active (the Status filter finds every open account by it).
+  if (primary === "admin") out.push("active");
+  if (row.admin_level && primary !== "admin") out.push("admin");
   if (row.plan?.source === "grant") out.push("grant");
   if (row.plan?.state === "near") out.push("near_limit");
   if (row.plan?.state === "over") out.push("over_limit");

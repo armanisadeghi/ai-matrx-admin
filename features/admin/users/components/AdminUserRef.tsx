@@ -154,7 +154,7 @@ export function AdminUserRef({
           <MatrxUuidCell value={userId} label="User ID" />
         )}
         {secondary ? (
-          <div className="truncate text-[11px] text-muted-foreground">
+          <div className="truncate type-meta text-muted-foreground">
             {secondary}
           </div>
         ) : null}

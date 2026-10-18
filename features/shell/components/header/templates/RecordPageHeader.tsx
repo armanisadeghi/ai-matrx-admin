@@ -47,6 +47,8 @@ export interface RecordPageMenuItem {
   onPress: () => void;
   destructive?: boolean;
   disabled?: boolean;
+  /** Why a disabled item can't run now (≤30 chars), shown beside it in the menu. */
+  hint?: string;
   /** Items with the same group sit together; a separator falls between groups. */
   group?: string;
 }
@@ -96,6 +98,7 @@ function RecordActionsMenu({ label, items }: { label: string; items: RecordPageM
               {newGroup ? <DropdownMenuSeparator /> : null}
               <DropdownMenuItem disabled={item.disabled} onClick={item.onPress}>
                 <Icon className={item.destructive ? "mr-2 h-4 w-4 text-destructive" : "mr-2 h-4 w-4"} /> {item.label}
+                {item.disabled && item.hint ? <span className="ml-auto pl-4 type-meta">{item.hint}</span> : null}
               </DropdownMenuItem>
             </Fragment>
           );

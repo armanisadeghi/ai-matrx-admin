@@ -30,6 +30,7 @@ import { Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-syste
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import AppLink from "@/components/navigation/AppLink";
 import { AdminUserRef } from "../components/AdminUserRef";
+import { adminActionWords } from "../lib/adminActionWords";
 import { useRecordLoad } from "./useRecordLoad";
 import {
   ACTIVITY_KINDS,
@@ -96,12 +97,14 @@ function ActivityRow({ item, personId }: { item: ActivityItem; personId: string 
   const Icon = isActivityKind(item.kind) ? KIND_ICON[item.kind] : History;
   const href = activityRecordHref(item.record, personId);
   const byOther = item.actor_id && item.actor_id !== personId ? item.actor_id : null;
+  // Admin rows read in the Admin history tab's words (one formatter for the same audit row).
+  const words = item.kind === "admin" || item.kind === "org_admin" ? adminActionWords(item.title) : item.title;
   const title = href ? (
     <AppLink href={href} className="truncate font-medium text-foreground hover:text-primary">
-      {item.title}
+      {words}
     </AppLink>
   ) : (
-    <span className="truncate font-medium text-foreground">{item.title}</span>
+    <span className="truncate font-medium text-foreground">{words}</span>
   );
   return (
     <li className="flex items-start gap-3 py-2" data-testid="user-activity-item" data-kind={item.kind}>
@@ -204,7 +207,7 @@ function ActivityFeed({ userId, filter }: { userId: string; filter: Filter }) {
   );
 }
 
-export function UserActivityTab({ userId }: UserTabBodyProps) {
+export function UserActivityTab({ userId, version: pageVersion }: UserTabBodyProps) {
   const [filter, setFilter] = useState<Filter>("all");
   const [version, setVersion] = useState(0);
   return (
@@ -215,7 +218,7 @@ export function UserActivityTab({ userId }: UserTabBodyProps) {
           Refresh
         </Button>
       </div>
-      <ActivityFeed key={`${userId}|${filter}|${version}`} userId={userId} filter={filter} />
+      <ActivityFeed key={`${userId}|${filter}|${pageVersion}|${version}`} userId={userId} filter={filter} />
     </div>
   );
 }

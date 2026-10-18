@@ -28,10 +28,10 @@ export async function listTopTierHolders(): Promise<TopTierHolder[]> {
   return (data ?? []) as TopTierHolder[];
 }
 
-/** Turn one person's top-tier access on or off (super admins; recorded). */
-export async function setTopTierAccess(userId: string, enabled: boolean): Promise<void> {
+/** Turn one person's top-tier access on or off (super admins; recorded — `reason` is the audit row's reason). */
+export async function setTopTierAccess(userId: string, enabled: boolean, reason?: string): Promise<void> {
   const { error } = await createClient()
     .schema("admin")
-    .rpc("set_top_tier_model_access", { p_user: userId, p_enabled: enabled });
+    .rpc("set_top_tier_model_access", { p_user: userId, p_enabled: enabled, ...(reason ? { p_note: reason } : {}) });
   if (error) throw new Error(error.message);
 }

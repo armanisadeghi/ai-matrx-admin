@@ -2,12 +2,13 @@
 
 // A person's Billing & usage tab (/administration/users/<id>/billing). Plan + source + grant
 // expiry and the usage windows come from the page's overview (admin.user_overview →
-// billing.user_usage_state, verbatim). The history — free-month grants, coupon redemptions and
-// usage resets — is read here for this ONE person (billing tables, platform-admin read). Actions
-// reuse ChangePlanDialog, GiveFreeMonthsDialog and ResetUsageDialog (billing.usage_reset_apply).
-// The full usage drill is a link-out (usagePersonHref), never an embed.
+// billing.user_usage_state, verbatim). The history is THE one billing read,
+// admin.user_billing_events (userBillingEvents.ts) — the Activity tab's Billing source is the same
+// read, so the two never disagree; each row opens its record. Change plan and Free months run
+// through the page's one dispatch (useUserActions); Reset window is this tab's own action
+// (ResetUsageDialog → billing.usage_reset_apply). The full usage drill is a link-out.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
 import { ExternalLink, Gift, RotateCcw, WalletCards } from "lucide-react";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -16,17 +17,13 @@ import { Badge, Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import AppLink from "@/components/navigation/AppLink";
-import { createClient } from "@/utils/supabase/client";
-import { ChangePlanDialog, type ChangePlanSubject } from "@/features/admin/limits/components/ChangePlanDialog";
 import { periodLabel } from "@/features/admin/limits/types";
 import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
-import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "../components/GiveFreeMonthsDialog";
 import { ResetUsageDialog, type ResetUsagePerson } from "../components/ResetUsageDialog";
 import { AdminUserRef } from "../components/AdminUserRef";
 import { personTitle } from "./userOverview";
+import { billingEventHref, fetchUserBillingEvents, type BillingEventKind, type UserBillingEvent } from "./userBillingEvents";
 import type { UserTabBodyProps } from "./UserRecordPage";
-
-const COUPONS_PATH = "/administration/users/coupons";
 
 const SOURCE_LABEL: Record<string, string> = {
   guest: "Guest",
@@ -35,127 +32,53 @@ const SOURCE_LABEL: Record<string, string> = {
   default: "Default plan",
 };
 
-export interface BillingEvent {
-  id: string;
-  kind: "Free months" | "Coupon" | "Usage reset";
-  at: string;
-  detail: string;
-  by: string | null;
-  note: string | null;
-  href: string | null;
-}
+const KIND_LABEL: Record<BillingEventKind, string> = {
+  grant: "Free months",
+  redemption: "Coupon redeemed",
+  coupon: "Coupon",
+  reset: "Usage reset",
+  plan: "Plan",
+};
 
-/** This person's grants, coupon redemptions and usage resets, newest first. */
-export async function listBillingEvents(userId: string): Promise<BillingEvent[]> {
-  const billing = createClient().schema("billing");
-  const [grants, redemptions, resets] = await Promise.all([
-    billing
-      .from("free_period_grant")
-      .select("id, plan_key, months, starts_at, ends_at, source, granted_by, note, capped, created_at")
-      .eq("subject_user_id", userId)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false })
-      .limit(200),
-    billing
-      .from("coupon_redemption")
-      .select("id, redeemed_at, status, error, coupon:coupon!coupon_redemption_coupon_id_fkey(code, plan_key, months)")
-      .eq("redeemer_user_id", userId)
-      .is("deleted_at", null)
-      .order("redeemed_at", { ascending: false })
-      .limit(200),
-    billing
-      .from("usage_reset")
-      .select("id, period, reset_at, reset_by, note")
-      .eq("subject_user_id", userId)
-      .is("deleted_at", null)
-      .order("reset_at", { ascending: false })
-      .limit(200),
-  ]);
-  const failed = grants.error ?? redemptions.error ?? resets.error;
-  if (failed) throw failed;
-  const out: BillingEvent[] = [];
-  for (const g of grants.data ?? []) {
-    out.push({
-      id: `grant:${g.id}`,
-      kind: "Free months",
-      at: g.created_at,
-      detail: `${g.months} mo · ${g.plan_key} · ends ${new Date(g.ends_at).toLocaleDateString()}${g.capped ? " · capped" : ""}`,
-      by: g.granted_by,
-      note: g.note,
-      href: COUPONS_PATH,
-    });
-  }
-  for (const r of redemptions.data ?? []) {
-    const c = Array.isArray(r.coupon) ? r.coupon[0] : r.coupon;
-    out.push({
-      id: `coupon:${r.id}`,
-      kind: "Coupon",
-      at: r.redeemed_at,
-      detail: `${c?.code ?? "coupon"} · ${c ? `${c.months} mo ${c.plan_key}` : ""} · ${r.status}`,
-      by: null,
-      note: r.error,
-      href: COUPONS_PATH,
-    });
-  }
-  for (const r of resets.data ?? []) {
-    out.push({
-      id: `reset:${r.id}`,
-      kind: "Usage reset",
-      at: r.reset_at,
-      detail: periodLabel(r.period),
-      by: r.reset_by,
-      note: r.note,
-      href: null,
-    });
-  }
-  return out.sort((a, b) => b.at.localeCompare(a.at));
-}
-
-const COLUMNS: MatrxColumnDef<BillingEvent>[] = [
-  { id: "at", accessorKey: "at", header: "When", format: { id: "datetime" }, width: 170 },
-  {
-    id: "kind",
-    accessorKey: "kind",
-    header: "Kind",
-    filter: "select",
-    width: 130,
-    cell: (e) =>
-      e.href ? (
-        <AppLink href={e.href} className="hover:text-primary">
-          {e.kind}
+function columnsFor(personId: string): MatrxColumnDef<UserBillingEvent>[] {
+  return [
+    { id: "at", accessorKey: "at", header: "When", format: { id: "datetime" }, width: 170 },
+    { id: "kind", accessorFn: (e) => KIND_LABEL[e.kind] ?? e.kind, header: "Kind", filter: "select", width: 140 },
+    {
+      id: "title",
+      accessorKey: "title",
+      header: "What",
+      width: 260,
+      cell: (e) => (
+        <AppLink href={billingEventHref(e, personId)} className="truncate hover:text-primary">
+          {e.title}
         </AppLink>
-      ) : (
-        <span>{e.kind}</span>
       ),
-  },
-  { id: "detail", accessorKey: "detail", header: "Detail", width: 280 },
-  {
-    id: "by",
-    accessorFn: (e) => e.by ?? "",
-    header: "By",
-    width: 190,
-    cell: (e) => (e.by ? <AdminUserRef userId={e.by} hideEmail /> : <span className="text-muted-foreground">—</span>),
-  },
-  { id: "note", accessorFn: (e) => e.note ?? "", header: "Note", width: 240 },
-];
+    },
+    { id: "detail", accessorFn: (e) => e.detail ?? "", header: "Detail", width: 240 },
+    {
+      id: "by",
+      accessorFn: (e) => e.actorId ?? "",
+      header: "By",
+      width: 190,
+      cell: (e) => (e.actorId ? <AdminUserRef userId={e.actorId} hideEmail /> : <span className="text-muted-foreground">—</span>),
+    },
+    { id: "note", accessorFn: (e) => e.note ?? "", header: "Reason", width: 240 },
+  ];
+}
 
-export function UserBillingTab({ userId, overview, reload }: UserTabBodyProps) {
+export function UserBillingTab({ userId, overview, version: pageVersion, reload, actions, subject, shareForAi }: UserTabBodyProps) {
   const [version, setVersion] = useState(0);
-  const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
-  const [freeMonths, setFreeMonths] = useState<FreeMonthsPerson[] | null>(null);
   const [resetPerson, setResetPerson] = useState<ResetUsagePerson | null>(null);
   const label = personTitle(overview);
-  const guest = overview.identity.is_anonymous;
   const plan = overview.plan;
   const windows = overview.usage?.windows ?? [];
+  const planBlocked = actions.blockedReason("change_plan", subject);
+  const monthsBlocked = actions.blockedReason("free_months", subject);
 
-  const { data: eventsData, loading, error } = useRecordLoad(listBillingEvents, userId, version);
+  const { data: eventsData, loading, error } = useRecordLoad(fetchUserBillingEvents, userId, pageVersion + version);
   const events = eventsData ?? [];
-
-  const changed = () => {
-    setVersion((v) => v + 1);
-    reload();
-  };
+  useEffect(() => shareForAi({ events }), [events, shareForAi]);
 
   return (
     <div className="flex flex-col gap-5" data-testid="user-billing-tab">
@@ -163,14 +86,19 @@ export function UserBillingTab({ userId, overview, reload }: UserTabBodyProps) {
         <Button
           variant="outline"
           icon={<WalletCards />}
-          disabled={guest}
-          onClick={() =>
-            setPlanTarget({ kind: "user", id: userId, name: label, currentPlanKey: plan?.key ?? null, grantActive: plan?.source === "grant" })
-          }
+          disabled={planBlocked !== null}
+          title={planBlocked ?? undefined}
+          onClick={() => actions.run("change_plan", subject)}
         >
           Change plan
         </Button>
-        <Button variant="outline" icon={<Gift />} disabled={guest} onClick={() => setFreeMonths([{ id: userId, label }])}>
+        <Button
+          variant="outline"
+          icon={<Gift />}
+          disabled={monthsBlocked !== null}
+          title={monthsBlocked ?? undefined}
+          onClick={() => actions.run("free_months", subject)}
+        >
           Free months
         </Button>
         <Button variant="outline" icon={<RotateCcw />} onClick={() => setResetPerson({ id: userId, label })}>
@@ -218,25 +146,22 @@ export function UserBillingTab({ userId, overview, reload }: UserTabBodyProps) {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="type-title">Grants, coupons & resets</h3>
+        <h3 className="type-title">Billing history</h3>
         <MatrxDataTable
           data={events}
-          columns={COLUMNS}
-          getRowId={(e) => e.id}
+          columns={columnsFor(userId)}
+          getRowId={(e) => e.key}
           isLoading={loading}
           pageSize={25}
           read={readOf({ loading, error }, { what: "billing history", onRetry: () => setVersion((v) => v + 1) })}
           emptyState={{
-            title: "No grants, coupons or resets",
-            description: "Nothing given or reset for this person.",
+            title: "No billing history",
             icon: <Gift className="h-6 w-6 text-muted-foreground" />,
           }}
         />
       </section>
 
-      <ChangePlanDialog subject={planTarget} onClose={() => setPlanTarget(null)} onChanged={changed} />
-      <GiveFreeMonthsDialog open={freeMonths !== null} people={freeMonths ?? []} onClose={() => setFreeMonths(null)} onApplied={changed} />
-      <ResetUsageDialog person={resetPerson} onClose={() => setResetPerson(null)} onDone={() => changed()} />
+      <ResetUsageDialog person={resetPerson} onClose={() => setResetPerson(null)} onDone={() => reload()} />
     </div>
   );
 }

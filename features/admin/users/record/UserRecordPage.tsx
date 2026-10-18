@@ -19,15 +19,10 @@ import {
   type RecordPageMenuItem,
 } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useRecordTitle } from "@/lib/record-title/record-title";
-import { pushAppHref } from "@/lib/deployment/navigate";
-import { toast } from "@/lib/toast";
-import { ChangePlanDialog, type ChangePlanSubject } from "@/features/admin/limits/components/ChangePlanDialog";
-import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "../components/GiveFreeMonthsDialog";
-import { StartSupportSessionDialog, type SupportSessionTarget } from "../support-sessions/StartSupportSessionDialog";
-import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
-import { ADMIN_LEVEL_LABEL } from "../constants";
-import { useUserActions } from "./useUserActions";
-import { actionSubjectOf, fetchUserOverview, isClosed, personTitle, type UserOverview } from "./userOverview";
+import { recordToast } from "@/lib/toast";
+import { personStatus } from "../lib/accountStatus";
+import { personChanged, useUserActions, type UserActions, type UserActionSubject } from "./useUserActions";
+import { actionSubjectOf, fetchUserOverview, personTitle, type UserOverview } from "./userOverview";
 import { UserOverviewTab } from "./UserOverviewTab";
 import { UserOrganizationsTab } from "./UserOrganizationsTab";
 import { UserBillingTab } from "./UserBillingTab";
@@ -39,13 +34,12 @@ import { UserActivityTab } from "./UserActivityTab";
 import { UserContentTab } from "./UserContentTab";
 import { UserNotesTab } from "./UserNotesTab";
 import { UserSecurityTab } from "./UserSecurityTab";
+import { UserRecordSurface } from "./UserRecordSurface";
 import {
   USERS_HUB_PATH,
   USER_ACTION_PARAM,
   isUserActionId,
   isVisibleUserTab,
-  userActionDisabled,
-  userActionLabel,
   userActions,
   userRecordHref,
   visibleUserTabs,
@@ -56,7 +50,16 @@ import {
 export interface UserTabBodyProps {
   userId: string;
   overview: UserOverview;
+  /** The page's version: every tab loader keys on it, so a change anywhere refreshes the open tab. */
+  version: number;
+  /** Something about this person changed: every held copy drops it and the page + tab re-read. */
   reload: () => void;
+  /** THE dispatch (useUserActions) — tabs run registered actions through it, never their own copy. */
+  actions: UserActions;
+  /** The person as the actions' subject. */
+  subject: UserActionSubject;
+  /** What this tab shows, for Copy for AI (the page copies overview + the open tab's data). */
+  shareForAi: (data: unknown) => void;
 }
 
 // The body of every BUILT tab (userSurfaces.ts `built: true`). Overview renders inline below because
@@ -88,13 +91,13 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
     : !loading && validId && !overview
       ? "No account with this id"
       : null;
-  const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
-  const [freeMonthsPeople, setFreeMonthsPeople] = useState<FreeMonthsPerson[] | null>(null);
-  const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
-  const [tutorialPerson, setTutorialPerson] = useState<TutorialRecipient | null>(null);
 
-  const reload = () => setVersion((v) => v + 1);
-  const actions = useUserActions({ onPatched: () => reload() });
+  const reload = () => {
+    personChanged(userId);
+    setVersion((v) => v + 1);
+  };
+  // Every action already ran personChanged; the page and its open tab re-read.
+  const actions = useUserActions({ onChanged: () => setVersion((v) => v + 1) });
 
   // A tab that is not registered, or not built yet, is never an empty page: it opens Overview.
   const activeTab: UserTabId = isVisibleUserTab(tab) ? tab : "overview";
@@ -108,100 +111,48 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
   const subject = overview ? actionSubjectOf(overview) : null;
   const label = title ?? "this person";
 
+  // What the open tab shows, for Copy for AI (read at click time; never re-renders the page).
+  const tabData = useRef<{ tab: UserTabId; data: unknown } | null>(null);
+
   const run = (id: UserActionId) => {
-    if (!subject || !overview) return;
-    switch (id) {
-      case "support_session":
-        setSupportTarget({ id: subject.id, email: subject.email, displayName: subject.display_name });
-        return;
-      case "message":
-        actions.openMessage(subject);
-        return;
-      case "email":
-        pushAppHref(router, `/administration/users/email?userId=${encodeURIComponent(subject.id)}`);
-        return;
-      case "magic_link":
-        void actions.sendAuthLink(subject, "magiclink");
-        return;
-      case "password_reset":
-        void actions.sendAuthLink(subject, "recovery");
-        return;
-      case "change_plan":
-        setPlanTarget({
-          kind: "user",
-          id: subject.id,
-          name: label,
-          currentPlanKey: overview.plan?.key ?? null,
-          grantActive: overview.plan?.source === "grant",
-        });
-        return;
-      case "free_months":
-        setFreeMonthsPeople([{ id: subject.id, label }]);
-        return;
-      case "tutorial":
-        setTutorialPerson({ id: subject.id, label, email: subject.email });
-        return;
-      case "mcp_access":
-        void actions.toggleMcpFullAccess(subject);
-        return;
-      case "top_tier":
-        void actions.toggleTopTierModels(subject);
-        return;
-      case "onboarded":
-        void actions.toggleOnboarding(subject);
-        return;
-      case "verify_email":
-        actions.verifyEmail(subject);
-        return;
-      case "close":
-        void actions.setAccountClosed(subject, true);
-        return;
-      case "reopen":
-        void actions.setAccountClosed(subject, false);
-        return;
-      case "sign_out_everywhere":
-        actions.signOutEverywhere(subject);
-        return;
-    }
+    if (subject) actions.run(id, subject);
   };
 
-  // Label and disabled rules live in the registry (userSurfaces.ts) so the page, the chip menu
-  // and the Accounts "Manage" menu never disagree.
-  const labelFor = (id: UserActionId): string | null => (subject ? userActionLabel(id, subject) : null);
-  const disabledFor = (id: UserActionId): boolean =>
-    !subject ||
-    userActionDisabled(id, subject, {
-      myId: actions.myId,
-      closeBlocked: actions.closeBlockedReason(subject) !== null,
-    });
-
   // `?do=<action>` (userActionHref — the peek's action doors): run it once the person has loaded,
-  // exactly as the header would, then drop the parameter so a reload does not run it again.
+  // exactly as the header would, then drop the parameter so a reload does not run it again. The
+  // run is deferred to a microtask — it opens dialogs (state) and moves the address, neither of
+  // which belongs in the effect's own body.
   const searchParams = useSearchParams();
   const requestedAction = searchParams.get(USER_ACTION_PARAM);
   const handledAction = useRef<string | null>(null);
   useEffect(() => {
     if (!requestedAction || !subject || handledAction.current === requestedAction) return;
     handledAction.current = requestedAction;
-    if (isUserActionId(requestedAction) && !disabledFor(requestedAction)) run(requestedAction);
-    else toast.warning(`${label}: that action isn't available`);
-    router.replace(userRecordHref(userId, activeTab));
+    const id = isUserActionId(requestedAction) ? requestedAction : null;
+    void Promise.resolve().then(() => {
+      if (id) actions.run(id, subject);
+      else recordToast.warning({ type: "user", id: userId, title: label }, `${label}: that action isn't available`);
+      router.replace(userRecordHref(userId, activeTab));
+    });
   });
 
+  // Label and "can't now, because…" come from the registry through the one dispatch, so the page,
+  // the peek and the Accounts "Manage" menu never disagree.
   const headerActions: RecordPageAction[] = subject
     ? userActions("header").map((def) => ({
         label: def.label,
         icon: def.icon,
         showLabel: true,
-        disabled: disabledFor(def.id),
+        disabled: actions.blockedReason(def.id, subject) !== null,
         onPress: () => run(def.id),
       }))
     : [];
 
   const menuItems: RecordPageMenuItem[] = subject
     ? userActions("menu").flatMap((def) => {
-        const itemLabel = labelFor(def.id);
+        const itemLabel = actions.labelFor(def.id, subject);
         if (!itemLabel) return [];
+        const blocked = actions.blockedReason(def.id, subject);
         return [
           {
             id: def.id,
@@ -209,28 +160,21 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
             icon: def.icon,
             group: def.group,
             destructive: def.danger,
-            disabled: disabledFor(def.id),
+            disabled: blocked !== null,
+            hint: blocked ?? undefined,
             onPress: () => run(def.id),
           },
         ];
       })
     : [];
 
-  const status = overview
-    ? isClosed(overview)
-      ? { label: overview.closure?.erased_at ? "Erased" : "Closed", tone: "destructive" as const }
-      : overview.identity.is_anonymous
-        ? { label: "Guest", tone: "neutral" as const }
-        : overview.admin_level
-          ? { label: ADMIN_LEVEL_LABEL[overview.admin_level] ?? overview.admin_level, tone: "info" as const }
-          : undefined
-    : undefined;
+  const status = subject ? personStatus(subject) : undefined;
 
   const tabs = visibleUserTabs();
   const Body = activeTab === "overview" ? null : TAB_BODIES[activeTab];
 
   return (
-    <>
+    <UserRecordSurface overview={overview} activeTab={activeTab}>
       <RecordPageHeader
         backHref={USERS_HUB_PATH}
         parents={[{ label: "Users & Access", href: USERS_HUB_PATH }]}
@@ -265,19 +209,33 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
                 )}
                 <CopyForAiAction
                   label="User"
-                  agent={() => ({
-                    kind: "admin-user",
-                    location: userRecordHref(userId, activeTab),
-                    description: "One person's admin record: identity, plan, usage, attention.",
-                    attributes: { id: overview.identity.id, email: overview.identity.email ?? "" },
-                    data: overview,
-                  })}
+                  agent={() => {
+                    const shown = tabData.current?.tab === activeTab ? tabData.current.data : undefined;
+                    return {
+                      kind: "admin-user",
+                      location: userRecordHref(userId, activeTab),
+                      description: "One person's admin record and the open tab.",
+                      attributes: { id: overview.identity.id, email: overview.identity.email ?? "", tab: activeTab },
+                      data: shown === undefined ? overview : { overview, [activeTab]: shown },
+                    };
+                  }}
                 />
               </div>
               {activeTab === "overview" ? (
                 <UserOverviewTab overview={overview} onReopen={() => run("reopen")} />
-              ) : Body ? (
-                <Body key={activeTab} userId={userId} overview={overview} reload={reload} />
+              ) : Body && subject ? (
+                <Body
+                  key={activeTab}
+                  userId={userId}
+                  overview={overview}
+                  version={version}
+                  reload={reload}
+                  actions={actions}
+                  subject={subject}
+                  shareForAi={(data) => {
+                    tabData.current = { tab: activeTab, data };
+                  }}
+                />
               ) : null}
             </>
           ) : null}
@@ -285,15 +243,6 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
       </div>
 
       {actions.dialogs}
-      <StartSupportSessionDialog target={supportTarget} onClose={() => setSupportTarget(null)} />
-      <ChangePlanDialog subject={planTarget} onClose={() => setPlanTarget(null)} onChanged={reload} />
-      <GiveFreeMonthsDialog
-        open={freeMonthsPeople !== null}
-        people={freeMonthsPeople ?? []}
-        onClose={() => setFreeMonthsPeople(null)}
-        onApplied={reload}
-      />
-      <SendTutorialDialog person={tutorialPerson} onClose={() => setTutorialPerson(null)} />
-    </>
+    </UserRecordSurface>
   );
 }

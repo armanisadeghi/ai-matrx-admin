@@ -5,6 +5,7 @@
 // One person's memberships are read direct from the database (iam.memberships, platform-admin RLS),
 // never through the whole-directory route.
 
+import { readAllRows } from "@ai-matrx/data/db";
 import { createClient } from "@/utils/supabase/client";
 import type { OrgRole } from "@/features/organizations/types";
 
@@ -43,16 +44,22 @@ export interface PersonMembership {
 
 /** Every organization membership this person holds or held (active and departed), newest first. */
 export async function listPersonMemberships(userId: string): Promise<PersonMembership[]> {
-  const { data, error } = await createClient()
-    .schema("iam")
-    .from("memberships")
-    .select("id, organization_id, role, status, created_at, organization:organizations!memberships_organization_id_fkey(name, slug, is_system, archived_at)")
-    .eq("user_id", userId)
-    .eq("container_type", "organization")
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []).map((row) => {
+  // Shown as the complete list, so read through readAllRows (PostgREST caps a bare select at 1000).
+  const data = await readAllRows(
+    ({ from, to }) =>
+      createClient()
+        .schema("iam")
+        .from("memberships")
+        .select("id, organization_id, role, status, created_at, organization:organizations!memberships_organization_id_fkey(name, slug, is_system, archived_at)", { count: "exact" })
+        .eq("user_id", userId)
+        .eq("container_type", "organization")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    { label: "iam.memberships for one person" },
+  );
+  return data.map((row) => {
     const org = (Array.isArray(row.organization) ? row.organization[0] : row.organization) as
       | { name: string | null; slug: string | null; is_system: boolean | null; archived_at: string | null }
       | null;

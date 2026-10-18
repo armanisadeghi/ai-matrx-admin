@@ -1,10 +1,10 @@
 "use client";
 
 // A person's Support tab: their support sessions (the Support sessions table, narrowed by prop),
-// Start support session (the existing dialog), and the feedback they filed
+// Start support session (the page's one dispatch), and the feedback they filed
 // (users.user_feedback by user_id) — each row opens its record in the feedback console.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
 import { LifeBuoy, MessageSquareWarning } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
@@ -15,8 +15,6 @@ import AppLink from "@/components/navigation/AppLink";
 import { createClient } from "@/utils/supabase/client";
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { SupportSessionsTableClient } from "../support-sessions/SupportSessionsTableClient";
-import { StartSupportSessionDialog, type SupportSessionTarget } from "../support-sessions/StartSupportSessionDialog";
-import { realName } from "./userOverview";
 import type { UserTabBodyProps } from "./UserRecordPage";
 
 interface FeedbackRow {
@@ -68,14 +66,14 @@ const FEEDBACK_COLUMNS: MatrxColumnDef<FeedbackRow>[] = [
   { id: "route", accessorFn: (r) => r.route ?? "", header: "Route", width: 220 },
 ];
 
-export function UserSupportTab({ userId, overview, reload }: UserTabBodyProps) {
-  const [target, setTarget] = useState<SupportSessionTarget | null>(null);
-  const [sessionsKey, setSessionsKey] = useState(0);
+export function UserSupportTab({ userId, version: pageVersion, actions, subject, shareForAi }: UserTabBodyProps) {
   const [version, setVersion] = useState(0);
-  const contactable = Boolean(overview.identity.email) && !overview.identity.is_anonymous;
+  // Start support session is the page's one action (its dialog reloads the page when it closes).
+  const blocked = actions.blockedReason("support_session", subject);
 
-  const { data: feedbackData, loading, error } = useRecordLoad(listFeedbackBy, userId, version);
+  const { data: feedbackData, loading, error } = useRecordLoad(listFeedbackBy, userId, pageVersion + version);
   const feedback = feedbackData ?? [];
+  useEffect(() => shareForAi({ feedback }), [feedback, shareForAi]);
 
   return (
     <div className="flex flex-col gap-5" data-testid="user-support-tab">
@@ -85,13 +83,14 @@ export function UserSupportTab({ userId, overview, reload }: UserTabBodyProps) {
           <Button
             variant="outline"
             icon={<LifeBuoy />}
-            disabled={!contactable}
-            onClick={() => setTarget({ id: userId, email: overview.identity.email, displayName: realName(overview.identity.display_name) })}
+            disabled={blocked !== null}
+            title={blocked ?? undefined}
+            onClick={() => actions.run("support_session", subject)}
           >
             Start support session
           </Button>
         </div>
-        <SupportSessionsTableClient targetUserId={userId} reloadKey={sessionsKey} />
+        <SupportSessionsTableClient targetUserId={userId} reloadKey={pageVersion} />
       </section>
 
       <section className="flex flex-col gap-2">
@@ -105,21 +104,11 @@ export function UserSupportTab({ userId, overview, reload }: UserTabBodyProps) {
           read={readOf({ loading, error }, { what: "feedback", onRetry: () => setVersion((v) => v + 1) })}
           emptyState={{
             title: "No feedback filed",
-            description: "This person has not sent feedback.",
             icon: <MessageSquareWarning className="h-6 w-6 text-muted-foreground" />,
           }}
           toolbar={{ search: true, searchPlaceholder: "Search feedback…" }}
         />
       </section>
-
-      <StartSupportSessionDialog
-        target={target}
-        onClose={() => {
-          setTarget(null);
-          setSessionsKey((k) => k + 1);
-          reload();
-        }}
-      />
     </div>
   );
 }

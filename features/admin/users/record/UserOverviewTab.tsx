@@ -22,11 +22,12 @@ import { formatCount } from "@ai-matrx/kit/format";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
-import { approvalSubjectHref } from "@/features/admin/spend-approvals/spendApprovals";
+import { SPEND_APPROVALS_ADMIN_PATH, approvalSubjectHref } from "@/features/admin/spend-approvals/spendApprovals";
 import { heldRunHref } from "@/features/admin/held-runs/heldRuns";
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { periodLabel } from "@/features/admin/limits/types";
 import { ADMIN_LEVEL_LABEL } from "../constants";
+import { personStatus } from "../lib/accountStatus";
 import { userRecordHref } from "./userSurfaces";
 import { AI_REQUESTS_LABEL, actionSubjectOf, isClosed, personTitle, type UserOverview } from "./userOverview";
 
@@ -51,7 +52,7 @@ function yesNo(v: boolean): string {
   return v ? "Yes" : "No";
 }
 
-interface AttentionItem {
+export interface AttentionItem {
   key: string;
   icon: typeof AlertTriangle;
   tone: "destructive" | "warning" | "info";
@@ -67,7 +68,8 @@ const TONE_ICON: Record<AttentionItem["tone"], string> = {
   info: "text-primary",
 };
 
-function attentionOf(o: UserOverview, onReopen: () => void): AttentionItem[] {
+/** The Overview's Needs attention list, in order (also the record surface's `attention_items`). */
+export function attentionOf(o: UserOverview, onReopen: () => void): AttentionItem[] {
   const items: AttentionItem[] = [];
   const a = o.attention;
   if (isClosed(o)) {
@@ -114,6 +116,17 @@ function attentionOf(o: UserOverview, onReopen: () => void): AttentionItem[] {
       href: approvalSubjectHref(r.subject_kind, r.subject_id),
     });
   }
+  // The read returns at most a few of each; the counts say how many there are (S7).
+  const moreApprovals = a.approvals_waiting_count - a.approvals_waiting.length;
+  if (moreApprovals > 0) {
+    items.push({
+      key: "approval:more",
+      icon: ShieldAlert,
+      tone: "warning",
+      label: `+${formatCount(moreApprovals)} more ${moreApprovals === 1 ? "approval" : "approvals"} waiting`,
+      href: SPEND_APPROVALS_ADMIN_PATH,
+    });
+  }
   const newest = a.held_runs[0];
   if (newest) {
     items.push({
@@ -133,6 +146,16 @@ function attentionOf(o: UserOverview, onReopen: () => void): AttentionItem[] {
       label: `Open ${f.feedback_type ?? "feedback"} · ${f.status.replace(/_/g, " ")}`,
       detail: f.description,
       href: feedbackHref(f.id),
+    });
+  }
+  const moreFeedback = a.feedback_open_count - a.feedback_open.length;
+  if (moreFeedback > 0) {
+    items.push({
+      key: "feedback:more",
+      icon: MessageSquareWarning,
+      tone: "info",
+      label: `+${formatCount(moreFeedback)} more open feedback`,
+      href: userRecordHref(o.identity.id, "support"),
     });
   }
   return items;
@@ -203,8 +226,8 @@ export function UserOverviewTab({ overview: o, onReopen }: { overview: UserOverv
             hint={binding ? `${formatCount(binding.used)} points used` : undefined}
             href={usagePersonHref(o.identity.id)}
           />
-          <KpiTile label="Conversations" value={formatCount(o.counts.conversations)} />
-          <KpiTile label="Organizations" value={formatCount(o.counts.organizations)} />
+          <KpiTile label="Conversations" value={formatCount(o.counts.conversations)} href={userRecordHref(o.identity.id, "activity")} />
+          <KpiTile label="Organizations" value={formatCount(o.counts.organizations)} href={userRecordHref(o.identity.id, "organizations")} />
         </KpiGrid>
 
         {o.usage_error ? (
@@ -254,8 +277,8 @@ export function UserOverviewTab({ overview: o, onReopen }: { overview: UserOverv
         <PropertyRow label="Onboarded" value={yesNo(o.identity.onboarding_completed)} />
         <PropertyRow
           label="Account"
-          value={closed ? (o.closure?.erased_at ? "Erased" : "Closed") : o.identity.is_anonymous ? "Guest" : "Open"}
-          meta={closed ? day(o.closure?.closed_at) : undefined}
+          value={personStatus(subject).label}
+          meta={closed ? [o.closure?.erased_at ? "Erased" : null, day(o.closure?.closed_at)].filter(Boolean).join(" · ") : undefined}
         />
         <PropertyRow label="Acquisition" value={acquisition} missing={acquisition ? undefined : "Not recorded"} />
       </aside>

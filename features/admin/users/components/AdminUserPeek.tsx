@@ -4,7 +4,7 @@
 //
 // `AdminUserRef` wraps a person's name in `PeekHoverCard`; this is the card's record: name, email,
 // plan, status and last active from ONE `admin.user_overview` read for that person, made only when
-// the card opens and kept for the tab (never the whole roster). Doors: Open (the record page, same
+// the card opens and kept for the tab (never the whole roster; `personChanged` drops a stale entry). Doors: Open (the record page, same
 // tab), the page in a new tab, Start support session and Message (action doors that open the page
 // with `?do=`), and links to the Support sessions and Billing & usage tabs.
 //
@@ -19,8 +19,8 @@ import { Peek, type PeekBlock, type PeekDoor, type PeekRecord } from "@ai-matrx/
 type PeekActionDoor = Extract<PeekDoor, { kind: "action" }>;
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { formatReadableDate } from "@/utils/datetime";
-import { ADMIN_LEVEL_LABEL } from "../constants";
-import { actionSubjectOf, fetchUserOverview, isClosed, personTitle, type UserOverview } from "../record/userOverview";
+import { personStatus } from "../lib/accountStatus";
+import { actionSubjectOf, personTitle, readUserOverviewCached, type UserOverview } from "../record/userOverview";
 import {
   userActionDef,
   userActionDisabled,
@@ -29,30 +29,12 @@ import {
   type UserActionId,
 } from "../record/userSurfaces";
 
-const overviews = new Map<string, Promise<UserOverview | null>>();
-
-function readOverview(userId: string): Promise<UserOverview | null> {
-  const known = overviews.get(userId);
-  if (known) return known;
-  const pending = fetchUserOverview(userId);
-  overviews.set(userId, pending);
-  pending.catch(() => overviews.delete(userId));
-  return pending;
-}
-
 type Answer =
   | { status: "found"; overview: UserOverview }
   | { status: "missing" }
   | { status: "failed"; error: unknown };
 
 type State = { status: "loading" } | Answer;
-
-function statusOf(o: UserOverview): string {
-  if (isClosed(o)) return o.closure?.erased_at ? "Erased" : "Closed";
-  if (o.identity.is_anonymous) return "Guest";
-  if (o.admin_level) return ADMIN_LEVEL_LABEL[o.admin_level] ?? o.admin_level;
-  return "Active";
-}
 
 function lastActive(o: UserOverview): string | null {
   const times = [o.identity.last_sign_in_at, o.ai?.last_ai_at].filter((t): t is string => Boolean(t));
@@ -78,7 +60,7 @@ export function AdminUserPeek({ userId, label }: AdminUserPeekProps) {
 
   useEffect(() => {
     let live = true;
-    readOverview(userId).then(
+    readUserOverviewCached(userId).then(
       (overview) => {
         if (live) setAnswer({ for: question, value: overview ? { status: "found", overview } : { status: "missing" } });
       },
@@ -101,7 +83,7 @@ export function AdminUserPeek({ userId, label }: AdminUserPeekProps) {
       body.push({ property: "Email", value: overview.identity.email });
     }
     body.push({ property: "Plan", value: overview.plan?.name ?? overview.usage?.plan_name ?? "Not provided" });
-    body.push({ property: "Status", value: statusOf(overview) });
+    body.push({ property: "Status", value: personStatus(actionSubjectOf(overview)).label });
     const active = lastActive(overview);
     body.push(active ? { property: "Last active", value: active } : { property: "Last active", value: "", missing: "Never" });
     body.push({
@@ -120,7 +102,7 @@ export function AdminUserPeek({ userId, label }: AdminUserPeekProps) {
   // take (a guest, no email) is left off rather than drawn disabled.
   const doors: PeekActionDoor[] = overview
     ? (["support_session", "message"] as const satisfies readonly UserActionId[])
-        .filter((id) => !userActionDisabled(id, actionSubjectOf(overview), { myId: null, closeBlocked: false }))
+        .filter((id) => !userActionDisabled(id, actionSubjectOf(overview), { myId: null }))
         .map((id) => {
           const def = userActionDef(id);
           return {

@@ -222,7 +222,7 @@ export function GiveFreeMonthsDialog({
               {monthsError && <span className="text-destructive">{monthsError}<ErrorAlchemyMenu error={monthsError} /></span>}
             </label>
             <label className="block space-y-1 text-xs text-muted-foreground">
-              <span>Note (optional)</span>
+              <span>Reason</span>
               <Input value={note} placeholder="Beta thank-you" onChange={(e) => setNote(e.target.value)} />
             </label>
           </div>
@@ -236,7 +236,7 @@ export function GiveFreeMonthsDialog({
               icon={saving && <Spinner size="xs" className="text-current" />}
               variant="primary"
               onClick={() => void apply()}
-              disabled={saving || !planKey || !!monthsError || cap === null || people.length === 0}
+              disabled={saving || !planKey || !!monthsError || cap === null || people.length === 0 || !note.trim()}
             >
               Give free time
             </Button>

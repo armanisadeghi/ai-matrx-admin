@@ -250,6 +250,7 @@ import { adminAiModelsManifest } from "./admin-ai-models.manifest";
 import { adminAiModelAuditManifest } from "./admin-ai-model-audit.manifest";
 import { adminToolRegistryManifest } from "./admin-tool-registry.manifest";
 import { adminUsersManifest } from "./admin-users.manifest";
+import { adminUserRecordManifest } from "./admin-user-record.manifest";
 import { adminLimitsManifest } from "./admin-limits.manifest";
 import { commerceLabelBatchManifest } from "./commerce-label-batch.manifest";
 import { adminFeedbackManifest } from "./admin-feedback.manifest";
@@ -540,6 +541,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   adminAiModelAuditManifest,
   adminToolRegistryManifest,
   adminUsersManifest,
+  adminUserRecordManifest,
   adminLimitsManifest,
   commerceLabelBatchManifest,
   adminFeedbackManifest,

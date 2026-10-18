@@ -202,7 +202,7 @@ export function ChangePlanDialog({
             />
           )}
           <label className="block space-y-1 text-xs text-muted-foreground">
-            <span>Note (optional)</span>
+            <span>Reason</span>
             <Input
               value={note}
               placeholder="Comped for beta feedback"
@@ -214,7 +214,7 @@ export function ChangePlanDialog({
           <Button variant="quiet" onClick={onClose}>
             Cancel
           </Button>
-          <Button icon={saving && <Spinner size="xs" className="text-current" />} variant="primary" onClick={() => void save()} disabled={saving || !choice || !!monthsError || (givesFreeTime && cap === null)}>
+          <Button icon={saving && <Spinner size="xs" className="text-current" />} variant="primary" onClick={() => void save()} disabled={saving || !choice || !!monthsError || (givesFreeTime && cap === null) || !note.trim()}>
             Save plan
           </Button>
         </DialogFooter>

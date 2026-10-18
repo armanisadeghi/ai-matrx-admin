@@ -3,7 +3,8 @@
 // A person's Organizations tab (/administration/users/<id>/organizations): every organization
 // membership they hold or held, read for this ONE person (iam.memberships, platform-admin read) —
 // never the whole directory. Add / change role / remove go through the same door the
-// Organizations page uses (service/orgMembership.ts), so the server's refusals and audit apply.
+// Organizations page uses (service/orgMembership.ts), so the server's refusals and audit apply;
+// each asks its reason through the page's one reason prompt (useUserActions.askReason).
 
 import { useEffect, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
@@ -14,11 +15,16 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AppLink from "@/components/navigation/AppLink";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { recordToast, toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { getRoleLabel, isOrgRole, type OrgRole } from "@/features/organizations/types";
-import { listPersonMemberships, mutateOrgMembership, type PersonMembership } from "../service/orgMembership";
+import {
+  listPersonMemberships,
+  mutateOrgMembership,
+  type MembershipChange,
+  type MembershipMethod,
+  type PersonMembership,
+} from "../service/orgMembership";
 import { personTitle } from "./userOverview";
 import type { UserTabBodyProps } from "./UserRecordPage";
 
@@ -34,28 +40,28 @@ export function adminOrganizationHref(orgId: string): string {
 
 function AddToOrganizationDialog({
   open,
-  userId,
   personLabel,
   onClose,
-  onAdded,
+  onPick,
 }: {
   open: boolean;
-  userId: string;
   personLabel: string;
   onClose: () => void;
-  onAdded: () => void;
+  /** The admin picked an organization and role; the caller asks the reason and adds. */
+  onPick: (org: { id: string; name: string }, role: OrgRole) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<{ id: string; name: string; slug: string }[]>([]);
-  const [searchError, setSearchError] = useState<string | null>(null);
+  // Results carry the term they answer, so "no match" never flashes during the debounce (N4).
+  const [found, setFound] = useState<{ term: string; rows: { id: string; name: string; slug: string }[]; error: string | null } | null>(null);
   const [picked, setPicked] = useState<{ id: string; name: string } | null>(null);
   const [role, setRole] = useState<OrgRole>("member");
-  const [saving, setSaving] = useState(false);
+  const term = query.trim();
+  const current = found && found.term === term ? found : null;
+  const results = term.length >= 2 ? (current?.rows ?? []) : [];
+  const searchError = term.length >= 2 ? (current?.error ?? null) : null;
 
   useEffect(() => {
-    if (!open) return;
-    const term = query.trim();
-    if (term.length < 2) return;
+    if (!open || term.length < 2) return;
     let alive = true;
     const t = setTimeout(() => {
       createClient()
@@ -67,38 +73,21 @@ function AddToOrganizationDialog({
         .order("name")
         .limit(20)
         .then(({ data, error }) => {
-          if (!alive) return;
-          setSearchError(error ? error.message : null);
-          setResults(data ?? []);
+          if (alive) setFound({ term, rows: data ?? [], error: error ? error.message : null });
         });
     }, 200);
     return () => {
       alive = false;
       clearTimeout(t);
     };
-  }, [query, open]);
+  }, [term, open]);
 
   const close = () => {
     setQuery("");
-    setResults([]);
+    setFound(null);
     setPicked(null);
     setRole("member");
     onClose();
-  };
-
-  const submit = async () => {
-    if (!picked) return;
-    setSaving(true);
-    try {
-      await mutateOrgMembership("POST", { organizationId: picked.id, userId, role });
-      recordToast.success({ type: "organization", id: picked.id, title: picked.name }, `Added to ${picked.name}`);
-      onAdded();
-      close();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSaving(false);
-    }
   };
 
   return (
@@ -109,9 +98,17 @@ function AddToOrganizationDialog({
           <DialogDescription className="truncate">{personLabel}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
-          <SearchField value={query} placeholder="Search organizations…" onChange={(e) => setQuery(e.target.value)} aria-label="Search organizations" />
+          <SearchField
+            value={query}
+            placeholder="Search organizations…"
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPicked(null);
+            }}
+            aria-label="Search organizations"
+          />
           {searchError ? <ErrorNotice size="inline" message={searchError} error={searchError} operation="Search organizations" /> : null}
-          {query.trim().length >= 2 && results.length === 0 && !searchError ? (
+          {current && term.length >= 2 && results.length === 0 && !searchError ? (
             <p className="type-secondary text-muted-foreground">No organization matches</p>
           ) : null}
           {results.length > 0 ? (
@@ -134,7 +131,15 @@ function AddToOrganizationDialog({
           <Button variant="quiet" onClick={close}>
             Cancel
           </Button>
-          <Button variant="primary" disabled={!picked || saving} onClick={() => void submit()}>
+          <Button
+            variant="primary"
+            disabled={!picked}
+            onClick={() => {
+              if (!picked) return;
+              onPick(picked, role);
+              close();
+            }}
+          >
             {picked ? `Add to ${picked.name}` : "Add"}
           </Button>
         </DialogFooter>
@@ -143,59 +148,56 @@ function AddToOrganizationDialog({
   );
 }
 
-export function UserOrganizationsTab({ userId, overview, reload }: UserTabBodyProps) {
+export function UserOrganizationsTab({ userId, overview, version: pageVersion, reload, actions, shareForAi }: UserTabBodyProps) {
   const [version, setVersion] = useState(0);
   const [saving, setSaving] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const label = personTitle(overview);
 
-  const { data: rowsData, loading, error } = useRecordLoad(listPersonMemberships, userId, version);
+  const { data: rowsData, loading, error } = useRecordLoad(listPersonMemberships, userId, pageVersion + version);
   const rows = rowsData ?? [];
+  useEffect(() => shareForAi({ memberships: rows }), [rows, shareForAi]);
 
-  const refresh = () => {
-    setVersion((v) => v + 1);
-    reload();
+  // Every membership change asks its reason (the one prompt) and sends it: the server writes it to
+  // iam.org_admin_audit and the person's admin history.
+  const change = (key: string, method: MembershipMethod, body: Omit<MembershipChange, "reason">, done: () => void) => async (reason: string) => {
+    setSaving(key);
+    try {
+      await mutateOrgMembership(method, { ...body, reason });
+      done();
+      reload();
+    } finally {
+      setSaving(null);
+    }
   };
 
-  const changeRole = async (m: PersonMembership, next: string) => {
+  const add = (org: { id: string; name: string }, role: OrgRole) =>
+    actions.askReason({
+      title: `Add ${label} to ${org.name}?`,
+      description: `They join as ${getRoleLabel(role)}.`,
+      confirmLabel: "Add",
+      run: change(`add:${org.id}`, "POST", { organizationId: org.id, userId, role }, () =>
+        recordToast.success({ type: "organization", id: org.id, title: org.name }, `Added to ${org.name}`),
+      ),
+    });
+
+  const changeRole = (m: PersonMembership, next: string) => {
     if (!isOrgRole(next) || next === m.role) return;
-    const ok = await confirm({
+    actions.askReason({
       title: `Change role to ${getRoleLabel(next)}?`,
       description: `${label} becomes ${getRoleLabel(next)} in ${m.organization_name}.`,
       confirmLabel: "Change role",
+      run: change(m.id, "PATCH", { organizationId: m.organization_id, userId, role: next }, () => toast.success("Role updated")),
     });
-    if (!ok) return;
-    setSaving(m.id);
-    try {
-      await mutateOrgMembership("PATCH", { organizationId: m.organization_id, userId, role: next });
-      toast.success("Role updated");
-      refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSaving(null);
-    }
   };
 
-  const remove = async (m: PersonMembership) => {
-    const ok = await confirm({
+  const remove = (m: PersonMembership) =>
+    actions.askReason({
       title: `Remove from ${m.organization_name}?`,
-      description: `${label} loses this membership. The last owner, or a person's only organization, is refused.`,
+      description: `${label} loses this membership.`,
       confirmLabel: "Remove",
-      variant: "destructive",
+      run: change(m.id, "DELETE", { organizationId: m.organization_id, userId }, () => toast.success("Membership removed")),
     });
-    if (!ok) return;
-    setSaving(m.id);
-    try {
-      await mutateOrgMembership("DELETE", { organizationId: m.organization_id, userId });
-      toast.success("Membership removed");
-      refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSaving(null);
-    }
-  };
 
   const columns: MatrxColumnDef<PersonMembership>[] = [
     {
@@ -270,12 +272,11 @@ export function UserOrganizationsTab({ userId, overview, reload }: UserTabBodyPr
         read={readOf({ loading, error }, { what: "memberships", onRetry: () => setVersion((v) => v + 1) })}
         emptyState={{
           title: "No organizations",
-          description: "Not a member of any organization.",
           icon: <Building2 className="h-6 w-6 text-muted-foreground" />,
         }}
         toolbar={{ search: true, searchPlaceholder: "Search organizations…" }}
       />
-      <AddToOrganizationDialog open={addOpen} userId={userId} personLabel={label} onClose={() => setAddOpen(false)} onAdded={refresh} />
+      <AddToOrganizationDialog open={addOpen} personLabel={label} onClose={() => setAddOpen(false)} onPick={add} />
     </div>
   );
 }

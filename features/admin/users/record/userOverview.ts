@@ -119,6 +119,25 @@ export async function fetchUserOverview(userId: string): Promise<UserOverview | 
   return data as unknown as UserOverview;
 }
 
+// The hover peek's copy of each person (kept for the tab, never the whole roster). `personChanged`
+// (useUserActions.tsx) drops a person's entry after any change, so a name closed on the page never
+// peeks "Active" again.
+const overviewCache = new Map<string, Promise<UserOverview | null>>();
+
+/** One person's overview, read once per tab until `forgetUserOverview`. */
+export function readUserOverviewCached(userId: string): Promise<UserOverview | null> {
+  const known = overviewCache.get(userId);
+  if (known) return known;
+  const pending = fetchUserOverview(userId);
+  overviewCache.set(userId, pending);
+  pending.catch(() => overviewCache.delete(userId));
+  return pending;
+}
+
+export function forgetUserOverview(userId: string): void {
+  overviewCache.delete(userId);
+}
+
 /** A generic placeholder ("User") is never a name. */
 export function realName(name: string | null | undefined): string | null {
   const n = name?.trim();
@@ -149,5 +168,6 @@ export function actionSubjectOf(o: UserOverview): UserActionSubject {
     top_tier_models: o.identity.permissions.includes(TOP_TIER_MODELS_PERMISSION),
     onboarding_completed: o.identity.onboarding_completed,
     email_confirmed: Boolean(o.identity.email_confirmed_at),
+    plan: o.plan ? { key: o.plan.key, source: o.plan.source } : null,
   };
 }

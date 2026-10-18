@@ -2,15 +2,16 @@
 
 // A person's Security tab (users one-roof lane S): Auth0's Details / Devices / History / Raw JSON
 // on one page. ONE read — admin.user_security(p_user), every part by an index on the person — and
-// four actions, each asking a reason and writing admin.admin_audit_log inside its SQL function:
-// iam.end_session (one sign-in), iam.sign_out_everywhere (all of them), iam.remove_mfa_factor,
-// iam.revoke_api_key_for_person. Sign-in history: auth.audit_log_entries has no index on the
-// person and stopped being written on 2026-08-20, so "Recent sign-ins" is the live sessions by
-// start time (sign_in_source = "sessions").
+// its row actions, each asking a reason through the one reason prompt and writing
+// admin.admin_audit_log inside its SQL function: iam.end_session (one sign-in),
+// iam.remove_mfa_factor, iam.revoke_api_key_for_person. Sign out everywhere is the page's
+// registered action (useUserActions). There is NO sign-in history anywhere
+// (auth.audit_log_entries stopped being written on 2026-08-20; lane Q, 21-contract.md), so the
+// old "Recent sign-ins" — the live sessions re-sorted — is gone: Active sessions is the truth.
 
-import { useState, type ReactNode } from "react";
-import { Fingerprint, History, KeyRound, LogOut, MonitorSmartphone, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
-import { ErrorNotice, TextInputDialog, readOf } from "@ai-matrx/design-system";
+import { useEffect, useState, type ReactNode } from "react";
+import { Fingerprint, KeyRound, LogOut, MonitorSmartphone, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
+import { ErrorNotice, readOf } from "@ai-matrx/design-system";
 import { Badge, Button, PropertyRow, RegionSkeleton, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -23,6 +24,7 @@ import { createClient } from "@/utils/supabase/client";
 import { isJsonObject, type JsonObject } from "@/types/json";
 import { toast } from "@/lib/toast";
 import { useRecordLoad } from "./useRecordLoad";
+import { useReasonPrompt } from "./useUserActions";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
 import { personTitle } from "./userOverview";
 import type { UserTabBodyProps } from "./UserRecordPage";
@@ -253,13 +255,6 @@ const SESSION_COLUMNS: MatrxColumnDef<SecuritySession>[] = [
   { id: "not_after", accessorKey: "not_after", header: "Expires", format: { id: "datetime" }, width: 170 },
 ];
 
-const SIGN_IN_COLUMNS: MatrxColumnDef<SecuritySession>[] = [
-  { id: "created_at", accessorKey: "created_at", header: "When", format: { id: "datetime" }, width: 170 },
-  { id: "device", accessorFn: (r) => deviceOf(r.user_agent), header: "Device", filter: "select", width: 180 },
-  { id: "ip", accessorFn: (r) => r.ip ?? "", header: "IP", width: 140 },
-  { id: "aal", accessorFn: (r) => (r.aal === "aal2" ? "Two-step" : "Password / link"), header: "Level", filter: "select", width: 140 },
-];
-
 const KEY_COLUMNS: MatrxColumnDef<SecurityApiKey>[] = [
   { id: "name", accessorKey: "name", header: "Name", width: 180 },
   { id: "prefix", accessorKey: "display_prefix", header: "Key", width: 180, cell: (r) => <span className="font-mono type-meta">{r.display_prefix}</span> },
@@ -348,7 +343,6 @@ const APP_COLUMNS: MatrxColumnDef<AppRow>[] = [
 
 type Pending =
   | { kind: "session"; id: string; label: string }
-  | { kind: "everywhere"; id: null; label: string }
   | { kind: "factor"; id: string; label: string }
   | { kind: "key"; id: string; label: string };
 
@@ -357,11 +351,6 @@ const ACTION_COPY: Record<Pending["kind"], { title: (label: string, who: string)
     title: (label, who) => `End ${who}'s sign-in on ${label}?`,
     description: "Signs out that device within an hour; others stay.",
     confirm: "End session",
-  },
-  everywhere: {
-    title: (_label, who) => `Sign ${who} out everywhere?`,
-    description: "Signs out every device within an hour.",
-    confirm: "Sign out everywhere",
   },
   factor: {
     title: (label, who) => `Remove ${who}'s ${label}?`,
@@ -381,44 +370,38 @@ async function runAction(userId: string, p: Pending, reason: string): Promise<st
   const { data, error } =
     p.kind === "session"
       ? await iam.rpc("end_session", { p_user: userId, p_session: p.id, p_reason: r })
-      : p.kind === "everywhere"
-        ? await iam.rpc("sign_out_everywhere", { p_user: userId, p_reason: r })
-        : p.kind === "factor"
-          ? await iam.rpc("remove_mfa_factor", { p_user: userId, p_factor: p.id, p_reason: r })
-          : await iam.rpc("revoke_api_key_for_person", { p_user: userId, p_key: p.id, p_reason: r });
+      : p.kind === "factor"
+        ? await iam.rpc("remove_mfa_factor", { p_user: userId, p_factor: p.id, p_reason: r })
+        : await iam.rpc("revoke_api_key_for_person", { p_user: userId, p_key: p.id, p_reason: r });
   if (error) throw new Error(error.message);
-  if (p.kind === "everywhere") {
-    const n = isJsonObject(data) && typeof data.sessions === "number" ? data.sessions : null;
-    return n === null ? "Signed out everywhere" : `Ended ${n} sign-in${n === 1 ? "" : "s"}`;
-  }
   if (p.kind === "key" && isJsonObject(data) && data.already === true) return "That key was already revoked";
   return p.kind === "session" ? "Session ended" : p.kind === "factor" ? "Factor removed" : "Key revoked";
 }
 
 // ── the tab ─────────────────────────────────────────────────────────────────────────────────
 
-export function UserSecurityTab({ userId, overview, reload }: UserTabBodyProps) {
+export function UserSecurityTab({ userId, overview, version: pageVersion, reload, actions, subject, shareForAi }: UserTabBodyProps) {
   const [version, setVersion] = useState(0);
-  const { data, loading, error } = useRecordLoad(fetchUserSecurity, userId, version);
-  const [pending, setPending] = useState<Pending | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { data, loading, error } = useRecordLoad(fetchUserSecurity, userId, pageVersion + version);
+  const { askReason, reasonDialog } = useReasonPrompt();
   const retry = () => setVersion((v) => v + 1);
   const read = (what: string) => readOf({ loading, error }, { what, onRetry: retry });
   const who = personTitle(overview);
+  const signOutBlocked = actions.blockedReason("sign_out_everywhere", subject);
+  useEffect(() => shareForAi(data), [data, shareForAi]);
 
-  const confirm = async (reason: string) => {
-    if (!pending) return;
-    setBusy(true);
-    try {
-      toast.success(await runAction(userId, pending, reason));
-      setPending(null);
-      retry();
-      reload();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
+  // Each row action asks its reason through the one prompt; the page (and this tab) re-read after.
+  const setPending = (p: Pending) => {
+    const copy = ACTION_COPY[p.kind];
+    askReason({
+      title: copy.title(p.label, who),
+      description: copy.description,
+      confirmLabel: copy.confirm,
+      run: async (reason) => {
+        toast.success(await runAction(userId, p, reason));
+        reload();
+      },
+    });
   };
 
   if (!loading && !error && data === null) {
@@ -431,8 +414,6 @@ export function UserSecurityTab({ userId, overview, reload }: UserTabBodyProps) 
   const factors = s?.mfa_factors ?? [];
   const keys = s?.api_keys ?? [];
   const apps = s ? appRowsOf(s) : [];
-  const signIns = [...sessions].sort((x, y) => (y.created_at ?? "").localeCompare(x.created_at ?? "")).slice(0, 20);
-  const copy = pending ? ACTION_COPY[pending.kind] : null;
 
   return (
     <div className="flex flex-col gap-4" data-testid="user-security-tab">
@@ -479,7 +460,12 @@ export function UserSecurityTab({ userId, overview, reload }: UserTabBodyProps) 
         title="Active sessions"
         icon={MonitorSmartphone}
         extra={
-          <Button variant="outline" disabled={!sessions.length} onClick={() => setPending({ kind: "everywhere", id: null, label: "" })}>
+          <Button
+            variant="outline"
+            disabled={!sessions.length || signOutBlocked !== null}
+            title={signOutBlocked ?? undefined}
+            onClick={() => actions.run("sign_out_everywhere", subject)}
+          >
             <LogOut className="h-4 w-4" aria-hidden />
             Sign out everywhere
           </Button>
@@ -502,17 +488,6 @@ export function UserSecurityTab({ userId, overview, reload }: UserTabBodyProps) 
               onClick: () => setPending({ kind: "session", id: r.id, label: deviceOf(r.user_agent) }),
             },
           ]}
-        />
-      </Section>
-
-      <Section title="Recent sign-ins" icon={History}>
-        <MatrxDataTable
-          data={signIns}
-          columns={SIGN_IN_COLUMNS}
-          getRowId={(r) => r.id}
-          isLoading={loading}
-          read={read("recent sign-ins")}
-          emptyState={{ title: "No sign-ins on record", icon: <History className="h-6 w-6 text-muted-foreground" /> }}
         />
       </Section>
 
@@ -575,18 +550,7 @@ export function UserSecurityTab({ userId, overview, reload }: UserTabBodyProps) 
         ) : null}
       </Section>
 
-      <TextInputDialog
-        open={pending !== null}
-        onOpenChange={(open) => {
-          if (!open && !busy) setPending(null);
-        }}
-        title={copy && pending ? copy.title(pending.label, who) : ""}
-        description={copy?.description}
-        placeholder="Reason (recorded in the admin history)"
-        confirmLabel={copy?.confirm}
-        busy={busy}
-        onConfirm={confirm}
-      />
+      {reasonDialog}
     </div>
   );
 }

@@ -1,23 +1,26 @@
 "use client";
 
-// THE per-person admin actions (users one-roof, lane B1, 2026-10-17). Extracted from the Accounts
-// roster's inline handlers so the roster's Manage menu and the person's own record page
-// (/administration/users/<id>) run the SAME code: sign-in links, onboarding flag, full MCP access,
-// top-tier models, close / reopen, and the in-app message.
+// THE ONE DISPATCH for every admin action on a person (users one-roof; lane B1 2026-10-17, lane P
+// 2026-10-18 — adversarial S2/B3/S1/B2/S5). The record page's header and Actions menu, its tabs
+// (Billing, Support, Security) and the Accounts roster's Manage menu all call `run(id, person)`;
+// none of them switches on an action id or holds an action dialog of its own (guard:
+// __tests__/one-user-door-registry.test.ts). Labels and the "can't now, because…" rule come from
+// the registry (userSurfaces.ts `userActionLabel` / `userActionBlocked`), so every menu agrees.
 //
-// Handlers take the person they act on (the roster acts on many rows; the record page on one) and
-// report each change through `onPatched`, so the caller keeps its own copy current (the roster
-// patches its row; the record page re-reads its overview). The two dialogs these actions need
-// (close reason, message) come back as `dialogs` for the caller to render once.
+// Every state change asks a REASON (required) through the one reason prompt (`useReasonPrompt`,
+// TextInputDialog) and sends it to the server door, which writes admin.admin_audit_log with it.
+// After any accepted change `personChanged(id)` drops every held copy of the person (the roster,
+// the peek's overview) and the caller's `onChanged` refreshes its own (the page bumps its version,
+// so the open tab re-reads too; the roster patches its row).
 
 import { useState, type ReactNode } from "react";
 import { MessageSquare } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { createClient } from "@/utils/supabase/client";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import {
   Dialog,
   DialogContent,
@@ -26,15 +29,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { toast } from "@/lib/toast";
+import { recordToast, toast } from "@/lib/toast";
 import { isJsonObject } from "@/types/json";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
+import { pushAppHref } from "@/lib/deployment/navigate";
 import { setTopTierAccess } from "@/features/ai-models/topTierAccess";
+import { ChangePlanDialog, type ChangePlanSubject } from "@/features/admin/limits/components/ChangePlanDialog";
+import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
+import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "../components/GiveFreeMonthsDialog";
+import { StartSupportSessionDialog, type SupportSessionTarget } from "../support-sessions/StartSupportSessionDialog";
 import { sendDirectMessage } from "../service/coupons";
 import { feedbackDmKey } from "../lib/userResearch";
 import { invalidateAdminRoster } from "../adminRoster";
+import { forgetUserOverview } from "./userOverview";
+import {
+  userActionBlocked,
+  userActionLabel,
+  userEmailHref,
+  type UserActionId,
+} from "./userSurfaces";
 
 /** What an action needs to know about the person it acts on. `AdminUserRow` satisfies it. */
 export interface UserActionSubject {
@@ -52,240 +67,253 @@ export interface UserActionSubject {
   onboarding_completed: boolean;
   /** The email address is verified. */
   email_confirmed: boolean;
+  /** The person's current plan, for Change plan's starting choice; null/absent = unknown. */
+  plan?: { key: string | null; source: string } | null;
 }
 
 export type UserActionPatch = Partial<
   Pick<UserActionSubject, "banned" | "mcp_full_access" | "top_tier_models" | "onboarding_completed" | "email_confirmed">
 >;
 
+/**
+ * Every held copy of this person is now stale: the shared roster and the hover peek's overview
+ * drop it (the next reader fetches fresh). Callers that hold their own copy refresh it themselves.
+ */
+export function personChanged(userId: string): void {
+  invalidateAdminRoster();
+  forgetUserOverview(userId);
+}
+
+// ── the one reason prompt ───────────────────────────────────────────────────────────────────
+
+export interface ReasonRequest {
+  title: string;
+  /** The consequence, ≤2 short sentences (S1). */
+  description?: string;
+  confirmLabel: string;
+  /** Runs with the reason; throw to keep the dialog open (the error is shown as a toast). */
+  run: (reason: string) => Promise<void>;
+}
+
+export const REASON_PLACEHOLDER = "Reason (recorded in the admin history)";
+
+/** THE reason prompt every state change on a person uses: one TextInputDialog, reason required. */
+export function useReasonPrompt(): { askReason: (request: ReasonRequest) => void; reasonDialog: ReactNode } {
+  const [request, setRequest] = useState<ReasonRequest | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const confirmReason = async (reason: string) => {
+    if (!request) return;
+    setBusy(true);
+    try {
+      await request.run(reason.trim());
+      setRequest(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const reasonDialog = (
+    <TextInputDialog
+      open={request !== null}
+      onOpenChange={(open) => {
+        if (!open && !busy) setRequest(null);
+      }}
+      title={request?.title ?? ""}
+      description={request?.description}
+      placeholder={REASON_PLACEHOLDER}
+      confirmLabel={request?.confirmLabel}
+      busy={busy}
+      onConfirm={confirmReason}
+    />
+  );
+  return { askReason: setRequest, reasonDialog };
+}
+
+// ── the dispatch ────────────────────────────────────────────────────────────────────────────
+
 export interface UseUserActionsOptions {
-  /** A change the database accepted, for the caller's copy of this person. */
-  onPatched?: (userId: string, patch: UserActionPatch) => void;
+  /** A change the database accepted (after `personChanged`), for the caller's copy of this person. */
+  onChanged?: (userId: string, patch: UserActionPatch) => void;
 }
 
-function whoOf(subject: Pick<UserActionSubject, "email" | "display_name" | "id">): string {
-  return subject.email ?? subject.display_name ?? subject.id;
+function whoOf(subject: Pick<UserActionSubject, "email" | "display_name" | "id" | "is_anonymous">): string {
+  return subject.display_name ?? subject.email ?? (subject.is_anonymous ? "Guest" : subject.id);
 }
 
-export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
+/** The record a person-naming toast carries (lib/toast recordToast). */
+function personRef(subject: Pick<UserActionSubject, "id" | "email" | "display_name" | "is_anonymous">) {
+  return { type: "user", id: subject.id, title: whoOf(subject) };
+}
+
+async function rpcError(promise: PromiseLike<{ data: unknown; error: { message: string } | null }>): Promise<unknown> {
+  const { data, error } = await promise;
+  // access-errors: ok — a write door's refusal, verbatim (the reason prompt shows it as a toast).
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
+  const router = useRouter();
   const { copyText } = useClipboard({ notify: copyNotify });
   const myId = useAppSelector((state) => state.userAuth.id);
   const selectedOrganizationId = useAppSelector(selectOrganizationId);
+  const { askReason, reasonDialog } = useReasonPrompt();
 
-  const [closeTarget, setCloseTarget] = useState<UserActionSubject | null>(null);
-  const [closing, setClosing] = useState(false);
-  const [reopenTarget, setReopenTarget] = useState<UserActionSubject | null>(null);
-  const [reopening, setReopening] = useState(false);
-  const [signOutTarget, setSignOutTarget] = useState<UserActionSubject | null>(null);
-  const [signingOut, setSigningOut] = useState(false);
-  const [verifyTarget, setVerifyTarget] = useState<UserActionSubject | null>(null);
-  const [verifying, setVerifying] = useState(false);
+  const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
+  const [freeMonthsPeople, setFreeMonthsPeople] = useState<FreeMonthsPerson[] | null>(null);
+  const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
+  const [tutorialPerson, setTutorialPerson] = useState<TutorialRecipient | null>(null);
   const [messageTarget, setMessageTarget] = useState<UserActionSubject | null>(null);
   const [messageDraft, setMessageDraft] = useState("");
   const [messageSending, setMessageSending] = useState(false);
 
-  const sendAuthLink = async (subject: UserActionSubject, type: "magiclink" | "recovery") => {
-    const noun = type === "magiclink" ? "magic sign-in link" : "password reset link";
-    const ok = await confirm({
-      title: `Send ${noun}?`,
-      description: `Single-use link, emailed to ${subject.email}.`,
-      confirmLabel: "Send",
-    });
-    if (!ok) return;
-    try {
-      const res = await fetch("/api/admin/users/auth-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: subject.id, email: subject.email, type, send: true }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed");
-      toast.success(`Sent ${noun} to ${subject.email}`, {
-        action: json.action_link
-          ? { label: "Copy link", onClick: () => void copyText(json.action_link) }
-          : undefined,
-      });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to send");
-    }
+  const changed = (userId: string, patch: UserActionPatch = {}) => {
+    personChanged(userId);
+    onChanged?.(userId, patch);
   };
 
-  const patchAccount = async (subject: UserActionSubject, body: Record<string, boolean>) => {
+  const patchAccount = async (subject: UserActionSubject, body: Record<string, boolean | string>) => {
     const res = await fetch("/api/admin/users", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: subject.id, ...body }),
     });
-    if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
-    invalidateAdminRoster();
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Failed");
   };
 
-  const toggleOnboarding = async (subject: UserActionSubject) => {
+  const sendAuthLink = (subject: UserActionSubject, type: "magiclink" | "recovery") => {
+    const noun = type === "magiclink" ? "magic sign-in link" : "password reset link";
+    askReason({
+      title: `Send a ${noun} to ${whoOf(subject)}?`,
+      description: `Single-use link, emailed to ${subject.email}.`,
+      confirmLabel: "Send",
+      run: async (reason) => {
+        const res = await fetch("/api/admin/users/auth-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: subject.id, email: subject.email, type, send: true, reason }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json.error ?? "Failed to send");
+        changed(subject.id);
+        recordToast.success(personRef(subject), `Sent ${noun} to ${subject.email}`, {
+          action: json.action_link ? { label: "Copy link", onClick: () => void copyText(json.action_link) } : undefined,
+        });
+      },
+    });
+  };
+
+  const toggleOnboarding = (subject: UserActionSubject) => {
     const next = !subject.onboarding_completed;
-    try {
-      await patchAccount(subject, { onboardingCompleted: next });
-      onPatched?.(subject.id, { onboarding_completed: next });
-      toast.success(next ? "Marked as onboarded" : "Marked as new");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
-    }
+    askReason({
+      title: next ? `Mark ${whoOf(subject)} as onboarded?` : `Mark ${whoOf(subject)} as new?`,
+      description: next ? "Onboarding is skipped on their next visit." : "Onboarding shows again on their next visit.",
+      confirmLabel: next ? "Mark onboarded" : "Mark as new",
+      run: async (reason) => {
+        await patchAccount(subject, { onboardingCompleted: next, reason });
+        changed(subject.id, { onboarding_completed: next });
+        recordToast.success(personRef(subject), next ? "Marked as onboarded" : "Marked as new");
+      },
+    });
   };
 
-  const toggleMcpFullAccess = async (subject: UserActionSubject) => {
+  const toggleMcpFullAccess = (subject: UserActionSubject) => {
     const next = !subject.mcp_full_access;
-    try {
-      await patchAccount(subject, { mcpFullAccess: next });
-      onPatched?.(subject.id, { mcp_full_access: next });
-      toast.success(
-        next
-          ? `Granted full MCP access to ${subject.email ?? subject.id}`
-          : `Revoked full MCP access from ${subject.email ?? subject.id}`,
-      );
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
-    }
+    askReason({
+      title: next ? `Grant full MCP access to ${whoOf(subject)}?` : `Revoke full MCP access from ${whoOf(subject)}?`,
+      description: next ? "Every MCP tool opens to them, not only the default set." : "They keep only the default MCP tools.",
+      confirmLabel: next ? "Grant" : "Revoke",
+      run: async (reason) => {
+        await patchAccount(subject, { mcpFullAccess: next, reason });
+        changed(subject.id, { mcp_full_access: next });
+        recordToast.success(personRef(subject), next ? `Granted full MCP access to ${whoOf(subject)}` : `Revoked full MCP access from ${whoOf(subject)}`);
+      },
+    });
   };
 
   // Top-tier models (cost rating 6): off for everyone; a super admin turns one person on.
-  // The RPC refuses anyone else and records who changed it and when.
-  const toggleTopTierModels = async (subject: UserActionSubject) => {
+  const toggleTopTierModels = (subject: UserActionSubject) => {
     const next = !subject.top_tier_models;
-    const who = subject.email ?? subject.id;
-    if (next) {
-      const ok = await confirm({
-        title: "Allow top-tier models?",
-        description: `${who} can run top-tier models at top-tier prices.`,
-        confirmLabel: "Allow",
-      });
-      if (!ok) return;
-    }
-    try {
-      await setTopTierAccess(subject.id, next);
-      invalidateAdminRoster();
-      onPatched?.(subject.id, { top_tier_models: next });
-      toast.success(next ? `Top-tier models on for ${who}` : `Top-tier models off for ${who}`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
-    }
+    const who = whoOf(subject);
+    askReason({
+      title: next ? `Allow top-tier models for ${who}?` : `Turn off top-tier models for ${who}?`,
+      description: next ? `${who} can run top-tier models at top-tier prices.` : "Top-tier models are refused for them again.",
+      confirmLabel: next ? "Allow" : "Turn off",
+      run: async (reason) => {
+        await setTopTierAccess(subject.id, next, reason);
+        changed(subject.id, { top_tier_models: next });
+        recordToast.success(personRef(subject), next ? `Top-tier models on for ${who}` : `Top-tier models off for ${who}`);
+      },
+    });
   };
 
   // Closing an account is the only way to "delete" one: the person row is permanent.
   // iam.close_account / iam.reopen_account check the platform-admin seat themselves.
-  /** Why a close / reopen cannot run for this person, or null when it can. */
-  const closeBlockedReason = (subject: UserActionSubject): string | null => {
-    if (subject.erased) return "This account was erased and cannot be reopened.";
-    if (!subject.banned && subject.id === myId)
-      return "You cannot close your own account here. Use your account settings.";
-    return null;
+  const closeAccount = (subject: UserActionSubject) => {
+    const who = whoOf(subject);
+    askReason({
+      title: `Close ${who}?`,
+      description: "They can't sign in; API keys are revoked, records stay.",
+      confirmLabel: "Close account",
+      run: async (reason) => {
+        await rpcError(createClient().schema("iam").rpc("close_account", { p_user: subject.id, p_reason: reason }));
+        changed(subject.id, { banned: true });
+        recordToast.success(personRef(subject), `Closed ${who}`);
+      },
+    });
   };
 
-  /** Close and reopen both ask for the reason (recorded in the admin history). */
-  const setAccountClosed = async (subject: UserActionSubject, close: boolean) => {
-    const blocked = closeBlockedReason(subject);
-    if (blocked) {
-      toast.error(blocked);
-      return;
-    }
-    if (close) {
-      setCloseTarget(subject);
-      return;
-    }
-    setReopenTarget(subject);
+  const reopenAccount = (subject: UserActionSubject) => {
+    const who = whoOf(subject);
+    askReason({
+      title: `Reopen ${who}?`,
+      description: "They can sign in again; revoked API keys stay revoked.",
+      confirmLabel: "Reopen",
+      run: async (reason) => {
+        const data = await rpcError(createClient().schema("iam").rpc("reopen_account", { p_user: subject.id, p_reason: reason }));
+        // iam.reopen_account answers `reopened: false` when nothing was closed (B2): say so.
+        if (isJsonObject(data) && data.reopened === false) {
+          changed(subject.id);
+          recordToast.warning(personRef(subject), `${who} was not closed`);
+          return;
+        }
+        changed(subject.id, { banned: false });
+        recordToast.success(personRef(subject), `Reopened ${who}`);
+      },
+    });
   };
 
-  const confirmReopen = async (reason: string) => {
-    if (!reopenTarget) return;
-    const who = whoOf(reopenTarget);
-    setReopening(true);
-    try {
-      const { error } = await createClient()
-        .schema("iam")
-        .rpc("reopen_account", { p_user: reopenTarget.id, p_reason: reason.trim() });
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      invalidateAdminRoster();
-      onPatched?.(reopenTarget.id, { banned: false });
-      toast.success(`Reopened ${who}`);
-      setReopenTarget(null);
-    } finally {
-      setReopening(false);
-    }
+  const signOutEverywhere = (subject: UserActionSubject) => {
+    const who = whoOf(subject);
+    askReason({
+      title: `Sign ${who} out everywhere?`,
+      description: "Every device signs out within an hour.",
+      confirmLabel: "Sign out everywhere",
+      run: async (reason) => {
+        const data = await rpcError(createClient().schema("iam").rpc("sign_out_everywhere", { p_user: subject.id, p_reason: reason }));
+        const ended = isJsonObject(data) && typeof data.sessions === "number" ? data.sessions : null;
+        changed(subject.id);
+        recordToast.success(personRef(subject), ended === null ? `Signed ${who} out everywhere` : `Ended ${ended} sign-in${ended === 1 ? "" : "s"} for ${who}`);
+      },
+    });
   };
 
-  const confirmClose = async (reason: string) => {
-    if (!closeTarget) return;
-    const who = whoOf(closeTarget);
-    setClosing(true);
-    try {
-      const { error } = await createClient()
-        .schema("iam")
-        .rpc("close_account", { p_user: closeTarget.id, p_reason: reason.trim() });
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      invalidateAdminRoster();
-      onPatched?.(closeTarget.id, { banned: true });
-      toast.success(`Closed ${who}`);
-      setCloseTarget(null);
-    } finally {
-      setClosing(false);
-    }
-  };
-
-  /** Ends every sign-in this person has (iam.sign_out_everywhere); asks for the reason first. */
-  const signOutEverywhere = (subject: UserActionSubject) => setSignOutTarget(subject);
-
-  const confirmSignOut = async (reason: string) => {
-    if (!signOutTarget) return;
-    const who = whoOf(signOutTarget);
-    setSigningOut(true);
-    try {
-      const { data, error } = await createClient()
-        .schema("iam")
-        .rpc("sign_out_everywhere", { p_user: signOutTarget.id, p_reason: reason.trim() });
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      const ended = isJsonObject(data) && typeof data.sessions === "number" ? data.sessions : null;
-      toast.success(ended === null ? `Signed ${who} out everywhere` : `Ended ${ended} sign-in${ended === 1 ? "" : "s"} for ${who}`);
-      setSignOutTarget(null);
-    } finally {
-      setSigningOut(false);
-    }
-  };
-
-  /** Marks the email verified (iam.admin_confirm_email); asks for the reason first. */
-  const verifyEmail = (subject: UserActionSubject) => setVerifyTarget(subject);
-
-  const confirmVerify = async (reason: string) => {
-    if (!verifyTarget) return;
-    const who = whoOf(verifyTarget);
-    setVerifying(true);
-    try {
-      const { data, error } = await createClient()
-        .schema("iam")
-        .rpc("admin_confirm_email", { p_user: verifyTarget.id, p_reason: reason.trim() });
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      invalidateAdminRoster();
-      onPatched?.(verifyTarget.id, { email_confirmed: true });
-      const changed = isJsonObject(data) && data.changed === false;
-      toast.success(changed ? `${who} was already verified` : `Marked ${who}'s email verified`);
-      setVerifyTarget(null);
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const openMessage = (subject: UserActionSubject) => {
-    setMessageTarget(subject);
-    setMessageDraft("");
+  const verifyEmail = (subject: UserActionSubject) => {
+    const who = whoOf(subject);
+    askReason({
+      title: `Mark ${who}'s email verified?`,
+      description: `${subject.email} counts as verified; no confirmation email is sent.`,
+      confirmLabel: "Mark verified",
+      run: async (reason) => {
+        const data = await rpcError(createClient().schema("iam").rpc("admin_confirm_email", { p_user: subject.id, p_reason: reason }));
+        changed(subject.id, { email_confirmed: true });
+        const already = isJsonObject(data) && data.changed === false;
+        recordToast.success(personRef(subject), already ? `${who} was already verified` : `Marked ${who}'s email verified`);
+      },
+    });
   };
 
   const sendMessage = async () => {
@@ -298,15 +326,17 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     }
     setMessageSending(true);
     try {
-      await sendDirectMessage({
+      const { auditError } = await sendDirectMessage({
         userId: messageTarget.id,
         content: messageDraft,
         organizationId: selectedOrganizationId,
         replayKey: (conversationId, content) => feedbackDmKey(myId, conversationId, content),
       });
-      toast.success(`Message sent to ${messageTarget.display_name ?? messageTarget.email}`, {
+      recordToast.success(personRef(messageTarget), `Message sent to ${whoOf(messageTarget)}`, {
         action: { label: "Open thread", onClick: () => openFromNotice("/messages") },
       });
+      if (auditError) toast.warning(`Sent, but not recorded in the admin history: ${auditError}`);
+      changed(messageTarget.id);
       setMessageTarget(null);
       setMessageDraft("");
     } catch (e) {
@@ -316,52 +346,101 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     }
   };
 
+  /** Why `id` can't run for this person now, or null when it can (the registry's rule). */
+  const blockedReason = (id: UserActionId, subject: UserActionSubject): string | null =>
+    userActionBlocked(id, subject, { myId });
+
+  /** The label `id` shows for this person, or null to leave it out (the registry's rule). */
+  const labelFor = (id: UserActionId, subject: UserActionSubject): string | null => userActionLabel(id, subject);
+
+  /** THE dispatch: run one registered action on one person. Refuses a blocked one with its reason. */
+  const run = (id: UserActionId, subject: UserActionSubject) => {
+    const blocked = blockedReason(id, subject);
+    if (blocked) {
+      recordToast.warning(personRef(subject), `${whoOf(subject)}: ${blocked}`);
+      return;
+    }
+    const label = whoOf(subject);
+    switch (id) {
+      case "support_session":
+        setSupportTarget({ id: subject.id, email: subject.email, displayName: subject.display_name });
+        return;
+      case "message":
+        setMessageTarget(subject);
+        setMessageDraft("");
+        return;
+      case "email":
+        pushAppHref(router, userEmailHref(subject.id));
+        return;
+      case "magic_link":
+        sendAuthLink(subject, "magiclink");
+        return;
+      case "password_reset":
+        sendAuthLink(subject, "recovery");
+        return;
+      case "change_plan":
+        setPlanTarget({
+          kind: "user",
+          id: subject.id,
+          name: label,
+          currentPlanKey: subject.plan?.key ?? null,
+          grantActive: subject.plan?.source === "grant",
+        });
+        return;
+      case "free_months":
+        setFreeMonthsPeople([{ id: subject.id, label }]);
+        return;
+      case "tutorial":
+        setTutorialPerson({ id: subject.id, label, email: subject.email });
+        return;
+      case "mcp_access":
+        toggleMcpFullAccess(subject);
+        return;
+      case "top_tier":
+        toggleTopTierModels(subject);
+        return;
+      case "onboarded":
+        toggleOnboarding(subject);
+        return;
+      case "verify_email":
+        verifyEmail(subject);
+        return;
+      case "close":
+        closeAccount(subject);
+        return;
+      case "reopen":
+        reopenAccount(subject);
+        return;
+      case "sign_out_everywhere":
+        signOutEverywhere(subject);
+        return;
+    }
+  };
+
   const dialogs: ReactNode = (
     <>
-      <TextInputDialog
-        open={closeTarget !== null}
-        onOpenChange={(open) => {
-          if (!open && !closing) setCloseTarget(null);
+      {reasonDialog}
+      <StartSupportSessionDialog
+        target={supportTarget}
+        onClose={() => {
+          const id = supportTarget?.id;
+          setSupportTarget(null);
+          // A session may have started: the attention row and the Support tab read fresh.
+          if (id) changed(id);
         }}
-        title={`Close ${closeTarget ? whoOf(closeTarget) : "account"}?`}
-        placeholder="Reason (recorded with the closure)"
-        confirmLabel="Close account"
-        busy={closing}
-        onConfirm={confirmClose}
       />
-      <TextInputDialog
-        open={reopenTarget !== null}
-        onOpenChange={(open) => {
-          if (!open && !reopening) setReopenTarget(null);
-        }}
-        title={`Reopen ${reopenTarget ? whoOf(reopenTarget) : "account"}?`}
-        placeholder="Reason (recorded in the admin history)"
-        confirmLabel="Reopen"
-        busy={reopening}
-        onConfirm={confirmReopen}
+      <ChangePlanDialog
+        subject={planTarget}
+        onClose={() => setPlanTarget(null)}
+        onChanged={() => planTarget && changed(planTarget.id)}
       />
-      <TextInputDialog
-        open={signOutTarget !== null}
-        onOpenChange={(open) => {
-          if (!open && !signingOut) setSignOutTarget(null);
-        }}
-        title={`Sign ${signOutTarget ? whoOf(signOutTarget) : "this person"} out everywhere?`}
-        placeholder="Reason (recorded in the admin history)"
-        confirmLabel="Sign out everywhere"
-        busy={signingOut}
-        onConfirm={confirmSignOut}
+      <GiveFreeMonthsDialog
+        open={freeMonthsPeople !== null}
+        people={freeMonthsPeople ?? []}
+        onClose={() => setFreeMonthsPeople(null)}
+        onApplied={() => (freeMonthsPeople ?? []).forEach((p) => changed(p.id))}
       />
-      <TextInputDialog
-        open={verifyTarget !== null}
-        onOpenChange={(open) => {
-          if (!open && !verifying) setVerifyTarget(null);
-        }}
-        title={`Mark ${verifyTarget ? whoOf(verifyTarget) : "this person"}'s email verified?`}
-        placeholder="Reason (recorded in the admin history)"
-        confirmLabel="Mark verified"
-        busy={verifying}
-        onConfirm={confirmVerify}
-      />
+      <SendTutorialDialog person={tutorialPerson} onClose={() => setTutorialPerson(null)} />
       <Dialog
         open={messageTarget !== null}
         onOpenChange={(open) => {
@@ -370,9 +449,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              In-app message to {messageTarget?.display_name ?? messageTarget?.email}
-            </DialogTitle>
+            <DialogTitle>In-app message to {messageTarget ? whoOf(messageTarget) : ""}</DialogTitle>
           </DialogHeader>
           <ProTextarea
             data-surface-value="dm_draft"
@@ -403,18 +480,18 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
 
   return {
     myId,
-    sendAuthLink,
-    toggleOnboarding,
-    toggleMcpFullAccess,
-    toggleTopTierModels,
-    setAccountClosed,
-    closeBlockedReason,
-    signOutEverywhere,
-    verifyEmail,
-    openMessage,
+    run,
+    labelFor,
+    blockedReason,
+    /** The one reason prompt (for a tab's own state change, e.g. a membership). */
+    askReason,
+    /** Give free months to several people at once (the roster's bulk action) — the same dialog. */
+    giveFreeMonths: (people: FreeMonthsPerson[]) => setFreeMonthsPeople(people),
     /** The person the message dialog is open for (surface context). */
     messageTarget,
     messageDraft,
     dialogs,
   };
 }
+
+export type UserActions = ReturnType<typeof useUserActions>;

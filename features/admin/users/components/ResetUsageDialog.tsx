@@ -107,7 +107,7 @@ export function ResetUsageDialog({
             </label>
           </div>
           <label className="block space-y-1 text-xs text-muted-foreground">
-            <span>Note (optional)</span>
+            <span>Reason</span>
             <Input value={note} placeholder="Support: stuck after a failed run" onChange={(e) => setNote(e.target.value)} />
           </label>
           <p className={cn("type-body", ready ? "text-foreground" : "text-muted-foreground")}>
@@ -118,7 +118,7 @@ export function ResetUsageDialog({
           <Button variant="quiet" onClick={onClose}>
             Cancel
           </Button>
-          <Button icon={saving && <Spinner size="xs" className="text-current" />} variant="danger" onClick={() => void submit()} disabled={saving || !ready}>
+          <Button icon={saving && <Spinner size="xs" className="text-current" />} variant="danger" onClick={() => void submit()} disabled={saving || !ready || !note.trim()}>
             Reset usage
           </Button>
         </DialogFooter>

@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { isJsonObject } from "@/types/json";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
@@ -52,36 +53,22 @@ import { AdminUserRef } from "./AdminUserRef";
 import { USERS_ADMIN_LOCATION, ADMIN_LEVEL_LABEL } from "../constants";
 import type { AdminUserRow } from "../types";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import {
-  ChangePlanDialog,
-  type ChangePlanSubject,
-} from "@/features/admin/limits/components/ChangePlanDialog";
 import { periodLabel } from "@/features/admin/limits/types";
 import { UserResearchDialog } from "./UserResearchDialog";
-import {
-  StartSupportSessionDialog,
-  type SupportSessionTarget,
-} from "../support-sessions/StartSupportSessionDialog";
-import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "./GiveFreeMonthsDialog";
-import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
 import { readUserResearch } from "../service/userResearch";
 import { readMyUserNotes, type MyUserNoteRow } from "../service/userNotes";
 import { RELATIONSHIP_LABELS, CONTACT_STATE_LABELS, type UserResearch } from "../lib/userResearch";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAdminUserMenuSection } from "./admin-user-menu-section";
-import { useUserActions } from "../record/useUserActions";
+import { personChanged, useUserActions } from "../record/useUserActions";
 import {
   allUserActions,
-  userActionDisabled,
-  userActionLabel,
   userDoors,
-  userEmailHref,
   userRecordHref,
-  type UserActionId,
 } from "../record/userSurfaces";
 import { AI_REQUESTS_LABEL } from "../record/userOverview";
 import { pushAppHref } from "@/lib/deployment/navigate";
-import { invalidateAdminRoster, loadAdminRoster } from "../adminRoster";
+import { loadAdminRoster } from "../adminRoster";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { readOf } from "@ai-matrx/design-system";
 import { DrillExplorer } from "@/components/official/drill-explorer/DrillExplorer";
@@ -205,9 +192,6 @@ function AccountsRoster() {
     useListViewPrefs("admin-user-accounts", ACCOUNT_VIEW_DEFAULTS);
   const [rows, setRows] = useState<AdminUserRow[]>([]);
   const [plansError, setPlansError] = useState<string | null>(null);
-  const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
-  const [freeMonthsPeople, setFreeMonthsPeople] = useState<FreeMonthsPerson[] | null>(null);
-  const [tutorialPerson, setTutorialPerson] = useState<TutorialRecipient | null>(null);
   const researchOwnerId = useAppSelector(state => state.userAuth.id);
   const costDisplay = useCostDisplay();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -275,100 +259,16 @@ function AccountsRoster() {
     };
   }, [refreshKey]);
 
-  // The per-person actions are THE shared hook (the person's record page runs the same code);
-  // each accepted change patches this roster's row.
-  const {
-    sendAuthLink,
-    toggleOnboarding,
-    setAccountClosed,
-    toggleMcpFullAccess,
-    toggleTopTierModels,
-    openMessage,
-    signOutEverywhere,
-    verifyEmail,
-    messageTarget,
-    messageDraft,
-    dialogs: userActionDialogs,
-  } = useUserActions({
-    onPatched: (id, patch) => {
-      // The held roster is now stale for every other page: the next reader fetches it fresh.
-      invalidateAdminRoster();
-      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  // The per-person actions are THE one dispatch (the person's record page runs the same code):
+  // labels, "can't now, because…" and every dialog come from it. A change the database accepted
+  // patches this roster's row; one with nothing to patch (plan, free months) re-reads the roster.
+  const userActions = useUserActions({
+    onChanged: (id, patch) => {
+      if (Object.keys(patch).length === 0) setRefreshKey((key) => key + 1);
+      else setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
     },
   });
-  const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
-
-  // THE action registry (record/userSurfaces.ts USER_ACTIONS) drives the Manage menu: one entry per
-  // registered action, its label and "can't now" rule shared with the person's page.
-  const personLabel = (row: AdminUserRow) => row.display_name ?? row.email ?? row.id;
-  const actionLabelFor = (id: UserActionId, row: AdminUserRow): string | null => {
-    if (row.erased && (id === "close" || id === "reopen")) return id === "close" ? "Erased — cannot reopen" : null;
-    if (id === "close" && row.id === researchOwnerId) return "Your own account";
-    if (id === "mcp_access" && row.admin_level) return "MCP access inherited from admin";
-    return userActionLabel(id, row);
-  };
-  const actionDisabledFor = (id: UserActionId, row: AdminUserRow): boolean => {
-    if (id === "mcp_access") return Boolean(row.admin_level);
-    return userActionDisabled(id, row, {
-      myId: researchOwnerId,
-      closeBlocked: row.erased || (!row.banned && row.id === researchOwnerId),
-    });
-  };
-  const runAction = (id: UserActionId, row: AdminUserRow) => {
-    switch (id) {
-      case "support_session":
-        setSupportTarget({ id: row.id, email: row.email, displayName: row.display_name });
-        return;
-      case "message":
-        openMessage(row);
-        return;
-      case "email":
-        pushAppHref(router, userEmailHref(row.id));
-        return;
-      case "magic_link":
-        void sendAuthLink(row, "magiclink");
-        return;
-      case "password_reset":
-        void sendAuthLink(row, "recovery");
-        return;
-      case "change_plan":
-        setPlanTarget({
-          kind: "user",
-          id: row.id,
-          name: personLabel(row),
-          currentPlanKey: row.plan?.key ?? null,
-          grantActive: row.plan?.source === "grant",
-        });
-        return;
-      case "free_months":
-        setFreeMonthsPeople([{ id: row.id, label: personLabel(row) }]);
-        return;
-      case "tutorial":
-        setTutorialPerson({ id: row.id, label: personLabel(row), email: row.email });
-        return;
-      case "mcp_access":
-        void toggleMcpFullAccess(row);
-        return;
-      case "top_tier":
-        void toggleTopTierModels(row);
-        return;
-      case "onboarded":
-        void toggleOnboarding(row);
-        return;
-      case "close":
-        void setAccountClosed(row, true);
-        return;
-      case "reopen":
-        void setAccountClosed(row, false);
-        return;
-      case "sign_out_everywhere":
-        signOutEverywhere(row);
-        return;
-      case "verify_email":
-        verifyEmail(row);
-        return;
-    }
-  };
+  const { messageTarget, messageDraft, dialogs: userActionDialogs } = userActions;
 
   const columns = useMemo((): MatrxColumnDef<AdminUserRow>[] => {
     return [
@@ -903,7 +803,7 @@ function AccountsRoster() {
         if (people.length < sel.rows.length) {
           toast.warning(`${sel.rows.length - people.length} anonymous visitor(s) left out`);
         }
-        setFreeMonthsPeople(
+        userActions.giveFreeMonths(
           people.map((row) => ({ id: row.id, label: row.display_name ?? row.email ?? row.id })),
         );
       },
@@ -929,7 +829,9 @@ function AccountsRoster() {
             const { error } = await createClient()
               .schema("iam")
               .rpc("close_account", { p_user: id, p_reason: reason });
+            // access-errors: ok — a write refusal, named per row in the bulk result.
             if (error) throw new Error(error.message);
+            personChanged(id);
           },
           {
             done: "Closed",
@@ -962,10 +864,16 @@ function AccountsRoster() {
         return runPerRow(
           sel,
           async (id) => {
-            const { error } = await createClient()
+            const { data, error } = await createClient()
               .schema("iam")
               .rpc("reopen_account", { p_user: id, p_reason: reason });
+            // access-errors: ok — a write refusal, named per row in the bulk result.
             if (error) throw new Error(error.message);
+            // `reopened: false` = nothing was closed: a skip with its reason, never a "Reopened" (B2).
+            if (isJsonObject(data) && data.reopened === false) {
+              throw new Error("Was not closed");
+            }
+            personChanged(id);
           },
           {
             done: "Reopened",
@@ -1156,18 +1064,20 @@ function AccountsRoster() {
                   </DropdownMenuItem>
                 ))}
                 {allUserActions().flatMap((def, index, list) => {
-                  const itemLabel = actionLabelFor(def.id, row);
+                  const itemLabel = userActions.labelFor(def.id, row);
                   if (!itemLabel) return [];
                   const Icon = def.icon;
+                  const blocked = userActions.blockedReason(def.id, row);
                   const startsGroup = index === 0 || list[index - 1]?.group !== def.group;
                   return [
                     ...(startsGroup ? [<DropdownMenuSeparator key={`sep-${def.id}`} />] : []),
                     <DropdownMenuItem
                       key={def.id}
-                      disabled={actionDisabledFor(def.id, row)}
-                      onClick={() => runAction(def.id, row)}
+                      disabled={blocked !== null}
+                      onClick={() => userActions.run(def.id, row)}
                     >
                       <Icon className="mr-2 h-4 w-4" /> {itemLabel}
+                      {blocked ? <span className="ml-auto pl-4 type-meta">{blocked}</span> : null}
                     </DropdownMenuItem>,
                   ];
                 })}
@@ -1343,19 +1253,6 @@ function AccountsRoster() {
       </div>
 
       {plansError && <ErrorNotice size="inline" message="Plans and usage could not load. Refresh to retry." error={plansError} operation="Load account plans" calls={["users.admin_account_plans"]} />}
-      <GiveFreeMonthsDialog
-        open={freeMonthsPeople !== null}
-        people={freeMonthsPeople ?? []}
-        onClose={() => setFreeMonthsPeople(null)}
-        onApplied={() => setRefreshKey((key) => key + 1)}
-      />
-      <SendTutorialDialog person={tutorialPerson} onClose={() => setTutorialPerson(null)} />
-      <StartSupportSessionDialog target={supportTarget} onClose={() => setSupportTarget(null)} />
-      <ChangePlanDialog
-        subject={planTarget}
-        onClose={() => setPlanTarget(null)}
-        onChanged={() => setRefreshKey((key) => key + 1)}
-      />
       {researchError && <ErrorNotice size="inline" message="Personal notes could not load. Refresh to retry." error={researchError} operation="Load personal user notes" calls={["crm.party_research"]} />}
       {myNotesError && <ErrorNotice size="inline" message="My notes could not load. Refresh to retry." error={myNotesError} operation="Load my notes about people" calls={["admin.my_user_notes"]} />}
       {researchTarget && researchOwnerId && <UserResearchDialog

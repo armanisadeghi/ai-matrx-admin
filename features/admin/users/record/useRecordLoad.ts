@@ -6,6 +6,7 @@ type Settled<T> = { token: string; data: T | null; error: unknown };
 
 /**
  * One load for a record-page tab: `fetcher(userId)` runs when the person or `version` changes.
+ * Every tab passes the PAGE's version (plus its own), so a header action refreshes the open tab.
  * `loading` is derived (the settled result belongs to a different request), so the effect only
  * sets state from the async callback. Pass a stable module-level `fetcher`.
  */
@@ -23,7 +24,11 @@ export function useRecordLoad<T>(
     let alive = true;
     fetcher(userId).then(
       (data) => alive && setSettled({ token, data, error: null }),
-      (error: unknown) => alive && setSettled({ token, data: null, error }),
+      // A failed refresh of the SAME person keeps the rows it had (S15): the caller shows the error
+      // inline above them instead of blanking the record.
+      (error: unknown) =>
+        alive &&
+        setSettled((prev) => ({ token, data: prev.token.split("|")[0] === userId ? prev.data : null, error })),
     );
     return () => {
       alive = false;

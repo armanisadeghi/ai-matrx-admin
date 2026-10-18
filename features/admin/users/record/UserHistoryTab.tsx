@@ -6,16 +6,18 @@
 // detail.reason), newest first. Actor words come from the batched admin label lookup so the
 // column sorts and filters by name.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
 import { History } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";
 import type { Json } from "@/types/database.types";
 import { AdminUserRef } from "../components/AdminUserRef";
+import { adminActionWords } from "../lib/adminActionWords";
 import { resolveAdminUserLabels } from "../useAdminUserLabel";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
 import AppLink from "@/components/navigation/AppLink";
@@ -47,12 +49,21 @@ function operationOf(metadata: Json | null | undefined): string | null {
   return isJsonObject(metadata) && typeof metadata.operation === "string" ? metadata.operation : null;
 }
 
-function actionWords(action: string): string {
-  return action.replace(/[._]/g, " ");
+/** metadata.admin_user_id names the admin on rows whose actor column is empty (support sessions). */
+function metadataActor(metadata: Json | null | undefined): string | null {
+  return isJsonObject(metadata) && typeof metadata.admin_user_id === "string" ? metadata.admin_user_id : null;
 }
 
+export interface HistoryPage {
+  rows: HistoryRow[];
+  /** A source returned its full window: older rows exist (the tab offers Load older). */
+  more: boolean;
+}
+
+export const HISTORY_PAGE = 200;
+
 /** Both audit sources for one person, merged newest first, actors named. */
-export async function listUserAdminHistory(userId: string, limit = 500): Promise<HistoryRow[]> {
+export async function listUserAdminHistory(userId: string, limit = HISTORY_PAGE): Promise<HistoryPage> {
   const supabase = createClient();
   const [platform, org] = await Promise.all([
     supabase
@@ -80,8 +91,8 @@ export async function listUserAdminHistory(userId: string, limit = 500): Promise
       id: `p:${r.id}`,
       at: r.created_at,
       source: "Platform" as const,
-      action: actionWords(operationOf(r.metadata) ?? r.action),
-      actor_id: r.actor_user_id,
+      action: adminActionWords(operationOf(r.metadata) ?? r.action),
+      actor_id: r.actor_user_id ?? metadataActor(r.metadata),
       actor: "",
       reason: reasonOf(r.metadata, r.after),
       organization_id: r.organization_id,
@@ -92,8 +103,8 @@ export async function listUserAdminHistory(userId: string, limit = 500): Promise
       id: `o:${r.id}`,
       at: r.created_at,
       source: "Organization" as const,
-      action: actionWords(r.action),
-      actor_id: r.actor_user_id,
+      action: adminActionWords(r.action),
+      actor_id: r.actor_user_id ?? metadataActor(r.metadata),
       actor: "",
       reason: reasonOf(r.detail, r.metadata),
       organization_id: r.organization_id,
@@ -105,7 +116,19 @@ export async function listUserAdminHistory(userId: string, limit = 500): Promise
   for (const r of rows) {
     r.actor = r.actor_id ? (labels.get(r.actor_id)?.label ?? r.actor_id) : "System";
   }
-  return rows.sort((a, b) => b.at.localeCompare(a.at));
+  const more = (platform.data ?? []).length >= limit || (org.data ?? []).length >= limit;
+  return { rows: rows.sort((a, b) => b.at.localeCompare(a.at)), more };
+}
+
+// Stable fetchers, one per window size (useRecordLoad wants a stable function).
+const BY_LIMIT = new Map<number, (userId: string) => Promise<HistoryPage>>();
+function historyFor(limit: number): (userId: string) => Promise<HistoryPage> {
+  let fetcher = BY_LIMIT.get(limit);
+  if (!fetcher) {
+    fetcher = (userId: string) => listUserAdminHistory(userId, limit);
+    BY_LIMIT.set(limit, fetcher);
+  }
+  return fetcher;
 }
 
 function changedKeys(before: Json | null, after: Json | null): string[] {
@@ -187,28 +210,36 @@ const COLUMNS: MatrxColumnDef<HistoryRow>[] = [
   },
 ];
 
-export function UserHistoryTab({ userId }: UserTabBodyProps) {
+export function UserHistoryTab({ userId, version: pageVersion, shareForAi }: UserTabBodyProps) {
   const [version, setVersion] = useState(0);
+  const [limit, setLimit] = useState(HISTORY_PAGE);
 
-  const { data: rowsData, loading, error } = useRecordLoad(listUserAdminHistory, userId, version);
-  const rows = rowsData ?? [];
+  const { data, loading, error } = useRecordLoad(historyFor(limit), userId, pageVersion + version);
+  const rows = data?.rows ?? [];
+  useEffect(() => shareForAi({ history: rows }), [rows, shareForAi]);
 
   return (
-    <div data-testid="user-history-tab">
+    <div className="flex flex-col gap-2" data-testid="user-history-tab">
       <MatrxDataTable
         data={rows}
         columns={COLUMNS}
         getRowId={(r) => r.id}
-        isLoading={loading}
+        isLoading={loading && !data}
         pageSize={50}
-        read={readOf({ loading, error }, { what: "admin history", onRetry: () => setVersion((v) => v + 1) })}
+        read={readOf({ loading: loading && !data, error }, { what: "admin history", onRetry: () => setVersion((v) => v + 1) })}
         emptyState={{
           title: "No admin actions yet",
-          description: "Nothing has been done to this account by an admin.",
           icon: <History className="h-6 w-6 text-muted-foreground" />,
         }}
         toolbar={{ search: true, searchPlaceholder: "Search history…" }}
       />
+      {data?.more ? (
+        <div>
+          <Button variant="outline" disabled={loading} onClick={() => setLimit((n) => n + HISTORY_PAGE)}>
+            Load older
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

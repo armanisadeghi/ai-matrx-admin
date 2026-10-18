@@ -10,8 +10,10 @@
 // adds the body to `UserRecordPage`'s TAB_BODIES. Never ship an empty tab.
 //
 // ACTIONS. Header verbs (`placement: "header"`) are the page's one or two main moves; everything
-// else is the one Actions menu, in `group` order, `danger` last. The handlers live in
-// `useUserActions` (shared with the roster) and the existing dialogs.
+// else is the one Actions menu, in `group` order, `danger` last. ONE dispatch runs them all:
+// `useUserActions().run(id, person)` (record/useUserActions.tsx) owns every handler and dialog; the
+// page, its tabs and the roster's Manage menu call it and never switch on an action id themselves
+// (guard: __tests__/one-user-door-registry.test.ts).
 
 import type { LucideIcon } from "lucide-react";
 import {
@@ -233,8 +235,9 @@ export function userDoors(userId: string, options: { withoutActions?: boolean } 
 
 // ── ACTION STATE: the label and the "can't right now" rule for one person ───────────────────────
 //
-// Shared by every menu that lists USER_ACTIONS for a person (the roster's Manage menu; the record
-// page's Actions menu keeps an identical copy until its owner moves onto this).
+// THE rules for every menu that lists USER_ACTIONS for a person (the record page's header and
+// Actions menu, the roster's Manage menu, the peek's action doors). A blocked action stays in the
+// menu, disabled, with its reason (`userActionBlocked`) beside it — never a silent grey item.
 
 export interface UserActionState {
   id: string;
@@ -250,11 +253,20 @@ export interface UserActionState {
   email_confirmed: boolean;
 }
 
+export interface UserActionContext {
+  /** The signed-in admin (their own account is never closed or signed out from here). */
+  myId: string | null | undefined;
+}
+
 /** The label an action shows for this person right now, or null to leave it out. */
 export function userActionLabel(id: UserActionId, subject: UserActionState): string | null {
   switch (id) {
     case "mcp_access":
-      return subject.admin_level ? null : subject.mcp_full_access ? "Revoke full MCP access" : "Grant full MCP access";
+      return subject.admin_level
+        ? userActionDef(id).label
+        : subject.mcp_full_access
+          ? "Revoke full MCP access"
+          : "Grant full MCP access";
     case "top_tier":
       return subject.top_tier_models ? "Turn off top-tier models" : "Allow top-tier models";
     case "onboarded":
@@ -264,40 +276,50 @@ export function userActionLabel(id: UserActionId, subject: UserActionState): str
     case "close":
       return subject.banned ? null : "Close account…";
     case "reopen":
-      return subject.banned && !subject.erased ? "Reopen account" : null;
+      return subject.banned ? "Reopen account" : null;
     default:
       return userActionDef(id).label;
   }
 }
 
-/** True when the action cannot run for this person now (shown, disabled). */
-export function userActionDisabled(
+const NO_ACCOUNT = "Guest — no account";
+
+/** Why the action cannot run for this person now (shown beside it, disabled), or null when it can. */
+export function userActionBlocked(
   id: UserActionId,
   subject: UserActionState,
-  context: { myId: string | null | undefined; closeBlocked: boolean },
-): boolean {
-  const contactable = Boolean(subject.email) && !subject.is_anonymous;
+  context: UserActionContext,
+): string | null {
+  const own = subject.id === context.myId;
   switch (id) {
     case "support_session":
     case "magic_link":
     case "password_reset":
     case "email":
-      return !contactable;
     case "verify_email":
-      return subject.is_anonymous || !subject.email;
+      return subject.is_anonymous ? NO_ACCOUNT : subject.email ? null : "No email address";
     case "message":
     case "change_plan":
     case "free_months":
     case "tutorial":
     case "top_tier":
-      return subject.is_anonymous;
+      return subject.is_anonymous ? NO_ACCOUNT : null;
+    case "mcp_access":
+      return subject.admin_level ? "Inherited from admin" : null;
     case "close":
-      return context.closeBlocked;
+      return own && !subject.banned ? "Your own account" : null;
+    case "reopen":
+      return subject.erased ? "Erased — cannot reopen" : null;
     case "sign_out_everywhere":
-      return subject.id === context.myId;
+      return own ? "Your own account" : null;
     default:
-      return false;
+      return null;
   }
+}
+
+/** True when the action cannot run for this person now (shown, disabled). */
+export function userActionDisabled(id: UserActionId, subject: UserActionState, context: UserActionContext): boolean {
+  return userActionBlocked(id, subject, context) !== null;
 }
 
 /** Every live action in menu order — header verbs first, then the Actions menu (danger last). */
