@@ -107,6 +107,11 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 
 ## Change log
 
+- **2026-10-18 (b)** — Cold open overlap: the screen (and its sandbox run start) mounts once the
+  machine is `starting` (`startsScreen`), so the run's activation joins the boot and Chrome launches
+  the moment the machine answers; a provisioning Cloud Computer run is re-read every 750 ms
+  (`provisioningPollMs`, fleet keeps 2 s). Measured: common-docs FIX-COLD-OPEN-2026-10-18.
+
 - **2026-10-18** — Honest states (Waking up until the run is live, Connecting before the picture);
   second window → "Opened somewhere else" + Take over via a claim check on reconnect; keyboard handed
   back after page-control presses; no silent reveal; Taking control… / Stopping… labels.
