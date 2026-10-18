@@ -55,7 +55,15 @@ export default function InlineDecisionBlock({
     setFadeOut(true);
     setTimeout(() => {
       const kept = option !== undefined && option.text.trim() === trimmed;
-      onResolve(decision.id, rawXml, trimmed, kept ? option.label : null);
+      try {
+        onResolve(decision.id, rawXml, trimmed, kept ? option.label : null);
+      } catch (error) {
+        // The host could not place the choice: bring the block back so the person can retry,
+        // and let the failure surface (never an invisible, dead block).
+        resolving.current = false;
+        setFadeOut(false);
+        throw error;
+      }
     }, 280);
   };
 
@@ -184,7 +192,6 @@ function ChoiceRow({
       tabIndex={disabled ? -1 : 0}
       aria-label={ariaLabel}
       aria-disabled={disabled || undefined}
-      aria-pressed={selected}
       data-clickable=""
       onClick={() => {
         if (!disabled) onChoose();
