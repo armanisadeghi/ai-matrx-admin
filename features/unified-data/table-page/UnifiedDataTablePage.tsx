@@ -22,6 +22,7 @@ import { SyncedTableBar } from "@/features/unified-data/connect-database/SyncedT
 import { FetchedTableBar } from "@/features/data-sources/FetchedTableBar";
 import { LiveDataColumnButton } from "@/features/data-sources/live-column/LiveDataColumnButton";
 import { NotionSyncBar } from "@/features/spaces/io/NotionSyncBar";
+import { SourceSyncBar } from "./SourceSyncBar";
 import { SyncIntoWorkspaceButton } from "@/features/unified-data/connect-database/SyncIntoWorkspaceButton";
 import { TableWorkbookLinkButton } from "@/features/workbooks/table-link/TableWorkbookLinkButton";
 import type { PageView, ViewAddressState } from "@ai-matrx/records-ui";
@@ -112,6 +113,8 @@ function TableRouteHeader({
           <SyncedTableBar key="synced" tableId={tableId} organizationId={organizationId} />
           {/* Brought in from a connected Notion: Sync now and the sync report (lane NOTION-SYNC). Absent otherwise. */}
           <NotionSyncBar key="notion-sync" tableId={tableId} organizationId={organizationId} />
+          {/* Brought in from Airtable or GitHub: Sync now (lane AT-SYNC). Absent otherwise. */}
+          <SourceSyncBar key="source-sync" tableId={tableId} organizationId={organizationId} />
           {/* Fetched with "Get data": source, when, rows, Refresh / Get more with points. Absent otherwise. */}
           <FetchedTableBar key="fetched" tableId={tableId} organizationId={organizationId} inline />
           {/* A column that fills itself from a data source, one metered fetch per row (points quoted first). */}
