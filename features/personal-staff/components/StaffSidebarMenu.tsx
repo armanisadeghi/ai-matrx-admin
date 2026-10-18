@@ -21,7 +21,7 @@
 // works in, and the console where the role is assigned.
 
 import { usePathname } from "next/navigation";
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { HardDrive, UserRoundCog, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -49,7 +49,7 @@ export default function StaffSidebarMenu({
     // gap-0.5 matches `.shell-sidebar-main-nav` / `route-nav` so these rows sit
     // at the same rhythm as every other shell nav item.
     <div className="flex flex-1 min-h-0 flex-col gap-0.5">
-      <Link
+      <NavLink
         href={STAFF_HREF}
         title="Your staff"
         aria-label="Your staff"
@@ -63,11 +63,11 @@ export default function StaffSidebarMenu({
           />
         </span>
         <span className="shell-nav-label">Your staff</span>
-      </Link>
+      </NavLink>
 
       {/* The box your staff works in. Named here because the thread's sandbox
           note points at it, and a note with no door is a dead end. */}
-      <Link
+      <NavLink
         href={SANDBOX_HREF}
         title="Sandbox"
         aria-label="Sandbox"
@@ -80,11 +80,11 @@ export default function StaffSidebarMenu({
           />
         </span>
         <span className="shell-nav-label">Sandbox</span>
-      </Link>
+      </NavLink>
 
       {/* Where the role is assigned — the same door the `no_holder` refusal
           offers, so it is reachable before anything has gone wrong. */}
-      <Link
+      <NavLink
         href={MANDATE_CONSOLE_HREF}
         title="Who answers"
         aria-label="Who answers"
@@ -97,7 +97,7 @@ export default function StaffSidebarMenu({
           />
         </span>
         <span className="shell-nav-label">Who answers</span>
-      </Link>
+      </NavLink>
     </div>
   );
 }

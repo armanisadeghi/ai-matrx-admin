@@ -19,7 +19,7 @@
 // and patch over its errors client-side. When the feature gets a real
 // landing, replace this with the ModuleLanding + directory registration.
 
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { LogIn, LayoutGrid, type LucideIcon } from "lucide-react";
 import { ModuleSignInGateActions } from "./ModuleSignInGateActions";
 import { RememberedSignInHeading } from "@/features/auth/components/RememberedSignInHeading";
@@ -55,13 +55,13 @@ export function ModuleSignInGate({
             `${title} is part of your AI Matrx workspace. Sign in to pick up where you left off, or create a free account to get started.`}
         </p>
         <ModuleSignInGateActions />
-        <Link
+        <NavLink
           href="/features"
           className="mt-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <LayoutGrid className="h-3.5 w-3.5" />
           Explore what AI Matrx can do
-        </Link>
+        </NavLink>
       </div>
     </div>
   );
