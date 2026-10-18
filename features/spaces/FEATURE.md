@@ -45,6 +45,16 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-17 — New ▾ lists row templates (REVIEW-2 D1). The database block's chevron (`NewButton`, `data/row-templates.ts`)
+  lists the table's row templates (`custom.row_templates` + `row_template_bodies` + `row_template_default`, read on open),
+  the default marked, a star = "Set as default" (`row_template_declare {template_id, default:true}`), plus "Empty page".
+  A pick writes the row with the template's values (a "This page's row" link wins) and makes its page from that body
+  BEFORE it opens (`ensureRowPage` now takes an explicit `template`; null = empty page); plain New = the default; a
+  required-column refusal opens the form prefilled and the saved row gets the same page. Every peek now draws the row's
+  page under its fields (`RowPageUnderPeek` -> `embed/RecordBodySpace`); records-ui `Peek` draws fields only. In the
+  gallery preview the chevron is disabled with its reason. `content.space_sidebar` now leaves row pages out of the top
+  level (`migrations/row_pages_stay_out_of_the_sidebar.sql`). Test `new-menu-lists-row-templates`. Not built: creating
+  or editing a template from this menu.
 - 2026-10-16 — Template library (builder lane SPACES-TEMPLATES). A Space template is a PACK
   (`lib/spaces-blocks/template-pack.ts`): identity + a records `TemplateSpec` (tables, views, sample rows) + a page
   tree whose blocks name tables/views/pages by tokens (`{kind:"template",table,view}`, `page:<key>`). Packs live in
