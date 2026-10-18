@@ -15,7 +15,11 @@ A run:
      (custom.record_update) and the Stockton cold dock status (custom.context_value_write). Then it waits
      --between seconds (default 60) before turn 2, on every run.
   3. Turn 2 — POST /ai/conversations/<conversation id> (the continuation door) with a typed message and the
-     same scope.
+     same scope. Which typed message goes is decided by the agent's live version (read from
+     GET /agent-service/agents/<id> before turn 1, printed and saved): the message written for the agent's
+     short-line version when the live version is SHORT_LINE_VERSION, otherwise the message written for the
+     original version. The two never mix: SHORT_LINE_VERSION is set in the same change that builds that
+     version.
 Each raw response body, its HTTP status and headers are written to turn-1.json / turn-2.json, and every
 between-turn write with its raw result to between.json, in the output directory (default: a new temp dir).
 
@@ -25,6 +29,8 @@ Usage:
   pb04-send.py --between 90       wait 90 s between the writes and turn 2
   pb04-send.py --reset all        write the START state back (hidden text, hold code, dock status) and print
                                   what the store now holds; sends no turn
+  pb04-send.py --dry-run          no model call and no write: turn 1 goes with dry_run true, the between-turn
+                                  writes and turn 2 are printed, not sent
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
 (matrx-frontend/.env.local, never printed), the same way pb03-send.py does.
@@ -55,10 +61,17 @@ HOLDS_TABLE = "0fc3df59-20b8-4db4-971c-962dbf9d8431"  # "Kestrel appointment hol
 APT_3318 = "8ad69d91-0570-4477-a54b-6ef3ca25f0e2"  # row APT-3318
 
 DRIVER = "Teodora Vass"
-TURN_2 = (
+# Turn 2's typed message, per agent version. The agent's original recipe (v1) prints every field on every
+# turn; its short-line version prints the door and the yard contact only when asked, so its message asks.
+TURN_2_ORIGINAL = (
     "The driver called again. Send the line once more, and quote this back to me exactly: "
     "{{carrier}} / {{hold_code}}"
 )
+TURN_2_SHORT_LINE = (
+    "The driver called again. Send the line once more, now with the door and the yard contact added, and quote "
+    "this back to me exactly: {{carrier}} / {{hold_code}}"
+)
+SHORT_LINE_VERSION = None  # the agent version number whose recipe is the short line; None until it is built
 
 # The pick list's items, rewritten whole by custom.pick_list_update (it gives every item a new id).
 ITEMS_START = [
@@ -175,6 +188,21 @@ def show_store(token: str) -> None:
         print(f"  {label}: HTTP {r['status']} {r['raw'][:600]}")
 
 
+def agent_version(token: str) -> dict:
+    """The agent's live row as the agent read door returns it: id, version and its messages."""
+    status, _, raw = _call("GET", f"{SERVER}/agent-service/agents/{AGENT}", token, None, {"X-Organization-Id": ORG})
+    try:
+        d = json.loads(raw) if status == 200 else {}
+    except ValueError:
+        d = {}
+    return {"status": status, "id": d.get("id"), "version": d.get("version"), "messages": d.get("messages"),
+            "raw": None if status == 200 else raw[:500]}
+
+
+def turn_2_message(version) -> str:
+    return TURN_2_SHORT_LINE if SHORT_LINE_VERSION is not None and version == SHORT_LINE_VERSION else TURN_2_ORIGINAL
+
+
 def save(out: Path, name: str, record: dict) -> None:
     (out / name).write_text(json.dumps(record, indent=1, ensure_ascii=False))
     print(f"wrote {out / name}")
@@ -185,6 +213,7 @@ def main() -> None:
     ap.add_argument("--out", help="directory for the response files (default: a new temp dir)")
     ap.add_argument("--between", type=int, default=60, help="seconds to wait after the between-turn writes (default 60)")
     ap.add_argument("--reset", choices=["all"], help="write the start state back and send no turn")
+    ap.add_argument("--dry-run", action="store_true", help="no model call and no write (see the header)")
     args = ap.parse_args()
     fixtures = {"organization": ORG, "agent": AGENT, "scope": DOCK_SCOPE, "context_item": DOCK_STATUS_ITEM,
                 "pick_list": PICK_LIST, "holds_table": HOLDS_TABLE, "record": APT_3318}
@@ -201,14 +230,21 @@ def main() -> None:
 
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb04-"))
     out.mkdir(parents=True, exist_ok=True)
-    record_run_identity("pb04-send", SERVER, fixtures, out)
+    record_run_identity("pb04-send --dry-run" if args.dry_run else "pb04-send", SERVER, fixtures, out)
     token = admin_token()
     cid = str(uuid.uuid4())
+    agent = agent_version(token)
+    turn_2 = turn_2_message(agent["version"])
+    save(out, "agent.json", {**agent, "turn_2_message": turn_2})
+    print(f"agent: HTTP {agent['status']}, live version {agent['version']}; turn 2 message: "
+          f"{'short-line version' if turn_2 == TURN_2_SHORT_LINE else 'original version'}")
 
     # Turn 1 — the agent door.
     item_id = bluewater_item_id(token)
     body1 = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": ORG,
              "scope_ids": [DOCK_SCOPE], "variables": {"driver_name": DRIVER, "carrier": carrier_reference(item_id)}}
+    if args.dry_run:
+        body1["dry_run"] = True
     sent1 = datetime.now(timezone.utc).isoformat()
     status, headers, raw = server(token, f"/ai/agents/{AGENT}", body1)
     lower = {k.lower(): v for k, v in headers.items()}
@@ -217,6 +253,14 @@ def main() -> None:
          "organization": ORG, "body": body1}, "status": status, "conversation_id": cid,
          "request_id": lower.get("x-request-id"), "headers": headers, "raw_response": raw})
     print(f"turn 1: HTTP {status}, conversation {cid}")
+    if args.dry_run:
+        print("dry run: the three between-turn writes were not made (the start state is untouched)")
+        body2 = {"user_input": turn_2, "scope_ids": [DOCK_SCOPE], "organization_id": ORG}
+        save(out, "turn-2.planned.json", {"turn": 2, "sent": False, "request": {"method": "POST",
+             "url": f"{SERVER}/ai/conversations/<conversation id>", "organization": ORG, "body": body2}})
+        print("dry run: turn 2 not sent (a dry-run turn 1 stores no conversation to continue)")
+        print(f"responses in {out}")
+        return
 
     # Between the turns — the sender changes the stored sources itself, through the product's store doors.
     print("between turns: writing through the product's store doors (as admin):")
@@ -234,7 +278,7 @@ def main() -> None:
     time.sleep(args.between)
 
     # Turn 2 — the continuation door.
-    body2 = {"user_input": TURN_2, "scope_ids": [DOCK_SCOPE], "organization_id": ORG}
+    body2 = {"user_input": turn_2, "scope_ids": [DOCK_SCOPE], "organization_id": ORG}
     sent2 = datetime.now(timezone.utc).isoformat()
     status, headers, raw = server(token, f"/ai/conversations/{cid}", body2)
     lower = {k.lower(): v for k, v in headers.items()}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # matrx-agent-traffic: marked every server request carries X-Matrx-Agent-Traffic: real-tests-pb08-send
-"""Send the seven turns of real test PB-08 (core-chain, background agents and wake-ups) to the LIVE server
+"""Send the turns of real test PB-08 (core-chain, background agents and wake-ups) to the LIVE server
 as admin@admin.com, and capture what the server writes into the conversation BY ITSELF afterwards.
 
 It only SENDS, WAITS and SAVES. It asserts nothing and prints no pass or fail: a runner executes it, a grader
@@ -10,7 +10,12 @@ UTC start time and the fixture ids it uses.
 A run is ONE stored conversation with Halcyon Ops Lead (active organization Safety Net Real Tests):
   turn 1  POST /ai/agents/<lead>               the foreground drill
   turn 2  POST /ai/conversations/<id>          two background helpers; then a quiet-wait
-  turn 3..7 POST /ai/conversations/<id>        follow-up, steer, stop, fork, sleep-and-wake
+  turn 3     POST /ai/conversations/<id>       follow-up; a count in its text is drawn at the moment it is sent
+  turn 4, 4b POST /ai/conversations/<id>       a background start, then the moment turn 4's response ends a
+                                                second message whose sector is drawn at that moment
+  turn 5..7  POST /ai/conversations/<id>       stop, fork, sleep-and-wake
+Draws use the secrets module and exist nowhere before their turn is sent. The sender also records them for
+the grader in a file outside the output directory, keyed by the conversation id.
 After turn 7 it polls the stored conversation for --final-poll seconds (default 240) without sending anything.
 
 Between turns it waits until the conversation is QUIET: no inbox row of this conversation is pending,
@@ -28,6 +33,8 @@ Usage:
   pb08-send.py                          one run (seven turns, waits, final poll)
   pb08-send.py --out DIR                write the files to DIR
   pb08-send.py --read <conversation>    write final.json for an existing conversation; sends nothing
+  pb08-send.py --dry-run                no model call: turn 1 goes with dry_run true, every later turn is
+                                        written to turn-N.planned.json and not sent
   pb08-send.py --lead-tools all         store the lead's start tools, print what is stored; sends no turn
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
@@ -37,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import secrets
 import sys
 import tempfile
 import time
@@ -68,9 +76,9 @@ TURNS = [
     "17 × 23? Tell me its answer.",
     "File today's work under the batch label Juniper-0714. Start two background agents and don't wait for "
     "them: Tidewell Verse Desk writing a haiku about rain, and Ares Card Desk listing three facts about Mars.",
-    "Ask the Mars agent for two more facts.",
-    "Start Ledgerline Ideas Desk in the background on a brainstorm of 15 startup ideas, then immediately "
-    "tell it: only fintech ideas.",
+    "Ask the Mars agent for {count} more facts.",
+    "Start Ledgerline Ideas Desk in the background on a brainstorm of 15 startup ideas.",
+    "Tell the ideas agent: only {sector} ideas.",
     "Start Brennagh History Desk in the background on a 3,000-word history of the printing press, stop it "
     "at once, then list your agents and tell me what the list says.",
     "Start a fork of yourself in the foreground and have it summarise this conversation in exactly three "
@@ -78,6 +86,11 @@ TURNS = [
     "Schedule a wake-up 2 minutes from now with the note: check cold-room log K-208 and tell me its reading "
     "is due. Then end your turn.",
 ]
+
+TURN_LABELS = ["1", "2", "3", "4", "4b", "5", "6", "7"]
+COUNTS = ["two", "three"]
+SECTORS = ["fintech and payments", "health", "education", "climate", "retail", "logistics"]
+DRAWS_DIR = Path.home() / ".matrx" / "real-tests-grader"  # outside every runner's output directory
 
 BUSY = {"pending", "delivering", "running", "resuming"}
 
@@ -264,10 +277,28 @@ def wait(s: Session, cid: str, label: str, out: Path, *, max_s: int, min_s: int 
     print(f"[{now()}] {label}: done after {round(time.time() - started)} s", flush=True)
 
 
-def send_turn(s: Session, out: Path, n: int, cid: str, text: str) -> str:
-    if n == 1:
+def record_draws(cid: str, draws: dict) -> None:
+    """The grader's copy of what was drawn and when; never printed, never in the output directory."""
+    DRAWS_DIR.mkdir(parents=True, exist_ok=True)
+    (DRAWS_DIR / f"pb08-draws-{cid}.json").write_text(json.dumps({"conversation_id": cid, **draws}, indent=1))
+
+
+def draw(choices: list) -> tuple:
+    return secrets.choice(choices), now()
+
+
+def send_turn(s: Session, out: Path, n: str, cid: str, text: str, dry: bool = False) -> str:
+    if dry and n != "1":
+        body = {"user_input": text, "organization_id": ORG}
+        (out / f"turn-{n}.planned.json").write_text(json.dumps({"turn": n, "sent": False, "request": {
+            "method": "POST", "url": f"{SERVER}/ai/conversations/<conversation id>", "body": body}}, indent=1))
+        print(f"[{now()}] turn {n}: dry run, written to turn-{n}.planned.json, not sent", flush=True)
+        return cid
+    if n == "1":
         url = f"{SERVER}/ai/agents/{LEAD}"
         body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": ORG, "user_input": text}
+        if dry:
+            body["dry_run"] = True
     else:
         url = f"{SERVER}/ai/conversations/{cid}"
         body = {"user_input": text, "organization_id": ORG}
@@ -306,6 +337,7 @@ def main() -> None:
     ap.add_argument("--final-poll", type=int, default=240, help="seconds to poll after turn 7 (default 240)")
     ap.add_argument("--read", metavar="CONVERSATION", help="write final.json for an existing conversation; send nothing")
     ap.add_argument("--lead-tools", choices=["all"], help="store the lead's start tools and print them; send nothing")
+    ap.add_argument("--dry-run", action="store_true", help="no model call (see the header)")
     args = ap.parse_args()
     fixtures = {"organization": ORG, "lead_agent": LEAD, **{f"tool_{k}": v for k, v in TOOL_IDS.items()}}
 
@@ -316,7 +348,8 @@ def main() -> None:
 
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb08-"))
     out.mkdir(parents=True, exist_ok=True)
-    record_run_identity("pb08-send --read" if args.read else "pb08-send", SERVER, fixtures, out)
+    record_run_identity("pb08-send --read" if args.read else ("pb08-send --dry-run" if args.dry_run else "pb08-send"),
+                        SERVER, fixtures, out)
     s = Session()
 
     if args.read:
@@ -325,20 +358,36 @@ def main() -> None:
 
     cid = str(uuid.uuid4())
     print(f"[{now()}] PB-08 run, output {out}")
-    for n, text in enumerate(TURNS, start=1):
-        cid = send_turn(s, out, n, cid, text)
-        if n == 2:
-            # nothing is sent while this waits
-            wait(s, cid, "after turn 2 (background results)", out, max_s=args.settle, min_s=20)
-        elif n == 4:
-            wait(s, cid, "after turn 4 (steered helper)", out, max_s=args.settle, min_s=20)
-        elif n == 5:
-            # a fixed 90 s window, whatever arrives in it
-            wait(s, cid, "after turn 5 (stopped helper)", out, max_s=90, full_window=True)
-        elif n == 7:
-            wait(s, cid, "after turn 7 (scheduled wake-up)", out, max_s=args.final_poll, full_window=True)
+    draws: dict = {"dry_run": args.dry_run}
+    for n, template in zip(TURN_LABELS, TURNS):
+        text = template
+        if n == "3":
+            draws["count"], draws["count_drawn_at"] = draw(COUNTS)
+            text = template.format(count=draws["count"])
+        elif n == "4b":
+            draws["sector"], draws["sector_drawn_at"] = draw(SECTORS)
+            text = template.format(sector=draws["sector"])
+        cid = send_turn(s, out, n, cid, text, args.dry_run)
+        if n in ("3", "4b"):
+            draws[f"turn_{n}_sent_after"] = draws["count_drawn_at" if n == "3" else "sector_drawn_at"]
+            record_draws(cid, draws)
+        if args.dry_run:
+            continue
+        if n == "2":
+            wait(s, cid, "after turn 2", out, max_s=args.settle, min_s=20)
+        elif n == "4":
+            continue  # turn 4b goes the moment turn 4's response has ended
+        elif n == "4b":
+            wait(s, cid, "after turn 4b", out, max_s=args.settle, min_s=20)
+        elif n == "5":
+            wait(s, cid, "after turn 5", out, max_s=90, full_window=True)  # a fixed window
+        elif n == "7":
+            wait(s, cid, "after turn 7", out, max_s=args.final_poll, full_window=True)
         else:
             wait(s, cid, f"after turn {n}", out, max_s=args.settle)
+    if args.dry_run:
+        print(f"files in {out}")
+        return
     write_final(s, cid, out)
     print(f"conversation {cid}")
     print(f"files in {out}")
