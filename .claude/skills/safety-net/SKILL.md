@@ -324,6 +324,12 @@ show the environment did it.
   runner, and the runner must not know.
 - **Every attempt is a ledger row**, caught or missed.
 
+**The real-tests organization is fenced** (Arman, 2026-10-17). Every real-test fixture lives in the
+organization `Safety Net Real Tests` (owner admin@admin.com, settings `real_tests_only`), and no other session
+runs anything there: no feature work, no demos, no other lane's tests. Another session's runs inside a test
+organization contaminate the fixtures, the costs and the run records. A second organization for a "must never
+appear" twin is the only exception, and it holds nothing but the twin.
+
 **Where the fixtures live.** A chat or agent run goes through the production server, so a real test of chat runs on live, as the
 test admin (`admin@admin.com`), on disposable records in a test-fixture organization. Faults that touch data touch only those
 disposable records. Check the organization is not archived before installing (a 2026-10-01 install went into an archived
