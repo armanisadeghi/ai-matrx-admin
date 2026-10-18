@@ -154,6 +154,7 @@ export interface ServerCloneBrief {
     mode: PresenterMode;
     prompt?: string;
     voice?: string;
+    images?: BriefFile[];
     takes?: Array<{ file: BriefFile }>;
   };
   script: { mode: "keep" | "rewrite" | "translate"; text?: string };
@@ -180,6 +181,19 @@ export interface ClonePlanResult {
     teleprompter?: Array<{ beat: string; role: string; lines: string[] }>;
   } & JsonDoc;
   estimate: EstimateAnswer & JsonDoc;
+  /** What the brand's own record gave the plan; empty when the brief named no brand or product. */
+  brand_facts?: BrandFactsUsed;
+}
+
+/** Counts and notes of what the director read from the brand (never the values). */
+export interface BrandFactsUsed {
+  facts?: number;
+  has_voice?: boolean;
+  product_images?: number;
+  spokesperson_images?: number;
+  spokesperson?: string | null;
+  filled?: string[];
+  notes?: string[];
 }
 
 export function runClonePlan(

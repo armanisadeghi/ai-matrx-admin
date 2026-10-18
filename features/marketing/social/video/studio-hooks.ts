@@ -13,6 +13,7 @@ import { useSocials } from "../components/SocialsContext";
 import { knobBool } from "@/lib/knobs/featureKnobs";
 import { supabase } from "@/utils/supabase/client";
 
+import { offeringPriceText } from "./offering-price";
 import { listPostVideoMedia } from "./server";
 
 export interface FileFacts {
@@ -103,6 +104,36 @@ export function useLocalRenderAllowed(): boolean {
     staleTime: 60_000,
   });
   return dev && knob.data === true;
+}
+
+export interface OfferingFacts {
+  description: string;
+  price: string;
+}
+
+/**
+ * The saved description and price of one product (`web.brand_offering`), as the text the brief's editable labels start
+ * from. The person can change both; the server fills the same two from the same row when the brief leaves them empty.
+ */
+export function useOfferingFacts(offeringId: string | null): OfferingFacts | null {
+  const q = useQuery({
+    queryKey: ["marketing", "social", "video", "offering-facts", offeringId],
+    enabled: Boolean(offeringId),
+    queryFn: async (): Promise<OfferingFacts> => {
+      const { data, error } = await supabase
+        .schema("web")
+        .from("brand_offering")
+        .select("description, price_amount, price_currency, price_unit")
+        .eq("id", offeringId as string)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (error) throw error;
+      return { description: data?.description?.trim() ?? "", price: offeringPriceText(data) };
+    },
+    retry: false,
+    staleTime: 5 * 60_000,
+  });
+  return offeringId ? (q.data ?? null) : null;
 }
 
 const SCRIPT_REWRITE_MANDATE = "social.clone_script_rewrite";
