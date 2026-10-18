@@ -65,24 +65,6 @@ export async function resolveDefaultAssistantAgentId(
   return mandate.agentId;
 }
 
-/**
- * The door a FRESH studio assistant conversation starts on. The studio
- * mandate's own default (manifest fast path or the Mandate itself) starts on
- * the MANDATE DOOR, so the session's provision values reach the binding; a
- * person's or organization's explicit surface pick, or a caller override,
- * stays on that agent's own door.
- */
-export function defaultAssistantMandateKey(
-  state: RootState,
-  overrideAgentId?: string,
-): typeof TRANSCRIPT_STUDIO_ASSISTANT_MANDATE_KEY | null {
-  if (overrideAgentId) return null;
-  const entry = selectSurfaceConfigEntry(state, TRANSCRIPT_SCRIBE_SURFACE);
-  const roleEntry = entry?.resolved?.roles["assistant"]?.effective[0] ?? null;
-  if (roleEntry?.agentId && roleEntry.sourceTier !== "manifest") return null;
-  return TRANSCRIPT_STUDIO_ASSISTANT_MANDATE_KEY;
-}
-
 /** Find the roster entry for a conversation id. */
 export function findRosterByConversation(
   roster: AssistantConversationRef[],

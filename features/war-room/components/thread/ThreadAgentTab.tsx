@@ -282,7 +282,7 @@ export function ThreadAgentTab({
               void dispatch(addAudioSessionToThread(threadId)).then((sid) => {
                 if (sid) {
                   void dispatch(
-                    startThreadConversation(threadId, sid, threadAgentId, WAR_ROOM_THREAD_AGENT_MANDATE),
+                    startThreadConversation(threadId, sid, threadAgentId),
                   );
                 }
               });
@@ -323,7 +323,7 @@ export function ThreadAgentTab({
               onClick={() => {
                 if (!threadAgentId) return;
                 void dispatch(
-                  startThreadConversation(threadId, sessionId, threadAgentId, WAR_ROOM_THREAD_AGENT_MANDATE),
+                  startThreadConversation(threadId, sessionId, threadAgentId),
                 );
               }}
               className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"

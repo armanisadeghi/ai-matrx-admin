@@ -15,7 +15,6 @@
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { createManualInstance } from "@ai-matrx/chat/agents/redux/execution-system/thunks/create-instance.thunk";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
@@ -107,15 +106,11 @@ async function mintInstance(
   dispatch: AppDispatch,
   agentId: string,
   conversationId?: string,
-  mandateKey?: AnyMandateKey | null,
 ): Promise<string> {
   return dispatch(
     createManualInstance({
       agentId,
       ...(conversationId ? { conversationId } : {}),
-      // THE MANDATE DOOR for a fresh chat started as a mandate's default, so
-      // its host values reach the binding (features/mandates/host-values).
-      ...(mandateKey && !conversationId ? { mandateKey } : {}),
       apiEndpointMode: "agent",
       sourceFeature: "transcription",
       allowChat: true,
@@ -203,17 +198,11 @@ export const setActiveAssistantConversationThunk = createAsyncThunk<
  */
 export const switchAssistantAgentThunk = createAsyncThunk<
   string | null,
-  {
-    sessionId: string;
-    agentId: string;
-    mode?: "reuse" | "fresh";
-    /** Set only when `agentId` is this mandate's default: a fresh chat starts on its door. */
-    mandateKey?: AnyMandateKey | null;
-  },
+  { sessionId: string; agentId: string; mode?: "reuse" | "fresh" },
   ThunkApi
 >(
   "transcriptStudio/switchAssistantAgent",
-  async ({ sessionId, agentId, mode = "reuse", mandateKey }, { dispatch, getState }) => {
+  async ({ sessionId, agentId, mode = "reuse" }, { dispatch, getState }) => {
     if (!sessionId || !agentId) return null;
     const session = getState().transcriptStudio.byId[sessionId];
     const roster = session?.assistantConversations ?? [];
@@ -228,7 +217,7 @@ export const switchAssistantAgentThunk = createAsyncThunk<
       ).unwrap();
     }
 
-    const conversationId = await mintInstance(dispatch, agentId, undefined, mandateKey);
+    const conversationId = await mintInstance(dispatch, agentId);
     dispatch(assistantConversationIdSet({ sessionId, conversationId }));
     dispatch(setShowMicrophone({ conversationId, value: true }));
 

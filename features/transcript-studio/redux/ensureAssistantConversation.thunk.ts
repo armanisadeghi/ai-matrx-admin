@@ -24,7 +24,6 @@
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { createManualInstance } from "@ai-matrx/chat/agents/redux/execution-system/thunks/create-instance.thunk";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
@@ -38,7 +37,6 @@ import {
   appendRoster,
   findRosterByConversation,
   makeRosterRef,
-  defaultAssistantMandateKey,
   resolveDefaultAssistantAgentId,
 } from "./assistantRoster";
 
@@ -57,14 +55,10 @@ async function createInstanceForSession(
   dispatch: AppDispatch,
   agentId: string,
   conversationId: string | undefined,
-  mandateKey: AnyMandateKey | null = null,
 ): Promise<string> {
   return dispatch(
     createManualInstance({
       agentId,
-      // A fresh chat under the studio mandate's default starts on the MANDATE
-      // DOOR, so useStudioAssistant's host values reach the binding.
-      ...(mandateKey && !conversationId ? { mandateKey } : {}),
       // When `conversationId` is provided we're resuming the persisted id;
       // when undefined createManualInstance mints a fresh one.
       ...(conversationId ? { conversationId } : {}),
@@ -218,7 +212,6 @@ export const ensureAssistantConversationThunk = createAsyncThunk<
         dispatch,
         resolvedAgentId,
         undefined,
-        defaultAssistantMandateKey(getState(), defaultAgentId),
       );
       dispatch(
         assistantConversationIdSet({

@@ -59,11 +59,8 @@ import {
   selectActiveNoteId,
   selectAttachmentsForThread,
   selectAudioSessionIdsForThread,
-  selectRoomIdForThread,
   selectThreadTaskId,
 } from "@/features/war-room/redux/selectors";
-import { provideHostValues } from "@/features/mandates/host-values/host-values";
-import { WAR_ROOM_CONTEXT_KEY } from "@/features/war-room/service/warRoomContextXml";
 import {
   attachEntityToThread,
   hydrateThreadTranscripts,
@@ -265,38 +262,6 @@ export default function ThreadAgentPanel({
     selectInstanceContextEntries(conversationId ?? ""),
   );
   const store = useAppStore();
-
-  // ── The thread's offered values (host-values channel) ────────────────────
-  // A thread chat started as the `war_room.thread` mandate's default runs its
-  // first turn on the MANDATE DOOR (`startThreadConversation(…, mandateKey)`).
-  // Read at submit time from fresh state: `war_room` (GUARANTEED — pushed
-  // context alone does not satisfy it) is the same roster value the context
-  // entry carries; the rest are the thread's own facts.
-  useEffect(
-    () =>
-      provideHostValues(WAR_ROOM_THREAD_AGENT_MANDATE, "war_room.thread_context", () => {
-        const state = store.getState();
-        const thread = state.warRoom.threadsById[threadId];
-        const roomId = selectRoomIdForThread(threadId)(state);
-        const room = roomId ? state.warRoom.sessionsById[roomId] : undefined;
-        const tId = selectThreadTaskId(threadId)(state);
-        const t = tId ? selectTaskById(state, tId) : undefined;
-        const nId = selectActiveNoteId(threadId)(state);
-        const n = nId ? selectNoteById(nId)(state) : undefined;
-        const rosterEntry = buildThreadAgentContextEntries(state, threadId).find(
-          (entry) => entry.key === WAR_ROOM_CONTEXT_KEY,
-        );
-        return {
-          war_room: rosterEntry?.value ?? null,
-          room_title: room?.title ?? null,
-          thread_title: thread?.title ?? null,
-          thread_task_title: t?.title ?? null,
-          thread_task_status: t?.status ?? null,
-          thread_note: n?.content ?? null,
-        };
-      }),
-    [threadId, store],
-  );
   const sessionContextKeys = contextEntries
     .map((e) => e.key)
     .filter((k) => THREAD_SESSION_TRANSCRIPT_KEY_RE.test(k))

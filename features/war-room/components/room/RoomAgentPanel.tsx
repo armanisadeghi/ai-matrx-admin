@@ -108,9 +108,7 @@ export default function RoomAgentPanel({ sessionId }: { sessionId: string }) {
                 title={roomMandateError ?? undefined}
                 onClick={() => {
                   if (!roomAgentId) return;
-                  void dispatch(
-                    startRoomConversation(sessionId, roomAgentId, WAR_ROOM_ROOM_AGENT_MANDATE),
-                  );
+                  void dispatch(startRoomConversation(sessionId, roomAgentId));
                 }}
                 className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
               >

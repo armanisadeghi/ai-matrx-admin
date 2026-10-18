@@ -20,7 +20,7 @@
  *     room set changes, with the no-empty guard.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { setContextEntries } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
@@ -31,8 +31,6 @@ import { WAR_ROOM_MASTER_AGENT_MANDATE } from "@/features/war-room/constants";
 import { selectSessionsList } from "@/features/war-room/redux/selectors";
 import { useDurableAgentConversation } from "@/features/war-room/hooks/useDurableAgentConversation";
 import { reportWarRoomError } from "@/features/war-room/utils/reportWarRoomError";
-import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
-import { WAR_ROOM_CONTEXT_KEY } from "@/features/war-room/service/warRoomContextXml";
 import {
   buildMasterAgentContext,
   type ThreadStatusResolver,
@@ -81,7 +79,6 @@ export function useMasterAgent(): UseMasterAgentReturn {
       storageKey: userId ? `war-room:master-conversation:${userId}` : null,
       defaultAgentId: masterMandate?.agentId ?? null,
       toolNames: WAR_ROOM_MASTER_TOOL_NAMES,
-      mandateKey: WAR_ROOM_MASTER_AGENT_MANDATE,
     });
 
   // Re-push trigger: the room set on `/all`. The builder fetches its own
@@ -89,16 +86,6 @@ export function useMasterAgent(): UseMasterAgentReturn {
   // enough — adding/removing a room re-pushes the roster.
   const sessions = useAppSelector(selectSessionsList);
   const roomSignature = sessions.map((s) => `${s.id}:${s.title}`).join("|");
-
-  // ── The master's offered values (host-values channel) ────────────────────
-  // A fresh master chat runs turn 1 on the MANDATE DOOR; `war_room` is the
-  // guaranteed value (pushed context alone does not satisfy it), so the roster
-  // the context entry carries is sent as the offered value too.
-  const [rosterValue, setRosterValue] = useState<unknown>(null);
-  useMandateHostValues(WAR_ROOM_MASTER_AGENT_MANDATE, "war_room.room_context", {
-    war_room: rosterValue,
-    room_count: sessions.length,
-  });
 
   // ── Build + push the cross-room read-only context ────────────────────────
   const refreshContext = useCallback(async () => {
@@ -117,9 +104,6 @@ export function useMasterAgent(): UseMasterAgentReturn {
     // build itself failed.
     if (entries.length > 0) {
       dispatch(setContextEntries({ conversationId, entries }));
-      setRosterValue(
-        entries.find((entry) => entry.key === WAR_ROOM_CONTEXT_KEY)?.value ?? null,
-      );
     }
   }, [conversationId, dispatch, store]);
 

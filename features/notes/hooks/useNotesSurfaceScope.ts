@@ -26,7 +26,6 @@
 
 import { useNoteHomeNames } from "@/features/notes/homes/useNoteHomes";
 import { useCallback } from "react";
-import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
 import type { RefObject } from "react";
 
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
@@ -100,13 +99,6 @@ export function useNotesSurfaceScope(
   // The homes the notes live in, named by one specific read — the whole scope tree is not loaded
   // for an agent surface nobody has used (first-paint contract). `all_homes` lists those names.
   const homes = useNoteHomeNames();
-
-  // The note in view, handed to the page guide's first turn (host-values channel).
-  usePageGuidanceRecord(() => {
-    if (!noteId) return null;
-    const record = selectNoteById(noteId)(store.getState());
-    return { id: noteId, type: "note", title: record?.label ?? null };
-  });
 
   return useCallback(() => {
     const ta = textareaRef.current;

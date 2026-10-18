@@ -47,11 +47,8 @@ import {
   selectAssignmentsForContainer,
   selectContainerAssignmentsLoaded,
   selectPendingConversationForContainer,
-  selectRoomProjectId,
-  selectSessionsById,
   selectThreadIdsForRoom,
 } from "@/features/war-room/redux/selectors";
-import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
 import {
   attachEntityToContainer,
   hydrateRoomAssignments,
@@ -60,7 +57,6 @@ import {
 } from "@/features/war-room/redux/thunks";
 import { useConversationMaterialized } from "@ai-matrx/chat/agents/hooks/useConversationMaterialized";
 import { roomRef } from "@/features/war-room/types";
-import { WAR_ROOM_CONTEXT_KEY } from "@/features/war-room/service/warRoomContextXml";
 import { reportWarRoomError } from "@/features/war-room/utils/reportWarRoomError";
 import {
   buildRoomAgentContext,
@@ -331,25 +327,6 @@ export function useRoomAgent(sessionId: string): UseRoomAgentReturn {
   const threadIds = useAppSelector(selectThreadIdsForRoom(sessionId));
   const threadSignature = threadIds.join("|");
 
-  // ── The room's offered values (host-values channel) ──────────────────────
-  // A room chat started as the mandate's default runs its first turn on the
-  // MANDATE DOOR (`startRoomConversation(…, WAR_ROOM_ROOM_AGENT_MANDATE)`), and
-  // these ride that turn. `war_room` is the GUARANTEED value: pushed context
-  // alone does not satisfy it (server refuses — proven 2026-10-18), so the same
-  // roster value the context entry carries is also sent as the offered value.
-  const [rosterValue, setRosterValue] = useState<unknown>(null);
-  const roomTitle = useAppSelector(
-    (state) => selectSessionsById(state)[sessionId]?.title ?? null,
-  );
-  const roomProjectId = useAppSelector(selectRoomProjectId(sessionId));
-  useMandateHostValues(WAR_ROOM_ROOM_AGENT_MANDATE, "war_room.room_context", {
-    war_room: rosterValue,
-    room_id: sessionId,
-    room_title: roomTitle,
-    project_id: roomProjectId,
-    thread_count: threadIds.length,
-  });
-
   // ── Build + push the single-room read-only context ───────────────────────
   const refreshContext = useCallback(async () => {
     if (!boundId) return;
@@ -367,9 +344,6 @@ export function useRoomAgent(sessionId: string): UseRoomAgentReturn {
     // the build itself failed.
     if (entries.length > 0) {
       dispatch(setContextEntries({ conversationId: boundId, entries }));
-      setRosterValue(
-        entries.find((entry) => entry.key === WAR_ROOM_CONTEXT_KEY)?.value ?? null,
-      );
     }
   }, [boundId, sessionId, dispatch, store]);
 
