@@ -17,6 +17,7 @@
  * launch-time layer resolver keeps mapping-less policy layers.
  */
 
+import { announceBindingsChanged } from "../../utils/bindings-changed";
 import { useEffect, useMemo, useState } from "react";
 import { Inbox, Loader2, Save, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -165,6 +166,7 @@ function AgentAccessForm({
         })),
       ).unwrap();
       toast.success("Agent access saved");
+      announceBindingsChanged(surfaceName);
     } catch (e) {
       (isCapturedSurfaceRegistrationError(e)
         ? toastErrorAlreadyCaptured

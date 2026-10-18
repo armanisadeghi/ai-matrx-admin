@@ -12,6 +12,8 @@
  * Drop this into any surface UI, or open it via SurfaceAgentBindWindow.
  */
 
+import { bindingTier } from "../../utils/binding-tier";
+import { announceBindingsChanged } from "../../utils/bindings-changed";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft, Loader2, Link2, Zap } from "lucide-react";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
@@ -228,6 +230,10 @@ export function SurfaceAgentBindPanel({
       forSurface[0] ??
       null;
     if (existing) {
+      // Open on the binding's OWN tier (L6c), not the user tier.
+      const tier = bindingTier(existing);
+      setScope(tier.scope);
+      setScopeId(tier.scopeId);
       setMappings({ ...cloneMappings(existing.valueMappings), ...carried });
       setAutoRun(existing.autoRun);
       setAgentVersionId(existing.agentVersionId ?? null);
@@ -404,6 +410,7 @@ export function SurfaceAgentBindPanel({
         accessOrgId,
       });
       toast.success(`Bound to ${displaySurface}`);
+      announceBindingsChanged(surfaceName);
       onBound?.({
         bindingId: saved.associationId,
         agentId: bindAgentId,
