@@ -73,7 +73,7 @@ export const USER_TABS: readonly UserTab[] = [
   { id: "content", label: "Content", icon: FolderOpen, built: false },
   { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
   { id: "notes", label: "Notes", icon: StickyNote, built: false },
-  { id: "security", label: "Security", icon: ShieldCheck, built: false },
+  { id: "security", label: "Security", icon: ShieldCheck, built: true },
   { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: true },
   { id: "acquisition", label: "Acquisition", icon: UserPlus, built: true },
   { id: "history", label: "Admin history", icon: History, built: true },
