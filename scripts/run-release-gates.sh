@@ -937,6 +937,10 @@ if $STRICT; then
         # (Arman, 2026-10-02): the label, else the one humanizer. Baseline ratchet; advisory here.
         "Rendered raw identifier (snake_case key on screen)|pnpm check:raw-identifiers --strict"
         "Raw identifier guard self-test|pnpm check:raw-identifiers:self-test"
+        # US SPELLING — a British spelling (Colour, Cancelled, Catalogue) in user-visible text in changed files
+        # (Arman, 2026-10-18). Advisory; `pnpm check:us-spelling:self-test` proves it goes red.
+        "British spelling in user-visible text (changed files)|pnpm check:us-spelling"
+        "US spelling guard self-test|pnpm check:us-spelling:self-test"
         # RETIRED WORDS — renamed schemas and actor tiers stay renamed (word list:
         # common-docs retired-words.json; ONE-HOME, 2026-10-02). Baseline ratchet: exits 1 only on a NEW use; advisory here.
         "Retired word used (old schema or actor-tier name)|pnpm check:retired-words"
@@ -1723,6 +1727,10 @@ else
         # (Arman, 2026-10-02): the label, else the one humanizer. Baseline ratchet; advisory here.
         "Rendered raw identifier (snake_case key on screen)|pnpm check:raw-identifiers --strict"
         "Raw identifier guard self-test|pnpm check:raw-identifiers:self-test"
+        # US SPELLING — a British spelling (Colour, Cancelled, Catalogue) in user-visible text in changed files
+        # (Arman, 2026-10-18). Advisory; `pnpm check:us-spelling:self-test` proves it goes red.
+        "British spelling in user-visible text (changed files)|pnpm check:us-spelling"
+        "US spelling guard self-test|pnpm check:us-spelling:self-test"
         # RETIRED WORDS — renamed schemas and actor tiers stay renamed (word list:
         # common-docs retired-words.json; ONE-HOME, 2026-10-02). Baseline ratchet: exits 1 only on a NEW use; advisory here.
         "Retired word used (old schema or actor-tier name)|pnpm check:retired-words"
