@@ -1,0 +1,1337 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0493",
+  "version": 1,
+  "title": "Design system — Bold high-contrast",
+  "description": "Black, white and a hot orange; square corners and hard offset shadows.",
+  "forWho": "Brands that want to be loud, direct and unmistakable",
+  "icon": {
+    "icon": "Palette"
+  },
+  "cover": null,
+  "category": "docs",
+  "tags": [
+    "design system",
+    "starter",
+    "bold",
+    "high contrast",
+    "brutalist",
+    "events"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-design-starter-bold-contrast",
+    "catalogueId": "SP0493",
+    "useCase": "Kwame Asante-Bell starts Loudhaus Events's design system from the Bold high-contrast starter and adapts it to the brand.",
+    "industry": "cross_industry",
+    "vertical": "Design systems — bold brands, events, sport and retail",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "tables",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Loudhaus Events",
+      "describes": "An events company selling tickets for music nights.",
+      "address": {
+        "line1": "53 Gantry Way",
+        "city": "Detroit",
+        "region": "MI",
+        "postalCode": "48207",
+        "country": "US"
+      },
+      "phone": "(313) 555-0186",
+      "website": "loudhausevents.net",
+      "email": "hello@loudhausevents.net",
+      "timezone": "America/Detroit"
+    },
+    "cleanupTag": "use-case:spaces-design-starter-bold-contrast",
+    "tables": [
+      {
+        "token": "color",
+        "name": "Colors",
+        "labelSingular": "Colour",
+        "labelPlural": "Colours",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "palette",
+        "titleField": "name",
+        "describes": "Every colour the product uses, light and dark, and what each is read on.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "group",
+            "label": "Group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Surfaces",
+              "Muted",
+              "Primary",
+              "Secondary",
+              "Accent",
+              "Lines",
+              "Feedback"
+            ],
+            "choiceColors": {
+              "Surfaces": "slate",
+              "Muted": "gray",
+              "Primary": "blue",
+              "Secondary": "violet",
+              "Accent": "amber",
+              "Lines": "teal",
+              "Feedback": "red"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "color_pair",
+              "options": {
+                "contrastWith": {
+                  "readsOnField": "reads_on"
+                }
+              }
+            }
+          },
+          {
+            "key": "reads_on",
+            "label": "Read on",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "col-01",
+            "values": {
+              "name": "background",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#000000\"}",
+              "usage_note": "The page itself. Everything else sits on it."
+            }
+          },
+          {
+            "key": "col-02",
+            "values": {
+              "name": "foreground",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
+              "usage_note": "Body text and icons on the page.",
+              "reads_on": "background"
+            }
+          },
+          {
+            "key": "col-03",
+            "values": {
+              "name": "card",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#0d0d0d\"}",
+              "usage_note": "Raised panels, dialogs and menus."
+            }
+          },
+          {
+            "key": "col-04",
+            "values": {
+              "name": "card-foreground",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
+              "usage_note": "Text inside a card.",
+              "reads_on": "card"
+            }
+          },
+          {
+            "key": "col-05",
+            "values": {
+              "name": "popover",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#141414\"}",
+              "usage_note": "Menus, tooltips and pickers that float over content."
+            }
+          },
+          {
+            "key": "col-06",
+            "values": {
+              "name": "popover-foreground",
+              "group": "Surfaces",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
+              "usage_note": "Text inside a menu or tooltip.",
+              "reads_on": "popover"
+            }
+          },
+          {
+            "key": "col-07",
+            "values": {
+              "name": "muted",
+              "group": "Muted",
+              "value": "{\"light\":\"#f0f0f0\",\"dark\":\"#1a1a1a\"}",
+              "usage_note": "Quiet fills: table headers, empty states, code blocks."
+            }
+          },
+          {
+            "key": "col-08",
+            "values": {
+              "name": "muted-foreground",
+              "group": "Muted",
+              "value": "{\"light\":\"#3a3a3a\",\"dark\":\"#c4c4c4\"}",
+              "usage_note": "Hints and captions. Also reads on the page and on cards.",
+              "reads_on": "muted"
+            }
+          },
+          {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#ff4f00\",\"dark\":\"#ff5c14\"}",
+              "usage_note": "The one main action on a screen."
+            }
+          },
+          {
+            "key": "col-10",
+            "values": {
+              "name": "primary-foreground",
+              "group": "Primary",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#000000\"}",
+              "usage_note": "Label on a primary button.",
+              "reads_on": "primary"
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-12",
+            "values": {
+              "name": "secondary-foreground",
+              "group": "Secondary",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#000000\"}",
+              "usage_note": "Label on a secondary button.",
+              "reads_on": "secondary"
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#ffe500\",\"dark\":\"#ffe500\"}",
+              "usage_note": "Highlights: a selected row, a tip, a new feature."
+            }
+          },
+          {
+            "key": "col-14",
+            "values": {
+              "name": "accent-foreground",
+              "group": "Accent",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#000000\"}",
+              "usage_note": "Text on an accent fill.",
+              "reads_on": "accent"
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "border",
+              "group": "Lines",
+              "value": "{\"light\":\"#000000\",\"dark\":\"#ffffff\"}",
+              "usage_note": "Dividers and card edges. Never text."
+            }
+          },
+          {
+            "key": "col-16",
+            "values": {
+              "name": "input",
+              "group": "Lines",
+              "value": "{\"light\":\"#262626\",\"dark\":\"#e0e0e0\"}",
+              "usage_note": "The outline of a field and an off switch, so they are found without a label."
+            }
+          },
+          {
+            "key": "col-17",
+            "values": {
+              "name": "ring",
+              "group": "Lines",
+              "value": "{\"light\":\"#0047ff\",\"dark\":\"#5c8aff\"}",
+              "usage_note": "Keyboard focus. Always visible, never removed."
+            }
+          },
+          {
+            "key": "col-18",
+            "values": {
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#c00021\",\"dark\":\"#ff6b78\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
+            }
+          },
+          {
+            "key": "col-19",
+            "values": {
+              "name": "destructive-foreground",
+              "group": "Feedback",
+              "value": "{\"light\":\"#ffffff\",\"dark\":\"#000000\"}",
+              "usage_note": "Label on a delete button.",
+              "reads_on": "destructive"
+            }
+          },
+          {
+            "key": "col-20",
+            "values": {
+              "name": "success",
+              "group": "Feedback",
+              "value": "{\"light\":\"#006b2e\",\"dark\":\"#38e07b\"}",
+              "usage_note": "Done, live, saved. Never the only sign: pair it with a word.",
+              "reads_on": "muted"
+            }
+          },
+          {
+            "key": "col-21",
+            "values": {
+              "name": "warning",
+              "group": "Feedback",
+              "value": "{\"light\":\"#7a4a00\",\"dark\":\"#ffc233\"}",
+              "usage_note": "Waiting or at risk. Never the only sign: pair it with a word.",
+              "reads_on": "muted"
+            }
+          }
+        ]
+      },
+      {
+        "token": "type_style",
+        "name": "Typography",
+        "labelSingular": "Text style",
+        "labelPlural": "Text styles",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "type",
+        "titleField": "name",
+        "describes": "The text styles: font, weight, size, line height and spacing.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "group",
+            "label": "Group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Display",
+              "Headings",
+              "Text",
+              "Code"
+            ],
+            "choiceColors": {
+              "Display": "violet",
+              "Headings": "blue",
+              "Text": "slate",
+              "Code": "amber"
+            }
+          },
+          {
+            "key": "style",
+            "label": "Style",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "type_style"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "typ-01",
+            "values": {
+              "name": "display",
+              "group": "Display",
+              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":900,\"size\":64,\"lineHeight\":64,\"letterSpacing\":-0.035}",
+              "usage_note": "The poster line. One per screen."
+            }
+          },
+          {
+            "key": "typ-02",
+            "values": {
+              "name": "title",
+              "group": "Headings",
+              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":800,\"size\":36,\"lineHeight\":40,\"letterSpacing\":-0.02}",
+              "usage_note": "The page title."
+            }
+          },
+          {
+            "key": "typ-03",
+            "values": {
+              "name": "heading",
+              "group": "Headings",
+              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":800,\"size\":20,\"lineHeight\":24,\"letterSpacing\":-0.01}",
+              "usage_note": "Section headings, often in capitals."
+            }
+          },
+          {
+            "key": "typ-04",
+            "values": {
+              "name": "body",
+              "group": "Text",
+              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":400,\"size\":16,\"lineHeight\":24,\"letterSpacing\":0}",
+              "usage_note": "Everything people read."
+            }
+          },
+          {
+            "key": "typ-05",
+            "values": {
+              "name": "label",
+              "group": "Text",
+              "style": "{\"font\":\"Archivo, 'Helvetica Neue', Arial, sans-serif\",\"weight\":800,\"size\":13,\"lineHeight\":16,\"letterSpacing\":0.04}",
+              "usage_note": "Buttons and tags, in capitals."
+            }
+          },
+          {
+            "key": "typ-06",
+            "values": {
+              "name": "code",
+              "group": "Code",
+              "style": "{\"font\":\"'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace\",\"weight\":400,\"size\":14,\"lineHeight\":20,\"letterSpacing\":0}",
+              "usage_note": "Codes, ticket numbers and values people copy."
+            }
+          }
+        ]
+      },
+      {
+        "token": "spacing",
+        "name": "Spacing",
+        "labelSingular": "Spacing value",
+        "labelPlural": "Spacing values",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "ruler",
+        "titleField": "name",
+        "describes": "The spacing scale every layout is built from.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 256
+              }
+            ],
+            "look": {
+              "id": "measure",
+              "options": {
+                "unit": "px",
+                "measurePreview": "spacing"
+              }
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "spc-01",
+            "values": {
+              "name": "space-1",
+              "value": 4,
+              "usage_note": "Between an icon and its label."
+            }
+          },
+          {
+            "key": "spc-02",
+            "values": {
+              "name": "space-2",
+              "value": 8,
+              "usage_note": "Between related controls."
+            }
+          },
+          {
+            "key": "spc-03",
+            "values": {
+              "name": "space-4",
+              "value": 16,
+              "usage_note": "Padding of a card."
+            }
+          },
+          {
+            "key": "spc-04",
+            "values": {
+              "name": "space-6",
+              "value": 24,
+              "usage_note": "Between groups."
+            }
+          },
+          {
+            "key": "spc-05",
+            "values": {
+              "name": "space-12",
+              "value": 48,
+              "usage_note": "Between sections."
+            }
+          },
+          {
+            "key": "spc-06",
+            "values": {
+              "name": "space-20",
+              "value": 80,
+              "usage_note": "Around a hero."
+            }
+          }
+        ]
+      },
+      {
+        "token": "radius",
+        "name": "Corner radius",
+        "labelSingular": "Radius",
+        "labelPlural": "Radii",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "square",
+        "titleField": "name",
+        "describes": "How round corners are, from chips to avatars.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 9999
+              }
+            ],
+            "look": {
+              "id": "measure",
+              "options": {
+                "unit": "px",
+                "measurePreview": "radius"
+              }
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rad-01",
+            "values": {
+              "name": "radius-none",
+              "value": 0,
+              "usage_note": "Everything: buttons, fields, cards."
+            }
+          },
+          {
+            "key": "rad-02",
+            "values": {
+              "name": "radius-sm",
+              "value": 2,
+              "usage_note": "Checkboxes and keyboard keys only."
+            }
+          },
+          {
+            "key": "rad-03",
+            "values": {
+              "name": "radius-full",
+              "value": 9999,
+              "usage_note": "Avatars only."
+            }
+          }
+        ]
+      },
+      {
+        "token": "shadow",
+        "name": "Shadows",
+        "labelSingular": "Shadow",
+        "labelPlural": "Shadows",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "layers",
+        "titleField": "name",
+        "describes": "Elevation: how far something floats above the page, in light and dark.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "shadow"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "shd-01",
+            "values": {
+              "name": "shadow-hard-sm",
+              "value": "{\"light\":{\"x\":3,\"y\":3,\"blur\":0,\"spread\":0,\"color\":\"#000000ff\"},\"dark\":{\"x\":3,\"y\":3,\"blur\":0,\"spread\":0,\"color\":\"#ffffffff\"}}",
+              "usage_note": "Buttons and tags: a hard offset, no blur."
+            }
+          },
+          {
+            "key": "shd-02",
+            "values": {
+              "name": "shadow-hard-md",
+              "value": "{\"light\":{\"x\":6,\"y\":6,\"blur\":0,\"spread\":0,\"color\":\"#000000ff\"},\"dark\":{\"x\":6,\"y\":6,\"blur\":0,\"spread\":0,\"color\":\"#ffffffff\"}}",
+              "usage_note": "Cards and menus."
+            }
+          },
+          {
+            "key": "shd-03",
+            "values": {
+              "name": "shadow-hard-lg",
+              "value": "{\"light\":{\"x\":10,\"y\":10,\"blur\":0,\"spread\":0,\"color\":\"#000000ff\"},\"dark\":{\"x\":10,\"y\":10,\"blur\":0,\"spread\":0,\"color\":\"#ffffffff\"}}",
+              "usage_note": "Dialogs and the hero card."
+            }
+          }
+        ]
+      },
+      {
+        "token": "opacity",
+        "name": "Opacity",
+        "labelSingular": "Opacity",
+        "labelPlural": "Opacities",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "droplet",
+        "titleField": "name",
+        "describes": "How see-through things get: disabled controls, tints and overlays.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1
+              }
+            ],
+            "look": {
+              "id": "opacity"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "opa-01",
+            "values": {
+              "name": "opacity-disabled",
+              "value": 0.4,
+              "usage_note": "A control that cannot be used yet."
+            }
+          },
+          {
+            "key": "opa-02",
+            "values": {
+              "name": "opacity-pressed",
+              "value": 0.9,
+              "usage_note": "A button while it is held down."
+            }
+          },
+          {
+            "key": "opa-03",
+            "values": {
+              "name": "opacity-overlay",
+              "value": 0.85,
+              "usage_note": "The near-black behind a dialog."
+            }
+          }
+        ]
+      },
+      {
+        "token": "motion",
+        "name": "Motion",
+        "labelSingular": "Motion",
+        "labelPlural": "Motions",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "zap",
+        "titleField": "name",
+        "describes": "How fast things move and how they ease in and out.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "motion"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "mot-01",
+            "values": {
+              "name": "motion-snap",
+              "value": "{\"duration\":80,\"easing\":\"linear\"}",
+              "usage_note": "Press: the button drops onto its shadow."
+            }
+          },
+          {
+            "key": "mot-02",
+            "values": {
+              "name": "motion-base",
+              "value": "{\"duration\":160,\"easing\":\"ease-out\"}",
+              "usage_note": "Menus and dialogs."
+            }
+          },
+          {
+            "key": "mot-03",
+            "values": {
+              "name": "motion-slide",
+              "value": "{\"duration\":240,\"easing\":\"cubic-bezier(0.7, 0, 0.3, 1)\"}",
+              "usage_note": "Banners and panels sliding in, hard and fast."
+            }
+          }
+        ]
+      },
+      {
+        "token": "component",
+        "name": "Components",
+        "labelSingular": "Component",
+        "labelPlural": "Components",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": true,
+        "icon": "component",
+        "titleField": "name",
+        "describes": "Each component family, drawn as it looks in light and dark, with where to use it.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "group",
+            "label": "Group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Actions",
+              "Inputs",
+              "Containers",
+              "Status",
+              "Selection",
+              "Disclosure"
+            ],
+            "choiceColors": {
+              "Actions": "blue",
+              "Inputs": "teal",
+              "Containers": "slate",
+              "Status": "amber",
+              "Selection": "violet",
+              "Disclosure": "gray"
+            }
+          },
+          {
+            "key": "sample",
+            "label": "Sample",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "look": {
+              "id": "html_sample"
+            }
+          },
+          {
+            "key": "usage_note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cmp-01",
+            "values": {
+              "name": "Button",
+              "group": "Actions",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;}.b{font:inherit;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:13px;font-weight:800;line-height:1;height:40px;padding:0 18px;border-radius:0px;border:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:filter var(--motion-fast, 120ms ease-out),transform var(--motion-fast, 120ms ease-out);box-shadow:var(--shadow-hard-sm, none);}.r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.p{background:var(--primary);color:var(--primary-foreground)}.p.h{filter:brightness(1.08)}.p.f{box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.p:disabled{opacity:var(--opacity-disabled, .5);cursor:not-allowed}</style><div class=\"w r\"><button class=\"b p\">Save</button><button class=\"b p h\">Hover</button><button class=\"b p f\">Focus</button><button class=\"b p\" disabled>Disabled</button></div>",
+              "usage_note": "The one main action of a screen. Never two primary buttons side by side."
+            }
+          },
+          {
+            "key": "cmp-02",
+            "values": {
+              "name": "Button variants",
+              "group": "Actions",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;}.b{font:inherit;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:13px;font-weight:800;line-height:1;height:40px;padding:0 18px;border-radius:0px;border:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:filter var(--motion-fast, 120ms ease-out),transform var(--motion-fast, 120ms ease-out);box-shadow:var(--shadow-hard-sm, none);}.r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--muted-foreground);box-shadow:none}.d{background:var(--destructive);color:var(--destructive-foreground)}</style><div class=\"w r\"><button class=\"b s\">Secondary</button><button class=\"b o\">Outline</button><button class=\"b q\">Quiet</button><button class=\"b d\">Delete</button></div>",
+              "usage_note": "Outline and quiet for everything else; delete only for what cannot be undone."
+            }
+          },
+          {
+            "key": "cmp-03",
+            "values": {
+              "name": "Text field",
+              "group": "Inputs",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.f{display:grid;gap:6px;max-width:320px}.l{font-size:12px;font-weight:600;color:var(--foreground)}.i{font:inherit;font-size:14px;height:40px;padding:0 12px;border-radius:0px;border:2px solid var(--input);background:var(--background);color:var(--foreground);transition:box-shadow var(--motion-fast, 120ms ease-out)}.i:focus,.i.f{outline:none;border-color:var(--ring);box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.h{font-size:12px;color:var(--muted-foreground)}.e .i{border-color:var(--destructive)}.e .h{color:var(--destructive)}</style><div class=\"w g\"><label class=\"f\"><span class=\"l\">Email</span><input class=\"i\" placeholder=\"name@company.com\"><span class=\"h\">We send the receipt here.</span></label><label class=\"f\"><span class=\"l\">Name</span><input class=\"i f\" value=\"Dana Ruiz\"><span class=\"h\">Focused.</span></label><label class=\"f e\"><span class=\"l\">Phone</span><input class=\"i\" value=\"555-01\"><span class=\"h\">Enter all ten digits.</span></label></div>",
+              "usage_note": "Every field has a visible label above it and a hint or error below."
+            }
+          },
+          {
+            "key": "cmp-04",
+            "values": {
+              "name": "Card",
+              "group": "Containers",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;}.b{font:inherit;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:13px;font-weight:800;line-height:1;height:40px;padding:0 18px;border-radius:0px;border:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:filter var(--motion-fast, 120ms ease-out),transform var(--motion-fast, 120ms ease-out);box-shadow:var(--shadow-hard-sm, none);}.c{max-width:380px;padding:20px;border-radius:0px;border:2px solid var(--border);background:var(--card);color:var(--card-foreground);box-shadow:var(--shadow-hard-md, none)}.k{margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}.t{margin:0 0 4px;font-family:Archivo, 'Helvetica Neue', Arial, sans-serif;font-size:16px;font-weight:600}.m{margin:0 0 14px;font-size:13px;color:var(--muted-foreground)}.a{display:flex;gap:8px}.p{background:var(--primary);color:var(--primary-foreground)}.o{background:transparent;color:var(--card-foreground);border-color:var(--border);box-shadow:none}</style><div class=\"w c\"><p class=\"k\">Report</p><h3 class=\"t\">Quarterly summary</h3><p class=\"m\">Updated 2 hours ago by Dana Ruiz</p><div class=\"a\"><button class=\"b p\">Open</button><button class=\"b o\">Share</button></div></div>",
+              "usage_note": "One idea per card: a kicker, a title, one line of detail and at most two actions."
+            }
+          },
+          {
+            "key": "cmp-05",
+            "values": {
+              "name": "Badge",
+              "group": "Status",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.r{display:flex;flex-wrap:wrap;gap:8px}.x{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:0px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--foreground);background:var(--muted)}.x i{width:7px;height:7px;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--primary);color:var(--primary-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">Draft</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>Live</span><span class=\"x wa\"><i></i>Waiting</span><span class=\"x er\"><i></i>Failed</span></div>",
+              "usage_note": "A status always pairs its colour with a word."
+            }
+          },
+          {
+            "key": "cmp-06",
+            "values": {
+              "name": "Toggle list",
+              "group": "Selection",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.l{display:grid;max-width:440px;border:2px solid var(--border);border-radius:0px;background:var(--card)}.o{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;font-size:14px;color:var(--card-foreground)}.o+.o{border-top:1px solid var(--border)}.o small{display:block;font-size:12px;color:var(--muted-foreground)}.t{appearance:none;flex:none;width:40px;height:26px;border-radius:var(--radius-full, 999px);background:var(--input);position:relative;cursor:pointer;margin:0;transition:background var(--motion-fast, 120ms ease-out)}.t::after{content:\"\";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--background);transition:transform var(--motion-fast, 120ms ease-out)}.t:checked{background:var(--primary)}.t:checked::after{transform:translateX(14px)}.t:disabled{opacity:var(--opacity-disabled, .5);cursor:not-allowed}</style><div class=\"w l\"><label class=\"o\"><span>Email alerts<small>When a task is assigned to you</small></span><input type=\"checkbox\" class=\"t\" checked></label><label class=\"o\"><span>Weekly digest<small>Every Monday morning</small></span><input type=\"checkbox\" class=\"t\"></label><label class=\"o\"><span>Text messages<small>Needs a verified phone</small></span><input type=\"checkbox\" class=\"t\" disabled></label></div>",
+              "usage_note": "A switch acts at once. When a choice needs a Save, use a checkbox."
+            }
+          },
+          {
+            "key": "cmp-07",
+            "values": {
+              "name": "Collapsible list",
+              "group": "Disclosure",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.d{max-width:500px;border:2px solid var(--border);border-radius:0px;background:var(--card);color:var(--card-foreground)}details+details{border-top:1px solid var(--border)}summary{list-style:none;cursor:pointer;padding:12px 16px;font-size:14px;font-weight:600;display:flex;justify-content:space-between;gap:12px}summary::-webkit-details-marker{display:none}summary::after{content:\"+\";color:var(--muted-foreground)}details[open] summary::after{content:\"\\2212\"}p{margin:0;padding:0 16px 14px;font-size:13px;color:var(--muted-foreground)}</style><div class=\"w d\"><details open><summary>What is included</summary><p>Every table, view and page in the template.</p></details><details><summary>Who can see it</summary><p>Everyone in your organization.</p></details><details><summary>Can I undo it</summary><p>Yes, from the history of each item.</p></details></div>",
+              "usage_note": "For answers people look up once. Never hide a step people must take."
+            }
+          },
+          {
+            "key": "cmp-08",
+            "values": {
+              "name": "Tabs",
+              "group": "Disclosure",
+              "sample": "<style>.w{font-family:Archivo, 'Helvetica Neue', Arial, sans-serif}.t{display:flex;gap:4px;border-bottom:1px solid var(--border)}.t span{padding:10px 14px;font-size:14px;color:var(--muted-foreground);border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:0.04em}.t .on{color:var(--foreground);font-weight:600;border-color:var(--primary)}</style><div class=\"w t\"><span class=\"on\">Overview</span><span>Activity</span><span>Settings</span></div>",
+              "usage_note": "Tabs switch views of one thing. Three to five, short names."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "color_request",
+        "name": "Propose a colour",
+        "describes": "Suggest a new colour for the system.",
+        "audience": "staff",
+        "table": "color",
+        "fields": [
+          {
+            "fieldKey": "name",
+            "ask": "What is the colour called?",
+            "required": true
+          },
+          {
+            "fieldKey": "group",
+            "ask": "Which group does it belong to?"
+          },
+          {
+            "fieldKey": "usage_note",
+            "ask": "Where would it be used?"
+          }
+        ],
+        "submitLabel": "Send proposal",
+        "confirmation": "Thanks. It is in the Colors section."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_color",
+        "name": "All colours",
+        "table": "color",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_type_style",
+        "name": "All text styles",
+        "table": "type_style",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_spacing",
+        "name": "All spacing values",
+        "table": "spacing",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_radius",
+        "name": "All radii",
+        "table": "radius",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_shadow",
+        "name": "All shadows",
+        "table": "shadow",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_opacity",
+        "name": "All opacities",
+        "table": "opacity",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_motion",
+        "name": "All motions",
+        "table": "motion",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_component",
+        "name": "All components",
+        "table": "component",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Design system assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "color",
+          "describes": "Every colour, its light and dark values and what it is read on."
+        },
+        {
+          "name": "related_tables",
+          "table": "type_style",
+          "describes": "The text styles."
+        }
+      ],
+      "question": {
+        "ask": "How many colours are in the Surfaces group?",
+        "whyItMatters": "Kwame keeps the surfaces to a handful so screens stay calm.",
+        "expect": {
+          "table": "color",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "group": "Surfaces"
+          },
+          "answer": 6,
+          "unit": "colours"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open Colors.",
+        "action": {
+          "kind": "open",
+          "surface": "all_color"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_color",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open Typography.",
+        "action": {
+          "kind": "open",
+          "surface": "all_type_style"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_type_style",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open Components.",
+        "action": {
+          "kind": "open",
+          "surface": "all_component"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_component",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Board template author (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "loudhausevents.net"
+      ],
+      "fictionalStreets": [
+        "Gantry Way"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [],
+  "board": {
+    "key": "design-system-bold-contrast",
+    "title": "Design system — Bold high-contrast",
+    "layout": "page",
+    "chapters": [
+      {
+        "title": "Overview",
+        "tiles": [
+          {
+            "kind": "note",
+            "title": "Design system — Bold high-contrast",
+            "text": "Design system — Bold high-contrast\n\n## Principles\n- Say it once, say it big: one headline, one action per screen.\n- Lines, not shades: thick black edges instead of soft greys.\n- Contrast is the brand: text never drops below 7:1 where it can be helped.\n\n## Starter profile\n- **Mood:** Loud, confident and graphic; nothing is subtle.\n- **Fits:** Events, sport, streetwear, music, campaigns, launches, retail sales.\n- **Density:** Medium; big type, thick lines.\n- **Contrast:** High; text reaches 7:1 or more on its ground in most pairs.\n- **Type:** Archivo at heavy weights, falling back to Helvetica and Arial.\n- **Adapt first:** Primary to the brand's loudest colour (keep black text on it if it is light).\n\n## Using tokens\nUse a token by its name, never its value. Change a value here and every screen and component sample follows. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Making it yours\nThis is a starter. Change the primary colour and the fonts to your brand first, then the corners and spacing. Keep every text colour at 4.5:1 or more on what it sits on, in light and dark.\n\n## Accessibility\nText reaches 4.5:1 against what it sits on; large text and icons 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "size": {
+              "w": 1020,
+              "h": 820
+            }
+          }
+        ]
+      },
+      {
+        "title": "Colors",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Colors",
+            "table": "color",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 1800
+            }
+          }
+        ]
+      },
+      {
+        "title": "Typography",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Typography",
+            "table": "type_style",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 760
+            }
+          }
+        ]
+      },
+      {
+        "title": "Spacing",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Spacing",
+            "table": "spacing",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 544
+            }
+          }
+        ]
+      },
+      {
+        "title": "Corner radius",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Corner radius",
+            "table": "radius",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 392
+            }
+          }
+        ]
+      },
+      {
+        "title": "Shadows",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Shadows",
+            "table": "shadow",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 430
+            }
+          }
+        ]
+      },
+      {
+        "title": "Opacity",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Opacity",
+            "table": "opacity",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 352
+            }
+          }
+        ]
+      },
+      {
+        "title": "Motion",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Motion",
+            "table": "motion",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 352
+            }
+          }
+        ]
+      },
+      {
+        "title": "Components",
+        "tiles": [
+          {
+            "kind": "table",
+            "title": "Components",
+            "table": "component",
+            "layout": "section",
+            "size": {
+              "w": 1020,
+              "h": 1400
+            }
+          }
+        ]
+      },
+      {
+        "title": "Assets",
+        "tiles": [
+          {
+            "kind": "note",
+            "title": "Assets",
+            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "size": {
+              "w": 1020,
+              "h": 280
+            }
+          }
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "key": "files",
+        "title": "Files",
+        "layout": "page",
+        "chapters": [
+          {
+            "title": "Files",
+            "tiles": [
+              {
+                "kind": "writeUp",
+                "title": "Files",
+                "text": "Drop logo files, icon sets and exports on this page. Each file becomes a tile you can open and share.",
+                "size": {
+                  "w": 1020,
+                  "h": 200
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

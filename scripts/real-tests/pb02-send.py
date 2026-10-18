@@ -3,8 +3,8 @@
 """Send the six calls of real test PB-02 (core-chain, mandate doors) to the LIVE server as admin@admin.com.
 
 It only SENDS. It asserts nothing and prints no pass or fail: a runner executes it, a grader reads the
-database. Spec: common-docs/operations/real-tests/core-chain/PB-02-mandate-doors.md (STEPS 0-5); fixture
-ids: core-chain LEDGER.md "PB-02 fixtures".
+database. Before it sends it prints and saves (run-identity.json) the live server's commit, the UTC
+start time and the fixture ids it uses.
 
 Every call carries the same state payload S (the eight provision values). Each raw response body, its
 HTTP status, the response headers and the conversation id are written to one JSON file per call in the
@@ -30,12 +30,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import tempfile
 import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from run_identity import record_run_identity  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 KEY = "realtests.routing_line"  # was compass.routing_line in Compass; mandate keys are global
@@ -142,12 +146,14 @@ def build(n: int, token: str) -> tuple[str, str, dict | None, str, str | None]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--only", type=int, choices=range(6), help="send one call (0-5)")
     ap.add_argument("--out", help="directory for the response files (default: a new temp dir)")
     args = ap.parse_args()
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb02-"))
     out.mkdir(parents=True, exist_ok=True)
+    record_run_identity("pb02-send", SERVER, {"mandate": KEY, "organization": ORG, "second_organization": WORKSPACE,
+                                              "workflow": WORKFLOW, "dispatcher_agent": DISPATCHER}, out)
     token = admin_token()
     for n in [args.only] if args.only is not None else range(6):
         method, path, body, org, chosen_cid = build(n, token)

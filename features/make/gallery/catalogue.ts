@@ -12,6 +12,8 @@
 //
 // No store import here: this file is pure so tests and the clone guard can load it.
 
+import type { SpaceTemplateCardFace } from "@/lib/spaces-blocks/template-pack";
+
 /** One card exactly as `custom.templates` answers it (card keys only — never a spec, plan or row). */
 export interface GalleryCard {
   id: string;
@@ -41,7 +43,12 @@ export interface GalleryCard {
   slug?: string | null;
   /** The main table's first rows, for the card's live thumbnail. Public door, asked with `thumb`. */
   thumb?: GalleryThumb | null;
+  /** A Space template's face (`card.space`: title, icon, cover, description, who it's for, category, tags, pages). Public door only. */
+  space?: SpaceTemplateCardFace | null;
 }
+
+/** A Space template with pages: shown as a workspace (its pages previewed), never as a table template. */
+export const isSpaceCard = (card: Pick<GalleryCard, "space">): boolean => (card.space?.pages ?? 0) > 0;
 
 /** The first rows of a template's main table, as the public door hands them to a gallery card. */
 export interface GalleryThumb {

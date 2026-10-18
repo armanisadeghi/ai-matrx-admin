@@ -35,6 +35,7 @@ import { RichContentStaticInline } from "@ai-matrx/rich-content/levels/RichConte
 import type { Field, RuleExpression } from "@ai-matrx/records";
 
 import type { PublicForm } from "@/features/forms/service";
+import { PaymentNotice, type PaymentNoticeProps } from "@/features/payments/PaymentNotice";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
@@ -107,6 +108,7 @@ export function PublicFormRunner({
   prefill,
   linkQuery,
   autoAdvance,
+  paymentNotice,
 }: {
   /** TYPEFORM-2: a single choice moves on when picked (the knob, resolved by the page). */
   autoAdvance?: boolean;
@@ -115,11 +117,13 @@ export function PublicFormRunner({
   /** The link's query. TYPEFORM-DUP: the form's HIDDEN FIELDS (utm_source, ref, …) are read from it —
    *  only the names the form declares — sent beside the answers and kept on the submission, never shown. */
   linkQuery?: Record<string, string | string[] | undefined>;
+  /** PAYMENTS: what the server read about this visit's payment (REVIEW-PAYMENTS I4) — never the query. */
+  paymentNotice?: PaymentNoticeProps | null;
 }) {
   const hidden = hiddenFromLink(form.presentation?.hidden_fields ?? [], linkQuery ?? {});
-  // PAYMENTS-CONNECT: where Stripe Checkout sent the payer back (/api/payments/return).
-  const paymentParam = linkQuery?.payment;
-  const paymentOutcome = typeof paymentParam === "string" && ["paid", "cancelled", "open"].includes(paymentParam) ? paymentParam : null;
+  // PAYMENTS-CONNECT: a payment that could not start after the answers were saved (I5) — said in
+  // place, with Pay now, instead of a thank-you that implies it was paid.
+  const [paymentRefused, setPaymentRefused] = useState<{ reason: string; recordId: string | null } | null>(null);
   // ── COUNTED HONESTLY (TYPEFORM-DUP): view, start, each question reached — through our own route.
   const visitKey = useRef<string | null>(null);
   const count = useCallback(
@@ -334,6 +338,7 @@ export function PublicFormRunner({
           window.location.assign(body.payment_url);
           return { ok: true, recordId: body.record_id ?? null, message: "Taking you to payment…" };
         }
+        if (body.payment_refused) setPaymentRefused({ reason: body.payment_refused, recordId: body.record_id ?? null });
         setSent(true);
         // HELD IS NOT SENT-AND-FORGOTTEN. An answer whose form has no accept
         // Rule waits for a person, and the thank-you screen says so in the
@@ -468,14 +473,14 @@ export function PublicFormRunner({
       {/* The form's authored text (intro, question help, thank-you) reads
           through the one rich-content core — markdown and math, in the
           server HTML (records-ui `renderText` host port, 0.85.15). */}
-      {paymentOutcome ? (
-        <div className="mb-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground" role="status">
-          {paymentOutcome === "paid"
-            ? "Payment received. Thank you."
-            : paymentOutcome === "cancelled"
-              ? "Payment was not completed. Your answers were saved."
-              : "Your payment is still processing."}
-        </div>
+      {paymentNotice ? <PaymentNotice {...paymentNotice} note="Your answers were saved." /> : null}
+      {paymentRefused ? (
+        <PaymentNotice
+          outcome="refused"
+          reason={paymentRefused.reason}
+          note="Your answers were saved."
+          retry={paymentRefused.recordId ? { subjectId: form.form_id, recordId: paymentRefused.recordId, back: `/f/${form.form_id}` } : null}
+        />
       ) : null}
       <RecordsUiProvider value={FORM_TEXT_HOST}>
         <div className={placeChecked ? undefined : "invisible"} aria-busy={!placeChecked} data-form-place-checked={placeChecked ? "" : undefined}>

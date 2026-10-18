@@ -52,4 +52,12 @@ describe("a logo is raw; dark mode only puts it on a light chip", () => {
       if (natural) Object.defineProperty(proto, "naturalWidth", natural); else delete (proto as { naturalWidth?: number }).naturalWidth;
     }
   });
+  it("a stored logo that is only a 16px placeholder also falls to the letter (old runs saved favicon URLs)", async () => {
+    const el = await render({ name: "Cotopaxi", logoUrl: "https://www.google.com/s2/favicons?domain=cotopaxi.example", size: 44 });
+    const img = el.querySelector("img") as HTMLImageElement;
+    Object.defineProperty(img, "naturalWidth", { value: 16 });
+    await act(async () => { img.dispatchEvent(new Event("load")); });
+    expect(el.querySelector("img")).toBeNull();
+    expect(el.textContent).toBe("C");
+  });
 });

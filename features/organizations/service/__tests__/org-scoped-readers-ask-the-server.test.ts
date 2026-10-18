@@ -25,6 +25,10 @@ const READERS: Array<{ file: string; table: string; uses: "is" | "arm" }> = [
   { file: "features/content-ir/studio/records/records-service.ts", table: "content_ir.kind_instance", uses: "is" },
   { file: "features/crm/service.ts", table: "crm.party", uses: "arm" },
   { file: "features/crm/analytics/service.ts", table: "platform.outcome_event", uses: "is" },
+  { file: "features/crm/outreach-lists/service.ts", table: "crm.outreach_list", uses: "arm" },
+  { file: "features/crm/deals/service.ts", table: "crm.deal", uses: "arm" },
+  { file: "features/crm/service.ts", table: "crm.merge_candidate", uses: "is" },
+  { file: "features/crm/service.ts", table: "crm.party_merge", uses: "is" },
 ];
 
 describe("org-scoped readers ask the server, never a first-page id list", () => {
@@ -48,6 +52,9 @@ describe("org-scoped readers ask the server, never a first-page id list", () => 
       "features/knowledge/hub/tags/tagApi.ts",
       "features/knowledge/hub/hooks/useHubSidebarData.ts",
       "features/masterwork/encore/service.ts",
+      "features/masterwork/browse/service.ts",
+      "features/crm/outreach-lists/service.ts",
+      "features/crm/deals/service.ts",
     ]) {
       expect(read(file)).not.toMatch(/getUserOrganizations\(/);
     }
@@ -55,7 +62,18 @@ describe("org-scoped readers ask the server, never a first-page id list", () => 
     expect(records).not.toMatch(/\.in\("organization_id", ctx\.orgIds\)/);
     const crm = read("features/crm/service.ts");
     expect(crm).not.toMatch(/\.in\("organization_id", ctx\.orgIds\)/);
+    expect(crm).not.toMatch(/\.in\("organization_id", orgIds\)/);
+    for (const file of ["features/crm/outreach-lists/service.ts", "features/crm/deals/service.ts"]) {
+      expect(read(file)).not.toMatch(/organization_id\.in\.\(\$\{/);
+    }
     const analytics = read("features/crm/analytics/service.ts");
     expect(analytics).not.toMatch(/ctx\.orgIds/);
+  });
+
+  it("masterwork browse asks the server which rulebooks its organizations list to her", () => {
+    const src = read("features/masterwork/browse/service.ts");
+    expect(src).toContain("listed_in_my_organizations");
+    expect(src).not.toMatch(/\.in\("organization_id"/);
+    expect(src).not.toMatch(/shownToBlendedFilter\(shownTo, blendedOrgIds/);
   });
 });

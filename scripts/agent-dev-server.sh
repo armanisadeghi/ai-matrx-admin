@@ -751,6 +751,7 @@ resolve_next_bin() {
 
 cmd_start() {
   mkdir -p "$STATE_DIR"
+  ensure_machine_guard
   clear_stale_state
   report_previous_failure
   # The other mode was asked for: switch an idle server, refuse a busy one.
@@ -1252,6 +1253,7 @@ cmd_monitor() {
     if (( tick % 15 == 0 )); then
       prune_holds
       sweep_orphan_browsers >/dev/null
+      ensure_machine_guard
     fi
     is_held=0; held && is_held=1
     was_used=0; [[ -f "$TOUCHED" ]] && was_used=1
@@ -1352,6 +1354,7 @@ PY
   else
     log "watchdog: an OLDER watchdog (or none) runs this server, so no memory reading and no stale cleanup — run: pnpm preview:monitor-repair"
   fi
+  /usr/bin/python3 "$MACHINE_GUARD_PY" status --brief --prefix '[preview] ' 2>/dev/null || true
   local orphans
   orphans="$(sweep_orphan_browsers --dry-run 2>/dev/null)"
   [[ -z "$orphans" ]] || log "stale browsers the watchdog will close: $(printf '%s' "$orphans" | tr '\n' ';')"
@@ -1366,6 +1369,7 @@ PY
 }
 
 cmd_status_one() {
+  ensure_machine_guard
   clear_stale_state
   prune_holds
   if [[ -f "$META" ]]; then

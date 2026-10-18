@@ -64,6 +64,8 @@ export interface ContextStateApiResponse {
   cache_state: Record<string, unknown>;
   last_trim_summary: Record<string, unknown> | null;
   last_raw_usage: Record<string, unknown> | null;
+  /** What the last request was made of, in characters; null until measured. */
+  last_context_breakdown?: Record<string, unknown> | null;
   measured_at: string;
 }
 

@@ -11,6 +11,7 @@ import { cache } from "react";
 import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 
 import { resolveRelativeDates, type TemplateSpec } from "@ai-matrx/records/templates";
+import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 
 import type { ShowSpec } from "./TemplateShowcase";
 
@@ -61,6 +62,8 @@ export const readPublicCatalogue = cache(async (): Promise<PublicRead> => {
 export interface PublicTemplatePage {
   card: GalleryCard;
   spec: ShowSpec;
+  /** A Space template's page pack (`spec.spacePack`): its page tree, drawn over the spec's sample rows. Null for a table template. */
+  pack: Omit<SpaceTemplatePack, "spec"> | null;
   updatedAt: string | null;
 }
 
@@ -79,6 +82,8 @@ export const readTemplatePage = cache(async (key: string): Promise<PublicTemplat
   const answer = data as { card: GalleryCard; spec: TemplateSpec; updated_at: string | null } | null;
   if (!answer?.card) return null;
   const today = new Date().toISOString().slice(0, 10);
-  const spec = resolveRelativeDates(answer.spec as TemplateSpec, today) as unknown as ShowSpec;
-  return { card: answer.card, spec, updatedAt: answer.updated_at };
+  const { spacePack, ...tables } = answer.spec as TemplateSpec & { spacePack?: Omit<SpaceTemplatePack, "spec"> };
+  const spec = resolveRelativeDates(tables as TemplateSpec, today) as unknown as ShowSpec;
+  const pack = spacePack?.pages?.length ? spacePack : null;
+  return { card: answer.card, spec, pack, updatedAt: answer.updated_at };
 });

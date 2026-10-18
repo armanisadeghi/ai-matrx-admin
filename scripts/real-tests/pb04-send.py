@@ -3,8 +3,8 @@
 """Send the two turns of real test PB-04 (core-chain, turn two) to the LIVE server as admin@admin.com.
 
 It only SENDS and WRITES the between-turn data. It asserts nothing and prints no pass or fail: a runner
-executes it, a grader reads the database. Spec: common-docs/operations/real-tests/core-chain/PB-04-turn-two.md
-(STEPS); fixture ids: core-chain LEDGER.md "PB-04 fixtures".
+executes it, a grader reads the database. Before it sends it prints and saves (run-identity.json) the live
+server's commit, the UTC start time and the fixture ids it uses.
 
 A run:
   1. Turn 1 — POST /ai/agents/<Kestrel Dock Desk> (new stored conversation, active organization Safety Net
@@ -25,7 +25,6 @@ Usage:
   pb04-send.py --between 90       wait 90 s between the writes and turn 2
   pb04-send.py --reset all        write the START state back (hidden text, hold code, dock status) and print
                                   what the store now holds; sends no turn
-  pb04-send.py --reset dock       write only the start dock status back
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
 (matrx-frontend/.env.local, never printed), the same way pb03-send.py does.
@@ -34,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import tempfile
 import time
 import urllib.error
@@ -41,6 +41,9 @@ import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from run_identity import record_run_identity  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
@@ -178,27 +181,28 @@ def save(out: Path, name: str, record: dict) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--out", help="directory for the response files (default: a new temp dir)")
     ap.add_argument("--between", type=int, default=60, help="seconds to wait after the between-turn writes (default 60)")
-    ap.add_argument("--reset", choices=["all", "dock"], help="write the start state back and send no turn")
+    ap.add_argument("--reset", choices=["all"], help="write the start state back and send no turn")
     args = ap.parse_args()
-    token = admin_token()
+    fixtures = {"organization": ORG, "agent": AGENT, "scope": DOCK_SCOPE, "context_item": DOCK_STATUS_ITEM,
+                "pick_list": PICK_LIST, "holds_table": HOLDS_TABLE, "record": APT_3318}
 
     if args.reset:
-        if args.reset == "all":
-            for r in [write_hidden_text(token, ITEMS_START), write_hold(token, HOLD_START),
-                      write_dock(token, DOCK_START, "Real-tests PB-04 start state")]:
-                print(f"{r['door']}: HTTP {r['status']}")
-        else:
-            r = write_dock(token, DOCK_START, "Real-tests PB-04 start state")
-            print(f"{r['door']}: HTTP {r['status']} at {r['at']}")
+        record_run_identity("pb04-send --reset", SERVER, fixtures)
+        token = admin_token()
+        for r in [write_hidden_text(token, ITEMS_START), write_hold(token, HOLD_START),
+                  write_dock(token, DOCK_START, "Real-tests PB-04 start state")]:
+            print(f"{r['door']}: HTTP {r['status']}")
         print("store now holds:")
         show_store(token)
         return
 
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb04-"))
     out.mkdir(parents=True, exist_ok=True)
+    record_run_identity("pb04-send", SERVER, fixtures, out)
+    token = admin_token()
     cid = str(uuid.uuid4())
 
     # Turn 1 — the agent door.

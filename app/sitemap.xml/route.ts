@@ -6,8 +6,8 @@ import { MARKETING_PUBLIC_TOOLS } from '@/features/marketing/lib/marketing-nav'
 import { listSearchEngineIndexedRecords } from '@/lib/seo/search-engine-indexed.server'
 import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient'
 import { readPublicCatalogue } from '@/features/make/gallery/publicCatalogue.server'
-import { industryHref, jobHref, PUBLIC_GALLERY_PATH, publicTemplateHref } from '@/features/make/gallery/publicGallery'
-import { facetValues } from '@/features/make/gallery/catalogue'
+import { industryHref, jobHref, PUBLIC_GALLERY_PATH, publicTemplateHref, spaceCategories, workspacesHref } from '@/features/make/gallery/publicGallery'
+import { facetValues, isSpaceCard } from '@/features/make/gallery/catalogue'
 import { readPublicApplets } from '@/features/marketing/applets/publicApplets.server'
 import { APPLET_TEMPLATES_PATH, appletHref } from '@/features/marketing/applets/types'
 
@@ -146,6 +146,9 @@ export async function GET() {
     { loc: `${baseUrl}${PUBLIC_GALLERY_PATH}`, changefreq: 'weekly', priority: '0.8' },
     ...facetValues(templateCards, 'industry').map((v) => ({ loc: `${baseUrl}${industryHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
     ...facetValues(templateCards, 'job').map((v) => ({ loc: `${baseUrl}${jobHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
+    // Workspaces: the Space templates and each Space category (every category the catalogue holds).
+    ...(templateCards.some(isSpaceCard) ? [{ loc: `${baseUrl}${workspacesHref()}`, changefreq: 'weekly', priority: '0.8' }] : []),
+    ...spaceCategories(templateCards.filter(isSpaceCard)).map((v) => ({ loc: `${baseUrl}${workspacesHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
     ...templateCards.map((c) => ({
       loc: `${baseUrl}${publicTemplateHref(c)}`,
       changefreq: 'weekly',

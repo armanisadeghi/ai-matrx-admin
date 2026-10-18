@@ -29,8 +29,10 @@ function cell(field: ShowField, value: unknown): string {
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const page = await readTemplatePage(decodeURIComponent(slug));
-  const name = page?.card.name ?? "Template";
-  const business = page?.spec.business?.name ?? page?.card.business ?? "";
+  // A Space template shows its own title and who it is for (card.space); a table template its name and business.
+  const space = page?.pack ? page.card.space : null;
+  const name = space?.title ?? page?.card.name ?? "Template";
+  const business = space?.forWho ?? page?.spec.business?.name ?? page?.card.business ?? "";
   const table: ShowTable | undefined = page?.spec.tables[0];
   const fields = table ? [...table.fields.filter((f) => f.key === table.titleField), ...table.fields.filter((f) => f.key !== table.titleField && SIMPLE.has(f.parityType))].slice(0, 4) : [];
   const rows = table?.rows?.slice(0, 5) ?? [];

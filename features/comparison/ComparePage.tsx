@@ -78,6 +78,9 @@ function setRunInAddress(runId: string | null) {
   replaceAddressWithoutNavigating(url);
 }
 
+/** A map listing link that names one place exactly (the place reader's own form). */
+const PLACE_LINK = /\/maps\/place\/.*data=.*!1s0x/;
+
 let rowSeq = 0;
 const rowKey = () => `r${++rowSeq}`;
 
@@ -285,7 +288,10 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   function pick(item: ComparedItem, placeId: string) {
     const c = item.candidates.find((x) => x.pick === placeId);
     const match: LookupMatch = {
-      item: { label: c?.name ?? item.name, inputs: { place_id: placeId } },
+      // The place's own map link reads exactly that place; a bare place_id is refused by the reader (2026-10-18).
+      item: c?.url && PLACE_LINK.test(c.url)
+        ? { label: c?.name ?? item.name, url: c.url }
+        : { label: c?.name ?? item.name, inputs: { place_id: placeId } },
       name: c?.name ?? item.name, detail: c?.address ?? "", logo_url: null, website: null, url: c?.url ?? null,
       rating: c?.rating ?? null, reviews_count: c?.reviews_count ?? null,
     };

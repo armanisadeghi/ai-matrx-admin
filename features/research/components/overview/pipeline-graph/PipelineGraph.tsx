@@ -864,7 +864,10 @@ export function PipelineGraph() {
             horizontal spine can't fit without cramming labels into single
             letters). Tags is an inline manual branch with dashed connectors. */}
         <div className="@7xl/orch:hidden">
-          <div className="mx-auto flex w-full max-w-sm flex-col">
+          {/* One column on a phone; at desktop widths the stages read as a grid
+              (2 → 4 across) instead of a 384px column in a wide panel. The
+              vertical connectors only belong to the single column. */}
+          <div className="mx-auto grid w-full max-w-sm grid-cols-1 @2xl/orch:max-w-none @2xl/orch:grid-cols-2 @2xl/orch:gap-3 @4xl/orch:grid-cols-4">
             <PipelineStageNode
               icon={Search}
               label="Keywords"
@@ -1384,7 +1387,7 @@ export function PipelineGraph() {
  */
 function VEdge({ state }: { state: EdgeState }) {
   return (
-    <div className="flex justify-center py-0.5">
+    <div className="flex justify-center py-0.5 @2xl/orch:hidden">
       <PipelineEdge
         orientation="vertical"
         state={state}

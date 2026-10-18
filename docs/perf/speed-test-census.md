@@ -64,9 +64,9 @@ Server, signed in (from `app/(core)/layout.tsx`; the browser cannot see these):
 9. rpc `iam.core_boot_seed` · org/boot seed · yes · keep as THE one boot read.
 10. rpc `knob_snapshot_delta` · feature-knob seed · partly · fold into `core_boot_seed`.
 
-NOT MEASURED: the signed-in browser DB calls (admin and member). The shared preview could not serve a
+NOT MEASURED (retried 2026-10-18 after the walk-cap burst change, still blocked): the census host got parked at `/__dev-walk` — it was on a different host than the hold, and is now run with `MATRX_PREVIEW_SESSION=speed-test-census`, and the script presses Resume itself. Then the preview restarted (fresh server, holds dropped), and signed-in `/speed-test` was still loading after 895 s with both dev-logins failing (503 / 180 s timeout). Original note: NOT MEASURED: the signed-in browser DB calls (admin and member). The shared preview could not serve a
 signed-in `/speed-test` after the restart: `preview:ready` was still loading after 870 s, and both dev-logins
-in the census timed out at 180 s. Rerun: `node scripts/speed-test-census.mjs --as admin,member`.
+in the census timed out at 180 s. Rerun: `MATRX_PREVIEW_SESSION=speed-test-census pnpm preview:ready /speed-test --hold 120 && MATRX_PREVIEW_SESSION=speed-test-census node scripts/speed-test-census.mjs --as admin,member /speed-test /chat/speed-test /notes/speed-test /marketing/speed-test /agents/speed-test /files/speed-test /administration/speed-test` (the census host MUST match the held session's host).
 
 ## Status (2026-10-17, paused for a machine restart)
 

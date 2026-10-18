@@ -156,7 +156,7 @@ function DemoNotice() {
 
 function ContractRail({ deck }: { deck: CanonicalFlashcardSet }) {
   return (
-    <aside className="hidden min-h-0 flex-col gap-4 overflow-y-auto rounded-2xl border border-border bg-card p-4 shadow-[var(--elevation-1)] lg:flex">
+    <aside className="hidden min-h-0 flex-col gap-4 overflow-y-auto rounded-2xl border border-border bg-card p-4 shadow-sm lg:flex">
       <div>
         <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
           <BadgeCheck className="h-4 w-4 text-success" />
@@ -279,7 +279,7 @@ function CanonicalFlashcardPlayer({ deck, style }: CanonicalPlayerProps) {
         "relative isolate flex min-h-0 w-full flex-1 touch-pan-y flex-col overflow-hidden bg-card transition-all duration-300",
         style === "focused" && "h-full",
         style !== "focused" &&
-          "my-auto max-h-[820px] rounded-2xl border border-border shadow-[var(--elevation-2)]",
+          "my-auto max-h-[820px] rounded-2xl border border-border shadow-md",
       )}
       onKeyDown={(event) => {
         if (event.key === "ArrowLeft") goTo(index - 1);
@@ -424,7 +424,7 @@ function CanonicalFlashcardPlayer({ deck, style }: CanonicalPlayerProps) {
       </div>
 
       {actionsOpen && (
-        <div className="absolute inset-x-0 bottom-0 z-40 flex max-h-[72dvh] flex-col rounded-t-2xl border border-border bg-card shadow-[var(--elevation-3)] pb-safe transition-all [@starting-style]:translate-y-full">
+        <div className="absolute inset-x-0 bottom-0 z-40 flex max-h-[72dvh] flex-col rounded-t-2xl border border-border bg-card shadow-lg pb-safe transition-all [@starting-style]:translate-y-full">
           <button
             type="button"
             className="flex h-11 shrink-0 items-center justify-center"
@@ -498,7 +498,7 @@ function CanonicalFlashcardPlayer({ deck, style }: CanonicalPlayerProps) {
       )}
 
       {jumpOpen && (
-        <div className="absolute inset-x-0 bottom-0 z-40 rounded-t-2xl border border-border bg-card p-4 pb-safe shadow-[var(--elevation-3)] [@starting-style]:translate-y-full transition-transform">
+        <div className="absolute inset-x-0 bottom-0 z-40 rounded-t-2xl border border-border bg-card p-4 pb-safe shadow-lg [@starting-style]:translate-y-full transition-transform">
           <div className="mb-3 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold text-foreground">

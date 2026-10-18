@@ -128,6 +128,16 @@ function callerOf(initiator) {
   return initiator.type || "";
 }
 
+
+/** The walk cap parked this host: press its own Resume button (the explicit resume), then reload the target. */
+async function resumeIfParked(page, url) {
+  for (let i = 0; i < 3 && new URL(page.url()).pathname.startsWith("/__dev-walk"); i++) {
+    await page.locator("form[action='/__dev-walk'] button").click().catch(() => {});
+    await page.waitForLoadState("load").catch(() => {});
+    await page.goto(url, { waitUntil: "load", timeout: 180000 }).catch(() => {});
+  }
+}
+
 async function signIn(browser, who) {
   if (who === "anon") return undefined;
   const out = execFileSync("bash", [join(ROOT, "scripts/dev-login.sh"), ...(who === "member" ? ["--member"] : []), "/speed-test"], {
@@ -138,7 +148,11 @@ async function signIn(browser, who) {
   if (!url) throw new Error(`dev-login printed no URL for ${who}`);
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await ctx.newPage();
-  const resp = await page.goto(url, { waitUntil: "load", timeout: 180000 });
+  let resp = await page.goto(url, { waitUntil: "load", timeout: 180000 });
+  if (new URL(page.url()).pathname.startsWith("/__dev-walk")) {
+    await resumeIfParked(page, BASE + "/speed-test");
+    resp = { status: () => (new URL(page.url()).pathname.startsWith("/__dev-walk") ? 503 : 200) };
+  }
   await page.waitForTimeout(3000);
   if (!resp || resp.status() >= 400) throw new Error(`dev-login for ${who} answered ${resp?.status()} (walk cap or build error — run pnpm preview:ready /speed-test)`);
   const landed = new URL(page.url()).pathname;
@@ -212,6 +226,11 @@ async function measure(browser, storageState, route) {
   let error = null;
   try {
     await page.goto(url, { waitUntil: "load", timeout: 180000 });
+    if (new URL(page.url()).pathname.startsWith("/__dev-walk")) {
+      await resumeIfParked(page, url);
+      reqs.clear();
+      await page.goto(url, { waitUntil: "load", timeout: 180000 });
+    }
   } catch (e) {
     error = String(e.message || e).split("\n")[0];
   }

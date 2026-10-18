@@ -3,8 +3,8 @@
 """Send the one call of real test PB-05 (core-chain, files) to the LIVE server as admin@admin.com.
 
 It only SENDS. It asserts nothing and prints no pass or fail: a runner executes it, a grader reads the
-database. Spec: common-docs/operations/real-tests/core-chain/PB-05-files.md (STEPS); fixture ids: core-chain
-LEDGER.md "PB-05 fixtures".
+database. Before it sends it prints and saves (run-identity.json) the live server's commit, the UTC
+start time and the fixture ids it uses.
 
 One call: POST /ai/agents/<Alder Creek Receiving Desk>, a new stored conversation in the active organization
 Safety Net Real Tests, whose user input is one typed sentence plus five attachments sent the way the web app
@@ -24,12 +24,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import tempfile
 import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from run_identity import record_run_identity  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
@@ -93,11 +97,13 @@ def send(token: str, path: str, body: dict) -> tuple[int, dict, str]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--out", help="directory for the response file (default: a new temp dir)")
     args = ap.parse_args()
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb05-"))
     out.mkdir(parents=True, exist_ok=True)
+    record_run_identity("pb05-send", SERVER, {"organization": ORG, "agent": AGENT,
+                                              "files": [file_id for _, file_id in ATTACHMENTS]}, out)
     token = admin_token()
     cid = str(uuid.uuid4())
     user_input = [{"type": "text", "text": MESSAGE}] + [

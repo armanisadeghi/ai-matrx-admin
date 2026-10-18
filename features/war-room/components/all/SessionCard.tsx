@@ -86,7 +86,7 @@ export function SessionCard({ session }: { session: WarRoomSession }) {
       aria-disabled={deleting}
       className={cn(
         "group relative cursor-pointer text-left overflow-hidden rounded-xl border border-border bg-card p-4 pl-5",
-        "transition-all hover:border-primary/40 hover:shadow-[var(--elevation-2)]",
+        "transition-all hover:border-primary/40 hover:shadow-md",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         deleting && "opacity-50 pointer-events-none",
         "flex flex-col gap-3 min-h-36",

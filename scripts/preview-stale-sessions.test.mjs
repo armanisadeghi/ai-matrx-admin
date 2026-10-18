@@ -17,7 +17,7 @@
 
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -92,7 +92,7 @@ print(p.pid)
 }
 
 /** A detached LAUNCHER (orphan python, cwd `cwd`) whose child is `argv`. Returns { launcher, child }. */
-function detachedLauncher(argv, cwd) {
+function detachedLauncher(argv, cwd, env = process.env) {
   const inner = `import subprocess, sys, time\nc = subprocess.Popen(sys.argv[1:])\nprint(c.pid, flush=True)\ntime.sleep(600)\n`;
   const out = tempDir("pw-launcher-out-");
   const py = `
@@ -102,7 +102,7 @@ p = subprocess.Popen(["/usr/bin/python3", "-c", ${JSON.stringify(inner)}] + sys.
                      stdin=subprocess.DEVNULL, stdout=f, stderr=subprocess.DEVNULL, cwd=${JSON.stringify(cwd)})
 print(p.pid)
 `;
-  const launcher = Number(execFileSync("/usr/bin/python3", ["-c", py, ...argv]).toString().trim());
+  const launcher = Number(execFileSync("/usr/bin/python3", ["-c", py, ...argv], { env }).toString().trim());
   spawned.push(launcher);
   let child = NaN;
   const until = Date.now() + 5000;
@@ -270,6 +270,33 @@ test("a detached launcher from agent scratch, older than the longest hold, is cl
   const out = sourced(dir, "sweep_orphan_browsers 0", env).out;
   assert.match(out, new RegExp(`detached Playwright launcher pid ${launcher} .* and its browser pid ${child}`));
   assert.ok(waitGone(launcher) && waitGone(child));
+});
+
+test("a detached scratch launcher whose agent session is gone is closed at once, not after 180 min", () => {
+  const dir = tempDir("stale-browsers-");
+  const { dir: pw, bin } = fakeBrowsersDir();
+  const scratch = tempDir("agent-scratch-");
+  const ended = spawnSync("/usr/bin/true");
+  const deadSession = String(ended.pid);
+  const { launcher, child } = detachedLauncher(browserArgv(bin, 608), scratch, { ...process.env, CLAUDE_PID: deadSession });
+  const env = { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "0" };
+  const out = sourced(dir, "sweep_orphan_browsers 10800", env).out;
+  assert.match(out, new RegExp(`detached Playwright launcher pid ${launcher} .*its agent session is gone.* and its browser pid ${child}`));
+  assert.ok(waitGone(launcher) && waitGone(child));
+});
+
+test("a detached scratch launcher whose agent session still runs is kept", () => {
+  const dir = tempDir("stale-browsers-");
+  const { dir: pw, bin } = fakeBrowsersDir();
+  const scratch = tempDir("agent-scratch-");
+  // A live process whose executable is named `claude`, like a Claude Code session.
+  const fake = join(tempDir("fake-session-"), "claude");
+  symlinkSync("/bin/sleep", fake);
+  const session = spawn(fake, ["600"], { stdio: "ignore" });
+  spawned.push(session.pid);
+  const { launcher, child } = detachedLauncher(browserArgv(bin, 609), scratch, { ...process.env, CLAUDE_PID: String(session.pid) });
+  sourced(dir, "sweep_orphan_browsers 10800", { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "0" });
+  assert.ok(isAlive(launcher) && isAlive(child), "its session is alive: kept");
 });
 
 test("a detached launcher outside scratch dirs (a long-lived service) is never closed", () => {

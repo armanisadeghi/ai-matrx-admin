@@ -3,6 +3,7 @@
 // Async thunks bridging the warRoom slice and Supabase via service.ts.
 // Optimistic where it helps; loud (toast) on failure.
 
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { isAssociationsRpcErr } from "@ai-matrx/associations";
 import { toast } from "@/lib/toast";
 import { describeWriteFailure } from "@/lib/errors/writeFailure";
@@ -1200,12 +1201,16 @@ export const hydrateThreadAssignments =
  * behind whenever a provisioned chat was never used.
  */
 export const startRoomConversation =
-  (roomId: string, agentId: string) =>
+  (roomId: string, agentId: string, mandateKey: AnyMandateKey | null = null) =>
   async (dispatch: AppDispatch): Promise<string | null> => {
     try {
       const conversationId = await dispatch(
         createManualInstance({
           agentId,
+          // Set only when `agentId` is the room/master mandate's default: the
+          // first turn runs on the MANDATE DOOR so `useRoomAgent`'s host values
+          // reach the binding. A person's own agent pick stays on its door.
+          ...(mandateKey ? { mandateKey } : {}),
           apiEndpointMode: "agent",
           sourceFeature: "agent-runner",
           allowChat: true,
@@ -1281,7 +1286,9 @@ export const provisionRoomDefaults =
       // empty state, which is far better than a chat born under a guessed
       // agent that every later bind would faithfully reproduce.
       const mandate = await resolveMandate(WAR_ROOM_ROOM_AGENT_MANDATE);
-      await dispatch(startRoomConversation(roomId, mandate.agentId));
+      await dispatch(
+        startRoomConversation(roomId, mandate.agentId, WAR_ROOM_ROOM_AGENT_MANDATE),
+      );
     } catch (err) {
       reportWarRoomError("provisionRoomDefaults", err, { toast: false });
     } finally {
@@ -1570,11 +1577,17 @@ export const setThreadActiveConversation =
  * surfaces show the agent's name as the chat label.
  */
 export const startThreadConversation =
-  (threadId: string, sessionId: string, agentId: string) =>
+  (
+    threadId: string,
+    sessionId: string,
+    agentId: string,
+    /** Set only when `agentId` is the `war_room.thread` mandate's default. */
+    mandateKey: AnyMandateKey | null = null,
+  ) =>
   async (dispatch: AppDispatch): Promise<string | null> => {
     try {
       const conversationId = await dispatch(
-        switchAssistantAgentThunk({ sessionId, agentId, mode: "fresh" }),
+        switchAssistantAgentThunk({ sessionId, agentId, mode: "fresh", mandateKey }),
       ).unwrap();
       if (!conversationId) return null;
       return conversationId;
@@ -1658,7 +1671,12 @@ export const provisionThreadDefaults =
         // reports loudly and leaves the tab on its explicit-create empty state.
         const mandate = await resolveMandate(WAR_ROOM_THREAD_AGENT_MANDATE);
         await dispatch(
-          startThreadConversation(threadId, sessionId, mandate.agentId),
+          startThreadConversation(
+            threadId,
+            sessionId,
+            mandate.agentId,
+            WAR_ROOM_THREAD_AGENT_MANDATE,
+          ),
         );
       }
     } catch (err) {

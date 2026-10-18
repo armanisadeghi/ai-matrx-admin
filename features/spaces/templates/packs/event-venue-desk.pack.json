@@ -1,0 +1,3433 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0466",
+  "version": 1,
+  "title": "Event Venue Desk",
+  "description": "Spaces, inquiries and tours, bookings with deposits, and setup checklists for a venue.",
+  "forWho": "Event venues, halls and barn and loft rental spaces",
+  "icon": {
+    "emoji": "🏛️"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "venue",
+    "bookings",
+    "tours",
+    "deposits"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-event-venue-desk",
+    "catalogueId": "SP0466",
+    "useCase": "Octavia Lindqvist-Banerjee directs a venue and uses this to see which dates are held, which inquiries need a tour or proposal, which deposits are unpaid and what setup is due this week.",
+    "industry": "events_weddings",
+    "vertical": "Event venue",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Wexcombe Mill Event Space",
+      "describes": "A restored mill with a main hall, garden terrace and two meeting rooms rented for weddings, corporate events and private parties.",
+      "address": {
+        "line1": "2 Weir Lane",
+        "city": "Hudson",
+        "region": "NY",
+        "postalCode": "12534",
+        "country": "US"
+      },
+      "phone": "(518) 555-0119",
+      "website": "wexcombemill.net",
+      "email": "events@wexcombemill.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-event-venue-desk",
+    "tables": [
+      {
+        "token": "space",
+        "name": "Spaces",
+        "labelSingular": "Space",
+        "labelPlural": "Spaces",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "door-open",
+        "titleField": "space_name",
+        "describes": "The rooms and outdoor areas that can be rented.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "space_name",
+            "label": "Space",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hall",
+              "Terrace",
+              "Meeting room",
+              "Whole venue"
+            ],
+            "choiceColors": {
+              "Hall": "slate",
+              "Terrace": "blue",
+              "Meeting room": "amber",
+              "Whole venue": "violet"
+            }
+          },
+          {
+            "key": "seated",
+            "label": "Seated capacity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "standing",
+            "label": "Standing capacity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "key": "day_rate",
+            "label": "Day rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "included",
+            "label": "Included",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "bookings_count",
+            "label": "Bookings",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count"
+          },
+          {
+            "key": "nights_held",
+            "label": "Dates held",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Hold"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New space",
+            "values": {
+              "space_name": "New space"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Layouts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Room diagrams for seated, theatre and cocktail setups."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rules"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Noise, decorations, caterer and finish times."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "space-1",
+            "values": {
+              "space_name": "Main Hall",
+              "kind": "Hall",
+              "seated": 160,
+              "standing": 220,
+              "day_rate": 4800,
+              "included": "Tables, chairs, sound system and the bar"
+            }
+          },
+          {
+            "key": "space-2",
+            "values": {
+              "space_name": "Garden Terrace",
+              "kind": "Terrace",
+              "seated": 90,
+              "standing": 140,
+              "day_rate": 2200,
+              "included": "String lights and heaters"
+            }
+          },
+          {
+            "key": "space-3",
+            "values": {
+              "space_name": "Gallery Room",
+              "kind": "Meeting room",
+              "seated": 40,
+              "standing": 60,
+              "day_rate": 900,
+              "included": "Projector, whiteboard and Wi-Fi"
+            }
+          },
+          {
+            "key": "space-4",
+            "values": {
+              "space_name": "Loft Room",
+              "kind": "Meeting room",
+              "seated": 24,
+              "standing": 35,
+              "day_rate": 650,
+              "included": "Boardroom table and screen"
+            }
+          },
+          {
+            "key": "space-5",
+            "values": {
+              "space_name": "Entire Mill",
+              "kind": "Whole venue",
+              "seated": 200,
+              "standing": 300,
+              "day_rate": 8600,
+              "included": "All spaces plus parking and grounds"
+            }
+          }
+        ]
+      },
+      {
+        "token": "inquiry",
+        "name": "Inquiries",
+        "labelSingular": "Inquiry",
+        "labelPlural": "Inquiries",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "inbox",
+        "titleField": "inquiry_name",
+        "describes": "Prospective bookings from first message to proposal and decision.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "inquiry_name",
+            "label": "Inquiry",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Tour booked",
+              "Proposal sent",
+              "Booked",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Lost": "red",
+              "New": "slate",
+              "Tour booked": "blue",
+              "Proposal sent": "amber",
+              "Booked": "green"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Tour booked": "in_progress",
+              "Proposal sent": "in_progress",
+              "Booked": "done",
+              "Lost": "done"
+            }
+          },
+          {
+            "key": "event_type",
+            "label": "Event type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wedding",
+              "Corporate",
+              "Birthday",
+              "Fundraiser",
+              "Workshop"
+            ],
+            "choiceColors": {
+              "Wedding": "slate",
+              "Corporate": "blue",
+              "Birthday": "amber",
+              "Fundraiser": "violet",
+              "Workshop": "teal"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Heard about us",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Search",
+              "Planner referral",
+              "Social",
+              "Wedding fair",
+              "Past guest"
+            ],
+            "choiceColors": {
+              "Search": "slate",
+              "Planner referral": "blue",
+              "Social": "amber",
+              "Wedding fair": "violet",
+              "Past guest": "teal"
+            }
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "wanted_on",
+            "label": "Wanted date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "tour_on",
+            "label": "Tour date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "follow_up_on",
+            "label": "Follow up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "space",
+            "label": "Space of interest",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "space",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Sales owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_lost",
+            "label": "Mark lost",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_mark_lost"
+            }
+          },
+          {
+            "key": "add_booking",
+            "label": "Turn into booking",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "New booking",
+              "prefill": {
+                "inquiry": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "space": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "tour_on",
+            "follow_up_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New inquiry",
+            "values": {
+              "inquiry_name": "New inquiry",
+              "status": "New"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they are planning"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Date, guests, style, budget and must-haves."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tour notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they loved and asked about."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The one thing that moves them toward booking."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "inquiry-1",
+            "values": {
+              "inquiry_name": "Okoye-Brandt wedding",
+              "status": "Tour booked",
+              "event_type": "Wedding",
+              "source": "Wedding fair",
+              "guests": 130,
+              "wanted_on": "@today+200d",
+              "tour_on": "@mon+3d",
+              "follow_up_on": "@today+4d",
+              "email": "okoye.brandt@mailpost.net",
+              "space": "space-1",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-2",
+            "values": {
+              "inquiry_name": "Halvorsen retirement party",
+              "status": "Proposal sent",
+              "event_type": "Birthday",
+              "source": "Past guest",
+              "guests": 70,
+              "wanted_on": "@today+60d",
+              "tour_on": "@today-8d",
+              "follow_up_on": "@today+2d",
+              "email": "halvorsen.party@mailpost.net",
+              "space": "space-2",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "inquiry-3",
+            "values": {
+              "inquiry_name": "Northfield Credit Union offsite",
+              "status": "New",
+              "event_type": "Corporate",
+              "source": "Search",
+              "guests": 45,
+              "wanted_on": "@today+35d",
+              "follow_up_on": "@today+1d",
+              "email": "events@northfieldcu.net",
+              "space": "space-3",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-4",
+            "values": {
+              "inquiry_name": "Pellegrino anniversary",
+              "status": "Booked",
+              "event_type": "Birthday",
+              "source": "Social",
+              "guests": 55,
+              "wanted_on": "@today+80d",
+              "tour_on": "@today-20d",
+              "email": "pellegrino.fam@mailpost.net",
+              "space": "space-2",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "inquiry-5",
+            "values": {
+              "inquiry_name": "Hudson Valley Art Fund gala",
+              "status": "Proposal sent",
+              "event_type": "Fundraiser",
+              "source": "Planner referral",
+              "guests": 180,
+              "wanted_on": "@today+140d",
+              "tour_on": "@today-12d",
+              "follow_up_on": "@today-1d",
+              "email": "gala@hvartfund.net",
+              "space": "space-5",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-6",
+            "values": {
+              "inquiry_name": "Adeyemi-Cooper wedding",
+              "status": "Booked",
+              "event_type": "Wedding",
+              "source": "Search",
+              "guests": 150,
+              "wanted_on": "@today+300d",
+              "tour_on": "@today-40d",
+              "email": "adeyemi.cooper@mailpost.net",
+              "space": "space-1",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "inquiry-7",
+            "values": {
+              "inquiry_name": "Brightstone design workshop",
+              "status": "Lost",
+              "event_type": "Workshop",
+              "source": "Search",
+              "guests": 20,
+              "wanted_on": "@today+25d",
+              "email": "learn@brightstonedesign.net",
+              "space": "space-4",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "inquiry-8",
+            "values": {
+              "inquiry_name": "Lindgren engagement party",
+              "status": "New",
+              "event_type": "Birthday",
+              "source": "Social",
+              "guests": 60,
+              "wanted_on": "@today+90d",
+              "follow_up_on": "@today+3d",
+              "email": "lindgren.party@mailpost.net",
+              "space": "space-2",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "inquiry-9",
+            "values": {
+              "inquiry_name": "Corvid Labs product launch",
+              "status": "Tour booked",
+              "event_type": "Corporate",
+              "source": "Planner referral",
+              "guests": 110,
+              "wanted_on": "@today+50d",
+              "tour_on": "@today+2d",
+              "follow_up_on": "@today+3d",
+              "email": "launch@corvidlabs.net",
+              "space": "space-1",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Bookings",
+        "labelSingular": "Booking",
+        "labelPlural": "Bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "booking_name",
+        "describes": "Events on the calendar, from date hold to completed, with money tracked.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hold",
+              "Contracted",
+              "Deposit paid",
+              "Completed"
+            ],
+            "choiceColors": {
+              "Hold": "slate",
+              "Contracted": "blue",
+              "Deposit paid": "amber",
+              "Completed": "green"
+            },
+            "required": true,
+            "default": "Hold",
+            "statusGroups": {
+              "Hold": "todo",
+              "Contracted": "in_progress",
+              "Deposit paid": "in_progress",
+              "Completed": "done"
+            }
+          },
+          {
+            "key": "event_on",
+            "label": "Event date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hold_expires",
+            "label": "Hold expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "fee",
+            "label": "Rental fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit received (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "balance",
+            "label": "Balance due (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Rental fee (USD)} - {Deposit received (USD)}"
+          },
+          {
+            "key": "days_to_go",
+            "label": "Days to go",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Event date}, 'days')"
+          },
+          {
+            "key": "tasks_left",
+            "label": "Setup tasks left",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "To do",
+                "Doing"
+              ]
+            }
+          },
+          {
+            "key": "space",
+            "label": "Space",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "space",
+            "relationMax": 1
+          },
+          {
+            "key": "inquiry",
+            "label": "Inquiry",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "inquiry",
+            "relationMax": 1
+          },
+          {
+            "key": "manager",
+            "label": "Event manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_record_deposit",
+            "label": "Record deposit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_record_deposit"
+            }
+          },
+          {
+            "key": "btn_close_out",
+            "label": "Close out",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_close_out"
+            }
+          },
+          {
+            "key": "add_task",
+            "label": "Add setup task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New setup task",
+              "prefill": {
+                "booking": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "space": "Either record can be created or change status before the other.",
+          "inquiry": "Either record can be created or change status before the other.",
+          "manager": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Hold"
+            ],
+            "filled": [
+              "hold_expires"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "hold_expires",
+            "event_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New booking",
+            "values": {
+              "booking_name": "New booking",
+              "status": "Hold"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contract terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Fee, deposit, finish time, overtime and cancellation."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Event details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Layout, vendors, load-in and the day-of contact."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Damage check, balance and feedback."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "booking-1",
+            "values": {
+              "booking_name": "Pellegrino anniversary dinner",
+              "status": "Deposit paid",
+              "event_on": "@today+80d",
+              "guests": 55,
+              "fee": 2200,
+              "deposit": 1100,
+              "space": "space-2",
+              "inquiry": "inquiry-4",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "booking-2",
+            "values": {
+              "booking_name": "Adeyemi-Cooper wedding weekend",
+              "status": "Contracted",
+              "event_on": "@today+300d",
+              "guests": 150,
+              "fee": 8600,
+              "deposit": 0,
+              "space": "space-5",
+              "inquiry": "inquiry-6",
+              "manager": "tm-3"
+            }
+          },
+          {
+            "key": "booking-3",
+            "values": {
+              "booking_name": "Hudson Valley Art Fund gala",
+              "status": "Hold",
+              "event_on": "@today+140d",
+              "hold_expires": "@today+5d",
+              "guests": 180,
+              "fee": 8600,
+              "deposit": 0,
+              "space": "space-5",
+              "inquiry": "inquiry-5",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "booking-4",
+            "values": {
+              "booking_name": "Corvid Labs launch evening",
+              "status": "Hold",
+              "event_on": "@today+50d",
+              "hold_expires": "@today+9d",
+              "guests": 110,
+              "fee": 4800,
+              "deposit": 0,
+              "space": "space-1",
+              "inquiry": "inquiry-9",
+              "manager": "tm-3"
+            }
+          },
+          {
+            "key": "booking-5",
+            "values": {
+              "booking_name": "Caldwell retirement lunch",
+              "status": "Deposit paid",
+              "event_on": "@mon+5d",
+              "guests": 48,
+              "fee": 2200,
+              "deposit": 1100,
+              "space": "space-2",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "booking-6",
+            "values": {
+              "booking_name": "Spring planning retreat, Bellamy & Co.",
+              "status": "Deposit paid",
+              "event_on": "@today+4d",
+              "guests": 30,
+              "fee": 1550,
+              "deposit": 775,
+              "space": "space-3",
+              "manager": "tm-3"
+            }
+          },
+          {
+            "key": "booking-7",
+            "values": {
+              "booking_name": "Okonkwo family reunion",
+              "status": "Completed",
+              "event_on": "@today-18d",
+              "guests": 85,
+              "fee": 2200,
+              "deposit": 2200,
+              "space": "space-2",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "booking-8",
+            "values": {
+              "booking_name": "Summit Health staff awards",
+              "status": "Completed",
+              "event_on": "@today-45d",
+              "guests": 120,
+              "fee": 4800,
+              "deposit": 4800,
+              "space": "space-1",
+              "manager": "tm-3"
+            }
+          },
+          {
+            "key": "booking-9",
+            "values": {
+              "booking_name": "Rivera-Tan wedding",
+              "status": "Completed",
+              "event_on": "@today-90d",
+              "guests": 140,
+              "fee": 8600,
+              "deposit": 8600,
+              "space": "space-5",
+              "manager": "tm-3",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Setup and tasks",
+        "labelSingular": "Setup task",
+        "labelPlural": "Setup and tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Walkthroughs, vendor arrivals, setup and teardown for each booking.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "Doing",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Doing": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Doing": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Walkthrough",
+              "Vendor",
+              "Setup",
+              "Teardown"
+            ],
+            "choiceColors": {
+              "Walkthrough": "slate",
+              "Vendor": "blue",
+              "Setup": "amber",
+              "Teardown": "violet"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "booking",
+            "label": "Booking",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "booking",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_tick_done",
+            "label": "Tick done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_tick_done"
+            }
+          }
+        ],
+        "independentOf": {
+          "booking": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New setup task",
+            "values": {
+              "task_name": "New setup task",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the next person doing this needs to know."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "task-1",
+            "values": {
+              "task_name": "Final walkthrough with the retreat host",
+              "status": "To do",
+              "kind": "Walkthrough",
+              "due_on": "@today+2d",
+              "booking": "booking-6",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-2",
+            "values": {
+              "task_name": "Set gallery room in boardroom style",
+              "status": "To do",
+              "kind": "Setup",
+              "due_on": "@today+3d",
+              "booking": "booking-6",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "task-3",
+            "values": {
+              "task_name": "Confirm caterer arrival for the lunch",
+              "status": "Doing",
+              "kind": "Vendor",
+              "due_on": "@mon+3d",
+              "booking": "booking-5",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-4",
+            "values": {
+              "task_name": "Set hall in rounds of eight",
+              "status": "To do",
+              "kind": "Setup",
+              "due_on": "@mon+4d",
+              "booking": "booking-5",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "task-5",
+            "values": {
+              "task_name": "Teardown and floor sweep after the lunch",
+              "status": "To do",
+              "kind": "Teardown",
+              "due_on": "@mon+5d",
+              "booking": "booking-5",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-6",
+            "values": {
+              "task_name": "Send power plan to the gala lighting vendor",
+              "status": "Doing",
+              "kind": "Vendor",
+              "due_on": "@today+10d",
+              "booking": "booking-3",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "task-7",
+            "values": {
+              "task_name": "Walkthrough with the launch team",
+              "status": "To do",
+              "kind": "Walkthrough",
+              "due_on": "@today+30d",
+              "booking": "booking-4",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-8",
+            "values": {
+              "task_name": "Check damage after the reunion",
+              "status": "Done",
+              "kind": "Teardown",
+              "due_on": "@today-17d",
+              "booking": "booking-7",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "task-9",
+            "values": {
+              "task_name": "Collect balance from the awards organizer",
+              "status": "Done",
+              "kind": "Teardown",
+              "due_on": "@today-40d",
+              "booking": "booking-8",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each inquiry belongs to one space of interest.",
+        "fromTable": "inquiry",
+        "fromField": "space",
+        "toTable": "space",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "inquiries"
+      },
+      {
+        "describes": "Each inquiry belongs to one sales owner.",
+        "fromTable": "inquiry",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "inquiry_by_owner"
+      },
+      {
+        "describes": "Each booking belongs to one space.",
+        "fromTable": "booking",
+        "fromField": "space",
+        "toTable": "space",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each booking belongs to one inquiry.",
+        "fromTable": "booking",
+        "fromField": "inquiry",
+        "toTable": "inquiry",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each booking belongs to one event manager.",
+        "fromTable": "booking",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "booking_by_manager"
+      },
+      {
+        "describes": "Each setup task belongs to one booking.",
+        "fromTable": "task",
+        "fromField": "booking",
+        "toTable": "booking",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each setup task belongs to one owner.",
+        "fromTable": "task",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "task_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Octavia Lindqvist-Banerjee",
+              "role": "Venue director",
+              "work_email": "octavia@wexcombemill.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Reuben Castellano",
+              "role": "Sales manager",
+              "work_email": "reuben@wexcombemill.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Imani Vasquez",
+              "role": "Event manager",
+              "work_email": "imani@wexcombemill.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Beckett Rourke",
+              "role": "Operations and setup",
+              "work_email": "beckett@wexcombemill.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Tamsin Odhiambo",
+              "role": "Coordinator",
+              "work_email": "tamsin@wexcombemill.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "inquiry_intake",
+        "name": "Ask about a date",
+        "describes": "Take in an inquiry from a prospective client.",
+        "audience": "staff",
+        "table": "inquiry",
+        "fields": [
+          {
+            "fieldKey": "inquiry_name",
+            "ask": "Name for the event",
+            "required": true
+          },
+          {
+            "fieldKey": "event_type",
+            "ask": "What kind of event?"
+          },
+          {
+            "fieldKey": "guests",
+            "ask": "How many guests?"
+          },
+          {
+            "fieldKey": "wanted_on",
+            "ask": "Which date do you want?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email",
+            "required": true
+          }
+        ],
+        "submitLabel": "Send the inquiry",
+        "confirmation": "Thanks. The inquiry is saved as New."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "inquiry_mark_lost",
+        "table": "inquiry",
+        "name": "Mark lost",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Lost"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_record_deposit",
+        "table": "booking",
+        "name": "Record deposit",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Deposit paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_close_out",
+        "table": "booking",
+        "name": "Close out",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_tick_done",
+        "table": "task",
+        "name": "Tick done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_space",
+        "name": "All spaces",
+        "table": "space",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "space_board",
+        "name": "Spaces board",
+        "table": "space",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_inquiry",
+        "name": "All inquiries",
+        "table": "inquiry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "inquiry_board",
+        "name": "Inquiries board",
+        "table": "inquiry",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "inquiry_cal",
+        "name": "Inquiries calendar",
+        "table": "inquiry",
+        "kind": "calendar",
+        "dateField": "tour_on",
+        "allDay": true
+      },
+      {
+        "token": "inquiry_over",
+        "name": "Overdue",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Tour booked",
+            "Proposal sent"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_week",
+        "name": "Due this week",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Tour booked",
+            "Proposal sent"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_next7",
+        "name": "Next 7 days",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Tour booked",
+            "Proposal sent"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_tours",
+        "name": "Tours this week",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "tour_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "inquiry_mine",
+        "name": "My inquiries",
+        "table": "inquiry",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_booking",
+        "name": "All bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Bookings board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Bookings calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "event_on",
+        "allDay": true
+      },
+      {
+        "token": "booking_over",
+        "name": "Overdue",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Hold",
+            "Contracted",
+            "Deposit paid"
+          ]
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "Due this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Hold",
+            "Contracted",
+            "Deposit paid"
+          ]
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Hold",
+            "Contracted",
+            "Deposit paid"
+          ]
+        }
+      },
+      {
+        "token": "booking_mine",
+        "name": "My bookings",
+        "table": "booking",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_task",
+        "name": "All setup and tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_board",
+        "name": "Setup and tasks board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_cal",
+        "name": "Setup and tasks calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_mine",
+        "name": "My setup and tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Event Venue Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "inquiry",
+          "describes": "Prospective bookings from first message to proposal and decision."
+        },
+        {
+          "name": "related_tables",
+          "table": "space",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many inquiries have a proposal out?",
+        "whyItMatters": "The sales manager follows up on every proposal that is out.",
+        "expect": {
+          "table": "inquiry",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Proposal sent"
+          },
+          "answer": 2,
+          "unit": "inquiries"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open spaces.",
+        "action": {
+          "kind": "open",
+          "surface": "space_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "space_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open inquiries.",
+        "action": {
+          "kind": "open",
+          "surface": "inquiry_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "inquiry_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open bookings.",
+        "action": {
+          "kind": "open",
+          "surface": "booking_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "booking_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "wexcombemill.net"
+      ],
+      "fictionalStreets": [
+        "Weir Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "event-venue-desk",
+      "parent": null,
+      "title": "Event Venue Desk",
+      "icon": {
+        "emoji": "🏛️"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the venue from one page: spaces and day rates, inquiries from first message through tour and proposal, bookings with deposits, and the setup tasks that make the day work. Start on the Dashboard, then clear Follow ups due and holds about to expire. Never promise a date that is not on the calendar."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:tour-script"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:holds-and-contracts"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:event-day-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:venue-rules"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Spaces"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The rooms and outdoor areas that can be rented."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "space",
+              "view": "space_board"
+            },
+            "inline": true,
+            "title": "Spaces",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "spa-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "spa-t",
+                "name": "All spaces",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "spa-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inquiries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Prospective bookings from first message to proposal and decision."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inquiry",
+              "view": "inquiry_board"
+            },
+            "inline": true,
+            "title": "Inquiries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inq-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inq-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "tour_on"
+              },
+              {
+                "id": "inq-t",
+                "name": "All inquiries",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "inq-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Tour booked",
+                    "Proposal sent"
+                  ]
+                }
+              },
+              {
+                "id": "inq-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Tour booked",
+                    "Proposal sent"
+                  ]
+                }
+              },
+              {
+                "id": "inq-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Tour booked",
+                    "Proposal sent"
+                  ]
+                }
+              },
+              {
+                "id": "inq-tours",
+                "name": "Tours this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "tour_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "inq-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "inq-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Events on the calendar, from date hold to completed, with money tracked."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "event_on"
+              },
+              {
+                "id": "boo-t",
+                "name": "All bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "event_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Hold",
+                    "Contracted",
+                    "Deposit paid"
+                  ]
+                }
+              },
+              {
+                "id": "boo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "event_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Hold",
+                    "Contracted",
+                    "Deposit paid"
+                  ]
+                }
+              },
+              {
+                "id": "boo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Hold",
+                    "Contracted",
+                    "Deposit paid"
+                  ]
+                }
+              },
+              {
+                "id": "boo-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setup and tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Walkthroughs, vendor arrivals, setup and teardown for each booking."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Setup and tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tas-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tas-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tas-t",
+                "name": "All setup and tasks",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tas-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tas-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "event-venue-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Inquiries, bookings and money at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Inquiries by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Bookings by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Bookings by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Rental fees by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Rental fees by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by source",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Inquiries by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-ups overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inquiry",
+              "view": "all_inquiry"
+            },
+            "inline": true,
+            "title": "Follow-ups overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Follow-ups overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Tour booked",
+                    "Proposal sent"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events in the next 14 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Events in the next 14 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Events in the next 14 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Contracted",
+                    "Deposit paid"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Holds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Holds",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Holds",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Hold"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Balance due (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rental fee minus the deposit received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Collect the balance on the date in the contract"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hold expires"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Date a held booking is released"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Contact the client three days before; release the date if there is no answer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to go"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Event date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 14 with setup tasks open means a walkthrough this week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Setup tasks left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tasks still To do or Doing for the booking"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Zero the day before the event"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "tour-script",
+      "parent": "event-venue-desk",
+      "title": "Giving a tour",
+      "icon": {
+        "emoji": "🚶"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A tour is a sales meeting in disguise. Let people imagine their day before you talk about price."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before they arrive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Room set up the way they want to see it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lights, music and heating on"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A one-page price guide and the calendar for their dates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the tour"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask what they picture: arrival, ceremony, dinner, dancing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the route a guest would take, and stop where they will stand."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mention what is included, and what needs a vendor."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Answer questions honestly, including noise and finish times."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Afterwards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer a hold on the date for a set number of days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log the tour notes and set a follow-up for the next working day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "holds-and-contracts",
+      "parent": "event-venue-desk",
+      "title": "Date holds, contracts and deposits",
+      "icon": {
+        "emoji": "📅"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Holds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A hold lasts seven days unless the director approves more."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every hold has an expiry date; the Dashboard lists them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never hold two dates in the same space for the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contracts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the contract with the fee, deposit, balance date and rules."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the booking to Contracted when signed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Record deposit when payment arrives."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Follow the contract terms. Note the date of any cancellation request and who received it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "event-day-checklist",
+      "parent": "event-venue-desk",
+      "title": "Event day checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two hours before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Doors unlocked, heating or cooling set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Restrooms stocked and checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Layout matches the diagram"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Vendors arriving per the schedule"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Event manager is on site from first vendor to last guest."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep a phone number for the host and caterer at hand."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the space and photograph any damage."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count rentals and clear waste."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Close out and collect the balance if due."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "venue-rules",
+      "parent": "event-venue-desk",
+      "title": "House rules in plain words",
+      "icon": {
+        "emoji": "📜"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What every client hears"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Music must end by the time in the contract; the hall closes thirty minutes later."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open flames are not allowed except in the candle holders we supply."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Decorations may be taped only to the boards we provide."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Outside caterers must be approved and insured."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why we say it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rules are easier to follow when the reason is clear: neighbors, floors, safety and the next booking."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exceptions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Anything unusual goes in the booking page and is approved by the director before the contract is signed."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

@@ -1,0 +1,3554 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0469",
+  "version": 1,
+  "title": "Brewery Taproom Desk",
+  "description": "Batches, kegs, tap list, wholesale orders and taproom events for a small brewery.",
+  "forWho": "Craft breweries, cideries and taproom operators",
+  "icon": {
+    "emoji": "🍺"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "brewery",
+    "taproom",
+    "batches",
+    "kegs"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-brewery-taproom-desk",
+    "catalogueId": "SP0469",
+    "useCase": "Thorvald Eriksen-Mbeki is a head brewer and uses this to see which batches are ready, which kegs are where, what is on tap and which wholesale orders are going out.",
+    "industry": "hospitality_food",
+    "vertical": "Brewery taproom",
+    "job": "inventory",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Kingfisher Creek Brewing",
+      "describes": "A small craft brewery with a ten-tap taproom, a seven-barrel system and local wholesale accounts.",
+      "address": {
+        "line1": "90 Foundry Row",
+        "city": "Bend",
+        "region": "OR",
+        "postalCode": "97701",
+        "country": "US"
+      },
+      "phone": "(541) 555-0105",
+      "website": "kingfishercreekbrewing.net",
+      "email": "cheers@kingfishercreekbrewing.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-brewery-taproom-desk",
+    "tables": [
+      {
+        "token": "batch",
+        "name": "Batches",
+        "labelSingular": "Batch",
+        "labelPlural": "Batches",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flask-conical",
+        "titleField": "batch_name",
+        "describes": "Every brew from planned to packaged, with the date it will be ready.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "batch_name",
+            "label": "Batch",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Fermenting",
+              "Conditioning",
+              "Packaged"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Fermenting": "blue",
+              "Conditioning": "amber",
+              "Packaged": "violet"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Fermenting": "in_progress",
+              "Conditioning": "in_progress",
+              "Packaged": "done"
+            }
+          },
+          {
+            "key": "style",
+            "label": "Style",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "IPA",
+              "Pale ale",
+              "Lager",
+              "Stout",
+              "Saison",
+              "Sour",
+              "Seasonal"
+            ],
+            "choiceColors": {
+              "IPA": "slate",
+              "Pale ale": "blue",
+              "Lager": "amber",
+              "Stout": "violet",
+              "Saison": "teal",
+              "Sour": "orange",
+              "Seasonal": "pink"
+            }
+          },
+          {
+            "key": "brewed_on",
+            "label": "Brewed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ready_on",
+            "label": "Ready",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_ready",
+            "label": "Days to ready",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Ready}, 'days')"
+          },
+          {
+            "key": "barrels",
+            "label": "Volume (barrels)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "key": "abv",
+            "label": "ABV (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "key": "vessel",
+            "label": "Vessel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fermenter 1",
+              "Fermenter 2",
+              "Fermenter 3",
+              "Brite tank"
+            ],
+            "choiceColors": {
+              "Fermenter 1": "slate",
+              "Fermenter 2": "blue",
+              "Fermenter 3": "amber",
+              "Brite tank": "violet"
+            }
+          },
+          {
+            "key": "kegs_count",
+            "label": "Kegs filled",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "kegs",
+            "pick": "keg_name",
+            "agg": "count"
+          },
+          {
+            "key": "kegs_on_tap",
+            "label": "Kegs on tap",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "kegs",
+            "pick": "keg_name",
+            "agg": "count",
+            "filter": {
+              "status": "On tap"
+            }
+          },
+          {
+            "key": "brewer",
+            "label": "Brewer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_package_it",
+            "label": "Package it",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "batch_package_it"
+            }
+          },
+          {
+            "key": "add_keg",
+            "label": "Fill a keg",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "keg",
+              "template": "New keg",
+              "prefill": {
+                "batch": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "brewer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "brewed_on",
+            "ready_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New batch",
+            "values": {
+              "batch_name": "New batch",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recipe and plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Grain bill, hops, yeast, mash and boil plan."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Brew day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Measurements, gravity readings and issues."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tasting notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Sensory notes at packaging and one week later."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "batch-1",
+            "values": {
+              "batch_name": "Harbor Fog hazy IPA, batch 31",
+              "status": "Fermenting",
+              "style": "IPA",
+              "brewed_on": "@today-6d",
+              "ready_on": "@today+7d",
+              "barrels": 7,
+              "abv": 6.8,
+              "vessel": "Fermenter 1",
+              "brewer": "tm-1"
+            }
+          },
+          {
+            "key": "batch-2",
+            "values": {
+              "batch_name": "Pale Rider pale ale, batch 28",
+              "status": "Conditioning",
+              "style": "Pale ale",
+              "brewed_on": "@today-16d",
+              "ready_on": "@today+2d",
+              "barrels": 7,
+              "abv": 5.4,
+              "vessel": "Fermenter 2",
+              "brewer": "tm-1"
+            }
+          },
+          {
+            "key": "batch-3",
+            "values": {
+              "batch_name": "Switchback lager, batch 12",
+              "status": "Conditioning",
+              "style": "Lager",
+              "brewed_on": "@today-30d",
+              "ready_on": "@mon+3d",
+              "barrels": 7,
+              "abv": 4.9,
+              "vessel": "Brite tank",
+              "brewer": "tm-1"
+            }
+          },
+          {
+            "key": "batch-4",
+            "values": {
+              "batch_name": "Midnight Ledger stout, batch 9",
+              "status": "Packaged",
+              "style": "Stout",
+              "brewed_on": "@today-34d",
+              "ready_on": "@today-20d",
+              "barrels": 7,
+              "abv": 7.2,
+              "vessel": "Brite tank",
+              "brewer": "tm-1"
+            }
+          },
+          {
+            "key": "batch-5",
+            "values": {
+              "batch_name": "Orchard Gate saison, batch 6",
+              "status": "Packaged",
+              "style": "Saison",
+              "brewed_on": "@today-45d",
+              "ready_on": "@today-28d",
+              "barrels": 3.5,
+              "abv": 6.1,
+              "vessel": "Fermenter 3",
+              "brewer": "tm-1"
+            }
+          },
+          {
+            "key": "batch-6",
+            "values": {
+              "batch_name": "Pumpkin Hollow seasonal, batch 3",
+              "status": "Planned",
+              "style": "Seasonal",
+              "brewed_on": "@today+8d",
+              "ready_on": "@today+28d",
+              "barrels": 3.5,
+              "abv": 5.8,
+              "vessel": "Fermenter 3",
+              "brewer": "tm-1"
+            }
+          },
+          {
+            "key": "batch-7",
+            "values": {
+              "batch_name": "Mountain Lemon sour, batch 4",
+              "status": "Fermenting",
+              "style": "Sour",
+              "brewed_on": "@today-9d",
+              "ready_on": "@today+12d",
+              "barrels": 3.5,
+              "abv": 4.4,
+              "vessel": "Fermenter 2",
+              "brewer": "tm-3"
+            }
+          },
+          {
+            "key": "batch-8",
+            "values": {
+              "batch_name": "Harbor Fog hazy IPA, batch 30",
+              "status": "Packaged",
+              "style": "IPA",
+              "brewed_on": "@today-28d",
+              "ready_on": "@today-14d",
+              "barrels": 7,
+              "abv": 6.8,
+              "vessel": "Fermenter 1",
+              "brewer": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "keg",
+        "name": "Kegs",
+        "labelSingular": "Keg",
+        "labelPlural": "Kegs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "container",
+        "titleField": "keg_name",
+        "describes": "Every keg and where it is: cooler, tap, empty or out with a customer.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "keg_name",
+            "label": "Keg",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Where",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In cooler",
+              "On tap",
+              "Empty",
+              "At customer"
+            ],
+            "choiceColors": {
+              "In cooler": "slate",
+              "On tap": "blue",
+              "Empty": "amber",
+              "At customer": "violet"
+            },
+            "required": true,
+            "default": "In cooler",
+            "statusGroups": {
+              "In cooler": "todo",
+              "On tap": "in_progress",
+              "At customer": "in_progress",
+              "Empty": "done"
+            }
+          },
+          {
+            "key": "size",
+            "label": "Size",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sixth barrel",
+              "Half barrel"
+            ],
+            "choiceColors": {
+              "Sixth barrel": "slate",
+              "Half barrel": "blue"
+            }
+          },
+          {
+            "key": "filled_on",
+            "label": "Filled",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "batch",
+            "label": "Batch",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "batch",
+            "relationMax": 1
+          },
+          {
+            "key": "order",
+            "label": "Wholesale order",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "wholesale_order",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "batch": "Either record can be created or change status before the other.",
+          "order": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New keg",
+            "values": {
+              "keg_name": "New keg",
+              "status": "In cooler"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Cleaning date, deposit and any leak or damage."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "keg-1",
+            "values": {
+              "keg_name": "Midnight Ledger sixth, blue tag",
+              "status": "On tap",
+              "size": "Sixth barrel",
+              "filled_on": "@today-14d",
+              "location": "Bar rail, left",
+              "batch": "batch-4"
+            }
+          },
+          {
+            "key": "keg-2",
+            "values": {
+              "keg_name": "Midnight Ledger half, red tag",
+              "status": "In cooler",
+              "size": "Half barrel",
+              "filled_on": "@today-14d",
+              "location": "Cooler row A",
+              "batch": "batch-4"
+            }
+          },
+          {
+            "key": "keg-3",
+            "values": {
+              "keg_name": "Orchard Gate sixth, green tag",
+              "status": "On tap",
+              "size": "Sixth barrel",
+              "filled_on": "@today-26d",
+              "location": "Window tap",
+              "batch": "batch-5"
+            }
+          },
+          {
+            "key": "keg-4",
+            "values": {
+              "keg_name": "Orchard Gate sixth, yellow tag",
+              "status": "In cooler",
+              "size": "Sixth barrel",
+              "filled_on": "@today-26d",
+              "location": "Cooler row B",
+              "batch": "batch-5"
+            }
+          },
+          {
+            "key": "keg-5",
+            "values": {
+              "keg_name": "Harbor Fog sixth, white tag",
+              "status": "Empty",
+              "size": "Sixth barrel",
+              "filled_on": "@today-40d",
+              "location": "Back dock",
+              "batch": "batch-8"
+            }
+          },
+          {
+            "key": "keg-6",
+            "values": {
+              "keg_name": "Harbor Fog half, black tag",
+              "status": "On tap",
+              "size": "Half barrel",
+              "filled_on": "@today-12d",
+              "location": "Bar rail, center",
+              "batch": "batch-8"
+            }
+          },
+          {
+            "key": "keg-7",
+            "values": {
+              "keg_name": "Harbor Fog half, orange tag",
+              "status": "At customer",
+              "size": "Half barrel",
+              "filled_on": "@today-12d",
+              "location": "Cask & Cleaver pub",
+              "batch": "batch-8",
+              "order": "wholesale_order-1"
+            }
+          },
+          {
+            "key": "keg-8",
+            "values": {
+              "keg_name": "Orchard Gate sixth, purple tag",
+              "status": "At customer",
+              "size": "Sixth barrel",
+              "filled_on": "@today-26d",
+              "location": "Birch Street Tavern",
+              "batch": "batch-5",
+              "order": "wholesale_order-3"
+            }
+          },
+          {
+            "key": "keg-9",
+            "values": {
+              "keg_name": "Harbor Fog half, pink tag",
+              "status": "In cooler",
+              "size": "Half barrel",
+              "filled_on": "@today-12d",
+              "location": "Cooler row A",
+              "batch": "batch-8",
+              "order": "wholesale_order-2"
+            }
+          },
+          {
+            "key": "keg-10",
+            "values": {
+              "keg_name": "Midnight Ledger sixth, grey tag",
+              "status": "In cooler",
+              "size": "Sixth barrel",
+              "filled_on": "@today-14d",
+              "location": "Cooler row B",
+              "batch": "batch-4",
+              "order": "wholesale_order-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "tap",
+        "name": "Tap list",
+        "labelSingular": "Tap",
+        "labelPlural": "Tap list",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "beer",
+        "titleField": "tap_name",
+        "describes": "What is pouring on each tap, its price and when the line was cleaned.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "tap_name",
+            "label": "Tap",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pouring",
+              "Cleaning",
+              "Kicked"
+            ],
+            "choiceColors": {
+              "Pouring": "slate",
+              "Cleaning": "blue",
+              "Kicked": "amber"
+            },
+            "required": true,
+            "default": "Pouring",
+            "statusGroups": {
+              "Pouring": "todo",
+              "Cleaning": "in_progress",
+              "Kicked": "done"
+            }
+          },
+          {
+            "key": "pint_price",
+            "label": "Pint price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "key": "line_cleaned",
+            "label": "Line cleaned",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_clean",
+            "label": "Next line clean",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "keg",
+            "label": "Keg",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "keg",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Looks after",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_back_to_pouring",
+            "label": "Back to pouring",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "tap_back_to_pouring"
+            }
+          }
+        ],
+        "independentOf": {
+          "keg": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "line_cleaned",
+            "next_clean"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New tap",
+            "values": {
+              "tap_name": "New tap",
+              "status": "Pouring"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Tasting notes for staff and pairing suggestions."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "tap-1",
+            "values": {
+              "tap_name": "Bar rail, left",
+              "status": "Pouring",
+              "pint_price": 7,
+              "line_cleaned": "@today-6d",
+              "next_clean": "@today+8d",
+              "keg": "keg-1",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "tap-2",
+            "values": {
+              "tap_name": "Bar rail, center",
+              "status": "Pouring",
+              "pint_price": 7,
+              "line_cleaned": "@today-6d",
+              "next_clean": "@today+8d",
+              "keg": "keg-6",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "tap-3",
+            "values": {
+              "tap_name": "Bar rail, right",
+              "status": "Kicked",
+              "pint_price": 7,
+              "line_cleaned": "@today-13d",
+              "next_clean": "@today+1d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "tap-4",
+            "values": {
+              "tap_name": "Window tap",
+              "status": "Pouring",
+              "pint_price": 8,
+              "line_cleaned": "@today-13d",
+              "next_clean": "@today+1d",
+              "keg": "keg-3",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "tap-5",
+            "values": {
+              "tap_name": "Patio tap",
+              "status": "Cleaning",
+              "pint_price": 6.5,
+              "line_cleaned": "@today-14d",
+              "next_clean": "@today-0d",
+              "owner": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "wholesale_order",
+        "name": "Wholesale orders",
+        "labelSingular": "Wholesale order",
+        "labelPlural": "Wholesale orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "order_name",
+        "describes": "Keg orders for bars and shops, from request to delivery.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Confirmed",
+              "Delivered"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Confirmed": "green",
+              "Delivered": "blue"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "todo",
+              "Confirmed": "in_progress",
+              "Delivered": "done"
+            }
+          },
+          {
+            "key": "account",
+            "label": "Account",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "delivery_on",
+            "label": "Delivery date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "kegs_ordered",
+            "label": "Kegs ordered",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Order total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "rep",
+            "label": "Handled by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_log_delivery",
+            "label": "Log delivery",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "wholesale_order_log_delivery"
+            }
+          }
+        ],
+        "independentOf": {
+          "rep": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New wholesale order",
+            "values": {
+              "order_name": "New wholesale order",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Order notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Kegs by beer, delivery window and who signs."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "wholesale_order-1",
+            "values": {
+              "order_name": "Cask & Cleaver, weekly",
+              "status": "Delivered",
+              "account": "Cask & Cleaver pub",
+              "delivery_on": "@today-3d",
+              "kegs_ordered": 2,
+              "total": 520,
+              "rep": "tm-4"
+            }
+          },
+          {
+            "key": "wholesale_order-2",
+            "values": {
+              "order_name": "Birch Street Tavern, monthly",
+              "status": "Delivered",
+              "account": "Birch Street Tavern",
+              "delivery_on": "@today-10d",
+              "kegs_ordered": 3,
+              "total": 690,
+              "rep": "tm-4"
+            }
+          },
+          {
+            "key": "wholesale_order-3",
+            "values": {
+              "order_name": "Hollow Oak Grill, new account",
+              "status": "Confirmed",
+              "account": "Hollow Oak Grill",
+              "delivery_on": "@mon+3d",
+              "kegs_ordered": 4,
+              "total": 980,
+              "rep": "tm-4"
+            }
+          },
+          {
+            "key": "wholesale_order-4",
+            "values": {
+              "order_name": "Cask & Cleaver, next week",
+              "status": "Requested",
+              "account": "Cask & Cleaver pub",
+              "delivery_on": "@today+9d",
+              "kegs_ordered": 2,
+              "total": 520,
+              "rep": "tm-4"
+            }
+          },
+          {
+            "key": "wholesale_order-5",
+            "values": {
+              "order_name": "Riverbend Bottle Shop, cans",
+              "status": "Requested",
+              "account": "Riverbend Bottle Shop",
+              "delivery_on": "@today+14d",
+              "kegs_ordered": 0,
+              "total": 640,
+              "rep": "tm-4"
+            }
+          },
+          {
+            "key": "wholesale_order-6",
+            "values": {
+              "order_name": "Summit Ski Lodge, winter menu",
+              "status": "Confirmed",
+              "account": "Summit Ski Lodge",
+              "delivery_on": "@today+4d",
+              "kegs_ordered": 6,
+              "total": 1380,
+              "rep": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "event",
+        "name": "Taproom events",
+        "labelSingular": "Taproom event",
+        "labelPlural": "Taproom events",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "event_name",
+        "describes": "Trivia nights, live music and releases that fill the room.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "Event",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Confirmed",
+              "Held"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Confirmed": "green",
+              "Held": "blue"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Confirmed": "in_progress",
+              "Held": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Trivia",
+              "Live music",
+              "Beer release",
+              "Private party",
+              "Run club"
+            ],
+            "choiceColors": {
+              "Trivia": "slate",
+              "Live music": "green",
+              "Beer release": "blue",
+              "Private party": "amber",
+              "Run club": "violet"
+            }
+          },
+          {
+            "key": "event_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "expected",
+            "label": "Expected guests",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "actual",
+            "label": "Guests who came",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "host",
+            "label": "Host",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_close_out",
+            "label": "Close out",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "event_close_out"
+            }
+          }
+        ],
+        "independentOf": {
+          "host": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Held"
+            ],
+            "filled": [
+              "actual"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New taproom event",
+            "values": {
+              "event_name": "New taproom event",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Timing, staffing and any beer being featured."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "event-1",
+            "values": {
+              "event_name": "Tuesday trivia night",
+              "status": "Confirmed",
+              "kind": "Trivia",
+              "event_on": "@mon+1d",
+              "expected": 60,
+              "host": "tm-5"
+            }
+          },
+          {
+            "key": "event-2",
+            "values": {
+              "event_name": "Pumpkin Hollow release party",
+              "status": "Planned",
+              "kind": "Beer release",
+              "event_on": "@today+28d",
+              "expected": 120,
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "event-3",
+            "values": {
+              "event_name": "Friday acoustic duo",
+              "status": "Confirmed",
+              "kind": "Live music",
+              "event_on": "@mon+4d",
+              "expected": 90,
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "event-4",
+            "values": {
+              "event_name": "Saturday run club",
+              "status": "Confirmed",
+              "kind": "Run club",
+              "event_on": "@mon+5d",
+              "expected": 40,
+              "host": "tm-5"
+            }
+          },
+          {
+            "key": "event-5",
+            "values": {
+              "event_name": "Last Tuesday trivia",
+              "status": "Held",
+              "kind": "Trivia",
+              "event_on": "@today-6d",
+              "expected": 60,
+              "actual": 72,
+              "host": "tm-5"
+            }
+          },
+          {
+            "key": "event-6",
+            "values": {
+              "event_name": "Midnight Ledger release night",
+              "status": "Held",
+              "kind": "Beer release",
+              "event_on": "@today-21d",
+              "expected": 110,
+              "actual": 138,
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "event-7",
+            "values": {
+              "event_name": "Retirement party for a regular",
+              "status": "Planned",
+              "kind": "Private party",
+              "event_on": "@today+19d",
+              "expected": 35,
+              "host": "tm-2"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each batch belongs to one brewer.",
+        "fromTable": "batch",
+        "fromField": "brewer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "batch_by_brewer"
+      },
+      {
+        "describes": "Each keg belongs to one batch.",
+        "fromTable": "keg",
+        "fromField": "batch",
+        "toTable": "batch",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "kegs"
+      },
+      {
+        "describes": "Each keg belongs to one wholesale order.",
+        "fromTable": "keg",
+        "fromField": "order",
+        "toTable": "wholesale_order",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "kegs"
+      },
+      {
+        "describes": "Each tap belongs to one keg.",
+        "fromTable": "tap",
+        "fromField": "keg",
+        "toTable": "keg",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "taps"
+      },
+      {
+        "describes": "Each tap belongs to one looks after.",
+        "fromTable": "tap",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tap_by_owner"
+      },
+      {
+        "describes": "Each wholesale order belongs to one handled by.",
+        "fromTable": "wholesale_order",
+        "fromField": "rep",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "order_by_rep"
+      },
+      {
+        "describes": "Each taproom event belongs to one host.",
+        "fromTable": "event",
+        "fromField": "host",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "event_by_host"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Thorvald Eriksen-Mbeki",
+              "role": "Head brewer",
+              "work_email": "thorvald@kingfishercreekbrewing.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Lucinda Castellanos",
+              "role": "Taproom manager",
+              "work_email": "lucinda@kingfishercreekbrewing.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Barnaby Okoro",
+              "role": "Cellarman",
+              "work_email": "barnaby@kingfishercreekbrewing.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Odette Rasmussen-Wu",
+              "role": "Sales and distribution",
+              "work_email": "odette@kingfishercreekbrewing.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Jasper Linville",
+              "role": "Bartender lead",
+              "work_email": "jasper@kingfishercreekbrewing.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "wholesale_order_intake",
+        "name": "Order kegs",
+        "describes": "Take in a keg order from a bar or shop.",
+        "audience": "staff",
+        "table": "wholesale_order",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "What is the order?",
+            "required": true
+          },
+          {
+            "fieldKey": "account",
+            "ask": "Which account?",
+            "required": true
+          },
+          {
+            "fieldKey": "kegs_ordered",
+            "ask": "How many kegs?"
+          },
+          {
+            "fieldKey": "delivery_on",
+            "ask": "When should it arrive?"
+          }
+        ],
+        "submitLabel": "Send the order",
+        "confirmation": "Thanks. The order is saved as Requested."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "batch_package_it",
+        "table": "batch",
+        "name": "Package it",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Packaged"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "tap_back_to_pouring",
+        "table": "tap",
+        "name": "Back to pouring",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Pouring"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "wholesale_order_log_delivery",
+        "table": "wholesale_order",
+        "name": "Log delivery",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "event_close_out",
+        "table": "event",
+        "name": "Close out",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Held"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_batch",
+        "name": "All batches",
+        "table": "batch",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "batch_board",
+        "name": "Batches board",
+        "table": "batch",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "batch_cal",
+        "name": "Batches calendar",
+        "table": "batch",
+        "kind": "calendar",
+        "dateField": "ready_on",
+        "allDay": true
+      },
+      {
+        "token": "batch_over",
+        "name": "Overdue",
+        "table": "batch",
+        "kind": "grid",
+        "within": {
+          "ready_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Fermenting",
+            "Conditioning"
+          ]
+        }
+      },
+      {
+        "token": "batch_week",
+        "name": "Due this week",
+        "table": "batch",
+        "kind": "grid",
+        "within": {
+          "ready_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Fermenting",
+            "Conditioning"
+          ]
+        }
+      },
+      {
+        "token": "batch_next7",
+        "name": "Next 7 days",
+        "table": "batch",
+        "kind": "grid",
+        "within": {
+          "ready_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Fermenting",
+            "Conditioning"
+          ]
+        }
+      },
+      {
+        "token": "all_keg",
+        "name": "All kegs",
+        "table": "keg",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "keg_board",
+        "name": "Kegs board",
+        "table": "keg",
+        "kind": "kanban",
+        "groupBy": "size"
+      },
+      {
+        "token": "keg_cal",
+        "name": "Kegs calendar",
+        "table": "keg",
+        "kind": "calendar",
+        "dateField": "filled_on",
+        "allDay": true
+      },
+      {
+        "token": "all_tap",
+        "name": "All tap list",
+        "table": "tap",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "tap_board",
+        "name": "Tap list board",
+        "table": "tap",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "tap_cal",
+        "name": "Tap list calendar",
+        "table": "tap",
+        "kind": "calendar",
+        "dateField": "next_clean",
+        "allDay": true
+      },
+      {
+        "token": "tap_over",
+        "name": "Overdue",
+        "table": "tap",
+        "kind": "grid",
+        "within": {
+          "next_clean": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pouring",
+            "Cleaning",
+            "Kicked"
+          ]
+        }
+      },
+      {
+        "token": "tap_week",
+        "name": "Due this week",
+        "table": "tap",
+        "kind": "grid",
+        "within": {
+          "next_clean": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pouring",
+            "Cleaning",
+            "Kicked"
+          ]
+        }
+      },
+      {
+        "token": "tap_next7",
+        "name": "Next 7 days",
+        "table": "tap",
+        "kind": "grid",
+        "within": {
+          "next_clean": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pouring",
+            "Cleaning",
+            "Kicked"
+          ]
+        }
+      },
+      {
+        "token": "all_wholesale_order",
+        "name": "All wholesale orders",
+        "table": "wholesale_order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "wholesale_order_board",
+        "name": "Wholesale orders board",
+        "table": "wholesale_order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "wholesale_order_cal",
+        "name": "Wholesale orders calendar",
+        "table": "wholesale_order",
+        "kind": "calendar",
+        "dateField": "delivery_on",
+        "allDay": true
+      },
+      {
+        "token": "wholesale_order_over",
+        "name": "Overdue",
+        "table": "wholesale_order",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "wholesale_order_week",
+        "name": "Due this week",
+        "table": "wholesale_order",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "wholesale_order_next7",
+        "name": "Next 7 days",
+        "table": "wholesale_order",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "all_event",
+        "name": "All taproom events",
+        "table": "event",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "event_board",
+        "name": "Taproom events board",
+        "table": "event",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "event_cal",
+        "name": "Taproom events calendar",
+        "table": "event",
+        "kind": "calendar",
+        "dateField": "event_on",
+        "allDay": true
+      },
+      {
+        "token": "event_over",
+        "name": "Overdue",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "event_week",
+        "name": "Due this week",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "event_next7",
+        "name": "Next 7 days",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Brewery Taproom Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "batch",
+          "describes": "Every brew from planned to packaged, with the date it will be ready."
+        },
+        {
+          "name": "related_tables",
+          "table": "keg",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many batches are conditioning?",
+        "whyItMatters": "The head brewer plans packaging around conditioning batches.",
+        "expect": {
+          "table": "batch",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Conditioning"
+          },
+          "answer": 2,
+          "unit": "batches"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open batches.",
+        "action": {
+          "kind": "open",
+          "surface": "batch_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "batch_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open kegs.",
+        "action": {
+          "kind": "open",
+          "surface": "keg_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "keg_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open tap list.",
+        "action": {
+          "kind": "open",
+          "surface": "tap_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "tap_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "kingfishercreekbrewing.net"
+      ],
+      "fictionalStreets": [
+        "Foundry Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "brewery-taproom-desk",
+      "parent": null,
+      "title": "Brewery Taproom Desk",
+      "icon": {
+        "emoji": "🍺"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "From grain to glass: batches and when they will be ready, every keg and where it is, the tap list and line cleaning, wholesale orders and taproom events. Start on the Dashboard, check Days to ready on every batch, and clean lines on schedule."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:brew-day-log"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:keg-handling"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:line-cleaning"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:wholesale-and-distribution"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Batches"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every brew from planned to packaged, with the date it will be ready."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "batch",
+              "view": "batch_board"
+            },
+            "inline": true,
+            "title": "Batches",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "bat-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "bat-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ready_on"
+              },
+              {
+                "id": "bat-t",
+                "name": "All batches",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "bat-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ready_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Fermenting",
+                    "Conditioning"
+                  ]
+                }
+              },
+              {
+                "id": "bat-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ready_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Fermenting",
+                    "Conditioning"
+                  ]
+                }
+              },
+              {
+                "id": "bat-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ready_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Fermenting",
+                    "Conditioning"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "bat-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Kegs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every keg and where it is: cooler, tap, empty or out with a customer."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "keg",
+              "view": "keg_board"
+            },
+            "inline": true,
+            "title": "Kegs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "keg-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "size"
+              },
+              {
+                "id": "keg-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "filled_on"
+              },
+              {
+                "id": "keg-t",
+                "name": "All kegs",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "keg-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tap list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is pouring on each tap, its price and when the line was cleaned."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tap",
+              "view": "tap_board"
+            },
+            "inline": true,
+            "title": "Tap list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tap-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tap-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_clean"
+              },
+              {
+                "id": "tap-t",
+                "name": "All tap list",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tap-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_clean": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pouring",
+                    "Cleaning",
+                    "Kicked"
+                  ]
+                }
+              },
+              {
+                "id": "tap-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_clean": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pouring",
+                    "Cleaning",
+                    "Kicked"
+                  ]
+                }
+              },
+              {
+                "id": "tap-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_clean": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pouring",
+                    "Cleaning",
+                    "Kicked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "tap-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wholesale orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keg orders for bars and shops, from request to delivery."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "wholesale_order",
+              "view": "wholesale_order_board"
+            },
+            "inline": true,
+            "title": "Wholesale orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "who-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "who-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "delivery_on"
+              },
+              {
+                "id": "who-t",
+                "name": "All wholesale orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "who-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "delivery_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "who-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "delivery_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "who-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "delivery_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "who-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Taproom events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Trivia nights, live music and releases that fill the room."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "event_board"
+            },
+            "inline": true,
+            "title": "Taproom events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "eve-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "eve-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "event_on"
+              },
+              {
+                "id": "eve-t",
+                "name": "All taproom events",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "eve-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "event_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "eve-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "event_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "eve-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "eve-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "brewery-taproom-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Production, kegs and the taproom at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "batch",
+                      "view": "all_batch"
+                    },
+                    "inline": true,
+                    "title": "Batches by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Batches by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "keg",
+                      "view": "all_keg"
+                    },
+                    "inline": true,
+                    "title": "Kegs by location",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Kegs by location",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "wholesale_order",
+                      "view": "all_wholesale_order"
+                    },
+                    "inline": true,
+                    "title": "Wholesale value by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Wholesale value by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "total"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "event",
+                      "view": "all_event"
+                    },
+                    "inline": true,
+                    "title": "Events by kind",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Events by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ready in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "batch",
+              "view": "all_batch"
+            },
+            "inline": true,
+            "title": "Ready in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Ready in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "ready_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Fermenting",
+                    "Conditioning"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Line cleaning due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tap",
+              "view": "all_tap"
+            },
+            "inline": true,
+            "title": "Line cleaning due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Line cleaning due",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "next_clean": {
+                    "relative": "next_days",
+                    "n": 3
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliveries in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "wholesale_order",
+              "view": "all_wholesale_order"
+            },
+            "inline": true,
+            "title": "Deliveries in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Deliveries in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "delivery_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to ready"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ready date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan packaging two days before; negative means the batch is waiting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kegs filled"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kegs linked to the batch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with barrels to check yield"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kegs on tap"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kegs of the batch pouring now"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rotate the next keg before the last one kicks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Next line clean"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Date the line should be cleaned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Never go past two weeks between cleans"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "brew-day-log",
+      "parent": "brewery-taproom-desk",
+      "title": "Brew day log",
+      "icon": {
+        "emoji": "🧪"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write down what you did, not what you meant to do. A log is how the next batch gets better."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check yeast, hops and grain against the recipe."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sanitize the vessel and note the time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record mash temperature, time and pH."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record boil gravity, hop additions and times."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Cool, aerate and pitch; write down the temperature."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update the batch row with brewed date, vessel and ready date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log starting gravity in the batch page."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clean the kettle and fermenter the same day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "keg-handling",
+      "parent": "brewery-taproom-desk",
+      "title": "Keg handling and tracking",
+      "icon": {
+        "emoji": "🛢️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Filling"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clean and sanitize the keg; purge with carbon dioxide."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fill, label with the batch and date, and press Fill a keg on the batch."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Store in the cooler at the right temperature."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Movement"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update Where whenever a keg moves: tap, customer, back dock."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check empties weekly; chase any keg out for more than six weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Taste each batch at packaging and again a week later. Write the notes in the batch page."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "line-cleaning",
+      "parent": "brewery-taproom-desk",
+      "title": "Draft line cleaning",
+      "icon": {
+        "emoji": "🧽"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How often"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Line clean"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every two weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Faucet teardown"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Coupler scrub"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weekly"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the tap as Cleaning."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Flush with water, circulate cleaner for fifteen minutes, rinse until neutral."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Taste the first pour to confirm no off flavors."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Back to pouring, update Line cleaned and set the next clean date."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Bad lines make good beer taste bad. This is the cheapest quality control in the building."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "wholesale-and-distribution",
+      "parent": "brewery-taproom-desk",
+      "title": "Wholesale orders and deliveries",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Taking an order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm the account, the beers, kegs and delivery window."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check availability against kegs in the cooler."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load kegs against the order list and note keg numbers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Collect empties and record them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Log delivery and update the keg locations."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Call each account every month; ask what is selling and what they want next."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

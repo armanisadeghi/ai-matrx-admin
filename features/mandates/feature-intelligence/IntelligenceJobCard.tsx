@@ -238,7 +238,7 @@ export function IntelligenceJobCard({
       </div>
 
       {outputMismatch ? (
-        <OutputMismatchNotice rung={outputMismatch} expects={makesWords(row)} onPickAnother={onUseOwn} />
+        <OutputMismatchNotice rung={outputMismatch} expects={makesWords(row)} onPickAnother={onUseOwn} mandateKey={row.mandateKey} />
       ) : null}
 
       {/* ── Expanded: the split card ──────────────────────────────────────── */}
