@@ -31,7 +31,6 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-18-151633/pnpm-lock.yaml.held — LOCAL latest 2026-10-18 14:54; GITHUB latest 2026-10-18 15:29; LOCAL lacks 6 of GITHUB's 6 new lines; GITHUB lacks 10 of LOCAL's 10 new lines; recover: git show 86ddeaa8f9:'pnpm-lock.yaml' / 5201245ee3:'pnpm-lock.yaml'
 
 ## Resolution log
 - 2026-10-18 12:58 PDT — Resolved `_conflicts/2026-10-18-122044/pnpm-lock.yaml.held`: sides differed only in @ai-matrx versions (LOCAL chat 0.8.196 / records-ui 0.116.23 vs GITHUB 0.8.195 / 0.116.22); ran `pnpm sync:matrx-packages`, which supersedes both; `check:matrx-packages` green (33 at npm latest, once); owner: none needed (lockfile).
@@ -57,3 +56,4 @@ Its files stay as they are.
 - 2026-10-18 09:40 PDT — Claude 97527eb1 resolved `_conflicts/2026-10-18-091307/` battle.ts + BattleOutcome.tsx: kept LOCAL — identical feature, LOCAL adds the `reasons`→`rationales` / `why`→`rationale` rename that clears the error-render-carries-alchemy lint false positive.
 - 2026-10-18 10:5x PDT — Claude ship-all resolved `_conflicts/2026-10-18-101458-old-path-refused/` binding-tier.ts + bindings-changed.ts: kept live. Both refused files are byte-identical to what L6c already committed at features/surfaces/utils/ (31ce7eb21cc); they import host-only `@/features/agent-shortcuts/constants`, and their eight importers are host admin/bind components, so they are host code, not chat-package code. Also removed a stray empty conflict-marker block from this README.
 - 2026-10-18 13:1x PDT — Claude release-recovery lane resolved `_conflicts/2026-10-18-122044/pnpm-lock.yaml.held` by keeping the live lockfile: every difference from LOCAL (26760324d8) and GITHUB (872f7c1e21) is an @ai-matrx version where live is newer (associations 0.14.73, chat 0.8.196, coding-sessions 0.3.303, design-system 0.86.205, records-ui 0.116.23); no non-Matrx differences. Verified `check-matrx-packages.mjs` (33 at npm latest, once each), `check-lockfile-keys.py` exit 0, `pnpm install --frozen-lockfile --lockfile-only` exit 0.
+- 2026-10-18 15:5x PDT — Claude ship-all (b65610dc) resolved `_conflicts/2026-10-18-151633/pnpm-lock.yaml.held` by keeping the live lockfile: LOCAL had chat 0.8.200 / coding-sessions 0.3.309, GITHUB chat 0.8.199 / coding-sessions 0.3.308; live carries chat 0.8.200 / coding-sessions 0.3.310. Verified `check-matrx-packages.mjs` (33 at npm latest, once each), `check-lockfile-keys.py` exit 0; owner: none needed (lockfile).
