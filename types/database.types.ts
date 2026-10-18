@@ -3041,6 +3041,7 @@ export type Database = {
           agent_tags: string[] | null
           agent_type: string | null
           agent_variable_definitions: Json | null
+          agent_version_id: string | null
           auto_run: boolean | null
           created_at: string | null
           created_by: string | null
@@ -31681,6 +31682,71 @@ export type Database = {
         }
         Relationships: []
       }
+      system_context_item_org_value: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          system_context_item_id: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          system_context_item_id: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          system_context_item_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_context_item_org_value_system_context_item_id_fkey"
+            columns: ["system_context_item_id"]
+            isOneToOne: false
+            referencedRelation: "system_context_item"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       template_context_items: {
         Row: {
           created_at: string
@@ -32003,6 +32069,7 @@ export type Database = {
         Returns: string
       }
       slugify: { Args: { p: string }; Returns: string }
+      system_item_org_values: { Args: { p_org: string }; Returns: Json }
       system_item_refs_or_defaults: {
         Args: { p_refs: string[] }
         Returns: string[]
@@ -39556,6 +39623,7 @@ export type Database = {
         Returns: Json
       }
       _ctx_store_value: { Args: { p_org: string; p_row: Json }; Returns: Json }
+      _ctx_system_value_write: { Args: { p_payload: Json }; Returns: Json }
       _ctx_table_fields: {
         Args: { p_org: string; p_type: string }
         Returns: Json
