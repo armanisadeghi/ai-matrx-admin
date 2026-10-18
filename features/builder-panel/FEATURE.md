@@ -16,7 +16,7 @@ The admin window that shows everything a page has and can do. Product truth:
 | `features/builder-panel/hooks/useBuilderRecording.ts` | THE recording switch: an admin with debug mode on. Drives the request log; `useBuilderFeed` publishes only while it is true; the debug-mode reducer drops every feed when debug turns off |
 | `lib/diagnostics/loadLedger.ts` + `components/BuilderLoadTab.tsx` | **Page load** tab: every Supabase call of each page load (the one proxy in `supabaseErrorCapture.ts` records it), grouped by relation, with when it left (Before paint · Settling · Settled), repeats flagged, and the code that built the query (stack taken at `.from()`/`.rpc()`, formatted only when opened). THE LOAD LAW: only what the page shows leaves before it settles; nothing repeats |
 | `features/builder-panel/requests.ts` | One ordered request list (page + server `output.requests`), the Activity timeline, `isFlowRequest` |
-| `features/builder-panel/story.ts` | The run as a numbered story (`buildStory`): inputs as row 0, each run's steps in finish order, calls inside (searches grouped per engine with the exact queries), idle steps greyed with the definition's `ready_when`; `derivedFor` + `findInResponse` (the path in the raw response a derived value came from) |
+| `features/builder-panel/story.ts` | The run as a numbered story (`buildStory`): inputs as row 0, each run's steps in finish order, calls inside (searches grouped per engine with the exact queries), idle steps grayed with the definition's `ready_when`; `derivedFor` + `findInResponse` (the path in the raw response a derived value came from) |
 | `features/builder-panel/decisions.ts` + `components/BuilderDecisionsTab.tsx` | **Decisions** tab: per run, the stored `path_decision` step output (aidream `brand.identify.path_decision`): path, signals vs thresholds, entry checks, escalation, skipped steps with reasons (story rows), cost per run and per path. `runPathLabel` puts the path on the story's run row. Design: common-docs smart-add-brand `PATHS.md` |
 | `features/builder-panel/hooks/*` | `useRequestLog`, `useRunTruth` (re-reads while a run is going) |
 | `features/builder-panel/components/*` | Story sidebar + story detail (Sent · Received · What we took from it), Values list (group icons) + entry detail, Page calls, Activity, Workflow, Mandates, AI calls, Provision, proposal card; every value through `BuilderJson` (= `JsonInspector`) |
@@ -58,7 +58,7 @@ useEffect(() => {
 - **Sidebar = the run story.** Row 0 what the person typed; each run heads a section; each step
   and each external call inside it is a numbered row with its exact query or URL, status, time
   and cost. A step with one call is one row (Check the website · GET https://…). A step that did
-  nothing or has no record is greyed with its reason (`waits for: name confirmed`).
+  nothing or has no record is grayed with its reason (`waits for: name confirmed`).
 - **Run tab** (a story row): Sent (exact request) · Received (exact raw response) · What we took
   from it (derived entries with `fromNodes` = the step; on a call row only those its response
   holds or its engine found, each with the response path it came from). Step input/output below.

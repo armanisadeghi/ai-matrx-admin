@@ -202,7 +202,7 @@ per device, and default to "A printer we have not certified" rather than guessin
 |---|---|
 | `warn` (default) | A loud warning naming the printer, the stock and every check answered No, what it costs (misaligned labels, wasted stock), and a door to `/commerce/labels/printers`. **The print goes through.** |
 | `block` | The Print button stays live (never disabled-looking): the click is refused with a toast, and the banner says printing is blocked because the org set failed printers to *Block printing*, linking **Organization settings → Configuration** (`/organizations/[orgId]/settings/configuration`). |
-| Knob unreadable — RPC error, row not registered, unrecognised value, or no active org | A warning banner says which of those happened and what to do, and the gate falls back to the SAFE honest behaviour **warn**. Never a hand-rolled default constant. |
+| Knob unreadable — RPC error, row not registered, unrecognised value, or no active org | A warning banner says which of those happened and what to do, and the gate falls back to the SAFE honest behavior **warn**. Never a hand-rolled default constant. |
 
 While either read is in flight the notice says so and a print click is refused with "still
 checking" — never a dead control. **Calibration and PDF are never gated**: the calibration page is
@@ -328,7 +328,7 @@ On a phone, logged into an org:
   same day: stop putting live gates in the code, make them settings that show what is happening).
   Both label print flows mount `useFailedPrinterGate` + `PrinterCertificationNotice`: this org's
   certifications for the stock in hand, a per-device "Printing on" choice when any exist, and the
-  behaviour read from `commerce.printer_certification / failed_printer_behavior` (`warn` default,
+  behavior read from `commerce.printer_certification / failed_printer_behavior` (`warn` default,
   `block` opt-in) via `useScopedKnobs`. Warn = loud in-place warning naming printer, stock and the
   failed checks with the print still going through; block = an honest refusal naming the setting
   and linking Organization settings → Configuration; unreadable knob = say so on screen and fall

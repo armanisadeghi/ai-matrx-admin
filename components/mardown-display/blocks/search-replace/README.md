@@ -235,13 +235,13 @@ Event 4 — Both complete:
   data.is_complete: true
 ```
 
-### 4.4 camelCase / snake_case Normalisation
+### 4.4 camelCase / snake_case Normalization
 
-The client (`StreamAwareChatMarkdown.tsx`) normalises both forms:
+The client (`StreamAwareChatMarkdown.tsx`) normalizes both forms:
 ```typescript
 const blockId = (raw.blockId ?? raw.block_id) as string;
 ```
-Python can send either `block_id` or `blockId` — the client accepts both. Recommended: use **snake_case** on the wire (Python convention) and let the client normalise.
+Python can send either `block_id` or `blockId` — the client accepts both. Recommended: use **snake_case** on the wire (Python convention) and let the client normalize.
 
 ### 4.5 Multiple Blocks in One Message
 

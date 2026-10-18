@@ -255,7 +255,7 @@ attributable to this page in analytics.
   else the server's.
 - 2026-10-02 — **The page's work is on the page.** `BattleHeader` now draws two pieces: the route
   header (name, mode switcher, copy/export) and an in-page action bar with every action as a small
-  labelled or icon-only button (short word from `ICON_DEFAULTS`, full name as the tooltip), Blind test
+  labeled or icon-only button (short word from `ICON_DEFAULTS`, full name as the tooltip), Blind test
   and **Run** (was "Submit all" in the header behind a "…" menu). Model columns are named after their
   model, read live (`modes/model/columnTitle.ts`; only a name the person typed is kept) — the stored
   copy read "Model 3" whenever the model list had not loaded the pick; the runs table, exports and AI

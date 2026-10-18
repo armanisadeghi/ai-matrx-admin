@@ -361,7 +361,7 @@ surface means importing them too, never reimplementing the RPC call.
   a record the server had refused with `404 conversation_not_found`.
   `access_denied_context` promotes any platform admin to `level: 'admin'`
   because the `platform_admin_all` RLS policy normally lets them read the row;
-  the gate resolved that disagreement in favour of the claim and invented both
+  the gate resolved that disagreement in favor of the claim and invented both
   the fault and the retry. `deriveStatus` now takes an `AccessReadOutcome`, and
   `ok` is reachable only from a read that actually FAULTED — `useAccessGate`
   derives it through the existing `classifyDataError`, so no surface changed.

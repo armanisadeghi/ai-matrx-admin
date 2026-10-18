@@ -1,4 +1,4 @@
-/* A just-published entry: a brief primary wash that fades out. Colour only — nothing moves. */
+/* A just-published entry: a brief primary wash that fades out. Color only — nothing moves. */
 .fresh {
   animation: builder-fresh 2.5s ease-out;
 }

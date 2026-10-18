@@ -122,7 +122,7 @@
   /* Matrx Glass — atomic Tailwind utilities generated from --matrx-glass-* tokens.
      Compose at callsites:
        bg-glass / hover:bg-glass-hover / active:bg-glass-active   (tinted fill)
-       border border-glass-edge                                    (stroke colour)
+       border border-glass-edge                                    (stroke color)
        backdrop-blur-glass backdrop-saturate-glass                 (the physical glass effect)
        shadow-glass / shadow-glass-lg                              (elevation)
      Dark mode flows through automatically — the leaf --matrx-glass-* token is
@@ -163,7 +163,7 @@
    * so the same component jumped open with no animation and no error anywhere
    * else in the fleet. The keyframes are package-owned now
    * (`.matrx-accordion-content` in @ai-matrx/design-system/styles.css, which
-   * also honours prefers-reduced-motion); the fork and these two rules were
+   * also honors prefers-reduced-motion); the fork and these two rules were
    * deleted together (design-system 0.8.0, census row 19c).
    */
 
@@ -186,7 +186,7 @@
    * transition in THIS app only, because these keyframes existed nowhere
    * else in the fleet. `Collapsible` now animates itself
    * (`.matrx-collapsible-content` in @ai-matrx/design-system/styles.css,
-   * which also honours prefers-reduced-motion); these two rules, their
+   * which also honors prefers-reduced-motion); these two rules, their
    * `--animate-slide-*` theme entries, and all six class pairs were deleted
    * together (design-system 0.9.0, census row 19f).
    */
@@ -213,7 +213,7 @@
     }
   }
 
-  /* Kind loading sweep — a bar travelling left→right under a smart loader,
+  /* Kind loading sweep — a bar traveling left→right under a smart loader,
      signalling "still arriving" without a spinner. Lives here because React
      rejects a raw <style> tag inside a component. */
   @keyframes kind-loading-sweep {
@@ -810,18 +810,18 @@
     --primary: 210 80% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - the quiet NEUTRAL grey surface (stock shadcn meaning) */
+    /* Secondary - the quiet NEUTRAL gray surface (stock shadcn meaning) */
     --secondary: 240 5% 92%;
     --secondary-foreground: 240 10% 10%;
 
-    /* Brand secondary - the purple accent. Never `secondary` (that means grey). */
+    /* Brand secondary - the purple accent. Never `secondary` (that means gray). */
     --brand-secondary: 275 70% 58%;
     --brand-secondary-foreground: 0 0% 100%;
 
     /* Muted - Zinc-200 for subtle backgrounds */
     --muted: 240 5% 92%;
     --muted-foreground: 240 5% 35%;
-    /* Disabled control text: the third and last text grey (STYLE-GUIDE "Colour"; never opacity). */
+    /* Disabled control text: the third and last text gray (STYLE-GUIDE "Colour"; never opacity). */
     --disabled-foreground: 240 5% 54%;
 
     /* Accent - More visible for hover states and UI elements */
@@ -968,7 +968,7 @@
     --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - the quiet NEUTRAL grey surface (stock shadcn meaning) */
+    /* Secondary - the quiet NEUTRAL gray surface (stock shadcn meaning) */
     --secondary: 240 4% 24%;
     --secondary-foreground: 240 5% 90%;
 
@@ -1069,7 +1069,7 @@
 }
 
 /* The page base (default border and focus ring, body text, headings, form text, native picker and
-   media colour scheme, RTL sizing, THE ONE DEFAULT SCROLLBAR) is @ai-matrx/design-system/web-base.css,
+   media color scheme, RTL sizing, THE ONE DEFAULT SCROLLBAR) is @ai-matrx/design-system/web-base.css,
    imported above beside web-theme.css — one copy, shared with every package playground. */
 
 @layer components {
@@ -1984,7 +1984,7 @@
 }
 /* In a truncating cell the menu holds the cell's right end (absolute). There it
    keeps its full tap-target width so the icon sits INSIDE the cell — a 1lh-wide
-   box centred its 32px button half past the edge, where the cell's overflow
+   box centerd its 32px button half past the edge, where the cell's overflow
    clipped it (check-findings "Why broken", RC-B12 round 7). */
 [data-error-alchemy-menu][data-placement="truncated"] {
   width: auto;

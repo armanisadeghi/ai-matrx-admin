@@ -3,7 +3,7 @@
 Run:  cd /Users/armanisadeghi/code/aidream && uv run python \
         /Users/armanisadeghi/code/matrx-frontend/scripts/hr/hrb022_proof.py
 
-Same discipline as scripts/hr/hrb008_proof.py, which this is modelled on: every assertion runs
+Same discipline as scripts/hr/hrb008_proof.py, which this is modeled on: every assertion runs
 against the LIVE platform Postgres, driven as REAL `authenticated` identities (real auth.users
 rows, a real org, real hr.employee / hr.employment / authority / role rows), inside ONE
 transaction that is ROLLED BACK. Nothing is mocked, nothing is asserted that is not measured,
@@ -236,7 +236,7 @@ async def main():
         # calls `hr.arm_write()`, which overwrote its CALLER's transaction-scoped arm with a
         # statement-scoped token, so the next top-level hr.* write was refused. `hr_c3_11` fixed
         # it — a callee never degrades its caller's arm — and the assertion is now the shipped
-        # behaviour. Left in place deliberately: a proof that stops watching a closed defect is
+        # behavior. Left in place deliberately: a proof that stops watching a closed defect is
         # how the defect comes back unnoticed.
         people["alice"]["employment"] = await own(
             "insert into hr.employment (organization_id, employee_id, employer_profile_id, "

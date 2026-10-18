@@ -1342,7 +1342,7 @@ async def main():
         await as_user(people["carol"]["uid"])
         await j("select public.hr_wf_cancel($1,'no longer needed')", stale_inst)
         await as_owner()
-        rec("§1.8 queue hygiene", "🚨 cancelling the instance CLOSES its open failure rows — a queue entry never outlives the work it described",
+        rec("§1.8 queue hygiene", "🚨 canceling the instance CLOSES its open failure rows — a queue entry never outlives the work it described",
             await conn.fetchval(
                 "select count(*)=0 from hr.workflow_failure where workflow_instance_id=$1 "
                 "and state in ('open','retrying')", stale_inst),
@@ -1417,7 +1417,7 @@ async def main():
                 "from pg_constraint k join pg_class t on t.oid=k.conrelid "
                 "join pg_namespace n on n.oid=t.relnamespace "
                 "where n.nspname='hr' and t.relname='reporting_line' and k.contype='c'"))
-        # and the behavioural half: empty that table's contribution entirely, empty the authority
+        # and the behavioral half: empty that table's contribution entirely, empty the authority
         # rung, and a manager is STILL produced — which is only possible from the primary chain.
         await conn.execute(
             "update hr.approval_authority set is_active=false where organization_id=$1 "

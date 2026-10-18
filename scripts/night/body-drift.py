@@ -14,7 +14,7 @@ Each TSV row is `kind<TAB>key<TAB>sha256`, kind in {function, view, matview}, ke
       prints `MISMATCH<TAB>kind<TAB>key<TAB>differs|absent` for every object the SOURCE holds whose
       body the COPY does not hold byte-for-byte, then `COPYONLY<TAB><n>` (objects only the copy
       holds: the campaign building on its copy, reported, never counted). Exit 0 always on a
-      readable pair; exit 2 on a source too small to be a catalogue (a hollow green refused).
+      readable pair; exit 2 on a source too small to be a catalog (a hollow green refused).
   body-drift.py --self-test
       proves the rules on fixtures, RED cases first.
 

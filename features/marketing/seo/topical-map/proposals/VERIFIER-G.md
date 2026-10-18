@@ -39,7 +39,7 @@ summary. Do not read the builder's report; read the sources below and the code.
   (chrome card; tree/get/outline through TopicTree; every other action's payload shown).
 - Canvas pointer `topical_map` (`canvasSlice`, NON_PERSISTABLE, `CanvasBody` case,
   `canvas/TopicalMapCanvasBody.tsx`, `canvas/topicalMapCanvasContent.ts`, tool-result canvas reader).
-- The window: `features/window-panels/windows/marketing/TopicalMapWindow.tsx`, catalogue
+- The window: `features/window-panels/windows/marketing/TopicalMapWindow.tsx`, catalog
   `topicalMapWindow`, metadata slug `topical-map-window` (`urlSync: topical_map`, preservation),
   controller block, opener `features/overlays/definitions/topicalMapWindow.overlay.tsx`, Tools-grid tile
   (Content → Topical map), hydrator `topical_map`.

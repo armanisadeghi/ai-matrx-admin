@@ -74,16 +74,16 @@ For every item in PLAN §6 A and vision §2.1, say PRESENT / PARTIAL / MISSING w
 line: click selects; click-on-selected / Enter / F2 edit; drag-to-move (and the cycle refusal);
 hover card gated by `outline_hover_popover` with description, counts, facets, open button;
 `outline_detail` levels with the snippet clipped at `outline_description_max_chars`;
-expand-to-pages rows with `IntentDot` gated by `outline_intent_dots`, coloured by
+expand-to-pages rows with `IntentDot` gated by `outline_intent_dots`, colored by
 `pageIntentTone`; status marks; ancestor-keeping search via `setFilters`; sibling sort via
 `setSiblingSort`; expand/collapse all; the v3 menu per row via `buildTopicMenuSection` +
 `resolveContextOnOpen`; "Open topic" via `useOpenTopicPanel`; `AssistStrip`; every taste from
-`useTopicalMapKnobs`; errors through `TopicalMapFailed` verbatim; `readOnly` honoured; the Text
+`useTopicalMapKnobs`; errors through `TopicalMapFailed` verbatim; `readOnly` honored; the Text
 view with `useMapOutline` + focus picker over `useMapTopicSearch` + `overrides` + `CopyButtons`
 and the existing sentence. Add anything the vision asks that the plan forgot.
 
 ### 3. Hunt what the builder does not believe
-At least: a hard-coded taste (grep the lane's files for numbers and colour words); a count printed
+At least: a hard-coded taste (grep the lane's files for numbers and color words); a count printed
 from `?? 0`; a place a refusal is reworded or swallowed; a control that looks clickable and does
 nothing; a hover trap on touch; a scroll chain broken by a non-flex ancestor; a page-row id that
 can collide with a topic slug; anything a screen reader cannot name; light/dark tokens; iOS zoom

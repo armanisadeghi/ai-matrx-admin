@@ -17,7 +17,7 @@ re-selects the band for its size. What shapes and colors mean is a legend the us
 (`graph_encoding`…; intent view overrides fill, see 2.7). Use whatever xy-flow provides for
 zoom-dependent rendering; the failure mode above is the acceptance test."*
 Vision §2.7: the graph shows pages *"in place / leaving / arriving / to delete / missing (should
-exist, doesn't) / planned (exists on paper, not live)"* in colours.
+exist, doesn't) / planned (exists on paper, not live)"* in colors.
 Arman 2026-08-20 (content plan): *"every page a real rectangular card whose TITLE IS READABLE"*
 — wraps, never truncated.
 PLAN §6 C (`common-docs/systems/marketing/seo/topical-map/projects/topic-tree-collapse/PLAN.md`): bands by VISIBLE
@@ -61,7 +61,7 @@ the function body is `seo.map_graph` in
    the arriver's destination → `arriving`; a topic with 0 pages and >0 planned → `planned`;
    0 / 0 → `missing`.
 6. **Light/dark and Tailwind 4.** Grep the lane for `bg-opacity`, `text-opacity`,
-   `border-opacity`, `bg-white`, `text-black`, hex colours, `h-screen`. Any hit is a finding.
+   `border-opacity`, `bg-white`, `text-black`, hex colors, `h-screen`. Any hit is a finding.
 7. **The one dynamic edge.** `grep -rn "next/dynamic\|React.lazy\|import(" features/marketing/seo/topical-map` — exactly ONE `dynamic(` (GraphView.tsx) and exactly ONE static
    `@xyflow/react` import (GraphViewImpl.tsx, with the sanctioned eslint-disable line).
    `pnpm eslint features/marketing/seo/topical-map/views eslint.config.mjs` must be clean.

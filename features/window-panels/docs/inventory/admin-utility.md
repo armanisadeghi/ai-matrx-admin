@@ -117,7 +117,7 @@
 
 ## Remaining system / ephemeral overlays (lighter pass)
 
-Overlays in the catalogue / `STATIC_REGISTRY` that no domain chunk claims — acknowledged here so the inventory covers all ~120 registered ids. These are system/ephemeral plumbing (mostly `kind: "modal" | "widget"`, ephemeral, opener-driven), not feature panels:
+Overlays in the catalog / `STATIC_REGISTRY` that no domain chunk claims — acknowledged here so the inventory covers all ~120 registered ids. These are system/ephemeral plumbing (mostly `kind: "modal" | "widget"`, ephemeral, opener-driven), not feature panels:
 
 | overlayId | One-line state |
 |---|---|

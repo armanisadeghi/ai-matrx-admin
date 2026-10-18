@@ -45,7 +45,7 @@ symbols** that share a name — both untouched.
 - **`hooks/tts/useVoiceChat*.ts`** (1,106) — Arman answered the blocking question **yes, he still wants
   hands-free VAD voice chat**. Rebuild on a live engine through the ONE sanctioned auth path
   (`accessToken.ts` + `connectCartesiaTts`, brokered token). The stranded hooks are the reference for
-  behaviour — thresholds, sleep, barge-in — not code to wire up as-is. Authority:
+  behavior — thresholds, sleep, barge-in — not code to wire up as-is. Authority:
   [`voice-chat-vad-revival.md`](./voice-chat-vad-revival.md), whose `blocked-on-decision` status is now lifted.
 
 ## Orphaned by the retirement — reported, NOT deleted

@@ -445,7 +445,7 @@ class Queue:
                     signal.pthread_sigmask(signal.SIG_UNBLOCK, (*CALLER_SIGNALS, signal.SIGINT))
                 if completed is not None:
                     return self.replay(completed, stdout, stderr)
-                # Reap only children of this client; cancelled clients leave a detached
+                # Reap only children of this client; canceled clients leave a detached
                 # supervisor whose output is on disk, not attached to their terminal.
                 try:
                     while os.waitpid(-1, os.WNOHANG)[0]:

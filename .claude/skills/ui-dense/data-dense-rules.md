@@ -78,11 +78,11 @@ A list item can look compact (tight text, small icon) while the actual clickable
 
 ### Status colors
 
-Status is a token, never a palette class: `success` / `warning` / `destructive` / `info` (each with `-foreground` and `-ink`), shown as a `Badge` or a `Chip` tone. The style guide's Colour section is the rule (`../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`).
+Status is a token, never a palette class: `success` / `warning` / `destructive` / `info` (each with `-foreground` and `-ink`), shown as a `Badge` or a `Chip` tone. The style guide's Color section is the rule (`../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`).
 
 ### JSON tree / code value colors
 
-Never colour code by hand: JSON and code render through `JsonInspector` (`@/components/official-candidate/json-inspector/JsonInspector`) and the shared code blocks, which own their syntax colours in both themes.
+Never color code by hand: JSON and code render through `JsonInspector` (`@/components/official-candidate/json-inspector/JsonInspector`) and the shared code blocks, which own their syntax colors in both themes.
 
 ---
 
@@ -94,7 +94,7 @@ The #1 anti-pattern: **shrinking text to make things fit instead of using space 
 
 ### Size rules — the type scale, never a size class
 
-Text uses the six `type-*` styles from `@ai-matrx/design-system` — `type-title` (13/500), `type-body` (13), `type-secondary` (12), `type-meta` (11), and the reading pair `type-label` (11/500 grey) over `type-value` (14 black). Never `text-[10px]`, `text-[11px]`, `text-xs`, `text-sm` in new code; never a third grey (`/60`). Full table and the never-write list: the style guide (`../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`). Numeric columns use `tabular-nums`.
+Text uses the six `type-*` styles from `@ai-matrx/design-system` — `type-title` (13/500), `type-body` (13), `type-secondary` (12), `type-meta` (11), and the reading pair `type-label` (11/500 gray) over `type-value` (14 black). Never `text-[10px]`, `text-[11px]`, `text-xs`, `text-sm` in new code; never a third gray (`/60`). Full table and the never-write list: the style guide (`../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`). Numeric columns use `tabular-nums`.
 
 ---
 
@@ -245,9 +245,9 @@ A status, kind or flag is the `Badge` or `Chip` (a named tone) from `@ai-matrx/d
 ### Key-value rows
 
 Never hand-roll one — every label with its value is `PropertyRow` from `@ai-matrx/design-system/controls`
-(label grey medium 11px over value black regular 14px on one left edge, no box; help in a tooltip;
+(label gray medium 11px over value black regular 14px on one left edge, no box; help in a tooltip;
 missing → "Not provided" tag; `mono` only for code/raw data; `data` closes to a one-line summary;
-grey `meta` on the right). Guard: `pnpm check:property-rows`.
+gray `meta` on the right). Guard: `pnpm check:property-rows`.
 
 ```tsx
 import { PropertyRow } from "@ai-matrx/design-system/controls";
@@ -292,7 +292,7 @@ Follow the WAI-ARIA Tree View pattern for accessibility:
 6. **Resizable panels:** Using `pct()` for all size props? `style={{ overflow: "hidden" }}` on panels?
 7. **Overlay safety:** `onPointerDown` stopPropagation if inside a Dialog/Sheet?
 8. **Scroll areas:** Each panel has its own `<ScrollArea>`, not nested scrolls?
-9. **Status:** A `Badge`/`Chip` tone or status token — zero palette classes, zero `dark:` colour pairs?
+9. **Status:** A `Badge`/`Chip` tone or status token — zero palette classes, zero `dark:` color pairs?
 10. **Empty states:** Every panel/tab has a meaningful empty state?
 11. **Icons:** Lucide React only, `h-3.5 w-3.5` to `h-4 w-4` range?
 12. **Grid alignment:** Spacing values on the 4px grid (Tailwind default spacing scale)?

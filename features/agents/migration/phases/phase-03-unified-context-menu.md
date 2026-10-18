@@ -7,7 +7,7 @@
 
 ## Goal
 
-Replace `features/context-menu/UnifiedContextMenu.tsx` (1765 LOC) with an agent-native equivalent. The new component reads from `agent_context_menu_view` via `fetchUnifiedMenu` (Phase 1 thunk), routes executions through `useAgentLauncher`, and honours multi-scope visibility with user > org > global precedence.
+Replace `features/context-menu/UnifiedContextMenu.tsx` (1765 LOC) with an agent-native equivalent. The new component reads from `agent_context_menu_view` via `fetchUnifiedMenu` (Phase 1 thunk), routes executions through `useAgentLauncher`, and honors multi-scope visibility with user > org > global precedence.
 
 This is the single highest-leverage migration surface. Every editor in the app hangs off it — if it breaks, half the app breaks.
 

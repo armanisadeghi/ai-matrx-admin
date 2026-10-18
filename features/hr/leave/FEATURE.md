@@ -72,7 +72,7 @@ and every change ever made to a balance (§12). Manager and HR surfaces (`/hr/le
     to SPEC-LEAVE §5's "Used (taken)" wording is owed by the SQL lane.)
 13. 🚨 **No second inbox.** `/hr/tasks` is THE inbox; the workflow engine projects leave
     approval steps into it. This feature declares a flow type and never builds a queue.
-14. 🚨 **A DRAFT IS DISCARDED, NOT CANCELLED — two doors, never one control.** Cancellation
+14. 🚨 **A DRAFT IS DISCARDED, NOT CANCELED — two doors, never one control.** Cancellation
     undoes a COMMITMENT: something was filed, an approver was asked, hours may be encumbered,
     and the ledger may owe a reversal, which is why `hr_leave_request_cancel` reaches the
     workflow engine. A draft committed nothing, so `hr_leave_request_discard` soft-deletes it

@@ -116,7 +116,7 @@ INLINE_NOTE = "Values are provided directly below. Do NOT call the context tool 
 UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 # (d) PLATFORM ALLOW-LIST — the pattern of each platform block; id = row in the playbook's allow-list.
-# EXACT rows count only when the block's normalised text also appears in the Builder Model view capture;
+# EXACT rows count only when the block's normalized text also appears in the Builder Model view capture;
 # KIND rows (content varies per call by design) count when the Model view carries a block of the same
 # kind AND every value inside the block is attributed (KIND_CHECKS below).
 KIND_ROWS = ("AL-01", "AL-02", "AL-04", "AL-05", "AL-07", "AL-08")
@@ -779,7 +779,7 @@ def check_unified(door: str, unified: Any, typed: str, report: List[str]) -> Non
 
 
 def first_parity(door: str, real: Any, dry: Any, report: List[str]) -> None:
-    """The preview and the real first request, compared text unit by text unit (normalised, with counts)."""
+    """The preview and the real first request, compared text unit by text unit (normalized, with counts)."""
     def bag(body: Any) -> Counter:
         u = units(body)
         out = [norm(t) for _, t in u.system]

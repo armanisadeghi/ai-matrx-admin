@@ -18,10 +18,10 @@ with operational status and the categorized tool registry.
 ## Surface contract
 
 - One `NonEditableContextMenu` wraps the hub pane and receives the live scope at
-  trigger time. Its `content` is the complete labelled route catalogue, so
+  trigger time. Its `content` is the complete labeled route catalog, so
   Copy, AI, and export actions remain real without using the DOM fallback. The
-  hub is raw catalogue content, not an attachable entity.
-- Tool count, default schema, catalogue, and console section have Locate
+  hub is raw catalog content, not an attachable entity.
+- Tool count, default schema, catalog, and console section have Locate
   anchors. No credentials or connection material enter the scope.
 - Navigation keeps 44px targets below `lg`; desktop resumes compact admin
   density. Route changes use `useTransition` and identify the destination while
@@ -67,12 +67,12 @@ with operational status and the categorized tool registry.
   manual `useMemo` / `useCallback` regressions.
 - 2026-08-30 — Rule 2026-08-30.2 static recheck: censused all three SQL
   execution callers onto the terminal Server Action, pinned the retired
-  cancel/timeout path absent, corrected stale catalogue claims, and replaced
+  cancel/timeout path absent, corrected stale catalog claims, and replaced
   assertion-based browser/result/history parsing with runtime narrowing.
 - 2026-08-30 — Removed false client-only SQL cancellation and timeout states;
   execution now reaches its real terminal server result before the UI unlocks.
 - 2026-08-30 — Surface certification repair: canonical context menu, Locate
   anchors, contextual navigation loading, compact one-title hierarchy, and the
-  shared mobile/tablet touch floor; restored the two catalogue doors declared
-  by the surface contract and supplied resolvable catalogue content so the
+  shared mobile/tablet touch floor; restored the two catalog doors declared
+  by the surface contract and supplied resolvable catalog content so the
   menu cannot open inert.

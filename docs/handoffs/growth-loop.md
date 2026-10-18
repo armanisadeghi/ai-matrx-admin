@@ -27,7 +27,7 @@ cluster vision, verified state, and the single question ledger.
 
 ## The situation, verified live 2026-08-20
 
-The machine is healthy; **the loop is frozen.** 6 loops — **4 blocked, 1 paused, 1 cancelled, 0
+The machine is healthy; **the loop is frozen.** 6 loops — **4 blocked, 1 paused, 1 canceled, 0
 active** — and the newest `loop_event` and `loop_stage_run` update are both **2026-08-17 09:41**.
 Nothing has moved in three days. 11 of 12 stages have real rows (441 stage runs, 1,337 events);
 **`writeback` has 0 rows and has never been reached.**

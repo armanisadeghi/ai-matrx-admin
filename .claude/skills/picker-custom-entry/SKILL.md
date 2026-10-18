@@ -64,7 +64,7 @@ governed centrally, so the control genuinely cannot widen it. It must then:
 - **offer the local-override path** — "make this your own dimension" — as a
   live affordance, not a suggestion in prose.
 
-A picker that just greys out, or fails silently, has broken P23 harder than one
+A picker that just grays out, or fails silently, has broken P23 harder than one
 with no add button at all.
 
 ## Genuinely exempt — a closed set the person could not extend in principle

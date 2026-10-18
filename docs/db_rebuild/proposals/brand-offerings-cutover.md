@@ -81,7 +81,7 @@ Live-DB facts these shapes answer (verified 2026-08-25): `seo.topic` has 408 liv
 
 ## 5. Plan — additive → cutover → retire
 
-> 🚨 **`CFL-059` — steps 6, 7 and 8 below are CANCELLED as written (2026-09-17).** The repoint and
+> 🚨 **`CFL-059` — steps 6, 7 and 8 below are CANCELED as written (2026-09-17).** The repoint and
 > the retirement happen once, into `seo.map_topic`, as collapse steps 5–11. See the stamp at the
 > top of this file.
 

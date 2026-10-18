@@ -105,7 +105,7 @@ second symptom instead of deduping the incident.
   response headers in 12s (`BROWSER_READ_HEADER_DEADLINE_MS`) is aborted once,
   never retried, and captured as `name: "TimeoutError"` under the same
   transport-loss rule; bodies, POST/RPC writes, auth, storage and realtime are
-  untouched. A cancelled request is normalized
+  untouched. A canceled request is normalized
   to `name: "AbortError"` here: postgrest-js RESOLVES an aborted fetch with an
   error object (no throw), so it takes the `supabase-postgrest` resolved-error
   path — tagging it with the canonical abort name lets the one `request-aborted`
@@ -423,7 +423,7 @@ The AI action is a two-choice menu at both inspector levels:
 - Overlay id: `errorInspectorWindow` (singleton, ephemeral). Open via
   `useOpenErrorInspector` / `useToggleErrorInspector`.
 - **Minimized preview** (`ErrorInspectorTrayChip` → shared `TrayStatusChip`): the
-  minimized window shell shows a bug icon coloured by the **loudest** captured
+  minimized window shell shows a bug icon colored by the **loudest** captured
   tier (blue when clear → yellow → amber → red), the total distinct count, and a
   per-tier breakdown — live from the module store via `useCapturedErrorStats`, so
   re-renders are isolated to that leaf (zero page impact). Registered in
@@ -658,10 +658,10 @@ source, ... })` from the chokepoint. Store + UI are source-agnostic.
   entries are excluded + reported, never passed through). A `data-shape` firing
   means a write path produced a bad shape — find and fix the writer.
 - 2026-07-01 — **Aborted Supabase requests no longer show red.** postgrest-js
-  RESOLVES a cancelled request with an error object (message `"AbortError: The
+  RESOLVES a canceled request with an error object (message `"AbortError: The
 operation was aborted."`) instead of throwing, so it took the
   `supabase-postgrest` resolved-error path where the `request-aborted` rule (keyed
-  on `name: "AbortError"`) couldn't reach it — one cancelled RPC (e.g.
+  on `name: "AbortError"`) couldn't reach it — one canceled RPC (e.g.
   `get_usage_status` on `/files/all`, from `useStorageQuota`'s superseding fetch)
   surfaced as a red error. `captureResult` now normalizes that shape to
   `name: "AbortError"` and the `request-aborted` rule lists `supabase-postgrest`,
@@ -673,7 +673,7 @@ operation was aborted."`) instead of throwing, so it took the
   out of the middle into a collapsed "Downgrade rule" disclosure at the bottom
   (the Copy-for-AI payload still embeds it with instructions).
 - 2026-06-29 — **Minimized preview.** The inspector's minimized window shell now
-  shows `ErrorInspectorTrayChip` (a bug icon coloured by the loudest tier + total
+  shows `ErrorInspectorTrayChip` (a bug icon colored by the loudest tier + total
   - per-tier breakdown) instead of an empty card, built on the new reusable
     `features/window-panels/.../TrayStatusChip` primitive. Live from the module
     store; isolated re-renders. First consumer of the canonical minimized-preview

@@ -1,5 +1,5 @@
 /*
- * Board — type colours and the far-zoom card (`TileFace.tsx`).
+ * Board — type colors and the far-zoom card (`TileFace.tsx`).
  *
  * One accent per item type (`BoardItemType.accent`), as HSL channels so a card
  * can tint with alpha: `hsl(var(--board-accent-blue) / 0.12)`. Light values sit

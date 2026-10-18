@@ -66,7 +66,7 @@ the **Send the rest to my browser** action) and by
    skipped — and a 404 is a 404 in anybody's browser.
 
 3. **Absent or honest, never dead.** The tray renders NOTHING at zero — no
-   greyed "0 waiting" pill. The exception is the failure states, where silence
+   grayed "0 waiting" pill. The exception is the failure states, where silence
    IS the lie: a queue we could not read says so on the chip.
 
 ## The honest state of this half

@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-01 · **Scope:** every tracked `.tsx` in matrx-frontend (9,761 files excluding tests) plus the `@ai-matrx/design-system` package (`aidream/apps/shared/design-system`, v0.49.59) · **Companion:** [`ui-unification-plan.md`](./ui-unification-plan.md) · **Status:** research only — nothing was refactored.
 
-**How the numbers were produced.** Primitive call-site counts come from an AST census ([`scripts/ui-drift/census.cjs`](../scripts/ui-drift/census.cjs) — `node scripts/ui-drift/census.cjs . /tmp/census.json`). For each JSX element whose tag resolves to an import of a shared primitive (`@ai-matrx/design-system`, `@/components/ui/*`, the official `IconButton`), it reads every static class string in `className` (literals, template parts, every `cn()`/`clsx()` argument, conditional ones included) and classifies each token. A **placement** token (margin, `w-full`, `flex-1`, `shrink-0`, positioning, display, overflow, alignment) does not count as an override. A **visual** token (padding, gap, height, size, colour, border, radius, shadow, typography) does. Files inside `components/ui/` and `components/official/` are the definition layer and are excluded from call-site counts. The duplicate-family, guardrail and bespoke-pattern counts come from four parallel read-only investigations. They resolved imports to files, so importer counts are real importing files, not name matches. Where a number is a regex heuristic rather than an AST count, the text says so. Two load-bearing claims were verified live in a browser on the running preview, as noted inline.
+**How the numbers were produced.** Primitive call-site counts come from an AST census ([`scripts/ui-drift/census.cjs`](../scripts/ui-drift/census.cjs) — `node scripts/ui-drift/census.cjs . /tmp/census.json`). For each JSX element whose tag resolves to an import of a shared primitive (`@ai-matrx/design-system`, `@/components/ui/*`, the official `IconButton`), it reads every static class string in `className` (literals, template parts, every `cn()`/`clsx()` argument, conditional ones included) and classifies each token. A **placement** token (margin, `w-full`, `flex-1`, `shrink-0`, positioning, display, overflow, alignment) does not count as an override. A **visual** token (padding, gap, height, size, color, border, radius, shadow, typography) does. Files inside `components/ui/` and `components/official/` are the definition layer and are excluded from call-site counts. The duplicate-family, guardrail and bespoke-pattern counts come from four parallel read-only investigations. They resolved imports to files, so importer counts are real importing files, not name matches. Where a number is a regex heuristic rather than an AST count, the text says so. Two load-bearing claims were verified live in a browser on the running preview, as noted inline.
 
 ---
 
@@ -32,7 +32,7 @@
    - 10 `IconButton` implementations, three live toast stacks, and ~104 hand-rolled tab bars.
 4. **Nothing enforces anything, and the agent instructions teach the drift.**
    - ESLint is never executed (no CI step, no hook, no release step).
-   - No check anywhere inspects `className` on a primitive, arbitrary values, or colours outside one feature.
+   - No check anywhere inspects `className` on a primitive, arbitrary values, or colors outside one feature.
    - Every UI check that does exist is advisory, runs after the push, or runs nowhere.
    - The design-system skills prescribe:
      - hand-rolled badges and tab bars
@@ -43,7 +43,7 @@
 **The single highest-leverage fix:** give every control primitive **one shared size scale** — height, padding, font size, icon size and gap, all owned inside the primitive and identical across Button, Input, Select, Tabs, SegmentedControl and Badge — and add the two missing type tokens. That turns most of the 15,366 overrides from *necessary* into *deletable*, which a codemod can then remove. It must come before any ban: closing `className` without it would push agents from `<Button className>` to raw `<button>`, which is already nearly as common.
 
 **Mechanical vs discipline — honest estimate.**
-- **About 70–75% of the drift counted here can be made mechanically impossible or CI-detectable.** That covers primitive overrides, arbitrary type and colour values, icon sizing, raw elements where a primitive exists, and duplicate exports.
+- **About 70–75% of the drift counted here can be made mechanically impossible or CI-detectable.** That covers primitive overrides, arbitrary type and color values, icon sizing, raw elements where a primitive exists, and duplicate exports.
 - **The remaining 25–30% will always depend on review.**
   - Spacing *between* primitives in page layout: 211 distinct paddings and 45 gaps, most of them on plain `div`s.
   - Hand-rolled cards and panels under new names.
@@ -60,9 +60,9 @@
 | # | Source | Defines | Notes |
 |---|---|---|---|
 | T1 | `app/globals.css:58-716` `@theme inline` | 53 `--color-*`, 34 animations, **14 `--font-size-*` (inert)**, 3 font families, 4 `--radius-*` (derived from `--radius`), 3 shadows, `--breakpoint-2xl` | Tailwind entry |
-| T2 | `app/globals.css:810+` `:root` / `.dark` | Raw HSL semantic colours; `--radius: 0.5rem` (899, 1058); `--elevation-1..3`; **`--z-*` scale, 10 tokens (946-955)**; `--header-height: 2.5rem` (813); glass, scrollbar, meet and messaging vars | 143 unique |
+| T2 | `app/globals.css:810+` `:root` / `.dark` | Raw HSL semantic colors; `--radius: 0.5rem` (899, 1058); `--elevation-1..3`; **`--z-*` scale, 10 tokens (946-955)**; `--header-height: 2.5rem` (813); glass, scrollbar, meet and messaging vars | 143 unique |
 | T3 | `styles/shell.css` | 43 `--shell-*` geometry tokens, incl. **`--shell-header-h: 2.75rem`** (line 12, overridden to 2.5rem at 1887) | |
-| T4 | package `tokens.css` (imported `app/layout.tsx:20`) | The same 35 semantic colour names as T2, plus 31 package-only tokens (chart, motion, scrim, tooltip, table) | **19 dark values differ from T2**; the host wins by cascade layer |
+| T4 | package `tokens.css` (imported `app/layout.tsx:20`) | The same 35 semantic color names as T2, plus 31 package-only tokens (chart, motion, scrim, tooltip, table) | **19 dark values differ from T2**; the host wins by cascade layer |
 | T5 | package `theme.css` | 24 `--color-*` mappings | Not imported; duplicate source |
 | T6/T7 | package `styles.css`, `tap-target.css` | structural CSS, `--matrx-tap-*` | |
 | T8 | feature CSS (`messages-native.css`, `rich-editor.css`, …) | 63 feature-local vars | |
@@ -140,19 +140,19 @@
 |---|---|---|---|---|---|---|---|
 | 1 | Popover / HoverCard content | 260 | 9 | 0 | 251 | **96.5%** | spacing 249 (`p-0` 109, `p-3` 38, `p-2` 33, `p-1` 32) |
 | 2 | Textarea | 190 | 25 | 4 | 161 | **84.7%** | typography 154 (`font-mono` 103, `text-xs` 74), size 82 |
-| 3 | Badge | 2,062 | 339 | 58 | 1,632 | **79.1%** | typography 1,423, spacing 706, colour 435, size 363 |
-| 4 | Input | 1,880 | 528 | 44 | 1,294 | **68.8%** | typography 1,066, size 965, spacing 230, colour 147 |
-| 5 | Button | 8,180 | 2,624 | 463 | 5,020 | **61.4%** | size 4,060, spacing 3,014, typography 2,145, colour 1,051, radius 246 |
-| 6 | Card (+ parts) | 1,822 | 652 | 70 | 1,092 | **59.9%** | spacing 762, colour 284, typography 231, size 142 |
-| 7 | Label | 2,204 | 852 | 28 | 1,297 | **58.8%** | typography 1,223, colour 423 |
-| 8 | Table parts | 387 | 124 | 23 | 208 | 53.7% | colour 103, spacing 85, size 81, typography 78 |
+| 3 | Badge | 2,062 | 339 | 58 | 1,632 | **79.1%** | typography 1,423, spacing 706, color 435, size 363 |
+| 4 | Input | 1,880 | 528 | 44 | 1,294 | **68.8%** | typography 1,066, size 965, spacing 230, color 147 |
+| 5 | Button | 8,180 | 2,624 | 463 | 5,020 | **61.4%** | size 4,060, spacing 3,014, typography 2,145, color 1,051, radius 246 |
+| 6 | Card (+ parts) | 1,822 | 652 | 70 | 1,092 | **59.9%** | spacing 762, color 284, typography 231, size 142 |
+| 7 | Label | 2,204 | 852 | 28 | 1,297 | **58.8%** | typography 1,223, color 423 |
+| 8 | Table parts | 387 | 124 | 23 | 208 | 53.7% | color 103, spacing 85, size 81, typography 78 |
 | 9 | Sheet / Drawer content | 387 | 138 | 41 | 207 | 53.5% | spacing 118, size 101 |
-| 10 | Tabs (+ parts) | 1,330 | 411 | 222 | 687 | 51.7% | size 412, spacing 393, typography 186, colour 140, radius 83 |
+| 10 | Tabs (+ parts) | 1,330 | 411 | 222 | 687 | 51.7% | size 412, spacing 393, typography 186, color 140, radius 83 |
 | 11 | Combobox (Command) | 123 | 62 | 1 | 60 | 48.8% | size 27, spacing 22, typography 21 |
 | 12 | Tooltip content | 371 | 178 | 13 | 178 | 48.0% | typography 114 (`text-xs` 110), size 110 (`max-w-xs` 59) |
-| 13 | IconButton (official) | 100 | 41 | 0 | 46 | 46.0% | colour 37 (raw `bg-slate-500`, `bg-purple-500` fills) |
+| 13 | IconButton (official) | 100 | 41 | 0 | 46 | 46.0% | color 37 (raw `bg-slate-500`, `bg-purple-500` fills) |
 | 14 | Dialog / AlertDialog parts | 2,130 | 1,281 | 52 | 797 | 37.4% | size 439, spacing 344, typography 132 |
-| 15 | DropdownMenu parts | 1,082 | 677 | 15 | 390 | 36.0% | size 170, spacing 149, colour 89 |
+| 15 | DropdownMenu parts | 1,082 | 677 | 15 | 390 | 36.0% | size 170, spacing 149, color 89 |
 | 16 | Select parts | 3,022 | 2,071 | 22 | 914 | 30.2% | size 605, typography 597 |
 | 17 | Checkbox | 348 | 205 | 100 | 39 | 11.2% | size 31 |
 | 18 | Switch | 394 | 350 | 35 | 9 | **2.3%** | — |
@@ -191,7 +191,7 @@ The counts below are AST counts of individual class tokens across all overridden
 
 **Badge** (2,062 sites; **no `size` prop, no icon sizing, no gap**)
 - Most common tokens: `text-[10px]` ×855 · `py-0` ×264 · `px-1.5` ×237 · `text-xs` ×234 · `h-4` ×223 · `gap-1` ×192 · `px-1` ×181 · `font-normal` ×151 · `text-[9px]` ×129 · `font-mono` ×101.
-- Raw palette status colours on top of the existing `success`/`warning`/`info` variants: `dark:text-amber-400` ×49, `text-amber-700` ×39, `bg-green-50` ×21 … 154 sites in total.
+- Raw palette status colors on top of the existing `success`/`warning`/`info` variants: `dark:text-amber-400` ×49, `text-amber-700` ×39, `bg-green-50` ×21 … 154 sites in total.
 - Example: `app/(admin)/administration/preview/unified-management/places/BindingsPanel.tsx:169` — `text-[10px] tabular-nums border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 …`
 
 **Label** (2,204 sites)
@@ -247,7 +247,7 @@ There are 23,975 Lucide icon elements.
 - **Size source:** call-site `className` 22,517 (93.9%) · `size` prop 801 (3.3%; values 16, 12, 14, 18, 10, 20, 11, 15, 13, 24, 22, 28, 9 — thirteen pixel sizes) · unset 657.
 - **Size distribution:** `h-3.5` 7,184 · `h-4` 6,569 · `h-3` 5,007 · `h-5` 1,067 · `h-6` 450 · `h-2.5` 418 · `size-3.5` 411 … **40 distinct size spellings** for about six real sizes.
 - **Stroke width** is set at 186 sites with 13 distinct values (2, 2.5, 1.75, 3, 1.2, 1.5, 3.5, 2.25, 1.6, 6, 1, 2.4, plus a constant).
-- **Colour:** set at the call site on 6,624 icons.
+- **Color:** set at the call site on 6,624 icons.
 
 **Icon sizing inside a Button is not controlled by the call site at all. Verified live.**
 - The Button base carries `[&_svg]:size-4`, which has specificity (0,1,1). That beats any single class on the icon (0,1,0).
@@ -345,7 +345,7 @@ Only the dark video stage is defensibly its own.
 
 **Fixed in `@ai-matrx/meet` 0.7.76:**
 - Design-system `Select`, `Checkbox` + `Label`, `SegmentedControl`, `Button` and `Alert`.
-- A 300–400px column centred inside 1,200px.
+- A 300–400px column centerd inside 1,200px.
 - A guard test, proven red on 0.7.75.
 
 The rest of meet (polls, Q&A, in-room panels, `collab.tsx`) is still bespoke and is a plan step.
@@ -430,7 +430,7 @@ By absolute volume, features/marketing carries 2,821 arbitrary values on its own
 - size: 4,060 Button sites
 - spacing
 - typography (`text-[10px]` on Badge ×855)
-- colour (raw palette on Badge, Button, IconButton, Label)
+- color (raw palette on Badge, Button, IconButton, Label)
 - border and radius (`rounded-full` on Button ×139, `rounded-2xl` on Card)
 - shadow (`shadow-lg` on Card)
 
@@ -473,7 +473,7 @@ No primitive restricts `className` by type, and no runtime filter exists.
 - The type scale is inert.
 - The z-index token scale is unused.
 - Two header-height tokens.
-- 19 colour tokens defined twice with different dark values.
+- 19 color tokens defined twice with different dark values.
 
 **3.5 Nothing is enforced.** See §4.
 
@@ -491,18 +491,18 @@ No primitive restricts `className` by type, and no runtime filter exists.
 | `check:ui-primitives` (`scripts/check-ui-primitives.ts`) | Raw checkbox/radio/range inputs, fake checkbox, fake switch, raw `role=dialog`, direct Radix dialog imports. Exempts all of `components/ui/**`. | Release runner, after the push, advisory (exit 0) | No: **53 findings today** |
 | `check:reserved-icons` | `BrainCircuit` outside its home | Release runner, advisory | No: **failing today** on `features/workflow-runtime/components/board/WorkflowRunBoardView.tsx` |
 | `check:scroll-chain` | Broken flex scroll chains | Release runner, advisory | No: 4 findings today |
-| `check:interface-text` | Copy length and shape | **Nowhere** (honour system, "before every commit") | No: 8,952 findings |
+| `check:interface-text` | Copy length and shape | **Nowhere** (honor system, "before every commit") | No: 8,952 findings |
 | `check:theme-color-literals` | Raw hex/rgb/hsl, light-only neutrals | **Nowhere**; `DEFAULT_ROOTS = ["features/masterwork"]` | No: 13 findings in its one feature; **1,608 repo-wide**, never in scope |
 | `check:package-twins` | A local export *named* like a package export (132 design-system names) | Release runner, advisory | Partly: catches `function Button`, not `function StatusPill` built from `<button>`; `useIsMobile`, `useScrollFade` and `cn` are unregistered |
 | `check:canonical-pickers`, `check:archived-items-law` | One agent picker; archive controls | **CI** | Yes, the only UI guards in CI. Even CI is a post-push signal on a push-to-main repo. |
-| **Tap-target dev guard** (`enableTapTargetGuard()`, design-system `tap-target`) | Off-canon geometry, a wrapper adding gap or padding, `className` beyond a glyph colour, on tap buttons | In the browser, dev builds, the moment the page renders: a red box plus a console error naming the fault | **Yes — the only UI guard that reaches the author at the right moment.** It caught the decision board adding a gap on 2026-10-02. It is the model for §2.9/§2.12 of the plan. |
-| Package Vitest (field surface, one chevron, popover sizing, touch floors, no hardcoded colour in `styles.css`) | Package source only | Package publish gate | Yes, but cannot see a single consumer call site. `popover-sizing-guard.test.tsx` documents the core weakness: "cn() lets a caller's className silently win over sizing". |
+| **Tap-target dev guard** (`enableTapTargetGuard()`, design-system `tap-target`) | Off-canon geometry, a wrapper adding gap or padding, `className` beyond a glyph color, on tap buttons | In the browser, dev builds, the moment the page renders: a red box plus a console error naming the fault | **Yes — the only UI guard that reaches the author at the right moment.** It caught the decision board adding a gap on 2026-10-02. It is the model for §2.9/§2.12 of the plan. |
+| Package Vitest (field surface, one chevron, popover sizing, touch floors, no hardcoded color in `styles.css`) | Package source only | Package publish gate | Yes, but cannot see a single consumer call site. `popover-sizing-guard.test.tsx` documents the core weakness: "cn() lets a caller's className silently win over sizing". |
 
 **Guards that do not exist:**
 - `className` on a primitive
 - arbitrary values
 - off-scale type
-- raw palette colours outside one feature
+- raw palette colors outside one feature
 - hand-rolled badges, tabs or cards under new names
 - off-grid spacing
 
@@ -513,15 +513,15 @@ No primitive restricts `className` by type, and no runtime filter exists.
 - **The skills model the defect directly:**
   - `ios-mobile-first/SKILL.md:120`: `<DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">` is the worked example.
   - `ui-sharp/project-conventions.md:71-73, 216-218` ("applies to ALL UI work"): "Use `clamp()` for all typography via Tailwind arbitrary values … `text-[clamp(2rem,1.5rem+2vw,3.5rem)]`".
-  - `ui-dense/data-dense-rules.md` §6, which CLAUDE.md names as the colour authority:
+  - `ui-dense/data-dense-rules.md` §6, which CLAUDE.md names as the color authority:
     - a hand-rolled badge `<span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] … border">` (the package Badge is `rounded-md`);
     - a hand-rolled tab bar `<button className="… border-b-2 …">`;
     - raw `div` cards and empty states.
-  - `data-dense-rules.md` §1 sanctions raw emerald/blue/amber status colours, although Badge ships `success`/`warning`/`info`.
+  - `data-dense-rules.md` §1 sanctions raw emerald/blue/amber status colors, although Badge ships `success`/`warning`/`info`.
   - `page-pass/SKILL.md:383-385`: "every `DialogContent` carry `matrx-touch-targets`", an instruction to pass a class at every call site.
 - **They contradict each other.**
   - Typography: ui-dense says density "is spacing, not smaller text" and floors badges at `text-[11px]`; project-conventions says `clamp()` for all type; the package uses fixed sizes.
-  - Colour: ground-rules says never `bg-zinc-*`; data-dense-rules says palette is fine for status.
+  - Color: ground-rules says never `bg-zinc-*`; data-dense-rules says palette is fine for status.
 - **They reward divergence.**
   - ui-sharp: "Name the real product you're modeling after … you pick it".
   - ui-refine: "Name the reference".
@@ -529,7 +529,7 @@ No primitive restricts `className` by type, and no runtime filter exists.
   - ui-bakeoff: "Do NOT add … component names, 'reuse X'".
   - page-pass: "Name … the real product you matched".
   - `champions.md`: "A brief with no champion named is incomplete".
-  - "Borrow bones, never skin" protects colour and font, but density, control shape, spacing rhythm and type size are all "bones". So every page can legitimately land on a different look.
+  - "Borrow bones, never skin" protects color and font, but density, control shape, spacing rhythm and type size are all "bones". So every page can legitimately land on a different look.
 
 **Why they failed:**
 1. Nothing reads them at the moment of writing a class.

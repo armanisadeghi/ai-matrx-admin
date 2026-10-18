@@ -69,7 +69,7 @@ Keywords, and Settings page titles.
 ## Change log
 
 - 2026-10-03 — Agent-traffic marker: our agents' and scripts' traffic records no
-  first touch, and their guests are labelled and expired by aidream.
+  first touch, and their guests are labeled and expired by aidream.
 
 - 2026-09-01 — Retried browser-only acquisition transport loss without
   misreporting it as durable first-touch failure; retained loud HTTP failures.

@@ -67,7 +67,7 @@ agent builder. Do not re-add chips, bars, or strips to any run surface.
   single floating FlaskConical icon directly above the Smart Agent input in
   `AgentBuilderRightPanel.tsx`, opening the non-blocking Test cases
   `WindowPanel` (`features/window-panels/windows/agents/AgentTestCasesWindow.tsx`
-  via `features/overlays/definitions/agentTestCasesWindow.overlay.tsx`; catalogue singleton
+  via `features/overlays/definitions/agentTestCasesWindow.overlay.tsx`; catalog singleton
   `agentTestCasesWindow`, registry slug `agent-test-cases-window`, ephemeral,
   fullscreen on mobile). "Use"
   prefills the live instance through the SAME slices typing uses
@@ -94,7 +94,7 @@ agent builder. Do not re-add chips, bars, or strips to any run surface.
   print `[{"id":"","text":"","type":"thinking",…}]` where the answer belongs.
 - **Load sample data from a Library** —
   `components/samples/LoadFromLibraryDialog.tsx`, opened from the Candidates
-  header. Pick one of your media Libraries, pick the catalogued items that
+  header. Pick one of your media Libraries, pick the catalogd items that
   already have a transcript, and the MEDIA CATALOG writes the test cases: the
   dialog POSTs the server-declared per-item action `use_as_agent_test_cases`
   through `createJob` (`features/source-library/api.ts`) with

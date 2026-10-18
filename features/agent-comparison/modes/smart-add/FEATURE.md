@@ -37,7 +37,7 @@ ours** (`identity_match_1..5`, mandate `brand_intake.identity_match_decision`), 
    the holder's own; we think gets `brand_context` (the holder's three facts) + one candidate as `item`.
    Answers: the cell's `decision_answers` JSON, else `platform.judge_verdict` by conversation.
 4. **Truth, blind** — identity ours / not ours (+ relation from Jev's `relation` keys), entity business / person /
-   both, we think ours / not us / related / ask later. Saved on the bench and labelled onto Jev's answer
+   both, we think ours / not us / related / ask later. Saved on the bench and labeled onto Jev's answer
    (`is_this_us` true/false, `relation`, `entity_kind`, `verdict`).
 5. **Scoreboard per judgment** — right / wrong / can't tell / no answer, two costly misses each, typical and slow
    call, calls, cost. Jev's yes/no is P(yes) cut at 0.65 / 0.35; preferred and alias count as ours; ask later is
@@ -46,7 +46,7 @@ ours** (`identity_match_1..5`, mandate `brand_intake.identity_match_decision`), 
 
 Robustness: the capture is claimed inside the guarded metadata write (a second page never starts Jev twice);
 items Jev never started get a "Run Jev on them" action; a step whose inputs cannot be read is counted as
-"steps unreadable", never dropped silently; a mark made before Jev answers is labelled when the answer lands.
+"steps unreadable", never dropped silently; a mark made before Jev answers is labeled when the answer lands.
 Jev agents are found through the canonical scoped list (`agx_list_scoped`, tag filter), never a raw list query.
 
 Which steps run is the round's own decision: identity runs only on accounts the we-think guard left open,

@@ -4,7 +4,7 @@
 >
 > Status: STRUCTURE AGREED (2026-06-22). Row fill-in across ~120 registered panels in progress.
 >
-> Paths re-pointed 2026-10-17 to the `@ai-matrx/summon` layout. Wherever a row says opener, Controller or catalogue entry, read the overlay's definition: `features/overlays/definitions/<id>.overlay.ts(x)` (metadata, `useOpen…` alias) and `<id>.render.tsx` (what it renders). Row facts otherwise date from their own audit.
+> Paths re-pointed 2026-10-17 to the `@ai-matrx/summon` layout. Wherever a row says opener, Controller or catalog entry, read the overlay's definition: `features/overlays/definitions/<id>.overlay.ts(x)` (metadata, `useOpen…` alias) and `<id>.render.tsx` (what it renders). Row facts otherwise date from their own audit.
 
 ---
 

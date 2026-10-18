@@ -33,7 +33,7 @@ directory with `/` turned into `-`). The script keeps only top-level user turns 
 typed: tool results, injected skill bodies, slash-command output, task notifications, the
 compaction summary, cron wake-ups and the app's automatic "Continue from where you left off" are
 all dropped (the harness marks its own turns `isMeta`). One entry per message: the time, then the
-text verbatim. `--include-injected` keeps the dropped records, labelled, to audit the filter.
+text verbatim. `--include-injected` keeps the dropped records, labeled, to audit the filter.
 
 Never do this step by hand or by reading the transcript into an agent — it costs nothing as a
 script and a fortune as context, and an agent "extracting" his words will tidy them.

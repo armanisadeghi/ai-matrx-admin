@@ -69,7 +69,7 @@ let them find the value. Fix: the facet-value pill on the axis carries the SAME 
 topics that belong to it (compute `hueBar(value.slug)` in `FacetValueBody`), and the hue legend
 line says "Hue — the bar on a topic matches the bar on its {facet} value in the column on the
 left". Collisions among six tokens are stated honestly in the legend when the axis shows more
-than six values ("six colours repeat across N values; the column, not the colour, is the
+than six values ("six colors repeat across N values; the column, not the color, is the
 key"). Test: `hueBar` is deterministic (same slug → same class) and the pill and its topics
 agree.
 

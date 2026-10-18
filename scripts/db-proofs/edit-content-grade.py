@@ -5,7 +5,7 @@ GUARD for the `edit_content` share level ("Can edit content", lane SHARE-EDIT-CO
 
 Runs against the live database as admin@admin.com and test@test.com inside ONE transaction that is ALWAYS
 rolled back (nothing persists), through the real doors with the callers' JWT claims set, and asserts the
-grade's whole behaviour matrix. Exit 1 on any deviation. Run from aidream so its .env is found:
+grade's whole behavior matrix. Exit 1 on any deviation. Run from aidream so its .env is found:
   cd aidream && uv run python ../matrx-frontend/scripts/db-proofs/edit-content-grade.py
 """
 import json, sys, psycopg

@@ -68,7 +68,7 @@ report. No fixture, mock mode, seed script or env toggle is on during the walk.
 | Step | Must be true |
 |---|---|
 | F1 | Open the Factory Playground proposals map (`/marketing/370f9281-2c10-41bf-af9e-5784aaee5838/content/map/ff2010ec-f53d-4d8b-81d9-094c4ca73397`): every row carries the dotted-circle **Proposed** mark; the toolbar shows a "Proposed only 52" toggle; on All Green (0 proposed) that toggle is absent. |
-| F2 | Back on All Green with `outline_detail = counts`: a topic with pages shows a small `N` chip with a pages icon. Click it: page rows appear under the topic one level deeper, each with a coloured dot, the page URL, and its clicks. The dot colours come from `intent_colors` (in place green, leaving amber, arriving blue, delete red). Pick one page and confirm its colour against `seo.list_page_intents` for that page. |
+| F2 | Back on All Green with `outline_detail = counts`: a topic with pages shows a small `N` chip with a pages icon. Click it: page rows appear under the topic one level deeper, each with a colored dot, the page URL, and its clicks. The dot colors come from `intent_colors` (in place green, leaving amber, arriving blue, delete red). Pick one page and confirm its color against `seo.list_page_intents` for that page. |
 | F3 | Hover a page row's right edge: two doors — peek (eye) and new tab. Peek opens the page record without leaving the map; new tab opens `/marketing/pages/<id>`. |
 | F4 | Set `seo.topical_map.outline_intent_dots` to `false`: the page rows stay, the dots are gone. Set it back. |
 | F5 | If any topic has pages you cannot open (a second user with narrower site access): ONE row "N pages you cannot open" appears, never silently nothing. |

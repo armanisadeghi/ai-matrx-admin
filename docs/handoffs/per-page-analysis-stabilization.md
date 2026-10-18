@@ -17,7 +17,7 @@ repos: [matrx-frontend, aidream]
 > loader 20+ min → seconds) and per-loader timings are now instrumented (`analysis.py:2908-2927
 > _timed`), but there is **no perf regression test** and no artifact proving the stated target of a
 > 500-page site in low single-digit minutes. **Bug 4 (FE progress/failure invisibility) is still
-> open.** The check count below should read **68**, not ~63 — 42 catalogued page + 17 cross-page +
+> open.** The check count below should read **68**, not ~63 — 42 catalogd page + 17 cross-page +
 > 5 site + 4 crawlability.
 > Cluster state: [`common-docs/systems/marketing/seo/STATE.md`](/Users/armanisadeghi/code/common-docs/systems/marketing/seo/STATE.md).
 
@@ -35,7 +35,7 @@ scraper.app.matrxserver.com, live version confirmed via `GET /health`):**
 
 - `matrx_scraper/web_crawl/analysis.py` — `analyze_site_pages`, the
   deterministic `system_rules` provider. Shipped 2026-08-08 with 15 checks;
-  since extended by other agents to **~63 catalogue checks** including 7
+  since extended by other agents to **~63 catalog checks** including 7
   site-subject checks (TLS/HSTS/security-headers/robots via the STORED
   `site_probe`), GSC-evidence checks over `seo.search_performance_daily`
   (`gsc_cannibalization.py`), site-graph checks (`site_analysis.py`,
@@ -65,7 +65,7 @@ scraper.app.matrxserver.com, live version confirmed via `GET /health`):**
 - Findings table Page cell + finding detail both drill to the page workspace.
 
 **Production data (queried 2026-08-12):** 16,236 `analysis_result` rows,
-1,285 `finding` rows. Score views populate. The catalogue is 81 builtin
+1,285 `finding` rows. Score views populate. The catalog is 81 builtin
 `web.analysis_item` rows; the deterministic provider covers ~63; the AI/
 Lighthouse/GSC-provider items remain future work.
 

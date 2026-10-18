@@ -62,7 +62,7 @@ adoption:
    `window.open` (new tab)? Preserve it. A rail, sheet, side panel, or dialog
    must NEVER navigate the current tab — that costs the user the thing the
    surface is embedded in. Use `openInNewTab` for a target swap, `onOpen` for a
-   behaviour swap. *(Caught twice: `AssociationList`, `ContainerResourceSheet`.)*
+   behavior swap. *(Caught twice: `AssociationList`, `ContainerResourceSheet`.)*
 
 2. **Could the old control actually open anything?** If the old handler was
    gated on a route existing, `onOpen` must be gated the same way —
@@ -72,7 +72,7 @@ adoption:
    *(Caught in `WarRoomResourcesList`; `AssociationList` had it too.)*
 
 3. **Are you resolving by canonical TOKEN, not by a local key?** Six org
-   catalogue keys differ from their token; keying off the key silently loses
+   catalog keys differ from their token; keying off the key silently loses
    both the route and the peek for exactly those six.
 
    **The same trap from the other direction: a `kind` column written by another
@@ -138,7 +138,7 @@ adoption:
    *(Caught in `ShortcutDirectory`; the same pattern is deliberate in the
    reachability inspector.)*
 
-8. **Does the primitive's default LAYOUT destroy the content?** Not behaviour —
+8. **Does the primitive's default LAYOUT destroy the content?** Not behavior —
    *presentation*. `EntityRef` truncates its label because its home is a table
    cell; the audit markup it replaced was `break-all`, deliberately wrapping.
    Converting silently ellipsised the UUID an admin came to copy, and a
@@ -155,7 +155,7 @@ adoption:
 9. **Does the surface already have handlers that FIGHT the anchor you just
    introduced?** The conversion adds a real `<a>` where there was none, so
    ancestor handlers that were harmless around inert text can now suppress
-   native link behaviour. The one that bit: a row-level
+   native link behavior. The one that bit: a row-level
    `onMouseDown → preventDefault()` (guarding focus in a find input) fires for
    EVERY button, so it also lands on the middle-click the anchor exists to
    serve. Sweep the ancestors for `preventDefault`, `stopPropagation`,
@@ -219,7 +219,7 @@ adoption:
     ASYNCHRONOUSLY from IDB, so on first mount "nothing stored" means "not
     loaded yet"; and the sync middleware snapshots the WHOLE partialized slice
     at dispatch time and debounce-writes it to `users.user_preferences` — so
-    one early write replaces the user's models, voice, display and favourites
+    one early write replaces the user's models, voice, display and favorites
     with defaults. **The hydration guard I reached for was a no-op:**
     `_meta.loadedPreferences` is non-null from store construction, so it is a
     constant `true`. The fix is to not write at all — the legacy value is a
@@ -302,7 +302,7 @@ adoption:
     dynamic aria-controls ids" — was false, as ten minutes in `node_modules`
     showed (the closed Trigger renders only `data-state`/`data-disabled`).
 
-    **Before working around a shared component's behaviour, grep for a second
+    **Before working around a shared component's behavior, grep for a second
     copy of it.** If one exists, the unused copy is often the right one, and
     the whole workaround evaporates. *(Both halves caught in adversarial
     review; the workaround had already shipped.)*
@@ -427,7 +427,7 @@ token silently lost the peek door.
       404'd every existing bookmark and shared link to an org resource page.
 
       The two vocabularies are separable, which is why this landed safely:
-      **the catalogue `key` is a URL slug and stays; the PEEK registry key is
+      **the catalog `key` is a URL slug and stays; the PEEK registry key is
       an internal lookup and became the token.** `entry.token` is what you hand
       a peek. Blast radius was two call sites (`EntityRef`,
       `AgentResourcesManager`), both already funnelling through the one helper
@@ -449,7 +449,7 @@ token silently lost the peek door.
   native new tab) so a rail inside a workspace never replaces its container.
 - **`ContainerResourceSheet`** — inert `<span>` + hand-rolled Eye peek +
   hand-rolled new-tab `<a>` → `EntityRef`. Resolves by TOKEN.
-- **`OrgResourceEntry.token`** — the catalogue now carries the canonical entity
+- **`OrgResourceEntry.token`** — the catalog now carries the canonical entity
   token beside its legacy `key`. Six keys differ (`agent_app`→`app`,
   `sandbox`→`sandbox_instance`, `flashcard`→`flashcard_data`,
   `quiz`→`quiz_session`, `canvas`→`canvas_item`, `research`→`research_topic`);
@@ -544,18 +544,18 @@ are now deleted.**
 - [x] **`SkillConfigPicker` — DONE, and only ONE of the two sites was a
       violation.** Worth reading before assuming a listed site needs converting:
       - **The assigned-tier chip (`:598`) was a real dead end, and the worst
-        kind — a *disabled* one.** When the catalogue had no row for an assigned
+        kind — a *disabled* one.** When the catalog had no row for an assigned
         id it printed `Unknown skill 1a2b3c4d` and set `disabled`, so an id the
         user is assigned to, can see, and might need to remove-or-understand had
         no door at all. **The record was reachable the whole time:** `SkillPeek`
         queries `skill.definition` by id itself and never consults the
-        catalogue — the surface's own gate was the only thing hiding it. Now an
+        catalog — the surface's own gate was the only thing hiding it. Now an
         `EntityRef`, with `onOpen` gated on `skill` (checklist 2 — the detail
-        pane is driven off the catalogue map and would open empty), so the
+        pane is driven off the catalog map and would open empty), so the
         unknown case gets the peek and no link-styled no-op. Label text kept
-        verbatim: "unknown" is a true statement about the catalogue being
+        verbatim: "unknown" is a true statement about the catalog being
         browsed, and the peek is what resolves the real name.
-      - **The catalogue row (`:486`) was NOT converted, deliberately.** Its
+      - **The catalog row (`:486`) was NOT converted, deliberately.** Its
         whole text block is one `<button>` opening an in-place
         `SkillDetailView` — a RICHER door than anything `EntityRef` offers here
         (`skill` has no `hrefFor`, so the primitive could contribute only a
@@ -646,7 +646,7 @@ primitive-duplication defect, not merely an adoption gap):
 
 1. `features/agents/browse/columns.tsx:68` + `AgentBrowseRows.tsx:89` +
    `AgentBrowseCards.tsx:115` — `/agents/all`. Convert all three together or
-   one entity gets three behaviours.
+   one entity gets three behaviors.
 2. ~~`features/files/components/surfaces/desktop/FileTableRow.tsx`~~ **SHIPPED**
    — was a bare `<button>`, so no cmd-click/middle-click at all. Now `EntityRef`
    with `onOpen={onActivate}`: the in-app open is unchanged, the name is also a
@@ -1203,7 +1203,7 @@ Still unwritten (they need the primitive to exist first, not a doc edit):
     `loadedPreferences` is `null` until the load lands), then write only when
     `listViews[surfaceKey]` is still absent and delete the legacy key.
 - **2026-08-09** — Wave 2 in progress: AssociationList + ContainerResourceSheet
-  converted, `peekHref` fixed 6 peeks that shipped a 404 Open door, catalogue
+  converted, `peekHref` fixed 6 peeks that shipped a 404 Open door, catalog
   gained the canonical token. D138 filed (sharing registry = a 2nd route
   authority that disagrees with itself). CLAUDE.md route-group build column
   corrected for 4 groups (`(core)`/`(transitional)`/`(public)`/`(popup)` are

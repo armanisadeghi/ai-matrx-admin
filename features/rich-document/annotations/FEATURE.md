@@ -30,7 +30,7 @@ Adopters: `/markdown-studio` → Annotate (`components/markdown-studio/AnnotateV
 | `resolve.ts` | THE resolver: exact → mapped through the version diff (content-ir `mapRange`) → same range + full context → quote+prefix+suffix, uniquely best → orphaned. Never first-match. `mapAnchorThroughChanges` carries anchors through a splice save |
 | `projection.ts` | rendered text ⇄ source offsets (capture + paint). Skips every element the renderer marks `data-content-chrome` (heading `#` anchors, default callout titles, "Figure 1." prefixes, TOC, wikilink/embed/xref labels, code language labels) plus controls, hidden text, KaTeX and footnote numbers; a letter-less run matches only at the cursor. **A renderer change that adds visible text must mark it `data-content-chrome`** — `__tests__/projection-real-render.test.tsx` renders the real output |
 | `errors.ts` | every failure becomes a plain sentence (`humanError`); `EditConflictError` carries the other person's text |
-| `echo.ts` | own realtime echoes recognised by write identity (create request id, edit version, deleted id) — never a time window |
+| `echo.ts` | own realtime echoes recognized by write identity (create request id, edit version, deleted id) — never a time window |
 | `useSidecarPaint.ts` | CSS Custom Highlight API painter; unsaved/failed marks paint as a wavy underline, never as saved |
 | `service.ts` | every store call on a canonical door: `cmt_*` via the one comment seam (creates carry a client request id; until the door dedupes, a Retry first reads back whether the lost attempt landed; edits are compare-and-swap with an honest conflict); private highlight/note = `content.annotation_create` (ONE transaction: annotation document + `annotates` edge, idempotent on the draft's id, filed in the person's own org); `anchored_to` links via `associationsService`; edges into the source read directly (live-only) |
 | `useAnnotationSidecar.ts` | drafts (pending → confirmed \| failed, kept for Retry), resolution; confirmed items + realtime come from `sidecarStore.ts` |
@@ -40,7 +40,7 @@ Adopters: `/markdown-studio` → Annotate (`components/markdown-studio/AnnotateV
 | `AnnotationSidecar.tsx`, `AnnotationPanel.tsx`, `MentionComposer.tsx`, `LinkRecordSheet.tsx` | UI |
 | `documentSource.ts` | an `AnnotationSource` over `content.document` (load, version bodies, splice save with `guardedUpdate`) |
 
-## Gates and dependencies (read before changing behaviour)
+## Gates and dependencies (read before changing behavior)
 
 - `ANCHOR_WRITES_ENABLED = true` (`constants.ts`) since 2026-09-26: RC-A5 and `migrations/rcb11_comment_collaboration_doors.sql` are applied. Kept as a code constant (never an env toggle); setting it false refuses every passage write before any request with `ANCHOR_WRITES_OFF_SENTENCE`, never retryable, and a passage comment then offers "Post on the whole document".
 - Failed saves never lie: every failure is a `SidecarError` carrying `retryable` — Retry shows only when trying again can work (not for a switched-off capability or a missing permission); unrecognised errors are named by their code (`errors.ts`, `__tests__/honest-failures.test.tsx`).

@@ -143,7 +143,7 @@ async def main() -> None:  # noqa: C901
             print(f"employment      CREATED   {emp}")
 
         # asyncpg hands back UUID OBJECTS while the door hands back strings, and httpx refuses to
-        # serialise a UUID — so the create path worked and the idempotent re-run crashed. Normalise
+        # serialise a UUID — so the create path worked and the idempotent re-run crashed. Normalize
         # once, here, rather than at each of the call sites below.
         emp = str(emp)
         employee_id = str(await conn.fetchval(

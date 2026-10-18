@@ -201,7 +201,7 @@
   cursor: default;
   opacity: 0.6;
 }
-/* The busy button keeps its colour (Google): only the button waiting on something else fades. */
+/* The busy button keeps its color (Google): only the button waiting on something else fades. */
 .btn[aria-busy="true"]:disabled {
   cursor: progress;
   opacity: 1;

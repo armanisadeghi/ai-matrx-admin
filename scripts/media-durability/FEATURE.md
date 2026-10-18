@@ -45,7 +45,7 @@ anywhere in the platform. If you take nothing else from this document, take thes
 
 A test that lives in a file can be deleted by the same change that breaks the thing it
 guards — and a `create or replace` written against a stale copy silently deletes working
-behaviour with nothing going red. That is not hypothetical here: the guard trigger's
+behavior with nothing going red. That is not hypothetical here: the guard trigger's
 per-element array branch was **actually removed from production** by a migration authored
 against an older copy of the function. No error. No failing test. The only way to see it
 was to read the deployed function.
@@ -130,7 +130,7 @@ verdict in it is the expensive mistake. Every entry names the **consumer** and t
   `file_id` and re-mints, so nothing breaks for a user. Reported as open, not healed.
 - **`mismatch_open`** — a real mismatch that has not been resolved, and why.
 
-**Adding an entry is a judgement, not a way to quiet the checker.** If you cannot name
+**Adding an entry is a judgment, not a way to quiet the checker.** If you cannot name
 the consumer and say why expiry is fine for it, it is not intentional — fix the writer.
 
 ## The DB-edge guard (write time)

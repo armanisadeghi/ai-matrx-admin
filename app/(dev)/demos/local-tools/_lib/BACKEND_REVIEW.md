@@ -39,7 +39,7 @@ const res = await fetch(`${url}/tools/list`);
 const { tools } = await res.json(); // string[] of actually available tools
 ```
 
-Keep `ALL_TOOLS` and `TOOL_CATEGORIES` as a UI reference for display names and grouping, but **grey out / disable tools not in the server's list**.
+Keep `ALL_TOOLS` and `TOOL_CATEGORIES` as a UI reference for display names and grouping, but **gray out / disable tools not in the server's list**.
 
 ### 2. `pollHealth` sends auth headers unnecessarily
 

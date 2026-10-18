@@ -86,7 +86,7 @@ classification without buying a page-crawl autopsy. Everything lands `proposed`.
 
 ## Change log
 
-- `2026-10-10` — **F14 tester sweep.** Every spend is named on its control before the click (Add competitor, per-handle Add, Track, Track N: `· ≈ N points`); Find socials reads the website and is labelled `Free`. Directory columns: Status sits right after the name, the Followers total column only exists with 2+ platforms (one platform column already is the total), the name column is wider with a title. A social-first brand's autopsy modes (run, review, history, opportunities, evidence) show one `NoWebsiteState` line with a door to the list instead of repeating the directory; `all` and `competitors` are the directory. The empty state no longer carries a second Add button. `NoWebsiteState` is one line (the needs phrase rides the tooltip).
+- `2026-10-10` — **F14 tester sweep.** Every spend is named on its control before the click (Add competitor, per-handle Add, Track, Track N: `· ≈ N points`); Find socials reads the website and is labeled `Free`. Directory columns: Status sits right after the name, the Followers total column only exists with 2+ platforms (one platform column already is the total), the name column is wider with a title. A social-first brand's autopsy modes (run, review, history, opportunities, evidence) show one `NoWebsiteState` line with a door to the list instead of repeating the directory; `all` and `competitors` are the directory. The empty state no longer carries a second Add button. `NoWebsiteState` is one line (the needs phrase rides the tooltip).
 - 2026-10-09 — page-pass (L6), type list page, sharp after Linear: the brand directory has its own agent surface
   (`matrx-user/marketing-competitor-directory`, read-only; the autopsy modes resolve to `matrx-user/marketing-competitors`),
   clears the header, shows phone cards instead of a clipped table, opens the website in a new tab; the detail panel uses
@@ -128,7 +128,7 @@ classification without buying a page-crawl autopsy. Everything lands `proposed`.
   `_PLACEHOLDER`) that both the Review tab and the autopsy card render from. Also fixed a real
   swallow in the same hook: `seo.command_failed` was mapped to nothing but the stage sentence "The
   autopsy stopped", throwing away the `error.message` the failure carries — which for a local run is
-  the *useful* one, since an ambiguous place name comes back from the provider's location catalogue
+  the *useful* one, since an ambiguous place name comes back from the provider's location catalog
   naming the candidates to choose between. It now becomes the run's visible error.
 
 - 2026-08-24 — **Layout/table repair pass — MSR-16 through MSR-24** (Arman: "by far the worst… the

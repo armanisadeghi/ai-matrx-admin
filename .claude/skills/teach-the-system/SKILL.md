@@ -138,7 +138,7 @@ method genuinely needs a primitive (reverse image search, a records lookup), bui
 layer and log it as platform capability, not as the trial's achievement.
 
 The source must be freely and legally available (public domain, CC, the author's own site, a blog,
-a recent video with a transcript). Record the licence and the link in the register.
+a recent video with a transcript). Record the license and the link in the register.
 
 **Acquisition doors, not subject classes.** CORE.md §5 lists the source lane, the body-of-work
 lane, the YouTube link with time-anchored transcript, the monologue recorder, and the chat-import
@@ -196,8 +196,8 @@ layer, before blaming the subject.
 
 ## 3. The register and the bench — the single source of state and the only valid grade
 
-Create `common-docs/projects/<trial-slug>/REGISTER.md` on the first action, modelled on
-`expert-book-challenge/REGISTER.md`: rules, source + licence, walls table
+Create `common-docs/projects/<trial-slug>/REGISTER.md` on the first action, modeled on
+`expert-book-challenge/REGISTER.md`: rules, source + license, walls table
 (`| W# | Where | What happened | Class | Status/fix |`), real test cases, a UTC timeline, "where
 it stands", spend. Update it **as you go**, never at the end — a compaction or restart loses
 anything not written. Also write a memory note (`project_<slug>.md`) with the state.

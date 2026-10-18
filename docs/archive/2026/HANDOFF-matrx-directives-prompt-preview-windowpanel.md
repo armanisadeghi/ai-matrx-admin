@@ -28,7 +28,7 @@ Copy the shape of these 4 touchpoints — this is a solved, repeated recipe:
 |---|---|---|
 | Window component | `features/window-panels/windows/agents/SystemInstructionWindow.tsx` | `features/window-panels/windows/agents/PromptPreviewWindow.tsx` |
 | Opener hook | `features/overlays/openers/systemInstructionWindow.tsx` (`useOpenSystemInstructionWindow` + `...Controller`) | `features/overlays/openers/promptPreviewWindow.tsx` |
-| Catalogue metadata | entry in `features/overlays/catalogue.ts` | add `promptPreviewWindow` entry |
+| Catalog metadata | entry in `features/overlays/catalogue.ts` | add `promptPreviewWindow` entry |
 | Render wiring | block in `features/overlays/OverlayController.tsx` (explicit JSX props, **no spread**) | add `promptPreviewWindow` block |
 
 `SystemInstructionWindow` is tiny — it wraps `<SystemInstructionEditor conversationId=...>` in `<WindowPanel id title onClose width height overlayId ...>`. Do the same: wrap the preview UI in a `<WindowPanel>`.
@@ -37,7 +37,7 @@ Copy the shape of these 4 touchpoints — this is a solved, repeated recipe:
 1. **Extract the preview UI** from `PromptPreviewModal.tsx` into a reusable content component `PromptPreviewContent({ conversationId })` (the `useEffect` that calls `requestPromptPreview(store.getState(), conversationId)` + the loading/error/preview render + the copy buttons — everything currently inside `<DialogContent>`). Keep `service.ts` / `types.ts` unchanged.
 2. **`PromptPreviewWindow.tsx`** — mirror `SystemInstructionWindow.tsx`: props `{ isOpen, onClose, conversationId }`, `WINDOW_ID = "prompt-preview-window"`, `OVERLAY_ID = "promptPreviewWindow"`, render `<WindowPanel ... overlayId={OVERLAY_ID}><PromptPreviewContent conversationId={conversationId} /></WindowPanel>`. Suggested size: `width={720} height={720} minWidth={480} minHeight={420}`.
 3. **`openers/promptPreviewWindow.tsx`** — mirror `systemInstructionWindow.tsx` exactly (`useOpenPromptPreviewWindow()` dispatching `openOverlay({ overlayId: "promptPreviewWindow", data: { conversationId } })` + a `...Controller`).
-4. **Register** in `features/overlays/catalogue.ts` + `features/overlays/OverlayController.tsx` (follow the `systemInstructionWindow` entries verbatim — the overlay-system skill lists all ~10 registration sites; a window overlay uses catalogue + OverlayController + the opener, which is what SystemInstructionWindow uses).
+4. **Register** in `features/overlays/catalogue.ts` + `features/overlays/OverlayController.tsx` (follow the `systemInstructionWindow` entries verbatim — the overlay-system skill lists all ~10 registration sites; a window overlay uses catalog + OverlayController + the opener, which is what SystemInstructionWindow uses).
 5. **Rewire the trigger.** `packages/chat/src/agents/components/inputs/smart-input/RunControlsTabPanel.tsx` currently renders `<PromptPreviewModal ... open={previewOpen} .../>` with local state in the **creator tab** ("Preview full prompt" button). Replace it with the opener hook — the file already uses `useOpenChatDebugWindow` / `useOpenAgentMemoryWindow` the same way (imports at ~lines 68-69). So: `const openPreview = useOpenPromptPreviewWindow();` and the button's `onClick={() => openPreview({ conversationId })}`. Remove the `previewOpen` local state + the `<PromptPreviewModal>` mount.
 6. **Delete `PromptPreviewModal.tsx`** (the Dialog wrapper) once the window replaces it — no shims, no dead file (house rule). Keep `PromptPreviewContent`, `service.ts`, `types.ts`.
 7. `pnpm type-check` clean; then verify (below).

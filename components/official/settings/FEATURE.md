@@ -53,7 +53,7 @@ need; do not add a barrel or a page-local substitute.
   `SettingsSelect` retains its 128/176/256px width vocabulary and wraps values.
   `SettingsModelPicker` uses the canonical model picker's `settings` trigger
   variant; model and voice triggers share the design-system select styling.
-- Registry rows have one primary control and one labelled options button.
+- Registry rows have one primary control and one labeled options button.
   Source, default and confirmed reset belong in that popover, not a second
   inline footer. Curated user rows omit implementation keys and audit notes.
   Voice choice and preview share one searchable chooser with separate buttons;

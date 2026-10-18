@@ -60,7 +60,7 @@ delete / categorise / ingest, plus the per-agent `skill_config` picker.
   Triggered by `AgentSkillsButton`
   (`features/agents/components/skills-management/AgentSkillsButton.tsx`).
   It replaced the blocking `AgentSkillsModal` Dialog — **do not reintroduce a
-  modal here**; the builder must stay usable while the catalogue is open.
+  modal here**; the builder must stay usable while the catalog is open.
 
 **Services**
 
@@ -163,7 +163,7 @@ stripped the `/api` prefix — that is the bug this layout fixes.)
 2. `SkillConfigPicker` consumes the canonical `useSkills()` and
    `useSkillCategories()` hooks. Search uses `filterAndSortBySearch`;
    category selection includes descendants.
-3. Each catalogue row moves directly among `included`, `listed`,
+3. Each catalog row moves directly among `included`, `listed`,
    `forbidden`, and unassigned. A persistent review pane exposes every
    configured skill without opening a nested popover.
 4. Clicking a row's text (or a chip in the review pane) opens
@@ -266,7 +266,7 @@ Phases A–K of [`/.claude/plans/immutable-imagining-dove.md`](../../../../.clau
 - ✅ Resources panel: Supabase-direct CRUD mounted in
   `SkillDetailEditor` with drag-to-reorder and 256 KB content soft-cap.
 - ✅ Per-agent picker: the `agentSkillsWindow` floating panel is a large
-  catalogue workspace opened from the builder toolbar; weighted search, hierarchical
+  catalog workspace opened from the builder toolbar; weighted search, hierarchical
   categories, assignment filters, direct tier controls, and persistent
   review replace the per-tier popovers. Rows open a read-only
   `SkillDetailView` with the full instruction body.
@@ -302,22 +302,22 @@ Phases A–K of [`/.claude/plans/immutable-imagining-dove.md`](../../../../.clau
   non-admin) rather than staging into a form the user cannot save. Two new
   OPTIONAL props carry this: `surfaceName` and `onDraftSnapshot`. The
   super-admin console mount (`/administration/agents/skills`) passes neither
-  and is behaviourally unchanged; `onDraftSnapshot` hands the live draft up so
+  and is behaviorally unchanged; `onDraftSnapshot` hands the live draft up so
   the surface's `skill_draft_*` read twins report the staged buffer instead of
   the saved row. `skill_id`, delete, and `is_system`/`is_public` are
   deliberately NOT writable: identity, destruction, blast radius. Verified with
   a live Badass Agent run — see `features/surfaces/FEATURE.md` (2026-08-11).
 - `2026-07-25` — claude: Agent-builder skills went **non-blocking + readable**.
-  Deleted `AgentSkillsModal` (blocking Dialog/Drawer) in favour of the
+  Deleted `AgentSkillsModal` (blocking Dialog/Drawer) in favor of the
   `agentSkillsWindow` floating `WindowPanel` + `AgentSkillsButton` trigger, so
-  the builder stays usable while the catalogue is open. Added
-  `SkillDetailView` — clicking a catalogue row (or a review-pane chip) now
+  the builder stays usable while the catalog is open. Added
+  `SkillDetailView` — clicking a catalog row (or a review-pane chip) now
   opens the skill's full instruction markdown, metadata, allowed tools, and
   trigger patterns; previously there was **no way at all** to see what a skill
   actually contained from the builder. Tier metadata extracted to
   `skill-tiers.ts` so picker and detail share one definition.
 - `2026-07-24` — codex: Rebuilt the agent-builder skill picker as a
-  near-viewport catalogue workspace with weighted search, hierarchical
+  near-viewport catalog workspace with weighted search, hierarchical
   category filters, direct tier assignment, persistent configuration
   review, and a bounded mobile drawer; removed the 50-result nested
   popovers that could escape the modal.

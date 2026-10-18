@@ -6,7 +6,7 @@ Related: `decisions.md` (principles + roadmap), `phase-0-theme-capabilities.md` 
 
 **Changes folded in from Phase 0 (2026-04-20):**
 
-- **G-1** `PrePaintDescriptor` gains optional `systemFallback` ({ mediaQuery, applyWhenMatches, whenMatchesValue? }) on both `classToggle` and `attribute` variants. Honours OS dark/light preference on first visit when no stored value exists. Arman explicitly endorsed this as a best-practice improvement.
+- **G-1** `PrePaintDescriptor` gains optional `systemFallback` ({ mediaQuery, applyWhenMatches, whenMatchesValue? }) on both `classToggle` and `attribute` variants. Honors OS dark/light preference on first visit when no stored value exists. Arman explicitly endorsed this as a best-practice improvement.
 - **G-2** `PolicyConfig.prePaint` accepts `PrePaintDescriptor | readonly PrePaintDescriptor[]`. Theme policy ships both a `classToggle` for `.dark` AND an `attribute` for `data-theme` — the latter is required by 9 CSS selectors in `components/rich-text-editor/remirror-editor.css` (grep-verified).
 - **G-3** Empty-storage semantics for `classToggle` are now explicit: with `systemFallback`, decide via MQ; without, remove the class. `attribute` variant uses `systemFallback` if present, else `default`. Full evaluation order documented in §5.4.
 - **Manifest #24** `styles/themes/ThemeProvider.tsx` is added to the Phase 1 deletion list in `decisions.md` §8.
@@ -234,7 +234,7 @@ Empty-storage evaluation order (G-3, spelled out to remove ambiguity):
 
 The generator must be idempotent: re-running the script after paint must not mutate the DOM differently than the first run.
 
-For theme, the policy declares an **array** of two descriptors — `classToggle` for the `.dark` class AND `attribute` for `data-theme`, because 9 CSS selectors in `components/rich-text-editor/remirror-editor.css` key off `[data-theme="dark"]` (verified via grep on 2026-04-20). Both descriptors share the same `systemFallback` so OS dark-mode is honoured on first visit.
+For theme, the policy declares an **array** of two descriptors — `classToggle` for the `.dark` class AND `attribute` for `data-theme`, because 9 CSS selectors in `components/rich-text-editor/remirror-editor.css` key off `[data-theme="dark"]` (verified via grep on 2026-04-20). Both descriptors share the same `systemFallback` so OS dark-mode is honored on first visit.
 
 ```ts
 prePaint: [

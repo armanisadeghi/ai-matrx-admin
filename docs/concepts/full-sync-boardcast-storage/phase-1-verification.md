@@ -122,7 +122,7 @@ Projected Phase 1 total after 1.D: **engine +200, deletions ~−700, net ≈ −
 - Sync engine core: policies (`volatile`, `ui-broadcast`, `boot-critical`), channel, middleware, boot, identity, pre-paint script, registry, zod+cheap validation path, logger.
 - 7 Jest suites / 46 tests under jsdom.
 - `themePolicy` registered; `themeSlice` handles `REHYDRATE_ACTION_TYPE`.
-- `<SyncBootScript />` in `<head>` — pre-paint class + attribute application, honours `prefers-color-scheme` as system fallback.
+- `<SyncBootScript />` in `<head>` — pre-paint class + attribute application, honors `prefers-color-scheme` as system fallback.
 - `bootSync` originally ran inside `StoreProvider`'s `useRef` initializer. The
   2026-08-15 correction above moved it to `SyncBootstrap` after hydration; the
   original "no hydration race" conclusion was disproven by persisted

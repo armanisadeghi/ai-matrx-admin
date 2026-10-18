@@ -116,7 +116,7 @@ Live users: [`run-headless-agent-json.ts`](../redux/execution-system/thunks/run-
 | **Runtime** — [`launch-agent-execution.thunk.ts`](../redux/execution-system/thunks/launch-agent-execution.thunk.ts) Step 5 | Headless + `autoRun: false` without `callerExecutes` → runs anyway, `console.error` naming the fix. |
 | **Runtime** — `resolveInterfaceOnlyFlag` in [`run-ui-utils.ts`](../utils/run-ui-utils.ts) | The same refusal for every OTHER interface-only flag (below): headless + `true` → treated as `false`, `console.error` naming the flag and the source. |
 | **Authoring** — `pnpm check:headless-ui-flags` | Flags the literal config wherever it is written, for `autoRun` and the three siblings. In `check:release-gates`, blocking in both modes. |
-| **Behavioural** — `autorun-is-a-ui-control.test.ts` | Pins all eight cases through the real thunk, including "interactive + `autoRun:false` still OPENS the component" and "interactive + `showPreExecutionGate` still HOLDS the send". |
+| **Behavioral** — `autorun-is-a-ui-control.test.ts` | Pins all eight cases through the real thunk, including "interactive + `autoRun:false` still OPENS the component" and "interactive + `showPreExecutionGate` still HOLDS the send". |
 
 ## The flag was never special — its siblings get the same treatment
 
@@ -127,7 +127,7 @@ definition, and can be set the identical meaningless way on a mode that paints
 nothing — `INTERFACE_ONLY_LAUNCH_FLAGS` in
 [`run-ui-utils.ts`](../utils/run-ui-utils.ts):
 
-| Flag on a headless mode | What honouring it would do |
+| Flag on a headless mode | What honoring it would do |
 |---|---|
 | `showPreExecutionGate: true` | **Repeats the defect, not just the nonsense** — the launch returns early behind a gate overlay nobody can ever press, so the run is deleted rather than deferred. |
 | `showVariablePanel: true` | Paints a panel on a surface that paints nothing. |

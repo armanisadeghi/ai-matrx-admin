@@ -9,7 +9,7 @@
 How an organization wants each kind of AI-proposed change handled — the
 concrete screen for the "oversight as settings" decision (dynamic-agent-graph
 design v2, Part 0.10). Every change the self-improvement machinery (Hindsight,
-Internal Affairs, attribution, …) can make is a ROW in a catalogue; the org
+Internal Affairs, attribution, …) can make is a ROW in a catalog; the org
 picks a handling mode per row (or per risk tier); one SQL function —
 `platform.resolve_change_handling(change_type_key, organization_id)` — is the
 enforcement point every apply path consults. **The page is just that
@@ -20,13 +20,13 @@ function's editor.**
 | Piece | Where | Owns |
 |---|---|---|
 | `catalogue.ts` | this dir | **THE SOURCE OF TRUTH.** 41 rows transcribed from design v2 Part 0.10 + consumer-registered rows (row 42 `outreach.attribution_credit`). Keys are the platform contract — never rename a shipped key. Tier metadata incl. D-13 timeout-expiry defaults. |
-| `generate-seed.ts` | this dir | Emits the idempotent seed for `platform.change_type_default` FROM the catalogue (`pnpm tsx features/change-policy/generate-seed.ts`); `--check` diffs catalogue vs live DB and exits 1 on drift. Apply the seed via the Supabase MCP in the same session you edit the catalogue. |
+| `generate-seed.ts` | this dir | Emits the idempotent seed for `platform.change_type_default` FROM the catalog (`pnpm tsx features/change-policy/generate-seed.ts`); `--check` diffs catalog vs live DB and exits 1 on drift. Apply the seed via the Supabase MCP in the same session you edit the catalog. |
 | `service.ts` | this dir | Reads (direct Supabase, RLS) + the ONE write path `platform.set_org_change_policy` + `resolve_change_handling` + admin divergence RPC. All via `.schema("platform")`. |
 | `components/ChangePolicySurface.tsx` | this dir | The org surface: tier presets first (D-16), advanced-overrides drawer (diverged-only by default), per-row timeout controls, floored row 38, non-admin request card. |
 | `components/AdminChangePolicyView.tsx` | this dir | Admin twin: read view of platform defaults + per-org divergence, each org a door. |
 | Org page | `app/(core)/organizations/[orgId]/settings/change-policy/page.tsx` | Any member can view + request; owners/admins edit. Summary SectionCard + nav entry in `OrgManage.tsx` (`id="change-policy"`). |
 | Admin page | `app/(admin)/administration/users/change-policy/page.tsx` | Registered in `admin-categories.ts` + `admin-navigation.ts` (Users → Accounts & Access). |
-| DB | `migrations/change_type_policy_c18.sql` + `change_type_default_seed_c18.sql` | `platform.change_type_default` (mirror of the catalogue) · `platform.org_change_policy` (org overrides; RLS member-read, NO authenticated write — the RPC is the only write path) · resolver · write RPC · divergence RPC. Applied live 2026-08-16, ledgered. |
+| DB | `migrations/change_type_policy_c18.sql` + `change_type_default_seed_c18.sql` | `platform.change_type_default` (mirror of the catalog) · `platform.org_change_policy` (org overrides; RLS member-read, NO authenticated write — the RPC is the only write path) · resolver · write RPC · divergence RPC. Applied live 2026-08-16, ledgered. |
 | aidream consumer | `aidream/aidream/services/change_policy.py` | Thin `matrx_orm.call_function` shim; consulted by `services/hindsight/apply.py` (apply + revert) and `services/outcome_attribution/disposition.py`. |
 
 ## Resolver semantics (as implemented, live-verified)
@@ -37,8 +37,8 @@ function's editor.**
    key is ignored (proven live). Any future `floor_human_only` row gets the
    same treatment as defense in depth.
 2. **Org override beats platform default**; absent org row falls through to
-   `platform.change_type_default` (seeded from the catalogue).
-3. **Unknown key RAISES** (`P0002`, names the catalogue) — never a silent
+   `platform.change_type_default` (seeded from the catalog).
+3. **Unknown key RAISES** (`P0002`, names the catalog) — never a silent
    permissive default (loud-recovery law).
 4. Timeout fields are only populated when the resolved mode is
    `review_with_timeout`; org rows may leave them null and inherit the
@@ -63,7 +63,7 @@ function's editor.**
 ## Doctrine
 
 - **The row list is CODE; org choices are DATA.** New change type → add a
-  catalogue row, run the generator, apply the seed via MCP, done. Never
+  catalog row, run the generator, apply the seed via MCP, done. Never
   hand-insert into `change_type_default`.
 - **Never a second resolver.** Anything deciding "may this change proceed?"
   calls `platform.resolve_change_handling` (SQL) or
@@ -96,5 +96,5 @@ function's editor.**
 - 2026-08-16 — Bounded the seed generator's dynamic `.env.local` filesystem
   root for Turbopack so importing the utility cannot trace the whole repository
   into a server bundle.
-- 2026-08-16 — Built end-to-end (C-18): catalogue, DB (tables/RPCs/resolver,
+- 2026-08-16 — Built end-to-end (C-18): catalog, DB (tables/RPCs/resolver,
   live + ledgered), org surface, admin twin, aidream consult wiring.

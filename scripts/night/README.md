@@ -45,7 +45,7 @@
 > ✅ **SUPERSEDED the same day (2026-09-22, lane BRANCH-REFRESH-2). They took the schema from the
 > clone, and they are back.** `branch-refresh.sh` no longer has a production code path — in any
 > mode, under any variable. Its only source is `night_assert_target clone`, so **Arman's "no
-> production reads tonight" ruling is honoured by construction, not by promise**: there is nothing
+> production reads tonight" ruling is honored by construction, not by promise**: there is nothing
 > to set, no flag to pass and no env var to export that would make this job read production. A
 > production connection string handed to it is refused before the schema list is read, in live mode
 > *and* in rehearsal mode, naming what the server actually is. Everything else is unchanged — the
@@ -368,7 +368,7 @@
 >
 > The census made every policy migration window-class. POLICY-LOCK's midday allowance survives it
 > **as an exemption the runner PROVES, never a switch a file asserts.** A file may declare
-> `-- policy-ddl: one-table`; at `--target production` outside the window the runner honours it
+> `-- policy-ddl: one-table`; at `--target production` outside the window the runner honors it
 > only when it can prove both halves itself: **(a)** every policy statement names the SAME ONE
 > table and the file is policy-only, and **(b)** a `pnpm db:rehearse <file> --target clone`
 > (`--measure-only` for the measure pass alone) recorded **first-policy-DDL → end of transaction

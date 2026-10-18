@@ -4,11 +4,11 @@
  * tokens so they read correctly in BOTH light and dark. Scoped to this drawing
  * by the `.topical-map-graph` class on the ReactFlow root — the same pattern as
  * `features/agents/orchestras/components/orchestra-builder-canvas.css`, which
- * this file is modelled on. Higher specificity than React Flow's single-class
+ * this file is modeled on. Higher specificity than React Flow's single-class
  * defaults, and imported after its stylesheet.
  *
  * Without this the controls are React Flow's own white-on-white buttons and the
- * minimap a hard-coded grey: invisible in dark mode, which is a state that is
+ * minimap a hard-coded gray: invisible in dark mode, which is a state that is
  * there and cannot be seen. */
 
 .topical-map-graph .react-flow__controls {

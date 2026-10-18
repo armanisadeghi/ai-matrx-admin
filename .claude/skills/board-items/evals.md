@@ -144,7 +144,7 @@ Notes on the verdicts:
 - C2 (all): the body read/write is in the task, citing the skill's own document-body example and red flag.
   green2-1: `document_body_text` + `document_body` target + `document_append_text` / `document_insert_text` tools.
   green2-2: `document_body_markdown` + `document_body` / `document_body_append` targets; its release ordering
-  lets steps 1-2 ship labelled incomplete but "never presented as done until step 3 lands" (same standard
+  lets steps 1-2 ship labeled incomplete but "never presented as done until step 3 lands" (same standard
   that passed green-1 in round 1). green2-3: `document_body_text` + `document_body` {replace|append}. All
   write through Univer commands, never a snapshot behind the live editor, and re-sync `ui.ui_surface`.
 - C3 (all): one record-scoped host extracted from the page and used by page and tile. green2-3 uses `Host`
@@ -174,7 +174,7 @@ failures are closed: no rep deferred the body gap (C2) and no rep created the re
   library page's own list … No standalone picker exists, so `RecordList` over the canonical read follows the
   pattern the other record items use."
 - green2-2 (partial ship): "Steps 1-2 alone are a correct-but-incomplete item … It may go out in the next
-  release only if it is labelled that way in the Board FEATURE.md."
+  release only if it is labeled that way in the Board FEATURE.md."
 - green2-1 (scope): "Import (.docx/.md/.txt) stays on the library page for now." (a library action, not a
   per-record control, so not a C1 gap)
 - green2-3 (time): "Realistically this is more than a 20-minute job … the skill makes both of them part of the item."

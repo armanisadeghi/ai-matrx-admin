@@ -115,7 +115,7 @@ The original brief, in full (all eight still stand):
   (`OPTIONS /files/upload/tus` → 204 advertising creation/termination/creation-with-upload).
 - Video joined the central Media controller — sessions, one-live-playback lock, panel chrome
   (`27baab955`, 2026-07-26).
-- D81 analyser duplication is 3/5 done and tracked in `FOUND_DEFECTS.md` (level-meter core
+- D81 analyzer duplication is 3/5 done and tracked in `FOUND_DEFECTS.md` (level-meter core
   extracted to `features/audio/streamLevelMeter.ts`). Two inline copies remain:
   `features/audio/hooks/useSimpleRecorder.ts:188`, `hooks/flashcard-app/useAudioRecorder.ts:148`.
   Fold them while doing item 3 — do not re-plan this here.

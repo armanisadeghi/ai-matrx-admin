@@ -81,7 +81,7 @@ watched memory across the whole machine, so nothing slowed new work as memory ra
 
 ### Tests (forcing, deterministic clock, fail before and pass after)
 
-- `pnpm jest utils/supabase/walkCap.test.ts`: 55 pass. The 18 new tests cover the memory judgement,
+- `pnpm jest utils/supabase/walkCap.test.ts`: 55 pass. The 18 new tests cover the memory judgment,
   burst admission, never growing when memory is tight, shed order, base hosts never shed, the knob
   reader, a hold whose owner is gone, and the refusal page and log. Against the old `walkCap.ts`,
   15 fail.

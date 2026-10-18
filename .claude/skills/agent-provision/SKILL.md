@@ -364,7 +364,7 @@ and it will be reported to the user as their fault.
 🚨 **Never design a test you know you will pass.** A test built from data you hand-picked to
 suit the agent proves nothing and manufactures false confidence. **Real data is what wins** —
 and when two designs are both plausible, build both and let real data pick, rather than
-reasoning your way to a favourite.
+reasoning your way to a favorite.
 
 **Report what you measured, not what you concluded.** "1 of 295 pages visible; 4 of 4 proposed
 links do not exist" is a result. "Verified — output looks good" is not a claim anyone should

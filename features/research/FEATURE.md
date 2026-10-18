@@ -198,8 +198,8 @@ via `<Cost>`/`useCostDisplay` (`components/cost/`, points for everyone); never `
   as variables) through `launchMandate` into the flexible agent panel; listed as the "Agents" place in
   `components/intelligence/places.ts`. The old `GoogleBackgroundAgentCard` (direct Google call, model
   picked in the browser) was removed the same day, once Arman approved it — see the entry above.
-- 2026-09-20 — New derived resource kind `page.entities` (what every analysed, kept page NAMED —
-  products/services, organisations, places — with its URL), fed by a parallel `rs_source.page_analysis`
+- 2026-09-20 — New derived resource kind `page.entities` (what every analyzed, kept page NAMED —
+  products/services, organizations, places — with its URL), fed by a parallel `rs_source.page_analysis`
   read beside the manifest like the experts; the topical-map output card now names the bundle it reads
   (`research-topical-map`). Its server-side twin is aidream `research/context_bundles.py` — the
   resolver's selector/order/limit/budget/trim semantics now exist on both sides; change one, change the

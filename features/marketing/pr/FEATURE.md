@@ -24,7 +24,7 @@ provider-access campaign, not a code gap).
 
 **2. Not visually verified.** No dev server was run in this build (a hard constraint), so
 everything here is code + type-check + jest only. The sort control at narrow widths, the rationale
-block's length in an open row, and the KPI grid's border behaviour at 2 columns are unproven.
+block's length in an open row, and the KPI grid's border behavior at 2 columns are unproven.
 
 **3. Nothing outstanding here.** The three items this slot held — the eagerly-bundled fixture
 file, `ScoreComb`'s keyboard-unreachable breakdown, and the CRM add that landed on a bare index —
@@ -52,13 +52,13 @@ reports `isLoading`, which is what it is; a failed chunk screams rather than rea
 sample). **The five-score breakdown is keyboard-reachable** — `ScoreComb` is now phrasing-only,
 decorative content inside the row button (`aria-hidden` visuals, one `sr-only` readiness sentence,
 `title` for hover), and `ScoreBreakdown` in the expanded row is THE accessible source of the five
-labelled, weighted axes, opened by the same Enter that opens the row; the invalid
+labeled, weighted axes, opened by the same Enter that opens the row; the invalid
 `<div role="img">` tooltip trigger nested in a `<button>` is gone. **"not in CRM — add" prefills**
 — it opens `crmCreatePartyHref({kind:"person", name})` → `/crm?create=person&name=<name>`, which
 `CrmListPage` consumes once (then strips, so a reload does not re-open it) to open the canonical
 `crmCreatePartyWindow` with the name already in the form; the builder is `features/crm/routes.ts`
 and the prefill rides `PartyCreateForm`'s new `initialName`, so every surface naming a person the
-CRM should hold gets the same door rather than a second create flow. The analyse trigger exists —
+CRM should hold gets the same door rather than a second create flow. The analyze trigger exists —
 "Find my stories" on the sample banner and "Find stories" in the header call
 `POST /seo/sites/{site_id}/press/angles/generate` through `api.ts` as a DURABLE STREAMED
 command (canonical `callApi` with `stream: true`, the `useFindingFixer` shape): the analyst pass
@@ -119,7 +119,7 @@ loading/error states (`LoadingSurface`, `QueryError`, `InlineQueryError`),
    reading a digit. All five stored scores are on the comb, `evidence_quality`
    included; `priority` is on it too but carries weight ZERO and says so,
    because priority is the ORDER of the queue, not a readiness signal. The comb
-   has a fixed footprint in both dimensions, and the same five appear labelled,
+   has a fixed footprint in both dimensions, and the same five appear labeled,
    weighted and in the open inside the expanded row — a hover is not a door on
    a touch screen.
 2. **`proof_required` / `missing_evidence` must read as momentum.** The
@@ -146,7 +146,7 @@ loading/error states (`LoadingSurface`, `QueryError`, `InlineQueryError`),
 4. **A rank is never an unexplained authority.** Every row's rank chip carries
    its rationale — the sort in force, the distance to pitchable, the driving
    scores and the weakest signal, the analyzer's own reason, and any journalist
-   window closing on it — and the same lines appear as a labelled "Why it is
+   window closing on it — and the same lines appear as a labeled "Why it is
    ranked #N" block inside the open row, because a hover is not a door on a
    touch screen (`rankRationale` in `scoring.ts`).
 5. **Deadlines are the one time-critical thing.** One page clock

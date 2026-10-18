@@ -159,4 +159,4 @@ See: [`generated/by-feature/pdf-extractor.md`](./generated/by-feature/pdf-extrac
 
 | Date | Change |
 |---|---|
-| 2026-07-01 | Initial tracker + `pnpm generate:type-drift-hitlists` script. 296 actionable duplicates catalogued. `CustomTool`/`CustomToolInputSchema` fixed. |
+| 2026-07-01 | Initial tracker + `pnpm generate:type-drift-hitlists` script. 296 actionable duplicates catalogd. `CustomTool`/`CustomToolInputSchema` fixed. |

@@ -545,7 +545,7 @@ def contract_overrides():
 
     🚨 WHY OVERRIDING `happy` IS RIGHT HERE AND WRONG ALMOST EVERYWHERE ELSE. This generator
     synthesises `happy` from the response schema on purpose: a hand-typed body drifts from the
-    contract silently, and the synthesised one cannot. But synthesis can only honour what the schema
+    contract silently, and the synthesised one cannot. But synthesis can only honor what the schema
     can SAY, and JSON Schema cannot say *"`available` is false whenever `key` is one of these two"*.
     So for the format registry the synthesiser picked the first enum value (`quickbooks_online`),
     paired it with the generic `label` string ("Generic CSV") and the default `available: true`, and
@@ -601,7 +601,7 @@ def contract_overrides():
                  "requires_mapping": ["external_earning_code"],
                  "supports_rates": False, "supports_adjustment_lines": True,
                  "available": True,
-                 "notes": "Best-effort, and labelled that way on purpose: Gusto fuzzy-matches "
+                 "notes": "Best-effort, and labeled that way on purpose: Gusto fuzzy-matches "
                           "columns rather than publishing a template, so this mapper is proven by a "
                           "real import rather than by a specification."},
                 # 🚨 OI-1 — the two rows this whole override exists for.
@@ -645,7 +645,7 @@ EVALUATOR_ONLY_KEYS = {
 # Keys that are REAL somewhere and wrong here, so a blanket ban would be a lie. `workweek_id` is a
 # genuine field on `OvertimeCalcResult` (it names the week the OT was computed on) and on
 # `hr.payroll_export_line` (§4.1) — but NOT on `OvertimeLine`, which is extra=forbid. Matched on
-# the shape path, with `[n]` list indices normalised to `[]`.
+# the shape path, with `[n]` list indices normalized to `[]`.
 MISPLACED_KEYS_BY_PATH = {
     "result.lines[].workweek_id":
         "`workweek_id` belongs on the RESULT (the week OT was computed on) and on "

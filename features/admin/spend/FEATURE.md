@@ -19,7 +19,7 @@ a number, made large, made red when it is high — and now made explorable.
 ## THE HONESTY RULE
 
 The headline **and every number in the explorer** are `runtime.global_execution.cost`
-and **nothing else**. Every other cost source is shown beside it, labelled with
+and **nothing else**. Every other cost source is shown beside it, labeled with
 the role it plays, and never silently added:
 
 | Role         | Meaning                                                              | Example                                                       |
@@ -122,7 +122,7 @@ Next.js API route in the path.
 **Timezone.** Day boundaries are cut at local midnight in the viewer's IANA zone,
 passed as `p_tz`; the explorer passes absolute instants for the window and the
 zone only buckets the series. The surface always names the zone it used, and
-says so when the database did not recognise it and fell back to UTC.
+says so when the database did not recognize it and fell back to UTC.
 
 ## The explorer (retired 2026-09-30 onto `/administration/usage`)
 
@@ -137,7 +137,7 @@ against it. Reading order on this page now: headline → window panels → the f
 | URL state             | `windows.ts`                              | `?win=yesterday`, `?win=custom&from=…&to=…`, `&f.<dimension>=<key>` — a view reloads and can be handed to someone. The tables' own sort/filter params are left untouched.                                                                                                                   |
 | Filter chips          | `explorer/FilterChips.tsx`                | The drill-down breadcrumb + the coverage line.                                                                                                                                                                                                                                              |
 | Totals                | `explorer/TotalsStrip.tsx`                | window total, manual vs automated (with shares), requests, tokens (with cache hit rate), "explained by a request".                                                                                                                                                                          |
-| Timeline              | `explorer/SeriesBars.tsx`                 | stacked bars per hour (≤ 4 days) or per day, manual under automated, legend always present, peak direct-labelled, hover title on every bar, click a day to drill. Colours are the theme's `chart-2` / `chart-1` tokens (validated with the dataviz palette script, light: all checks pass). |
+| Timeline              | `explorer/SeriesBars.tsx`                 | stacked bars per hour (≤ 4 days) or per day, manual under automated, legend always present, peak direct-labelled, hover title on every bar, click a day to drill. Colors are the theme's `chart-2` / `chart-1` tokens (validated with the dataviz palette script, light: all checks pass). |
 | Dig here              | `explorer/DigHerePanel.tsx`               | seven signals ordered by money in a canonical compact table; an opened signal uses the full available width for its own canonical detail table — see below.                                                                                                                                 |
 | 80/20                 | `explorer/ParetoPanel.tsx`                | per dimension: at least 3 and at most 6 rows, stopping after 80%, then ONE fixed-bottom "everything else" row (`paretoCut`); every card names the full window total.                                                                                                                        |
 | Every dimension       | `explorer/DimensionTables.tsx`            | one titled `MatrxDataTable` per dimension, same columns everywhere (cost, share bar, manual, automated, requests, per request, tokens in/cached/out, last activity); its no-wrap dimension rail scrolls horizontally with edge fades.                                                       |
@@ -177,7 +177,7 @@ The explorer's totals are `cost` only, so those runs read $0 there. The panel
 when, estimated, billed) with its own sum, and is **never added to any total**:
 hosting is already the `fixed_monthly_usd` figure, so adding the estimate would
 count it twice. It is a direct table read (`fetchEstimatedSpend`, rows capped at
-500 and labelled when capped), not an RPC — only a handful of rows a day carry
+500 and labeled when capped), not an RPC — only a handful of rows a day carry
 an estimate. Guard: `estimated-spend.test.ts`.
 
 ## Gating
@@ -202,7 +202,7 @@ throw when a row is missing and there is deliberately no fallback.
 | Key                                            | Default  | What it does                                                                                   |
 | ---------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
 | `platform.spend_popover.times_per_day`         | `1`      | How many times a day the window is raised. `0` turns it off.                                   |
-| `platform.spend_popover.scare_threshold_usd`   | `100`    | Above this, today's figure turns destructive-toned — colour and wording only, never behaviour. |
+| `platform.spend_popover.scare_threshold_usd`   | `100`    | Above this, today's figure turns destructive-toned — color and wording only, never behavior. |
 | `platform.spend_explorer.context_heavy_tokens` | `200000` | the context-heavy line (tokens per model call)                                                 |
 | `platform.spend_explorer.iteration_heavy`      | `10`     | the looped-request line (model calls per request)                                              |
 | `platform.spend_explorer.spike_multiplier`     | `3`      | the spike line (× the median hour)                                                             |

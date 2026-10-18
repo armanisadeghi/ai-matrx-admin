@@ -35,7 +35,7 @@ total and `npx eslint . --quiet`'s total are the same number by construction.
 
 ## Errors only
 
-Warnings are excluded (`--quiet`'s behaviour). This repo's warnings are the
+Warnings are excluded (`--quiet`'s behavior). This repo's warnings are the
 loud-but-advisory doctrine rules — `matrx/no-bare-id-text`,
 `no-barrel-files`, `matrx/no-banned-lucide-icons` — which already have their own
 scoreboards and campaigns. Including them would triple the snapshot for a

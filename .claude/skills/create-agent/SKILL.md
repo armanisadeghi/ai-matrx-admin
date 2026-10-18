@@ -132,7 +132,7 @@ Arman's words are [Provision first](/policies/agents-never-author-agents.md#prov
 
 A coding agent's job ends at step 6: provision declared (full), `__kind` defined, goal written,
 mandate(s) created. Everything below (steps 0–10) is how to do steps 1–6 well and how the agent
-is built once Arman takes it from you — never a licence to skip the gate.
+is built once Arman takes it from you — never a license to skip the gate.
 
 ### 0. Can the agent even answer? — run the manifest work FIRST
 

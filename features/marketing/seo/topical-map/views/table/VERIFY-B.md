@@ -37,7 +37,7 @@ the builder would not already believe.
    1,000 of 5,552 listed pages". If the tag is absent, the rollup is either complete or the read
    failed — a failed read shows the function's own sentence in a red box, never a blank column.
 5. Leaving / Arriving cells: a topic with pages moving shows an amber (leaving) or blue
-   (arriving) dot with the count (the colours are the org's `intent_colors` knob); a topic with
+   (arriving) dot with the count (the colors are the org's `intent_colors` knob); a topic with
    none shows a muted 0. All Green has 330 proposed destinations (307 keep, 19 redirect, 3
    delete, 1 move): expect a handful of non-zero cells, not none.
 6. Scroll: with every root expanded (use the outline's expand-all, then come back — expansion
@@ -57,7 +57,7 @@ the builder would not already believe.
 9. Click **Back to hierarchy**. Expected: tree restored, sort cleared to the map's own order,
    toggle on Hierarchy.
 10. Click the **Status** header. Expected: flat immediately (status is a data column the walk
-    cannot honour), sorted by the status word.
+    cannot honor), sorted by the status word.
 11. Back to hierarchy, then open the Status column's filter and pick `proposed` (if the map has
     none, pick `retired` — All Green has one). Expected: flat, filtered to that status only,
     the sentence says "Filtered — every matching topic in one flat list". Clear the filter from

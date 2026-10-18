@@ -9,7 +9,7 @@
 Your request mixes two timings: it says the reminders go out *weekly*, but it works from *tomorrow's* appointments. The 48-hour confirmation rule only works with a **daily** run. Each day, the system should:
 
 1. **Send reminders** to patients whose appointments fall within the reminder window.
-2. **Track replies** as they come in: confirmed, cancelled, wants to reschedule, or unclear.
+2. **Track replies** as they come in: confirmed, canceled, wants to reschedule, or unclear.
 3. **Flag** any patient who got a reminder 48 or more hours ago and still hasn't confirmed.
 4. **Brief the front-desk manager** with a short summary.
 
@@ -39,7 +39,7 @@ The only thing each run *needs* is the appointment list, and that should arrive 
 ## 4. Where the data lives
 
 - **Patients:** the platform's CRM contacts, with extra fields added for SMS consent and preferred name. If you'd rather keep patients separate from business contacts, use a custom table instead.
-- **Appointments** (custom table): patient, date and time, provider, visit type, and a status of *pending*, *reminded*, *confirmed*, *cancelled*, *reschedule requested* or *flagged*.
+- **Appointments** (custom table): patient, date and time, provider, visit type, and a status of *pending*, *reminded*, *confirmed*, *canceled*, *reschedule requested* or *flagged*.
 - **Message log:** every text sent and every reply, with what the system decided the reply meant and how sure it was. Use the platform's SMS records if they link to the appointment; otherwise a custom table.
 - **Templates** (saved asset): your approved reminder wording for each visit type.
 - **Daily summaries:** one record per day, so you can see trends like confirmation rates and no-shows.
@@ -59,7 +59,7 @@ Every appointment ends each run with a recorded status, including the ones that 
    - **AI also can't slip health details into a text.** Reminder texts shouldn't mention procedures beyond something general like "your visit".
 3. **Flag unconfirmed patients.** *Rules, no AI:* reminder sent 48+ hours ago and no confirmation. Send the second nudge if that setting is on.
 4. **Write the manager summary.**
-   - The numbers (sent, confirmed, cancelled, flagged, could not reach) are counted by rules first.
+   - The numbers (sent, confirmed, canceled, flagged, could not reach) are counted by rules first.
    - **One call to a small, cheap model** then writes 3–5 sentences of plain-language notes around those numbers, such as "Two new patients tomorrow are unconfirmed; Dr. Lee's 9am slot is at risk."
    - **Why the split:** AI doesn't do the counting, so it can't miscount.
 

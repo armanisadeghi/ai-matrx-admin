@@ -248,7 +248,7 @@ row-action button shipped as a giant control beside 14-px icons, and a reviewer 
 because clicking it worked. *"Whoever approved this should be SHOT and the skills need to be
 updated so you don't do SHIT tests."* So, for every `browser` row that adds or changes a control:
 zoom on the control **in context with its neighbours** (the icons, buttons or rows beside it) and
-measure — same size, spacing, alignment, colour tokens and hover as its neighbours, or FAIL with
+measure — same size, spacing, alignment, color tokens and hover as its neighbours, or FAIL with
 the measurement. Then apply the Steve Jobs bar (`policies/champions.md`): if a champion
 (Airtable, Linear, Notion) would not ship that screen, it is a FAIL even though it functions. A
 PASS message names what was measured against what.

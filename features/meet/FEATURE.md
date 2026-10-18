@@ -2,7 +2,7 @@
 
 **Status:** adopted and running — the room renders, joins, and admits from the lobby against production data · **Package:** [`@ai-matrx/meet`](https://www.npmjs.com/package/@ai-matrx/meet) `latest` · **Cross-repo SoR:** `../../../common-docs/systems/communications/meet/HANDOFF.md` · **Register:** `../../../common-docs/projects/archive/meet-realtime-intelligence/REGISTER.md` (MRI-D1, MRI-A5a)
 
-This folder is the HOST BINDING and nothing else. Every behaviour — ringing, the
+This folder is the HOST BINDING and nothing else. Every behavior — ringing, the
 lobby, host controls, the stage arithmetic, device fallbacks, recording consent,
 the AI seam — lives in the package. What lives here is identity injection, app
 chrome, and the routes.
@@ -112,7 +112,7 @@ doors + `announceMeeting`).
 - **`/meetings` lists the reader's OWN meetings** (host, co-host, invitee) — RLS is the ceiling,
   not the view: a platform admin can read every meeting, so the list scopes by role
   (`agenda.inScope`, `useMeetingsDirectory`). Upcoming = `meet_occurrences_between` (the database
-  expands series; moved rows marked, a cancelled occurrence struck through), grouped by day **in
+  expands series; moved rows marked, a canceled occurrence struck through), grouped by day **in
   the viewer's zone** with the zone named; instant meetings started in the last 12 h are
   "Happening now" (older unended rooms go to Past). Tabs are `?tab=` in the header's
   `RouteModeNav`; search + whose-meetings + zone share one toolbar row.
@@ -314,7 +314,7 @@ Census: `common-docs/systems/communications/meet/PARITY.md` § Wave 5.
 - 2026-09-27 — Meet wave 2 adopted (@ai-matrx/meet 0.7.5): Board header renders the package `HostMenu`; in-meeting parity arrives via `ControlBar`.
 
 - **2026-09-27 — Meet wave 1 UI (management).** `/meetings` rebuilt (agenda by day in the
-  viewer's zone, Past / Cancelled / Archived, search, whose-meetings, row menu, New meeting,
+  viewer's zone, Past / Canceled / Archived, search, whose-meetings, row menu, New meeting,
   Start now); `/meetings/[id]`; `/rsvp/[secret]`; the one meeting form with a real repeat
   editor and personal defaults; Invite panel on the invitees model; calendar links with the
   RRULE; pre-join Going?. `MeetingsWorkspace` / `MeetingsList` deleted. Adopted
@@ -390,7 +390,7 @@ Census: `common-docs/systems/communications/meet/PARITY.md` § Wave 5.
   gets host controls**: the server now states the joiner's role on the token and
   as a LiveKit participant attribute, so lobby admission, lock, remove, the
   recording control, the note-taker control and "End meeting for everyone"
-  render for the host and are ABSENT — not greyed — for everyone else. Blocker 1
+  render for the host and are ABSENT — not grayed — for everyone else. Blocker 1
   above is resolved and required no host code. (b) **An ended meeting has a
   surface**: `/meet/[slug]` renders the package's `<MeetingRecordView>` instead
   of a pre-join screen once `ended_at` is set — summary, decisions, action items

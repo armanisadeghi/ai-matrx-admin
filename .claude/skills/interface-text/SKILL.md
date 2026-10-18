@@ -53,11 +53,11 @@ the code comment and `FEATURE.md` are for.
 7. **Honesty is state, not prose.** Unmeasured → `—` with the reason in the tooltip. Partial
    feature → the Coming Soon registry. Never "not yet reported by the backend", never "Backfill
    brings this up to 100%".
-8. **Text has three colours — never a fainter one.** Content and actions `text-foreground`;
+8. **Text has three colors — never a fainter one.** Content and actions `text-foreground`;
    labels, meta, menu group labels, placeholders `text-muted-foreground`; a disabled control
    `text-disabled-foreground` (its `disabled` prop paints it). Never `/60`, `opacity-*` on text, or
    `text-gray-*`: a label must look different from the action it names, in light AND dark (the
-   2026-10-14 "gray on gray on gray" menu). Table: the style guide's Colour section.
+   2026-10-14 "gray on gray on gray" menu). Table: the style guide's Color section.
 9. **See it rendered, then check it.** In matrx-frontend run
    `pnpm check:interface-text --changed` before committing; any other repo:
    `node ../matrx-frontend/scripts/interface-text/check-interface-text.mjs --root=. --changed`.
@@ -84,7 +84,7 @@ From the 2026-09-30 baseline runs (`evals.md`) — each one produced a defect.
 - You are writing a second sentence in a hint or description.
 - You are choosing a local component over `components/official/*` because of text length.
 - You are writing a tooltip definition you did not read in the code or the data contract.
-- You are making text fainter with `/NN`, `opacity-*` or a hand-picked grey, or hand-styling a menu group label.
+- You are making text fainter with `/NN`, `opacity-*` or a hand-picked gray, or hand-styling a menu group label.
 
 ## The sweep — Discover → Review → Fix → Confirm (Pattern Patrol P14)
 

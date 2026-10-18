@@ -29,7 +29,7 @@
 - **Panels render in the toolbar's portal, outside the zone's React tree.** A zone whose panel reads React context re-provides it around the panel (the annotation sidecar wraps its panel in `SidecarContext.Provider`) — a panel that calls a context hook without it crashes the page.
 - Only a `suppressed` context menu (the text is streaming) keeps the toolbar away. `enableFloatingIcon` is retired (the floating icon is gone).
 - Position is measured against the nearest scroll container: flipped inside the pane, never over its header, hidden while the selection is scrolled out of view. Keyboard: one tab stop (roving tabindex), arrows within, Ctrl/Cmd+Alt+M focuses the first control on every press.
-- The census (`one-selection-toolbar.census.test.ts`) also catches selection-driven floating UI BY BEHAVIOUR (reads the selection + a gesture-end listener + measures + renders something positioned), whatever it is named. The Red Pen dialog's marking and the agent builder's drag-to-edit are recorded there as non-popup behaviours.
+- The census (`one-selection-toolbar.census.test.ts`) also catches selection-driven floating UI BY BEHAVIOR (reads the selection + a gesture-end listener + measures + renders something positioned), whatever it is named. The Red Pen dialog's marking and the agent builder's drag-to-edit are recorded there as non-popup behaviors.
 
 ## Known gaps
 
@@ -46,7 +46,7 @@
 
 - 2026-09-27 — The reading set on every saved record (chair ruling 2026-09-26): notes, chat answers and the studio's saved-document preview carry the study guide's sidecar through ONE mount, `features/rich-document/annotations/RecordAnnotations` (mounted by RichDocument and the chat answer), with a Notes & comments dock — a floating right panel on desktop (content width unchanged: 736px transcript open and closed, measured), the bottom sheet on a phone — opened by the person's own comment/highlight, a tap on a painted passage, or the ⋯ "Notes & comments (N)" row. Highlight and Link follow the association vocabulary (absent where no pair exists). Host-kind table updated for the Visual editor's Comment and notes' pending formatting.
 
-- 2026-09-26 — Verify round 1 fixes: table tools are toolbar actions (the Tiptap table bubble is deleted); scroll-container positioning; every window gets the toolbar; the common pair (Copy, Save to notes) where nothing richer owns the passage; Report is every annotated passage's; code blocks; roving tabindex; quotes render as inline rich text; census by behaviour; `enableFloatingIcon` retired from 37 callers.
+- 2026-09-26 — Verify round 1 fixes: table tools are toolbar actions (the Tiptap table bubble is deleted); scroll-container positioning; every window gets the toolbar; the common pair (Copy, Save to notes) where nothing richer owns the passage; Report is every annotated passage's; code blocks; roving tabindex; quotes render as inline rich text; census by behavior; `enableFloatingIcon` retired from 37 callers.
 
 - 2026-09-26 — Phone fit: the docked bar no longer scrolls sideways; lower-priority actions move to the registry overflow (More). Annotation cards carry `data-annotation-key` / `data-annotation-kind` so tests and cleanup act on a card by its own id, never by position.
 

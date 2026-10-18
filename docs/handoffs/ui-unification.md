@@ -77,7 +77,7 @@
 
 ## 2026-10-05 — LAW + build-out (in flight)
 - LAW: common-docs/policies/one-ui-system.md ("grow the system, never an exception"); lines in matrx-frontend + aidream CLAUDE.md.
-- Owner feedback: double bottom padding on table-footer pages; feature cards need more space above/below (top too busy); kit-card coloured chips all different sizes — annihilate; system page internal page-top (two lines + back chevron) busy; builder proposals OK.
+- Owner feedback: double bottom padding on table-footer pages; feature cards need more space above/below (top too busy); kit-card colored chips all different sizes — annihilate; system page internal page-top (two lines + back chevron) busy; builder proposals OK.
 - Lanes running: page rhythm (spacing scale + clearance, no double padding); canonical chip + sweep; page-top templates (one-line internal) + rollout; table playground rebuild on controls + 12 flaws (APPROVED); app-wide rollout coordinator (doors → controls, codemods, census leftovers).
 
 ## DONE 2026-10-05 — rollout wave 3
@@ -93,15 +93,15 @@
 - design-system 0.68.26: pressed = primary tint + hairline (`pressed-contrast.test.ts`), `Tile wrapTitle`, `SegmentedControl value={null}`, pill guard ignores progress tracks. Quiz answers, progress tracker and troubleshooting rows are Tiles. Demo: `/demos/blocks/interactive-blocks`.
 
 ## QUEUED for the next rollout wave (updated 2026-10-05 end of wave 3)
-- Sync `@ai-matrx/agents` 0.45.5 once it publishes (rerun 37367162423), then `ConversationContextChip`: drop colour className, pass `variant="quiet"`; until then the "blind" pill loses its dashed border.
+- Sync `@ai-matrx/agents` 0.45.5 once it publishes (rerun 37367162423), then `ConversationContextChip`: drop color className, pass `variant="quiet"`; until then the "blind" pill loses its dashed border.
 - Usage-limit toast still sits over content at 375 when no dock/composer floats (/cms): clearance offset only applies with a floating dock. Make the toast always respect `--matrx-floating-clearance`.
 - Override pills (Feature knobs tab of /administration/users/limits): Badge whole-clamp not verified by eye.
 - Page-top: fold AdminModuleHeader + ScopesRouteHeader into CrumbTrailHeader (needs route-tree menu, injected items, org drawer, confirm-delete as named options); header-variant family (HeaderToggle, HeaderTabs, StudyDeckHeader, ExportsHeader); live-control headers; 117 raw headers + 316 sentences left.
 - Page rhythm: content left edges differ per page (84/85/137/190px at 1440); the 33px before titles is the owner-ruled chat-button room (shell.css `--shell-chat-toggle-room`), not a template slot.
 - packages/chat 122 raw buttons left (custom-shaped); section-disclosure header component to add to the package.
 - components/mardown-display raw buttons (~106 files) — not started.
-- Text sizes: responsive pairs / multi-size strings left for manual; packages/chat, mardown-display, marketing not run. Then spinners -> loading system; palette colours -> tokens (by reach).
-- Chips: 7 marketing sites (judgement), app/(dev) 64, features/content-ir 48. Surface Buttons (~66 CTAs on inviting pages): keep size, add a named package option.
+- Text sizes: responsive pairs / multi-size strings left for manual; packages/chat, mardown-display, marketing not run. Then spinners -> loading system; palette colors -> tokens (by reach).
+- Chips: 7 marketing sites (judgment), app/(dev) 64, features/content-ir 48. Surface Buttons (~66 CTAs on inviting pages): keep size, add a named package option.
 - Tab rails onto TabsList overflow (27).
 - From the wave-3 final look-check (shots scratchpad wave3-final): /agents/all dark — page-rhythm guard (amber dashed, lib/layout/useFloatingClearanceGuard.ts) flags the list surface as double-padded (owner's table-footer double padding item); pinned ACTIONS/NAME edge shadow invisible in dark (rgba(0,0,0,.3) on dark bg — make the shadow token theme-aware); /tasks 375 "HR 28" pill taller than 28px header controls + search icon clipped; /files 375 light sidebar squeezed to ~45px (possibly hydration timing, re-check); /notes 1440 folder-row count glyph collides with "1 of 2" (pre-existing); /crm/chasebox filter pill + tile label truncate; org-choice dialog Cancel vs Continue border weights differ (by design after 0.68.9 single ring — confirm with owner's eye).
 

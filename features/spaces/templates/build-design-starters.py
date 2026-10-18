@@ -8,7 +8,7 @@ Motion, Components, Assets, and a Files page.
 
 ONE TOKEN VOCABULARY. Every pack defines the same token names, so one sample skeleton works on every
 board and an agent can adapt any starter without renaming anything:
-  colours   COLOR_ROLES below (23 names: background … link, border, input, divider, ring …)
+  colors   COLOR_ROLES below (23 names: background … link, border, input, divider, ring …)
   type      display title heading body label caption code  (+ extras)  → --font-*, --text-*, --leading-*, --weight-*
   spacing   space-1 space-2 space-3 space-4 space-6 space-8 control-height (+ extras) → --space-* …
   radius    radius-sm radius-md radius-lg radius-full  (--radius = radius-md)
@@ -16,7 +16,7 @@ board and an agent can adapt any starter without renaming anything:
   opacity   opacity-disabled opacity-hover opacity-overlay (+ extras)
   motion    motion-fast motion-base motion-slow (+ extras)
 Component samples and the cover hero use ONLY these variables (the html_sample frame turns the board's
-rows into them, and loads the Google fonts its type rows name): no hard-coded colour, font, size,
+rows into them, and loads the Google fonts its type rows name): no hard-coded color, font, size,
 spacing, radius, shadow or motion. Personality (copy, which components, shapes, label case) is per
 starter, not one skeleton ten times.
 
@@ -63,7 +63,7 @@ def ratio(a: str, b: str) -> float:
     return math.floor(((hi + 0.05) / (lo + 0.05)) * 10 + 1e-9) / 10
 
 
-# ── Colour roles: (name, group, reads_on, default usage note). "Lines" rows are checked at 3:1. ──
+# ── Color roles: (name, group, reads_on, default usage note). "Lines" rows are checked at 3:1. ──
 
 COLOR_ROLES = [
     ("background", "Surfaces", None, "The page itself. Everything else sits on it."),
@@ -74,13 +74,13 @@ COLOR_ROLES = [
     ("popover-foreground", "Surfaces", "popover", "Text inside a menu or tooltip."),
     ("muted", "Muted", None, "Quiet fills: table headers, empty states, code blocks."),
     ("muted-foreground", "Muted", "muted", "Hints and captions. Also reads on the page and on cards."),
-    ("primary", "Primary", None, "The fill of the one main action. Not a text colour: use link."),
+    ("primary", "Primary", None, "The fill of the one main action. Not a text color: use link."),
     ("primary-foreground", "Primary", "primary", "Label on a primary button."),
     ("secondary", "Secondary", None, "Second actions and quiet selected states."),
     ("secondary-foreground", "Secondary", "secondary", "Label on a secondary button."),
     ("accent", "Accent", None, "Highlights: a selected row, a tip, something new."),
     ("accent-foreground", "Accent", "accent", "Text on an accent fill. Never put plain foreground on accent."),
-    ("link", "Accent", "background", "Coloured text: links and active tabs. Also reads on cards."),
+    ("link", "Accent", "background", "Colored text: links and active tabs. Also reads on cards."),
     ("border", "Lines", "background", "Edges of controls and outline buttons; 3:1 so they are found."),
     ("input", "Lines", "card", "The outline of a field and an off switch."),
     ("divider", "Lines", None, "Hairlines between rows and around cards. Decorative only."),
@@ -117,19 +117,19 @@ MONO = "ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace"
 RING_DARK = (0, 0, 0, 1, "#ffffff14")  # dark grounds hide black shadows: a hairline ring shows the edge
 
 
-def C(**kv):  # colours: name=(light, dark)
+def C(**kv):  # colors: name=(light, dark)
     return {k.replace("_", "-"): v for k, v in kv.items()}
 
 
-# Each starter: identity, profile (typed, for agents), colours, type rows (name, group, font, weight, size,
+# Each starter: identity, profile (typed, for agents), colors, type rows (name, group, font, weight, size,
 # lineHeight, letterSpacing em, note), spacing, radius, shadows (light layers, dark layers), opacity, motion,
-# notes (colour usage overrides), ui (component personality) and copy.
+# notes (color usage overrides), ui (component personality) and copy.
 
 STARTERS: list[dict] = []
 
 STARTERS.append({
     "slug": "near-blank", "id": "SP0490", "name": "Near blank",
-    "description": "The floor: greys, graphite actions and one blue accent. Complete, but plain.",
+    "description": "The floor: grays, graphite actions and one blue accent. Complete, but plain.",
     "forWho": "Anyone starting a design system from almost nothing",
     "tags": ["design system", "starter", "minimal", "neutral", "any industry", "fallback"],
     "vertical": "Design systems — any brand (the default)",
@@ -137,7 +137,7 @@ STARTERS.append({
     "studio": ("Plainfield Works", "A two-person app studio that wants a clean starting point.", "plainfieldworks.net", "Hollis Lane", "Columbus", "OH", "43215", "(614) 555-0118", "America/New_York"),
     "profile": {"industries": ["any"], "avoidFor": [], "mood": ["calm"], "formality": 3, "energy": 2, "density": "medium", "shape": "soft", "contrast": "standard", "defaultTheme": "light", "typeClass": "system", "a11y": {"level": "AA", "minTarget": 36, "minBody": 15}, "adaptFirst": ["primary", "link", "ring", "font"], "lockedTokens": ["foreground", "background", "muted-foreground"], "fallback": True, "chromatic": False},
     "principles": ["Start small: add a token only when two screens need it.", "One accent: blue marks links and focus, nothing else.", "Name by role, never by value: primary, not graphite."],
-    "hero": {"kicker": "Design system", "head": "Start here.<br>Make it yours.", "tag": "A plain, complete system: greys, one accent and the fewest choices.", "chips": ["Colors", "Type", "Spacing", "Components"], "graphic": "blocks"},
+    "hero": {"kicker": "Design system", "head": "Start here.<br>Make it yours.", "tag": "A plain, complete system: grays, one accent and the fewest choices.", "chips": ["Colors", "Type", "Spacing", "Components"], "graphic": "blocks"},
     "colors": C(background=("#ffffff", "#0f0f0f"), foreground=("#171717", "#ededed"), card=("#ffffff", "#171717"), card_foreground=("#171717", "#ededed"),
                 popover=("#ffffff", "#1c1c1c"), popover_foreground=("#171717", "#ededed"), muted=("#f4f4f4", "#222222"), muted_foreground=("#5c5c5c", "#a3a3a3"),
                 primary=("#262626", "#ededed"), primary_foreground=("#ffffff", "#171717"), secondary=("#efefef", "#262626"), secondary_foreground=("#171717", "#ededed"),
@@ -154,22 +154,22 @@ STARTERS.append({
     "dark_alpha": "66",
     "opacity": [0.45, 0.08, 0.6],
     "motion": [(120, "ease-out"), (200, "ease-in-out"), (300, "ease-in-out")],
-    "notes": {"primary": "Graphite: the fill of the one main action. Swap it for the brand colour first."},
+    "notes": {"primary": "Graphite: the fill of the one main action. Swap it for the brand color first."},
     "ui": {"btn_r": "var(--radius-md)", "case": "none", "bw": "1px", "tabs": "underline", "card": "generic"},
     "copy": {"save": "Save", "card": ("Project", "Untitled project", "Created just now", "Open", "Share")},
 })
 
 STARTERS.append({
     "slug": "calm-neutral", "id": "SP0491", "name": "Calm neutral",
-    "description": "Cool greys, an indigo action and soft cards: the modern software look.",
+    "description": "Cool grays, an indigo action and soft cards: the modern software look.",
     "forWho": "Software products and SaaS teams",
     "tags": ["design system", "starter", "saas", "calm", "modern", "software"],
     "vertical": "Design systems — software and SaaS",
     "person": "Tomasz Wierzbicki",
     "studio": ("Lattice Row Software", "A small software company with a web app and a dashboard.", "latticerow.net", "Brannock Street", "Denver", "CO", "80205", "(720) 555-0142", "America/Denver"),
     "profile": {"industries": ["software", "saas", "b2b", "productivity", "startups"], "avoidFor": ["luxury", "children"], "mood": ["calm", "technical"], "formality": 3, "energy": 2, "density": "medium", "shape": "soft", "contrast": "standard", "defaultTheme": "light", "typeClass": "humanist-sans", "a11y": {"level": "AA", "minTarget": 32, "minBody": 14}, "adaptFirst": ["primary", "link", "ring", "accent"], "lockedTokens": ["foreground", "muted-foreground", "border"], "fallback": False, "chromatic": True},
-    "principles": ["Clear before clever: every screen says what it is for in its first line.", "Calm by default: colour is for meaning, never decoration.", "Numbers first: the figure a person came for is the biggest thing on the card."],
-    "hero": {"kicker": "Design system", "head": "Calm screens,<br>clear numbers.", "tag": "Cool greys, one indigo action, soft cards and quiet motion.", "chips": ["Dashboards", "Forms", "Settings"], "graphic": "panels"},
+    "principles": ["Clear before clever: every screen says what it is for in its first line.", "Calm by default: color is for meaning, never decoration.", "Numbers first: the figure a person came for is the biggest thing on the card."],
+    "hero": {"kicker": "Design system", "head": "Calm screens,<br>clear numbers.", "tag": "Cool grays, one indigo action, soft cards and quiet motion.", "chips": ["Dashboards", "Forms", "Settings"], "graphic": "panels"},
     "colors": C(background=("#fbfcfd", "#0e1117"), foreground=("#1b2130", "#e6e9ef"), card=("#ffffff", "#151922"), card_foreground=("#1b2130", "#e6e9ef"),
                 popover=("#ffffff", "#1a1f2a"), popover_foreground=("#1b2130", "#e6e9ef"), muted=("#f1f3f7", "#1c212c"), muted_foreground=("#566072", "#98a1b2"),
                 primary=("#4f46e5", "#8b8cf8"), primary_foreground=("#ffffff", "#12123a"), secondary=("#eceff5", "#232937"), secondary_foreground=("#262d3d", "#dfe3ea"),
@@ -232,7 +232,7 @@ STARTERS.append({
     "person": "Kwame Asante-Bell",
     "studio": ("Loudhaus Events", "An events company selling tickets for music nights.", "loudhausevents.net", "Gantry Way", "Detroit", "MI", "48207", "(313) 555-0186", "America/Detroit"),
     "profile": {"industries": ["events", "sport", "music", "streetwear", "campaigns", "retail"], "avoidFor": ["healthcare", "legal", "finance"], "mood": ["loud", "playful"], "formality": 1, "energy": 5, "density": "medium", "shape": "sharp", "contrast": "high", "defaultTheme": "light", "typeClass": "grotesque-display", "a11y": {"level": "AAA-leaning", "minTarget": 40, "minBody": 16}, "adaptFirst": ["primary", "accent", "link"], "lockedTokens": ["foreground", "background", "border", "shadow-sm"], "fallback": False, "chromatic": True},
-    "principles": ["Say it once, say it big: one headline, one action per screen.", "Lines, not shades: thick black edges instead of soft greys.", "Orange is a fill, never text: coloured words use link."],
+    "principles": ["Say it once, say it big: one headline, one action per screen.", "Lines, not shades: thick black edges instead of soft grays.", "Orange is a fill, never text: colored words use link."],
     "hero": {"kicker": "Loud by design", "head": "SAY IT<br>ONCE.", "tag": "Black, white, hot orange. Square corners and hard shadows.", "chips": ["Tickets", "Drops", "Posters"], "graphic": "stack"},
     "colors": C(background=("#ffffff", "#000000"), foreground=("#000000", "#ffffff"), card=("#ffffff", "#0d0d0d"), card_foreground=("#000000", "#ffffff"),
                 popover=("#ffffff", "#141414"), popover_foreground=("#000000", "#ffffff"), muted=("#f0f0f0", "#1a1a1a"), muted_foreground=("#3a3a3a", "#c4c4c4"),
@@ -250,7 +250,7 @@ STARTERS.append({
     "dark_shadows": [[(3, 3, 0, 0, "#ffffffff")], [(6, 6, 0, 0, "#ffffffff")], [(10, 10, 0, 0, "#ffffffff")]],
     "opacity": [0.4, 0.12, 0.85],
     "motion": [(80, "linear"), (160, "ease-out"), (240, "cubic-bezier(0.7, 0, 0.3, 1)")],
-    "notes": {"primary": "Hot orange: a FILL with black labels. As text it fails on white (3.3:1); use link.", "accent": "Yellow sticker fill. Text on it is always accent-foreground (black).", "secondary": "Light grey fill for second actions; foreground reads on it."},
+    "notes": {"primary": "Hot orange: a FILL with black labels. As text it fails on white (3.3:1); use link.", "accent": "Yellow sticker fill. Text on it is always accent-foreground (black).", "secondary": "Light gray fill for second actions; foreground reads on it."},
     "ui": {"btn_r": "var(--radius-md)", "case": "uppercase", "bw": "2px", "tabs": "boxed", "card": "ticket", "press": True},
     "copy": {"save": "Get tickets"},
 })
@@ -264,7 +264,7 @@ STARTERS.append({
     "person": "Ines Carvalho",
     "studio": ("Pebblebloom", "A small shop for handmade gifts and flower boxes.", "pebblebloom.net", "Marigold Court", "Austin", "TX", "78704", "(512) 555-0139", "America/Chicago"),
     "profile": {"industries": ["lifestyle", "beauty", "gifting", "florists", "small shops", "parenting"], "avoidFor": ["finance", "developer tools"], "mood": ["warm", "calm"], "formality": 2, "energy": 2, "density": "airy", "shape": "pill", "contrast": "standard", "defaultTheme": "light", "typeClass": "rounded", "a11y": {"level": "AA", "minTarget": 40, "minBody": 16}, "adaptFirst": ["primary", "secondary", "accent", "link"], "lockedTokens": ["radius-lg", "radius-full", "foreground"], "fallback": False, "chromatic": True},
-    "principles": ["Soft edges, firm words: shapes are round, text stays dark.", "Pastel fills, deep text: tints fill, deep colours speak.", "Unhurried: things ease in slowly and never bounce."],
+    "principles": ["Soft edges, firm words: shapes are round, text stays dark.", "Pastel fills, deep text: tints fill, deep colors speak.", "Unhurried: things ease in slowly and never bounce."],
     "hero": {"kicker": "Made gently", "head": "Soft shapes,<br>warm welcome.", "tag": "Plum, peach and sage. Round corners, pill buttons, slow easing.", "chips": ["Gifts", "Bookings", "Wishlists"], "graphic": "pebbles"},
     "colors": C(background=("#fdf8fb", "#1a1319"), foreground=("#3a2236", "#f5e9f2"), card=("#ffffff", "#221a21"), card_foreground=("#3a2236", "#f5e9f2"),
                 popover=("#ffffff", "#281f27"), popover_foreground=("#3a2236", "#f5e9f2"), muted=("#f8edf4", "#2c2129"), muted_foreground=("#6e5068", "#c4a9bd"),
@@ -297,7 +297,7 @@ STARTERS.append({
     "studio": ("Kernelpine", "A team building a command line and console for data pipelines.", "kernelpine.net", "Foundry Alley", "Seattle", "WA", "98134", "(206) 555-0174", "America/Los_Angeles"),
     "profile": {"industries": ["developer tools", "observability", "data", "security", "infrastructure", "ai tooling"], "avoidFor": ["children", "luxury", "healthcare"], "mood": ["technical", "calm"], "formality": 3, "energy": 3, "density": "compact", "shape": "soft", "contrast": "standard", "defaultTheme": "dark", "typeClass": "mono-technical", "a11y": {"level": "AA", "minTarget": 28, "minBody": 13}, "adaptFirst": ["primary", "ring", "success", "link"], "lockedTokens": ["background", "card", "font-code"], "fallback": False, "chromatic": True},
     "principles": ["Dark first, light equal: every token is chosen on dark and proven on light.", "Dense, not cramped: tight rows, 4.5:1 text and visible focus.", "Mono for machine values: ids, keys, paths and numbers people copy."],
-    "hero": {"kicker": "$ design-system --dark", "head": "Built for<br>the terminal.", "tag": "Near-black panels, a mint signal colour, dense rows and mono where it matters.", "chips": ["Console", "Logs", "Keys"], "graphic": "terminal"},
+    "hero": {"kicker": "$ design-system --dark", "head": "Built for<br>the terminal.", "tag": "Near-black panels, a mint signal color, dense rows and mono where it matters.", "chips": ["Console", "Logs", "Keys"], "graphic": "terminal"},
     "colors": C(background=("#f7f8fa", "#0b0d10"), foreground=("#11151b", "#d9dfe7"), card=("#ffffff", "#12151a"), card_foreground=("#11151b", "#d9dfe7"),
                 popover=("#ffffff", "#161a20"), popover_foreground=("#11151b", "#d9dfe7"), muted=("#eceff3", "#191d23"), muted_foreground=("#505966", "#8d97a5"),
                 primary=("#0a7550", "#3ddc97"), primary_foreground=("#ffffff", "#03140c"), secondary=("#e5e8ed", "#1f242c"), secondary_foreground=("#1b2027", "#d9dfe7"),
@@ -392,7 +392,7 @@ STARTERS.append({
     "person": "Leilani Kahale",
     "studio": ("Snackjar", "A delivery app for small neighbourhood bakeries.", "snackjarapp.net", "Peppercorn Avenue", "San Diego", "CA", "92104", "(619) 555-0165", "America/Los_Angeles"),
     "profile": {"industries": ["consumer apps", "food", "delivery", "games", "social", "entertainment", "kids brands"], "avoidFor": ["legal", "finance", "healthcare"], "mood": ["playful", "loud"], "formality": 1, "energy": 5, "density": "medium", "shape": "pill", "contrast": "standard", "defaultTheme": "light", "typeClass": "rounded", "a11y": {"level": "AA", "minTarget": 40, "minBody": 16}, "adaptFirst": ["primary", "secondary", "accent", "link"], "lockedTokens": ["primary-foreground", "motion-base"], "fallback": False, "chromatic": True},
-    "principles": ["Joy in the details: a bounce, a colour, a friendly word.", "Bright fills, dark words: labels on coral and yellow stay dark; coloured text uses link.", "Big and tappable: pill buttons, chunky controls."],
+    "principles": ["Joy in the details: a bounce, a color, a friendly word.", "Bright fills, dark words: labels on coral and yellow stay dark; colored text uses link.", "Big and tappable: pill buttons, chunky controls."],
     "hero": {"kicker": "Fresh out the oven", "head": "Little joys,<br>delivered.", "tag": "Coral, sunshine and sky blue. Pills, chunky shadows, a bounce.", "chips": ["Order", "Track", "Rate"], "graphic": "confetti"},
     "colors": C(background=("#fffaf4", "#1a1424"), foreground=("#241a33", "#f6eefb"), card=("#ffffff", "#231a31"), card_foreground=("#241a33", "#f6eefb"),
                 popover=("#ffffff", "#2a2039"), popover_foreground=("#241a33", "#f6eefb"), muted=("#fff0e2", "#2d2340"), muted_foreground=("#6a5263", "#c2b3cf"),
@@ -450,17 +450,17 @@ STARTERS.append({
 BASE = {
     "slug": "base", "id": "SP0363", "name": "Design system", "file": "design-system-board.pack.json", "base": True,
     "title": "Design Tokens Board",
-    "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
+    "description": "Product teams: colors, type, spacing, corners and shadows as one editable board.",
     "forWho": "Product teams keeping one design system",
     "tags": ["design", "tokens", "colors", "typography", "board", "ui"],
     "vertical": "Design systems",
-    "useCase": "Ilse Marchetti keeps her studio's colours, type, spacing, corners and shadows in one place her team edits.",
+    "useCase": "Ilse Marchetti keeps her studio's colors, type, spacing, corners and shadows in one place her team edits.",
     "why": "Ilse keeps the surfaces to a handful so screens stay calm.",
     "studio": ("Fernwick Design Co.", "A small product design studio that keeps one design system for its apps.", "fernwick.net", "Quillan Row", "Portland", "OR", "97211", "(503) 555-0163", "America/Los_Angeles"),
     "line1": "27 Quillan Row",
     "profile": {"industries": ["product teams", "software", "agencies"], "avoidFor": [], "mood": ["calm"], "formality": 3, "energy": 2, "density": "medium", "shape": "soft", "contrast": "standard", "defaultTheme": "light", "typeClass": "system", "a11y": {"level": "AA", "minTarget": 32, "minBody": 15}, "adaptFirst": ["primary", "link", "ring"], "lockedTokens": [], "fallback": False, "chromatic": True},
-    "principles": ["**Clear before clever.** Every screen says what it is for in its first line.", "**One way to do one thing.** A colour, a size or a component has one name.", "**Calm by default.** Colour is for meaning, never for decoration."],
-    "hero": {"kicker": "Design system", "head": "One look,<br>every screen.", "tag": "The colours, type, spacing and components every screen is built from, kept in one place.", "chips": ["Colors", "Typography", "Spacing", "Components"], "graphic": "blocks"},
+    "principles": ["**Clear before clever.** Every screen says what it is for in its first line.", "**One way to do one thing.** A color, a size or a component has one name.", "**Calm by default.** Color is for meaning, never for decoration."],
+    "hero": {"kicker": "Design system", "head": "One look,<br>every screen.", "tag": "The colors, type, spacing and components every screen is built from, kept in one place.", "chips": ["Colors", "Typography", "Spacing", "Components"], "graphic": "blocks"},
     "colors": C(background=("#ffffff", "#0b0d12"), foreground=("#111827", "#e8ebf1"), card=("#ffffff", "#141821"), card_foreground=("#111827", "#e8ebf1"),
                 popover=("#ffffff", "#181d27"), popover_foreground=("#111827", "#e8ebf1"), muted=("#f1f4f8", "#1c212c"), muted_foreground=("#5f6878", "#9aa3b5"),
                 primary=("#2f5bea", "#6d8dff"), primary_foreground=("#ffffff", "#0b1230"), secondary=("#eef1f6", "#222836"), secondary_foreground=("#1f2633", "#dfe3ea"),
@@ -524,15 +524,15 @@ def tabs(s: dict, items: list[str]) -> str:
 
 
 COPY = {
-    "near-blank": dict(variants=["Cancel", "Edit", "Learn more", "Delete"], field=("Name", "Untitled", "Shown on the first page.", "Email", "name@", "Enter a full email address."), badges=["Draft", "New", "Done", "Paused", "Failed"], toggles=[("Notifications", "When something changes"), ("Weekly summary", "Mondays"), ("Two-step sign-in", "Needs a phone")], faq=[("What is this?", "A starting point. Change anything."), ("Where do I start?", "Primary colour, then the font."), ("Can I undo?", "Yes, from each row's history.")], tabs=["Overview", "Activity", "Settings"]),
-    "calm-neutral": dict(variants=["Invite", "Export", "View docs", "Remove seat"], field=("Workspace name", "Lattice Row", "Your team sees this name.", "Billing email", "billing@", "Use an address that receives mail."), badges=["Trial", "New", "Active", "Past due", "Cancelled"], toggles=[("Usage alerts", "At 80% of your plan"), ("Weekly report", "Every Monday, 9:00"), ("Single sign-on", "Available on Business")], faq=[("How is a seat counted?", "One per person who signed in this month."), ("Can I change plans?", "Any time; we prorate the difference."), ("Where is my invoice?", "Billing, then History.")], tabs=["Overview", "Usage", "Billing", "Members"]),
+    "near-blank": dict(variants=["Cancel", "Edit", "Learn more", "Delete"], field=("Name", "Untitled", "Shown on the first page.", "Email", "name@", "Enter a full email address."), badges=["Draft", "New", "Done", "Paused", "Failed"], toggles=[("Notifications", "When something changes"), ("Weekly summary", "Mondays"), ("Two-step sign-in", "Needs a phone")], faq=[("What is this?", "A starting point. Change anything."), ("Where do I start?", "Primary color, then the font."), ("Can I undo?", "Yes, from each row's history.")], tabs=["Overview", "Activity", "Settings"]),
+    "calm-neutral": dict(variants=["Invite", "Export", "View docs", "Remove seat"], field=("Workspace name", "Lattice Row", "Your team sees this name.", "Billing email", "billing@", "Use an address that receives mail."), badges=["Trial", "New", "Active", "Past due", "Canceled"], toggles=[("Usage alerts", "At 80% of your plan"), ("Weekly report", "Every Monday, 9:00"), ("Single sign-on", "Available on Business")], faq=[("How is a seat counted?", "One per person who signed in this month."), ("Can I change plans?", "Any time; we prorate the difference."), ("Where is my invoice?", "Billing, then History.")], tabs=["Overview", "Usage", "Billing", "Members"]),
     "editorial": dict(variants=["Read later", "Share", "All essays", "Unpublish"], field=("Your email", "reader@", "One letter each issue. No noise.", "Name", "", "Tell us what to call you."), badges=["Essay", "New issue", "Published", "In edit", "Withdrawn"], toggles=[("The weekly letter", "Sundays, one essay"), ("New issue alerts", "Four times a year"), ("Comments", "Members only")], faq=[("Who writes for the Review?", "Essayists, critics and the occasional poet."), ("Can I pitch?", "Yes. One paragraph, by letter."), ("Is there print?", "Each issue, in a limited run.")], tabs=["Essays", "Reviews", "Letters", "Archive"]),
     "bold-contrast": dict(variants=["Line-up", "Share", "Venue info", "Cancel order"], field=("Promo code", "LOUD24", "Codes are case sensitive.", "Mobile", "555-01", "Enter all ten digits."), badges=["Presale", "New", "On sale", "Few left", "Sold out"], toggles=[("Drop alerts", "The moment tickets go live"), ("Set-time texts", "An hour before doors"), ("Resale", "Opens a week before")], faq=[("When do doors open?", "8 PM; doors close at 11 PM."), ("Can I resell?", "Yes, through your tickets page."), ("Age limit?", "18 and over. Bring ID.")], tabs=["Headliners", "Club nights", "Sold out"]),
     "soft-rounded": dict(variants=["Gift note", "Save", "Browse", "Remove"], field=("Gift message", "Happy birthday!", "We hand-write it on a card.", "Delivery date", "", "Pick a date at least two days out."), badges=["Handmade", "New", "In stock", "Few left", "Sold out"], toggles=[("Gift wrap", "Kraft paper and ribbon"), ("Surprise me", "Let us pick the flowers"), ("Same-day", "Order before noon")], faq=[("How fresh are the flowers?", "Cut the morning they ship."), ("Can I change the date?", "Up to a day before."), ("Do you deliver far?", "Within 30 miles of Austin.")], tabs=["Boxes", "Flowers", "Cards"]),
     "dark-developer": dict(variants=["Logs", "Copy ID", "Docs", "Revoke key"], field=("Pipeline", "nightly-etl", "Lowercase, dashes, no spaces.", "Cron", "* * *", "Five fields: minute hour day month weekday."), badges=["queued", "new", "passing", "slow", "failed"], toggles=[("Run on push", "main and release/*"), ("Notify on fail", "#data-alerts"), ("Auto-retry", "Up to 3 times")], faq=[("Where are logs kept?", "30 days, then archived."), ("Rate limit?", "600 requests a minute per key."), ("Self-hosted?", "Yes, one container.")], tabs=["Runs", "Logs", "Keys", "Settings"]),
     "trust": dict(variants=["Download PDF", "Schedule", "Fee schedule", "Cancel transfer"], field=("Amount", "2,500.00", "Transfers over 10,000.00 need a second approver.", "Account number", "12-3", "Enter all 10 digits."), badges=["Pending", "New", "Settled", "Under review", "Returned"], toggles=[("Statement by email", "On the 1st of each month"), ("Two-person approval", "Over 10,000.00"), ("Paper statements", "Mailed quarterly")], faq=[("When do transfers settle?", "Next business day before 3 PM."), ("Are deposits insured?", "Up to the legal limit per depositor."), ("Who can see this account?", "Named signers only.")], tabs=["Summary", "Statements", "Documents"]),
     "care": dict(variants=["Message the clinic", "Reschedule", "Directions", "Cancel visit"], field=("Date of birth", "04/12/1961", "Month, day, year.", "Phone", "555-01", "Enter all ten digits so we can call you."), badges=["Booked", "New result", "Confirmed", "Waiting", "Missed"], toggles=[("Text reminders", "The day before your visit"), ("Large print letters", "For everything we post"), ("Share with family", "Needs your signed consent")], faq=[("How do I get my results?", "Here, usually within two days."), ("Can someone come with me?", "Yes, one person is welcome."), ("Is there parking?", "Free, behind the clinic.")], tabs=["Visits", "Results", "Messages"]),
-    "playful": dict(variants=["Favourite", "Share", "Menu", "Remove"], field=("Delivery note", "Ring twice!", "Shown to your rider.", "Promo code", "YUMM", "That code has expired."), badges=["Hot", "New", "Ready", "Baking", "Sold out"], toggles=[("Order updates", "From oven to doorstep"), ("Surprise treat", "A little extra, sometimes"), ("Contact-free", "Leave it at the door")], faq=[("How long does it take?", "About 25 minutes, fresh."), ("Can I tip?", "Yes, 100% goes to the rider."), ("Allergies?", "Each item lists them.")], tabs=["Popular", "Sweet", "Savoury"]),
+    "playful": dict(variants=["Favorite", "Share", "Menu", "Remove"], field=("Delivery note", "Ring twice!", "Shown to your rider.", "Promo code", "YUMM", "That code has expired."), badges=["Hot", "New", "Ready", "Baking", "Sold out"], toggles=[("Order updates", "From oven to doorstep"), ("Surprise treat", "A little extra, sometimes"), ("Contact-free", "Leave it at the door")], faq=[("How long does it take?", "About 25 minutes, fresh."), ("Can I tip?", "Yes, 100% goes to the rider."), ("Allergies?", "Each item lists them.")], tabs=["Popular", "Sweet", "Savoury"]),
     "premium": dict(variants=["Suites", "Save", "Our story", "Cancel stay"], field=("Arrival", "Friday 14", "Check-in from 3 PM.", "Guests", "0", "At least one guest."), badges=["Suite", "New", "Confirmed", "Waitlist", "Unavailable"], toggles=[("Turndown service", "Each evening at 8"), ("Airport car", "On arrival"), ("Late check-out", "Subject to availability")], faq=[("Is breakfast included?", "In every suite, served until 11."), ("Can we bring a pet?", "Small dogs, by arrangement."), ("Cancellation?", "Free until 48 hours before.")], tabs=["Rooms", "Dining", "Spa"]),
     "base": dict(variants=["Secondary", "Outline", "Quiet", "Delete"], field=("Email", "name@company.com", "We send the receipt here.", "Phone", "555-01", "Enter all ten digits."), badges=["Draft", "New", "Live", "Waiting", "Failed"], toggles=[("Email alerts", "When a task is assigned to you"), ("Weekly digest", "Every Monday morning"), ("Text messages", "Needs a verified phone")], faq=[("What is included", "Every table, view and page in the template."), ("Who can see it", "Everyone in your organization."), ("Can I undo it", "Yes, from the history of each item.")], tabs=["Overview", "Activity", "Settings"]),
 }
@@ -551,7 +551,7 @@ def card(s: dict) -> tuple[str, str, str]:
         return ("Card", f"<style>{b}{head}</style><div class=\"w c\"><p class=\"k\">{kk}</p><h3 class=\"t\">{t}</h3><p class=\"m\">{m}</p><div class=\"r\"><button class=\"b p\">{a}</button><button class=\"b o\">{o}</button></div></div>", "One idea per card: a kicker, a title, one line of detail, at most two actions.")
     if k == "metric":
         return ("Metric card", f"<style>{head}.g{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3)}}.n{{margin:0;font-family:var(--font-metric);font-size:var(--text-metric);line-height:var(--leading-metric);font-weight:var(--weight-metric);font-variant-numeric:tabular-nums}}.u{{color:var(--success);font-size:var(--text-caption);font-weight:var(--weight-label)}}.dn{{color:var(--destructive)}}</style>"
-                "<div class=\"w g\"><div class=\"c\"><p class=\"k\">Active users</p><p class=\"n\">2,418</p><span class=\"u\">+4.2% vs last week</span></div><div class=\"c\"><p class=\"k\">Churn</p><p class=\"n\">1.9%</p><span class=\"u dn\">+0.3 pts</span></div></div>", "The figure first, then the change, with a word or sign, never colour alone.")
+                "<div class=\"w g\"><div class=\"c\"><p class=\"k\">Active users</p><p class=\"n\">2,418</p><span class=\"u\">+4.2% vs last week</span></div><div class=\"c\"><p class=\"k\">Churn</p><p class=\"n\">1.9%</p><span class=\"u dn\">+0.3 pts</span></div></div>", "The figure first, then the change, with a word or sign, never color alone.")
     if k == "article":
         return ("Article teaser and pull quote", f"<style>{head}.c{{border:0;border-top:2px solid var(--foreground);border-radius:0;box-shadow:none;background:transparent;padding:var(--space-3) 0 0}}.k{{color:var(--link)}}.s{{margin:0 0 var(--space-2);font-family:var(--font-standfirst);font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}}"
                 f".q{{margin:var(--space-6) 0 0;padding:var(--space-4) var(--space-6);background:var(--accent);color:var(--accent-foreground);font-family:var(--font-heading);font-size:var(--text-heading);line-height:var(--leading-heading);font-style:italic}}a{{color:var(--link)}}a:focus-visible{{{FOCUS}}}</style>"
@@ -569,7 +569,7 @@ def card(s: dict) -> tuple[str, str, str]:
                 "<div class=\"w\"><pre class=\"c\"><b>$</b> pipeline run nightly-etl --env prod\n✓ 14 steps · 2m 18s</pre>Command palette: <span class=\"k\">⌘</span> <span class=\"k\">K</span></div>", "Mono for anything a person copies or types: commands, ids, keys.")
     if k == "statement":
         return ("Statement rows", f"<style>{head}.c{{padding:0}}table{{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}}th,td{{padding:var(--space-2) var(--space-4);text-align:left;border-bottom:1px solid var(--divider)}}th{{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);color:var(--muted-foreground)}}td.n,th.n{{text-align:right;font-family:var(--font-figure);font-weight:var(--weight-figure)}}tr:last-child td{{border-bottom:0}}.neg{{color:var(--destructive)}}</style>"
-                "<div class=\"w c\"><table><thead><tr><th>Date</th><th>Description</th><th class=\"n\">Amount</th></tr></thead><tbody><tr><td>Oct 02</td><td>Trust distribution</td><td class=\"n\">2,500.00</td></tr><tr><td>Oct 05</td><td>Filing fee</td><td class=\"n neg\">−185.00</td></tr><tr><td>Oct 09</td><td>Interest</td><td class=\"n\">12.48</td></tr></tbody></table></div>", "Figures in tabular numerals, right aligned; a minus sign as well as colour.")
+                "<div class=\"w c\"><table><thead><tr><th>Date</th><th>Description</th><th class=\"n\">Amount</th></tr></thead><tbody><tr><td>Oct 02</td><td>Trust distribution</td><td class=\"n\">2,500.00</td></tr><tr><td>Oct 05</td><td>Filing fee</td><td class=\"n neg\">−185.00</td></tr><tr><td>Oct 09</td><td>Interest</td><td class=\"n\">12.48</td></tr></tbody></table></div>", "Figures in tabular numerals, right aligned; a minus sign as well as color.")
     if k == "appointment":
         return ("Appointment card", f"<style>{b}{head}.c{{display:grid;gap:var(--space-2)}}.d{{display:flex;gap:var(--space-3);align-items:center;font-size:var(--text-body)}}.dt{{min-width:var(--control-height);min-height:var(--control-height);display:grid;place-items:center;border-radius:var(--radius-md);background:var(--accent);color:var(--accent-foreground);font-family:var(--font-label);font-weight:var(--weight-label);font-size:var(--text-label)}}</style>"
                 "<div class=\"w c\"><p class=\"k\">Your next visit</p><div class=\"d\"><span class=\"dt\">Tue<br>14</span><div><h3 class=\"t\">Dr. Okafor, family medicine</h3><p class=\"m\">10:30 AM · Room 3 · Bring your medication list</p></div></div><div class=\"r\"><button class=\"b p\">Check in</button><button class=\"b o\">Reschedule</button></div></div>", "Who, when, where and what to bring, in plain words; two large buttons.")
@@ -609,7 +609,7 @@ def samples(s: dict) -> list[tuple[str, str, str, str]]:
                 f"<style>{W}.r{{display:flex;flex-wrap:wrap;gap:var(--space-2)}}.x{{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:{'var(--radius-full)' if s['ui']['btn_r'].endswith('full)') else 'var(--radius-sm)'};font-family:var(--font-label);font-size:{'var(--text-label)' if s['ui'].get('big') else 'var(--text-caption)'};font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:{s['ui']['case']};border:1px solid var(--divider);color:var(--foreground);background:var(--muted)}}"
                 ".x i{width:.5em;height:.5em;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--accent);color:var(--accent-foreground);border-color:transparent}</style>"
                 f"<div class=\"w r\"><span class=\"x\">{bd[0]}</span><span class=\"x pr\">{bd[1]}</span><span class=\"x ok\"><i></i>{bd[2]}</span><span class=\"x wa\"><i></i>{bd[3]}</span><span class=\"x er\"><i></i>{bd[4]}</span></div>",
-                "A status always pairs its colour with a word."))
+                "A status always pairs its color with a word."))
     tg = c["toggles"]
     out.append(("Toggle list", "Selection",
                 f"<style>{W}.l{{display:grid;max-width:460px;border:1px solid var(--divider);border-radius:var(--radius-lg);background:var(--card)}}.o{{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:var(--control-height);padding:var(--space-2) var(--space-4);color:var(--card-foreground);cursor:pointer}}.o+.o{{border-top:1px solid var(--divider)}}"
@@ -744,11 +744,11 @@ def cover_text(s):
                   f"- **Type:** {', '.join(dict.fromkeys(fo.split(',')[0].strip().strip(chr(39)) for _n, _g, fo, *_ in s['type']))}.",
                   f"- **Adapt first:** {', '.join(p['adaptFirst'])}. **Keep:** {', '.join(p['lockedTokens']) or 'nothing fixed'}."]
     lines += ["", "## Using tokens", "",
-              "Use a token by its name, never its value. Change a value here and every screen and every component sample below follows: colours, type, spacing, corners, shadows, opacity and motion. Each colour shows its light and dark values and is checked against the colour it is read on.",
+              "Use a token by its name, never its value. Change a value here and every screen and every component sample below follows: colors, type, spacing, corners, shadows, opacity and motion. Each color shows its light and dark values and is checked against the color it is read on.",
               "", "## Using components", "",
               "Build screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.",
               "", "## Accessibility", "",
-              "Text reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by colour alone.", ""]
+              "Text reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by color alone.", ""]
     return "\n".join(lines)
 
 
@@ -783,7 +783,7 @@ def build(s):
         return [{"key": f"{prefix}-{i:02d}", "values": {"name": n, "value": v, "usage_note": note}} for i, (n, v, note) in enumerate(rows, 1)]
 
     tables = [
-        table("color", "Colors", "Colour", "Colours", "palette", "Every colour the product uses, light and dark, and what each is read on.",
+        table("color", "Colors", "Color", "Colors", "palette", "Every color the product uses, light and dark, and what each is read on.",
               [name_f, f("group", "Group", "select", choices=groups, choiceColors={g: COLOR_GROUPS[g] for g in groups}),
                f("value", "Value", "text", look={"id": "color_pair", "options": {"contrastWith": {"readsOnField": "reads_on"}}}), f("reads_on", "Read on", "text"), note_f], color_rows),
         table("type_style", "Typography", "Text style", "Text styles", "type", "The text styles: font, weight, size, line height and spacing.",
@@ -802,7 +802,7 @@ def build(s):
         table("motion", "Motion", "Motion", "Motions", "zap", "How fast things move and how they ease in and out.",
               [name_f, f("value", "Value", "text", look={"id": "motion"}), note_f], simple("mot", mo)),
     ]
-    views = [{"token": f"all_{t}", "name": n, "table": t, "kind": "grid", "isDefault": True} for t, n in [("color", "All colours"), ("type_style", "All text styles"), ("spacing", "All spacing values"), ("radius", "All radii"), ("shadow", "All shadows"), ("component", "All components"), ("opacity", "All opacities"), ("motion", "All motions")]]
+    views = [{"token": f"all_{t}", "name": n, "table": t, "kind": "grid", "isDefault": True} for t, n in [("color", "All colors"), ("type_style", "All text styles"), ("spacing", "All spacing values"), ("radius", "All radii"), ("shadow", "All shadows"), ("component", "All components"), ("opacity", "All opacities"), ("motion", "All motions")]]
     surfaces = sum(1 for r in COLOR_ROLES if r[1] == "Surfaces")
     st = s["studio"]
     title = s.get("title", f"Design system — {s['name']}")
@@ -834,13 +834,13 @@ def build(s):
         "business": {"name": st[0], "describes": st[1], "address": {"line1": s.get("line1") or f"{(int(s['id'][2:]) % 90) + 10} {st[3]}", "city": st[4], "region": st[5], "postalCode": st[6], "country": "US"}, "phone": st[7], "website": st[2], "email": f"hello@{st[2]}", "timezone": st[8]},
         "cleanupTag": "use-case:spaces-design-system-board" if base else f"use-case:spaces-design-starter-{s['slug']}",
         "tables": tables, "relationships": [], "sharedBlocks": [],
-        "forms": [{"token": "color_request", "name": "Propose a colour", "describes": "Suggest a new colour for the system.", "audience": "staff", "table": "color",
-                   "fields": [{"fieldKey": "name", "ask": "What is the colour called?", "required": True}, {"fieldKey": "group", "ask": "Which group does it belong to?"}, {"fieldKey": "usage_note", "ask": "Where would it be used?"}],
+        "forms": [{"token": "color_request", "name": "Propose a color", "describes": "Suggest a new color for the system.", "audience": "staff", "table": "color",
+                   "fields": [{"fieldKey": "name", "ask": "What is the color called?", "required": True}, {"fieldKey": "group", "ask": "Which group does it belong to?"}, {"fieldKey": "usage_note", "ask": "Where would it be used?"}],
                    "submitLabel": "Send proposal", "confirmation": "Thanks. It is in the Colors section."}],
         "dimensions": [], "extras": [], "views": views,
         "agent": {"platformAgent": {"id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec", "name": "Answers From Your Tables"}, "name": "Design system assistant",
-                  "variables": [{"name": "primary_table", "table": "color", "describes": "Every colour, its light and dark values and what it is read on."}, {"name": "related_tables", "table": "type_style", "describes": "The text styles."}],
-                  "question": {"ask": "How many colours are in the Surfaces group?", "whyItMatters": s.get("why") or f"{first} keeps the surfaces to a handful so screens stay calm.",
+                  "variables": [{"name": "primary_table", "table": "color", "describes": "Every color, its light and dark values and what it is read on."}, {"name": "related_tables", "table": "type_style", "describes": "The text styles."}],
+                  "question": {"ask": "How many colors are in the Surfaces group?", "whyItMatters": s.get("why") or f"{first} keeps the surfaces to a handful so screens stay calm.",
                                "expect": {"table": "color", "measure": {"op": "count"}, "filter": {"group": "Surfaces"}, "answer": surfaces, "unit": "colours"}}},
         "walk": [{"says": "Open Colors.", "action": {"kind": "open", "surface": "all_color"}, "expect": {"kind": "renders", "surface": "all_color", "minItems": 3}},
                  {"says": "Open Typography.", "action": {"kind": "open", "surface": "all_type_style"}, "expect": {"kind": "renders", "surface": "all_type_style", "minItems": 3}},

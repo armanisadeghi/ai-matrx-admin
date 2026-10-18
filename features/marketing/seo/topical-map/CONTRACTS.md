@@ -15,7 +15,7 @@ close). Local mechanics: `FEATURE.md`. Product truth:
 - Absent is not zero: `selectMapLoadedIncludes`, `selectMapTopicCounts(...).loaded`.
 - `current_topics: []` and an intent with no `topic` are real states (`pageTopicState`).
 - Slugs address topics; ids are doors.
-- Every taste is a knob (§7). No hard-coded colours, thresholds, column sets, modes.
+- Every taste is a knob (§7). No hard-coded colors, thresholds, column sets, modes.
 - One dynamic import edge in this feature: `views/GraphView.tsx` → `GraphViewImpl`. Nothing else
   lazies (code-splitting law, fragmentation rule 3).
 - No barrels. No new top-level features. No hand-typed mandate keys (`MANDATE_KEYS` only).
@@ -172,7 +172,7 @@ button with the consequence sentence in a `ConfirmDialog`; `batch` = checkboxes 
 - `TopicStatusMark.tsx` `{ status: MapTopicStatus | string; compact?: boolean }` — proposed /
   retired / rejected marks; active renders nothing.
 - `IntentDot.tsx` `{ tone: PageIntentTone | PageTopicState; colors: MapIntentColors; label?: string }`
-  — `on_no_topic` / `intent_topic_hidden` use `colors.missing`. Colour names → token classes via
+  — `on_no_topic` / `intent_topic_hidden` use `colors.missing`. Color names → token classes via
   `intentColorClasses.ts` (`green | amber | blue | red | gray_dashed | purple_dashed`; an unknown
   name renders the `missing` treatment AND captures an error — never silently blank).
 - `TopicPath.tsx` `{ mapId: string; slug: string; onNavigate?: (slug) => void }` — root-first

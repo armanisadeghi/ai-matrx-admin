@@ -6,13 +6,13 @@
 
 Component / opener / registry / tile map:
 
-| Panel | Component | Opener | Registry slug | Tile | Catalogue |
+| Panel | Component | Opener | Registry slug | Tile | Catalog |
 |---|---|---|---|---|---|
 | notesWindow | `windows/notes/NotesWindow.tsx` | `openers/notesWindow.tsx` (`useOpenNotesWindow`) | `notes-window` | `tile.notes-pinned` (notes) | multi/window |
 | noteInfoWindow | `windows/notes/NoteInfoWindow.tsx` | `openers/noteInfoWindow.tsx` (`useOpenNoteInfoWindow`) | `note-info-window` | — | singleton/window |
 | quickNoteSaveWindow | `windows/notes/QuickNoteSaveWindow.tsx` | `openers/quickNoteSaveWindow.tsx` (`useOpenQuickNoteSaveWindow`) | `quick-note-save-window` | — | singleton/window |
 | quickTasksWindow | `windows/context-scopes/QuickTasksWindow.tsx` (note: NOT under `windows/tasks/`) | `openers/quickTasksWindow.tsx` (`useOpenQuickTasksWindow`) | `quick-tasks-window` | `tile.quick-tasks` (general) | singleton/window |
-| taskEditorWindow | `windows/tasks/TaskEditorWindow.tsx` | `openers/taskEditorWindow.tsx` (`useOpenTaskEditorWindow`) | `task-editor-window` | — | (no catalogue row found; opener+registry present) |
+| taskEditorWindow | `windows/tasks/TaskEditorWindow.tsx` | `openers/taskEditorWindow.tsx` (`useOpenTaskEditorWindow`) | `task-editor-window` | — | (no catalog row found; opener+registry present) |
 | taskQuickCreateWindow | `windows/tasks/TaskQuickCreateWindow.tsx` | `openers/taskQuickCreateWindow.tsx` (`useOpenTaskQuickCreateWindow`) | `task-quick-create-window` | — | singleton/window |
 
 ---
@@ -71,7 +71,7 @@ No non-canonical/forked core in the chunk. The one "competing duplicate" is stru
 
 ## Top findings (this chunk)
 
-1. **Notes is confirmed Gold (chunk question 1).** Only panel using footer + sidebar + secondary panel together, custom tray preview, full DB→Redux→selectors→core E2E (autosave + realtime middleware), 6 bespoke call sites + Tools-Grid + catalogue. B/C worked-example rows in the master doc are accurate; the open items remain **surface registration + std header controls (agents/help) + help-assistant context** — none present (P1·M).
+1. **Notes is confirmed Gold (chunk question 1).** Only panel using footer + sidebar + secondary panel together, custom tray preview, full DB→Redux→selectors→core E2E (autosave + realtime middleware), 6 bespoke call sites + Tools-Grid + catalog. B/C worked-example rows in the master doc are accurate; the open items remain **surface registration + std header controls (agents/help) + help-assistant context** — none present (P1·M).
 
 2. **`quickNoteSaveWindow` is an orphan window form.** Opener `useOpenQuickNoteSaveWindow` has **0 consumers** and nothing else dispatches the overlay; every real save-to-notes capture uses the `QuickNoteSaveOverlay`/`Popover`/`Dialog` siblings (all over the shared `QuickNoteSaveCore`). The window is a built-but-unreachable 4th chrome → **retire it (cleaner) or give it an opener/tile** (P1·S).
 

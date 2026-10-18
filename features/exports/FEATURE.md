@@ -53,7 +53,7 @@ Sources.
 | `browse/service.ts` | The `EntityListService` triple, built per Library (hence `serviceKey`) |
 | `browse/columns.tsx` | The column registry. Five columns sort (the server's five `order` keys); the rest declare `sortable: false` rather than offering a control that silently falls back |
 | `browse/listConfig.tsx` | The `EntityListConfig` factory, including the one bulk action |
-| `components/*` | Drop zone, adapter catalogue, summary, index progress, quick views, list totals, the send dialog |
+| `components/*` | Drop zone, adapter catalog, summary, index progress, quick views, list totals, the send dialog |
 
 ## The bulk action sends a FILTER, not ids
 

@@ -21,7 +21,7 @@ Elements: `elements/core-syntax-elements.tsx`, merged UNDER every caller's eleme
 | Front matter | `---` YAML / `+++` TOML at the very top | Hidden; `extractFrontmatter` / `useDocumentProperties` / `DocumentPropertiesPanel` expose it. `preprocessProse` passes it byte for byte. |
 | Wikilink / embed | `[[Page]]`, `[[Page\|alias]]`, `[[Page#Heading]]`, `[[note:<uuid>]]`, `![[Page]]` | Resolved through `searchCandidatesAcrossTokens` + registry `hrefFor` (lazy `wikilink-resolver.ts`). Missing → dashed name + "Create" (creates a note via `createEntityRow`). Standalone embed of a note renders its body (NestedRichContent, depth-capped); inline embed is a compact reference. |
 | Directives | `:::name[label]{#id .cls k=v}` … `:::`; leaf `::name`; text `:name[text]{…}` | Known: details, columns/column, tabs/tab, figure, table, aside, toc; text: span, mark, kbd, abbr, sup, sub. Unknown container → neutral div; unknown text/leaf → restored literally ("3:2", "10:30" never lose a colon). |
-| Text colour | `:span[text]{color=danger}`, `:mark[text]{color=green}` (`bg=` too) | Semantic names only (red orange amber yellow green teal blue indigo purple pink gray muted primary success warning danger info); hex ignored. |
+| Text color | `:span[text]{color=danger}`, `:mark[text]{color=green}` (`bg=` too) | Semantic names only (red orange amber yellow green teal blue indigo purple pink gray muted primary success warning danger info); hex ignored. |
 | Definition list | `Term` / `: definition` | remark-definition-list → dl/dt/dd |
 | Super/subscript, highlight | `x^2^`, `H~2~O`, `==text==` | Pandoc rule: no whitespace inside. `~~x~~` is strikethrough. |
 | Emoji | `:fire:` | gemoji names only. |

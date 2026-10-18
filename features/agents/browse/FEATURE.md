@@ -251,7 +251,7 @@ tab, so the new tab read a permanent "0" beside 400 rows.
 | `service.ts`                          | The RPC calls + inline-edit save. Browser → Supabase direct; no Next hop, no Python hop                                                                                  |
 | `listConfig.tsx`                      | THE config handed to `<EntityListPage>` — service, columns, scopes, row-actions hook + modals, card/row renderers, copy config                                           |
 | `surface.ts`                          | Adapts the live entity-list query/view controller to the `matrx-user/agents` surface manifest and routes `catalog_filters` writes back through the visible list controls |
-| `useAgentRowActions.tsx`              | Binds the registry to behaviour; owns the modals as page-level singletons (not one `ShareModal` per row)                                                                 |
+| `useAgentRowActions.tsx`              | Binds the registry to behavior; owns the modals as page-level singletons (not one `ShareModal` per row)                                                                 |
 | `agentActionRegistry.tsx`             | THE action list                                                                                                                                                          |
 | `columns.tsx`                         | EVERY column the row can show, with `defaultHidden` / `locked` / `scopedToShared` flags (spec type + cell helpers from `lib/entity-list/columns`)                        |
 | `components/AgentBrowsePage.tsx`      | Thin: `<EntityListPage config>` + this page's slots (notice, Orchestras/New buttons)                                                                                     |
@@ -350,7 +350,7 @@ hostile at 2,000.
 - **2026-08-08 (extraction)** — Steps 2–5 of the canonical entity-list
   extraction: the generic halves (query hook, scope tabs, toolbar, filter
   panel, column picker, table, page shell) moved to `lib/entity-list/`; this
-  surface is now `listConfig.tsx` + `<EntityListPage>`. Behaviour unchanged;
+  surface is now `listConfig.tsx` + `<EntityListPage>`. Behavior unchanged;
   the menu's Rename entry (previously latent — no dialog rendered) now opens a
   TextInputDialog.
 - **2026-08-08** — Added the semantic Agents H1, named the favorite-column

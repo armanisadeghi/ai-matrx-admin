@@ -32,7 +32,7 @@ You were given one batch: files, findings, and the exact replacement for each. Y
 
 | Miss | Do instead |
 |---|---|
-| A warning about what a control does (Apply refused while a red cell stands; the goal is frozen once set) moved to a code comment | Put it in **that control's tooltip** (`title=`) — it is behaviour the person hits |
+| A warning about what a control does (Apply refused while a red cell stands; the goal is frozen once set) moved to a code comment | Put it in **that control's tooltip** (`title=`) — it is behavior the person hits |
 | Shortening dropped the subject ("Updates the draft only") or narrowed a noun until false ("dates" where the form also holds key IDs) | The short line still says **what acts** and stays **true of everything it covers** |
 | One branch of a `cond ? "a" : "b"` trimmed, the other left long | Both branches are siblings — same shape, similar length |
 | Subtext removed from two of three switches | Remove it from every sibling, or give all a parallel line |

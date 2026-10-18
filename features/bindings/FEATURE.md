@@ -172,7 +172,7 @@ binding has no opinion; the layer below decides".
 
 The promise is a FACT about the mapping, never a preference, and it is re-checked at
 three points rather than trusted once: the bar refuses to offer it, `set_binding`
-refuses to store it (down to `false`, loudly), and `resolve_mandate` refuses to honour
+refuses to store it (down to `false`, loudly), and `resolve_mandate` refuses to honor
 it against the map that actually won — because a later layer's map wins outright, so a
 promise can go stale without anyone touching the binding that carries it. When the middle
 one fires, its refusal comes back as prose on `BindingResult.notes` and the bar prints it
@@ -223,7 +223,7 @@ A shortcut has painted itself out of that row since the cutover —
 `.allowChat`, `.writePolicies`. A JOB stored the identical row and **nothing
 read it**, so every mandate launched on whatever literal its call site happened
 to type. Both resolvers (`service.ts` and its SSR twin `service.server.ts`) now
-carry `ResolvedMandate.presentation`, and the thunk honours it on the mandate
+carry `ResolvedMandate.presentation`, and the thunk honors it on the mandate
 branch where the caller said nothing — caller first, then the job, then nothing,
 with `??` so a stored `false` is still an answer. Without that half the drawer
 would have been a dead control.
@@ -273,7 +273,7 @@ never become an answer, and absent means the declaration gave none — never inv
 
 - 2026-09-08 — **A RUNG DESCRIBED IS A RUNG ANSWERED, AND AN EMPTY CELL NAMES ITS RUNG** (one-resolution FIX-R6/F3, from a Sonnet walk of production v0.4.1722). A walker set an org-homed job's bottom-rung holder, watched *"Fulfilled by"* name the new holder, hard-reloaded, and read *"No holder yet — pick an agent or a workflow to start mapping, or come back when the intelligence exists."* inside the HOLDER cell, directly beside a block headed **THE JOB'S OWN DEFAULT** — and reported the save as lost. Nothing was lost: the cell was answering about the USER rung, which is empty and correctly so. Two sentences were lying by omission and both are fixed as one class. (1) The empty-holder sentence had NO SUBJECT; it now reads *"Nothing is set at &lt;this rung&gt; yet…"* and adds either *"That is only about this rung: whatever a rung below it names is still what runs."* or, at the bottom rung, *"This is the bottom rung, so while it is empty the job has no holder of its own at all."* (2) The dashed *"The job's own default"* block said what that rung COVERS and offered a button to go set it, and never said WHO HOLDS IT TODAY — so the one fact the reader wanted was on no screen they were standing on. `ScopeHolderBar` gained `defaultHolderNow`, fed by `OneBindingWorkspace` from the SAME `defaultHolderDraftOf` accessor that seeds the draft at that rung, so the sentence and the editor cannot disagree: *"Held by &lt;name&gt; today."* / *"Nobody holds it — this job has no default of its own."* / *"Reading who holds it…"*, and an unresolvable holder is stated as unresolvable rather than printed as an id. Same walk-driven class, one cell over: three buttons `.toLowerCase()`d a rung label that carries an ORGANIZATION'S NAME (*"Set default for write target sandbox"*); labels that can carry a name are no longer lowercased anywhere on this bar. Guard: `__tests__/default-holder-is-stated.test.tsx`, RED 6/6 against `0d57acc92e` (the received strings carry the walker's exact sentence), GREEN 6/6.
 
-- 2026-09-08 — **A HOST MAY PIN THE RUNGS IT MANAGES** (`fixedRung`, one-resolution FIX-R4). P13 made the rung a control inside the flow, and that is right for every host whose question really is *"which rung am I setting"*. It is wrong for a host that IS one rung: `/administration/mandates/[key]` is the platform's own page, and it rendered a rung selector defaulting to **User** with *"This applies everywhere you run"* beside it. `fixedRung` takes one rung or a FIXED SET; the bar then STATES the rung (and offers its sibling by name) instead of opening a scope select, and drops the ladder line, the "not offered here" note and the bottom-rung box, all of which are about rungs the host does not manage. The admin route pins `["system", "global"]` — the job's own default holder and the platform-wide binding above it, the two rungs that decide for everybody — ordered so the one that answers TODAY is where the page opens. Nothing changes for an unpinned host. Alongside it, `system-rung.ts` carries the ONE rule for *"a personal agent may not be the system answer"*, used by the bar's alert AND by `saveRefusal`, which now **hard-refuses** that write (Save disabled, reason + remedy adjacent) — before this the picker was restricted and the save was not, so an agent drafted earlier or handed back by `GlobalBindAgentGuard` could still be written as the answer every user on the platform gets. 🔶 **Declared deviation:** the brief's wording for the pinned bar was *"System — decides for every user"*; FIX-R3 landed the mandate's own default as a fourth rung labelled *"System default"* in the same files, so the platform-wide binding is titled **"System-wide binding — decides for every user"** — the collision FIX-R3 reported is closed here rather than left for a reader to trip over. Guards: `features/mandates/admin/__tests__/system-rung-holder-refusal.test.tsx` (RED: the scope picker rendered on the pinned host; the shipped `saveRefusal` had no branch for a non-system holder).
+- 2026-09-08 — **A HOST MAY PIN THE RUNGS IT MANAGES** (`fixedRung`, one-resolution FIX-R4). P13 made the rung a control inside the flow, and that is right for every host whose question really is *"which rung am I setting"*. It is wrong for a host that IS one rung: `/administration/mandates/[key]` is the platform's own page, and it rendered a rung selector defaulting to **User** with *"This applies everywhere you run"* beside it. `fixedRung` takes one rung or a FIXED SET; the bar then STATES the rung (and offers its sibling by name) instead of opening a scope select, and drops the ladder line, the "not offered here" note and the bottom-rung box, all of which are about rungs the host does not manage. The admin route pins `["system", "global"]` — the job's own default holder and the platform-wide binding above it, the two rungs that decide for everybody — ordered so the one that answers TODAY is where the page opens. Nothing changes for an unpinned host. Alongside it, `system-rung.ts` carries the ONE rule for *"a personal agent may not be the system answer"*, used by the bar's alert AND by `saveRefusal`, which now **hard-refuses** that write (Save disabled, reason + remedy adjacent) — before this the picker was restricted and the save was not, so an agent drafted earlier or handed back by `GlobalBindAgentGuard` could still be written as the answer every user on the platform gets. 🔶 **Declared deviation:** the brief's wording for the pinned bar was *"System — decides for every user"*; FIX-R3 landed the mandate's own default as a fourth rung labeled *"System default"* in the same files, so the platform-wide binding is titled **"System-wide binding — decides for every user"** — the collision FIX-R3 reported is closed here rather than left for a reader to trip over. Guards: `features/mandates/admin/__tests__/system-rung-holder-refusal.test.tsx` (RED: the scope picker rendered on the pinned host; the shipped `saveRefusal` had no branch for a non-system holder).
 
 - 2026-09-08 — **The BOTTOM RUNG can be set, and the screen names who may set it
   (FIX-R3/W3).** A fresh Sonnet walk of v0.4.1718 found a mandate's own default holder —
@@ -324,7 +324,7 @@ never become an answer, and absent means the declaration gave none — never inv
   Select exit lasts 150ms and Radix intentionally retains `pointer-events:none` until Presence
   unmounts it, while the guard's 50ms quiet window previously repaired and warned on every
   ordinary choice. The guard now trusts an explicitly closed layer only while `getAnimations()`
-  reports an active exit, and rechecks as soon as that animation ends or is cancelled; a finished
+  reports an active exit, and rechecks as soon as that animation ends or is canceled; a finished
   layer with the same lock is still repaired and reported.
 
 - 2026-08-31 — **The rung picker closes before its dirty-draft confirm opens.** Both mandate
@@ -409,7 +409,7 @@ never become an answer, and absent means the declaration gave none — never inv
   `AdvancedSection.omit`/words (a control whose value goes nowhere is hidden,
   never shown dead), and `BatchGridParts.ApplyRefusal`. **The inversion closed
   on the way through:** a job's stored presentation had no reader anywhere, so
-  both resolvers now carry it and `launchAgentExecution` honours it where the
+  both resolvers now carry it and `launchAgentExecution` honors it where the
   caller said nothing. **B3's flagged sibling fixed at its class:** the shortcut
   batch grid answered its Apply refusal with a `toast.error` thrown from inside
   the click handler; it is now a derived fact that disables the button with its
@@ -419,7 +419,7 @@ never become an answer, and absent means the declaration gave none — never inv
   shared `BindingSuggestionsTab` at a fifth call site, taught this domain's nouns and
   D18.2 combinations (the ONE mapper agent gained a `combination_rule` variable and an
   optional ordered `surface_values`, so the call site decides and the surface path's
-  behaviour is unchanged; extras it cannot store are discarded WITH a report).
+  behavior is unchanged; extras it cannot store are discarded WITH a report).
   `mandate.binding.auto_run` + `AutoRunBar` close the auto-run inversion. `OfferedValue`
   gained a static `example` end to end (declaration → `offer_for` → input surface →
   the rail and the middle). `direct_value` and `prompt_user` became real sources on the

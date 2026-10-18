@@ -3,7 +3,7 @@
 
 Run:  cd /Users/armanisadeghi/code/aidream && uv run --with asyncpg --with httpx \
         python /Users/armanisadeghi/code/matrx-frontend/scripts/hr/hr_l1_61_scoped_population_and_queue_falsification.py
-      (add `--baseline` to record the PRE-fix behaviour; the expectations then invert for the
+      (add `--baseline` to record the PRE-fix behavior; the expectations then invert for the
        three rows the migration is there to change, and the run is expected to FAIL on them.)
 
 RESIDUAL 1 — the scope-restricted grant. hr_l1_59 bound the tenant but not the POPULATION: with a

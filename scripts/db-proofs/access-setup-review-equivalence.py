@@ -975,7 +975,7 @@ def mode1_class(d, known, opening_pairs, upper_in, cycle_org):
 
 def opening_class(row):
     """The opening-list class of one difference (an OPENING: legacy false, model true), or None.
-    seats are labelled by pg_temp.seat_labels: 'hr(fallback)' = held only through the fallback;
+    seats are labeled by pg_temp.seat_labels: 'hr(fallback)' = held only through the fallback;
     'employee(linked)' = the employee seat of a login linked after the review was created."""
     ci, caller, review, door, fact, part, legacy, predicted, seats = row
     labels = seats or []

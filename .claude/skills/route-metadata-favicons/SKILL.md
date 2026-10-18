@@ -66,17 +66,17 @@ tile an unreadable smear. 1 char is fine when a route is alone in its space; 3 i
 never fine. 132 three-character codes existed on 2026-09-21 and all of them were
 collapsed. `pnpm check:favicon-letters` fails on any letter over two characters.
 
-**2. Uniqueness is PER COLOUR, not global.** *"Since the color is what sets them
+**2. Uniqueness is PER COLOR, not global.** *"Since the color is what sets them
 apart."* `/administration/agents` wears the **same** `AG` as `/agents` — in
 near-black instead of rose. An admin page that mirrors a real feature **reuses
 that feature's exact code**; it never gets an `A`-for-Admin prefix, because the
 black tile already says admin. Two routes only collide when they resolve to the
-SAME colour and neither is an ancestor of the other.
+SAME color and neither is an ancestor of the other.
 
 Rule 2 is what makes rule 1 possible. A rigid "every page in this family starts
 with the family's letter" scheme runs out of room past ~26 sub-pages — so drop
-that constraint. The colour carries the family; the two letters only need to be a
-distinct, roughly mnemonic code for that page *within its colour*. `/agents` uses
+that constraint. The color carries the family; the two letters only need to be a
+distinct, roughly mnemonic code for that page *within its color*. `/agents` uses
 `AG`, `AB`, `AH`, `AP`, `LA`, `SH`, `SU`, `WI`, `CP`, `BT`, `BM`, `BR`, `BS`,
 `BP`, `TL`, `BU`, `BV`, `NB`, `NC`, `NI`, `NT`, `NG`, `NM`, `SX` — no shared first
 letter, no collisions, every one readable.
@@ -152,7 +152,7 @@ All primary routes use 2-letter favicon codes. The pattern:
 The registry (`constants/favicon-route-data.ts`) is the authority — this table is
 the shape of it, not a copy of all ~200 entries. Read the file before adding one.
 
-### The colour taxonomy (Arman, 2026-09-18)
+### The color taxonomy (Arman, 2026-09-18)
 
 > "Red: Agents. Blue: Chat. Yellow: notes, docs, etc. Light blue: Data, sheets,
 >  etc. Purple: Workflows, etc. Green: Marketing. Need a good color for admin —
@@ -175,14 +175,14 @@ A route in a family references the constant; it never repeats the hex.
 Two choices worth knowing before you second-guess them:
 
 - **Docs yellow `#eab308` is deliberately not the demo mustard `#ca8a04`.** The
-  demo colour is LOCKED, so a docs tab and a demo tab would otherwise be the same
+  demo color is LOCKED, so a docs tab and a demo tab would otherwise be the same
   badge; `#eab308` is brighter and more saturated and reads apart at 16px.
 - **The core hub is orange.** Red, blue, yellow, cyan, violet, green and
   near-black are all spoken for, so orange is the one primary hue left that says
   "front door, not a feature" — it is not Chat's blue and not Data's cyan.
 
-A route that is not in a family keeps its own curated colour. A family is a
-statement about kinship, not a licence to repaint the registry.
+A route that is not in a family keeps its own curated color. A family is a
+statement about kinship, not a license to repaint the registry.
 
 ### Color Selection Rules
 

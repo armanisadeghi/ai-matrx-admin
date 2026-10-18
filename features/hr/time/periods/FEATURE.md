@@ -2,7 +2,7 @@
 
 **Status:** `scaffolded` — the surfaces are built; **no SQL RPC in this lane exists yet**
 **Tier:** `2` · **Lane:** L3 / register item **HRB-015** · **Last updated:** `2026-08-27`
-**Behaviour spec:** `../../../../../common-docs/systems/human-resources/projects/hr-domain/specs/SPEC-TIME.md` §2.7, §7 —
+**Behavior spec:** `../../../../../common-docs/systems/human-resources/projects/hr-domain/specs/SPEC-TIME.md` §2.7, §7 —
 *that* document says what these screens do; this file says how the code is arranged and what a
 change here must not break.
 
@@ -14,7 +14,7 @@ and the corrections tagged to it after lock.
 
 ## THE LAWS — each one has cost somebody money somewhere
 
-1. **TWO STATE MACHINES, LABELLED DISTINCTLY** (§14 D8). The header is `hr.pay_period.state`
+1. **TWO STATE MACHINES, LABELED DISTINCTLY** (§14 D8). The header is `hr.pay_period.state`
    (7 values); the rows are `hr.pay_period_employment.state` (6 values). They share three token
    spellings and mean different things. `PeriodStatePanel` puts them in separate blocks under
    *"This period"* and *"Timecards in it"*, and `periodStateMachine.ts` keeps two label maps that

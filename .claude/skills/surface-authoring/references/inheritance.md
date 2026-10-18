@@ -8,9 +8,9 @@ Read this when a surface declares `inheritsFrom`, is the parent of other surface
 
 Inheritance is not a convenience; it is how one CONCEPT keeps ONE name across a
 whole family so an agent bound once works everywhere. Get the division of
-labour right and children stay tiny; get it wrong and you split the vocabulary.
+labor right and children stay tiny; get it wrong and you split the vocabulary.
 
-**The division of labour**
+**The division of labor**
 
 | The PARENT conveys | The CHILD owns |
 |---|---|

@@ -58,7 +58,7 @@ leads with `is_platform_admin()`) is the authorization layer.
 **Saving = `live_equivalent_cost_usd − actual_cost_usd`**: the item's actual
 tokens at the same model's live catalog rate, minus the bill. **`est_live_cost_usd`
 is a pre-submission estimate and is never a saving basis** — the 2026-09-13 run
-read 76.8% on it for what was really 50%. It is shown only labelled
+read 76.8% on it for what was really 50%. It is shown only labeled
 ("Pre-submission estimate", "est. live"). Guard: aidream
 `scripts/check_batch_savings_source.py`. Contract: `features/batch-savings/FEATURE.md`.
 
@@ -108,7 +108,7 @@ detail has a "Show its N work items" button that narrows the items tab to
 is the dead-end class `no-dead-ends` forbids.
 
 A cost cell on an unsettled row (`status !== 'completed'`) says **not billed
-yet** and shows only the labelled estimate (`est. live`) — never `$0.0000 -100%`,
+yet** and shows only the labeled estimate (`est. live`) — never `$0.0000 -100%`,
 which would read as a measured total discount. A settled row's discount is
 computed from `live_equivalent_cost_usd`; a row without one says "live price not
 recorded".
@@ -127,7 +127,7 @@ door probe (`lib/diagnostics/errorTierRules.ts`), not this surface.
 
 - **2026-09-14** — Savings band, cost cells and detail fields moved off
   `est_live_cost_usd` onto `live_equivalent_cost_usd` via `batch.savings_summary`;
-  the estimate is labelled wherever it still shows; the band links to the platform
+  the estimate is labeled wherever it still shows; the band links to the platform
   spend dashboard, which now leads with the same figure.
 - **2026-09-11** — Cross-tab jumps (item ↔ submission), honest unsettled cost
   cell, `Input` imported from `@ai-matrx/design-system` (the host

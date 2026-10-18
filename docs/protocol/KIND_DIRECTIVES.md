@@ -43,7 +43,7 @@ directive routes through the same skeleton→fill→component path as every othe
 the first ~30 characters — which is what makes a kind-specific loading state possible at
 all, and is why the raw-JSON-then-swap defect (Arman, 2026-08-21) cannot happen here.
 Generated schemas pin `__kind` as `const` and declare it first; Python dicts preserve
-insertion order and `json.dumps` honours it, so declaration order *is* the wire guarantee
+insertion order and `json.dumps` honors it, so declaration order *is* the wire guarantee
 (pinned by `aidream/services/content_ir_directives/tests/test_schema_gen.py`).
 
 **`items` stays** because batch semantics are load-bearing: the per-item ledger, the
@@ -384,7 +384,7 @@ component, so a consumer degrades to the generic structured viewer instead of in
 The set of `None`s is the burndown list — 1 of 56 shapes carries a kind today
 (`create_agent_definition` → `agent_definition`).
 
-**The division of labour this buys: the directive layer owns the ACTION, the kind system owns
+**The division of labor this buys: the directive layer owns the ACTION, the kind system owns
 the DISPLAY.** matrx-frontend renders every side-effect directive with one card and draws each
 item through that item's own kind component — no directive-specific rendering code.
 
@@ -456,7 +456,7 @@ Every `side_effect` class obeys this, whichever noun it names.
   reaching `auto` — `apply_policy: "auto"`, `auto_apply: true`, an `allow` list, or the
   agent-declared `matrx_actions.directive` path — takes effect ONLY inside an organization
   whose knob **`agent_directives.auto_apply_allowed`** is on. It is **off by default**;
-  where it is off the agent's flag is honoured as **`ask`** and the proposal card appears.
+  where it is off the agent's flag is honored as **`ask`** and the proposal card appears.
   Whether a model may write to your data without asking you is an opinion about someone
   else's data, and opinions become knobs: organizations decide, never agents. The gate is a
   NARROWING — it can only turn an agent's `auto` into `ask`, never an `off` into a write —
@@ -668,7 +668,7 @@ you are reading this because you want to import the shim somewhere else: the ans
   renamed to `kind_directives_catalog.generated.json` (the generator had still been
   writing the old name, so the guard had been comparing a snapshot nothing refreshed).
 - 2026-08-23 — **The merge.** Arman ruled Kind Directives and Content IR one system. The
-  4-key shell (`matrx_version`/`kind`/`type`/`items`) retired in favour of the two-key
+  4-key shell (`matrx_version`/`kind`/`type`/`items`) retired in favor of the two-key
   `__kind` shell; the `(kind, type)` registry re-keyed by slug; the position law
   consolidated from four sites to two predicates; the collision guard's `RecordRef`
   exemption and `{transcript, transcript_segment}` grandfather set deleted; the read-only

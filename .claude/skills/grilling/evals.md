@@ -64,7 +64,7 @@ Observational, not pass/fail: vision questions asked open without a rec; orderin
 
 **Round-2 criteria:** R1 recorded answers reflected and the frontier recomputed (killed questions
 named, children unblocked — item 8 appears or dies per the answer to 7) · R2 the skipped question
-ships its rec, labelled default-not-ruled · R3 a partial answer gets a follow-up, not smoothing ·
+ships its rec, labeled default-not-ruled · R3 a partial answer gets a follow-up, not smoothing ·
 R4 numbering continues from round 1's max + 1 · R5 still ≤ 4 questions, still ends with the three lines.
 
 ### Lanes
@@ -133,7 +133,7 @@ extension."*
 | | Result |
 |---|---|
 | R1 frontier recomputed | **PASS** — (c) keeps named-person access alive, so the blocked child (item 8) is exactly what surfaced as Q3: *"When the sharer picks 'only this one person,' and that person isn't on AI Matrx yet."* Nothing died under (c), and nothing dead was claimed. |
-| R2 skipped ships as default | **PARTIAL** — the default ships and is stated (**D12:** *"Skipping Q2 means we start recording which share brought in each new sign-up… and pay out nothing."*) but is not labelled "default, not ruled". |
+| R2 skipped ships as default | **PARTIAL** — the default ships and is stated (**D12:** *"Skipping Q2 means we start recording which share brought in each new sign-up… and pay out nothing."*) but is not labeled "default, not ruled". |
 | R3 partial answer → follow-up | **PASS** — the new information was not smoothed in; it became **Q4** with the ambiguity named: *"That sentence has two possible meanings and they're different pieces of work, so I want to build the right one."* |
 | R4 numbering continues | **PASS** — Q3, Q4; D11–D14. |
 | R5 ≤4 + three closing lines | **PASS** — 2 questions; `Decided (override by number, continuing from last round)`, the skip-ships line, the what-else line. |

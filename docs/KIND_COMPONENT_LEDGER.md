@@ -425,7 +425,7 @@ finished it. **All 83 kinds now carry an ACTIVE `(kind,'web','output')` row poin
   resolver**. Their missing input rows are the CORRECT absence the companion-gap note
   describes, not the copy-C gap: `kind-input-resolution.ts` states in its own contract that a
   stray input-role row on a machine contract "is a registry defect, not a license to render."
-  Registering the D1 floor here would have planted eight such defects for zero behaviour change.
+  Registering the D1 floor here would have planted eight such defects for zero behavior change.
 
   **One thing copy-D did not flag — a near-miss on the NO-LEGACY rule, resolved as keep.**
   `features/marketing/components/reputation/ReputationWorkspace.tsx` (937 lines) DOES consume

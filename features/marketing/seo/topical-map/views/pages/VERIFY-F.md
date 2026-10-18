@@ -34,7 +34,7 @@ prints the URL; open the hostname it prints, never `localhost:3001`).
    "not measured for this page". If every page on All Green is readable, note that the hidden
    case could not be exercised here and cite the unit test that covers it.
 7. Page size 25 → 100 → 1000: paging is a server operation (watch the network tab: a new
-   `list_page_intents` call with the new `p_limit`/`p_offset`); the `1000` cap is honoured.
+   `list_page_intents` call with the new `p_limit`/`p_offset`); the `1000` cap is honored.
 
 ## 2. Filters
 
@@ -42,7 +42,7 @@ prints the URL; open the hostname it prints, never `localhost:3001`).
    one → the table narrows (server call carries `p_topic_slug`); a chip appears; clearing
    the chip restores the full list.
 2. Disposition = redirect, State = proposed, Source = agent: each is a server or client
-   narrowing as labelled; when a CLIENT-side filter (text, traffic, source) is active the
+   narrowing as labeled; when a CLIENT-side filter (text, traffic, source) is active the
    header says "narrowed within the N loaded of TOTAL — page through to see the rest".
 3. Traffic = "low (≤ 0 clicks)": the threshold is the `pages_low_traffic_clicks_max` knob
    (change it in the map settings to 5 and watch the label follow). Rows whose numbers are
@@ -99,7 +99,7 @@ prints the URL; open the hostname it prints, never `localhost:3001`).
 ## 5. Graph and table show them leaving (acceptance §6.6)
 
 After §3: open the graph view in convergence mode → the topic shows the leaving pages in the
-`leaving` colour and the planned page in the `planned` treatment (purple dashed). Open the
+`leaving` color and the planned page in the `planned` treatment (purple dashed). Open the
 table view → the topic's leaving/arriving rollup counts the 200. (Those two views are Lanes C
 and B; if they do not yet show it, record that here — it is their row, not this one.)
 
@@ -127,7 +127,7 @@ and B; if they do not yet show it, record that here — it is their row, not thi
 1. Break a call on purpose (e.g. filter by a topic slug that was just retired on another tab)
    → the RPC's own P0002 sentence renders, unaltered, with its code. Screenshot.
 2. 375×812: the filter bar wraps, the table becomes the canonical phone cards, the bulk bar is
-   reachable, popovers fit. Light and dark: no raw colours, the intent dots read in both.
+   reachable, popovers fit. Light and dark: no raw colors, the intent dots read in both.
 3. A non-member opening the URL gets the same denial as a nonexistent map id.
 
 Return: what is missing against §2.7 / §6 of the vision, each control you actuated, the

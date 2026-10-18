@@ -471,11 +471,11 @@ Questions / clarifications: ping the backend team before deploying FE changes th
 
 # Phase 1 — Universal Thumbnail Baseline (Added 2026-05-16)
 
-> **Status:** Shipped to `main`. **Wire contract is purely additive** — every shape from Phase 0 is preserved. The new behaviour is: every file uploaded to the platform now gets `og_url`, `thumbnail_url`, and `tiny_url` variants automatically, regardless of file kind.
+> **Status:** Shipped to `main`. **Wire contract is purely additive** — every shape from Phase 0 is preserved. The new behavior is: every file uploaded to the platform now gets `og_url`, `thumbnail_url`, and `tiny_url` variants automatically, regardless of file kind.
 
 ## What changed
 
-**Server-side behaviour change, no FE wire-shape change.** Phase 0 introduced `UnifiedMediaBlock` and renamed `file_size` → `size_bytes`; Phase 1 lights up universal thumbnails on top of that contract without changing any field names or types. The FE can adopt Phase 1 simply by *trusting* that `thumbnail_url` is always available for any visual upload.
+**Server-side behavior change, no FE wire-shape change.** Phase 0 introduced `UnifiedMediaBlock` and renamed `file_size` → `size_bytes`; Phase 1 lights up universal thumbnails on top of that contract without changing any field names or types. The FE can adopt Phase 1 simply by *trusting* that `thumbnail_url` is always available for any visual upload.
 
 Before Phase 1: only image uploads received `og_url` / `thumbnail_url` / `tiny_url` variants. PDFs, videos, audio, and unknown files showed no preview in galleries — the FE had to fall back to category icons.
 
@@ -536,7 +536,7 @@ Every AI image / audio / video persisted via the matrx-ai pipeline (OpenAI, Goog
 
 ## Migration recipe for the FE
 
-**No code change is *required* for Phase 1** — every wire field is the same. To take advantage of the new behaviour:
+**No code change is *required* for Phase 1** — every wire field is the same. To take advantage of the new behavior:
 
 1. **Galleries / file pickers / thumbnail grids**: prefer `Asset.variants["thumbnail_url"].url` (or `Asset.primary_url` when `primary_key === "thumbnail_url"`) over `MatrxImageBlock.thumbnail_url`. For mixed file-type listings, this gives you a real thumbnail for PDFs and videos that previously fell back to icons.
 
@@ -818,7 +818,7 @@ Stamped onto the `MediaBlockData.block.metadata` field for every AI-generated as
 - `cld_files.thumbnail_storage_uri` + `cld_files.thumbnail_url` **columns dropped** (migration 011). Every reader migrated to query the variants store directly via the new `thumbnail_resolver` helper.
 - `UnifiedMediaBlock.thumbnail_url` + `UnifiedMediaBlock.thumbnail_uri` **fields removed** from every block kind. The canonical source of truth is `Asset.variants["thumbnail_url"].url` via `GET /assets/{file_id}` (or the bulk thumbnail resolver on the backend).
 - The TUS upload pipeline + legacy `/files/upload` paths now write thumbnails through the Phase 1 variants pipeline — every uploaded file gets the SOCIAL_BASELINE (`og_url`, `thumbnail_url`, `tiny_url`) regardless of mime kind.
-- `FileRecord.thumbnail_url` on `GET /files/*` endpoints **still works** — now populated by the variants resolver instead of the dropped column. The FE-visible field name + behaviour is unchanged.
+- `FileRecord.thumbnail_url` on `GET /files/*` endpoints **still works** — now populated by the variants resolver instead of the dropped column. The FE-visible field name + behavior is unchanged.
 
 ## What broke (FE wire shape changes)
 
@@ -846,7 +846,7 @@ Direct DB readers (you shouldn't have any — the API is the contract — but ch
 
 ### `FileRecord.thumbnail_url` on `/files/*` endpoints
 
-The field name + behaviour is preserved. Backend changes:
+The field name + behavior is preserved. Backend changes:
 
 - `GET /files` (list) — bulk-resolves thumbnails for every record in the page via parallel variant lookups; field stays populated when a thumbnail variant exists.
 - `GET /files/{file_id}` — single thumbnail lookup, parallelised with the URL minting.
@@ -859,11 +859,11 @@ If you saw `thumbnail_url` populated on `FileRecord` yesterday, you'll see it po
 
 Unchanged. `cld_files.metadata.generation` and `MediaBlockData.block.metadata.generation` still carry the typed `MediaGenerationMetadata` from Phase 2.
 
-### Phase 1 variants behaviour
+### Phase 1 variants behavior
 
 Unchanged + extended. Now applies to **every** newly-uploaded file regardless of upload path:
 
-| Upload path | Phase 1 behaviour | Phase 1b behaviour |
+| Upload path | Phase 1 behavior | Phase 1b behavior |
 |---|---|---|
 | `POST /assets` | SOCIAL_BASELINE variants rendered via universal dispatcher | unchanged |
 | AI-generated media (matrx-ai persistence) | SOCIAL_BASELINE variants rendered via universal dispatcher | unchanged |
@@ -1070,7 +1070,7 @@ These fields have been on the wire shape since Phase 0 (defined on the block mod
 
 # Phase 1d — Audio waveform rendering (Added 2026-05-16)
 
-> **Status:** Shipped to `main`. **Pure server-side behaviour change** — zero wire-shape change.
+> **Status:** Shipped to `main`. **Pure server-side behavior change** — zero wire-shape change.
 
 ## TL;DR
 
@@ -1108,7 +1108,7 @@ audio/mpeg upload → pydub decodes via ffmpeg → 800 peak amplitudes
 
 ## Failure modes
 
-The dispatcher catches every per-kind rasteriser failure and falls back to the mime-family icon (current behaviour). So:
+The dispatcher catches every per-kind rasteriser failure and falls back to the mime-family icon (current behavior). So:
 
 - Corrupt audio file → falls back to "AUDIO" icon (no upload failure)
 - ffmpeg missing in the deployment environment → falls back to icon
@@ -1613,7 +1613,7 @@ new phases ship to populate the latest fields on legacy data.
 - **No DB migrations.** Both scripts use existing columns + JSONB fields.
 - **No FE work required.** Once both CLIs have run, the FE renderers
   that already work for fresh uploads will work identically for legacy
-  data — same fields, same shape, same behaviour.
+  data — same fields, same shape, same behavior.
 
 ## Phase 1d.2 + 3c backend reference
 

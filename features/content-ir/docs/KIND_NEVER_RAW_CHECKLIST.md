@@ -236,7 +236,7 @@ no longer lifted; `embedded-kind-container-recovery.test.ts` updated).
       renders from; `draws-raw-kind-json.ts` calls it with the MESSAGE's stream state and follows dispatch (JSON-family
       code = raw card, other languages = their renderer / quoted source, text = raw when it still holds a kind region).
       Leak it found: a settled block inside a streaming message got no terminal envelope (valid jsonc/json5/unlabelled
-      kind drawn as the broken floor until the message ended) — `withTerminalEnvelope` honours `isStreamingBlock === false`.
+      kind drawn as the broken floor until the message ended) — `withTerminalEnvelope` honors `isStreamingBlock === false`.
       Guards `frame-judge-matches-renderer.test.ts`, midstream V5a; run-path/ShapeStreamTab judge every frame.
 - [x] V6. `[{"x":1}, {"__kind` / `{"data":{"__kind` flashed raw before the colon. A trailing object key that has
       reached `"__k` (key position only) is undecided → loader. `_id`, `__type`, string values never flicker.
@@ -303,7 +303,7 @@ Door added: `surfaces/kind-text-label.ts` (`kindTextLabel`) — answer text → 
       through the kind's label). Guard `collab-subtitle-never-raw-kind.test.ts`.
 - [x] Z2 (S4). "Worth keeping?" add-to-rulebook: `appendDraftRuleFromMessage` keeps the kind's markdown as the rule statement and
       `deriveRuleNameFromContent` names it from the kind's title (the dialog preview converts too). Guard in `oracleTapDraft.test.ts`.
-- [x] Z3 (S5). Artifact version history: `ArtifactVersionBody` draws a kind version through `AnswerValueView`; "View JSON" is the labelled raw
+- [x] Z3 (S5). Artifact version history: `ArtifactVersionBody` draws a kind version through `AnswerValueView`; "View JSON" is the labeled raw
       toggle (`data-kind-source="explicit"`); the compare diff reads the readable text; restore keeps the stored data. Guard
       `artifact-version-never-raw-kind.test.tsx`.
 - [x] Z4 (S-compare). Compare with clipboard / set base / compare with base: `contentForDestination` (the diff is read by a person).
@@ -341,7 +341,7 @@ accumulator), read through `isQuotedSourceXmlBlock` (`json-kind-signal.ts`) by X
       Splitter: incomplete XML is recovered too, and `liftJsonFences` makes a JSON fence's lines chrome around the kind
       (`embedded-kind-json.ts`) — same bytes live and on reload. XmlBlock takes `quotedSource`; only a ```xml fence
       keeps the source view. `InlineCodeSnippet` refuses settled kind JSON (json/jsonc/json5/unlabelled) through a lazy
-      `KindDataGate`, honouring the source view (moved to `kind-source-view.tsx`). Judge: an XML card is followed as it
+      `KindDataGate`, honoring the source view (moved to `kind-source-view.tsx`). Judge: an XML card is followed as it
       draws (`xmlCardDrawsKindRaw`, standard decision `standard-kind-region.ts`). Render matrix: `chat_xml_tag` path.
       Guards `kind-never-raw-xml-tag.test.ts`, `blocks/xml/__tests__/xml-tag-kind-renders-as-kind.test.tsx`.
 - [x] X3. ```jsonc / ```json / unlabelled fence opening with `// …` or `/* … */` stayed raw all stream.
@@ -456,7 +456,7 @@ marked `data-kind-source="explicit"`; (c) escaped kind JSON on screen (`{\"__kin
       before). Agent / tool descriptions not swept this round.
 - [x] R2. `hasKindKey(JSON.stringify(x))` missed string-held kinds (escaped quotes) at 5 sites — ToggledDataBody,
       emission-routing, GenericBody, RunRow, FirstTurnVariables — now `valueCarriesKind`. Repo grep: no other site.
-      Guard `string-held-kind-detection.test.tsx` (behaviour + a `git grep --untracked` source guard; 3 failed before).
+      Guard `string-held-kind-detection.test.tsx` (behavior + a `git grep --untracked` source guard; 3 failed before).
 - [x] R3. Sentinel: (i) `hasKindKey(…, { escaped: true })` (new detector option) via `screenTextHoldsKind` — an escaped
       key on screen is reported, silent inside marked views; (ii) `title` / `aria-label` / `alt` read on changed nodes
       only (+ an `attributeFilter` observer for attribute changes); (iii) every contenteditable that is not "false" is
@@ -624,7 +624,7 @@ all a kind.
       (editable fields stay skipped — a person's own input); (b) `data-kind-source` is watched — removing it re-scans
       that subtree; (c) an iframe `srcdoc` string is parsed (DOMParser, never the frame's document) and its body read;
       (d) `TextSectionsWindow` Raw view marked `data-kind-source`; `StructuredAgentAnswerBlock` "Details" is not a
-      labelled source, so a payload carrying a kind goes through `AnswerValueView`. Guard
+      labeled source, so a payload carrying a kind goes through `AnswerValueView`. Guard
       `kind-leak-sentinel-guard-gaps.test.ts` (13 of 21 red before).
 - [x] R8-open. DONE 2026-10-05 (cells AND chips → `cellText`: kind object → `kindOneLine`, kind text in any spelling → `kindTextLabel`; guard `StructuredAgentAnswerBlock.kind-cells.test.tsx`, red then green). `StructuredAgentAnswerBlock` small-object table cells print `JSON.stringify(cell)` (a cell holding a kind
       object prints it raw) — not in this round's brief.
@@ -662,7 +662,7 @@ renderer converts them.
       JSON contexts keep the literal rule. Guard `kind-literal-only-callers.test.ts`.
 - [x] R9-6 (L-3). Literal-only text callers moved to the normalizing detector: `response-canvas-target`,
       `message-kind-gate` (+ `message-kind-instances` extraction normalizes), `island-meta` `kindOf`, `ErrorPanel`,
-      `AICodeEditor` (its labelled "Raw AI Response" `<pre>` is `data-kind-source`), `PlainTextFallback`. Grep census of
+      `AICodeEditor` (its labeled "Raw AI Response" `<pre>` is `data-kind-source`), `PlainTextFallback`. Grep census of
       the rest: accumulator / splitter lifts (JSON by definition), `conversationProposals` (machine envelopes),
       `shape-doctor` (canonical skill bodies), `stream-simulator` (studio tool), `rich-document` code-fence save (a ```ts
       fence may legitimately hold a JS literal) — literal by design. Guard: 16 red before.

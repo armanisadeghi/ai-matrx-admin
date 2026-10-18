@@ -422,7 +422,7 @@
   gap: 8px;
   min-width: 0;
 }
-/* The round + / emoji buttons centre on the field's one-line height (44px). */
+/* The round + / emoji buttons center on the field's one-line height (44px). */
 .messages-composer-line > .messages-round-button {
   margin-bottom: calc((44px - 34px) / 2);
 }
