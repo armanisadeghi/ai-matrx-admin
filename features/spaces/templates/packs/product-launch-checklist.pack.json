@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0354",
-  "version": 3,
+  "version": 4,
   "title": "Product Launch Checklist",
-  "description": "A launch with phased tasks, owners and a progress count that counts down.",
+  "description": "Product marketers: a phased launch checklist with owners and a progress count.",
   "forWho": "Product marketing teams",
   "icon": {
     "emoji": "🚀"
@@ -17,7 +17,9 @@
     "launch",
     "checklist",
     "go-to-market",
-    "tasks"
+    "tasks",
+    "product",
+    "to do"
   ],
   "spec": {
     "specVersion": 1,
@@ -1119,7 +1121,7 @@
         "Marlowe Quay"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

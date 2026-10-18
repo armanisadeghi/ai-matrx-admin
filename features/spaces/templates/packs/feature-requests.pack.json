@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0351",
-  "version": 2,
+  "version": 3,
   "title": "Feature Requests",
-  "description": "Collect requests, count votes and customers, and triage them to a decision.",
+  "description": "Product teams: collect requests, count votes and customers, and decide what is next.",
   "forWho": "Product and support teams",
   "icon": {
     "emoji": "💡"
@@ -17,7 +17,9 @@
     "product",
     "requests",
     "triage",
-    "votes"
+    "votes",
+    "feedback",
+    "roadmap"
   ],
   "spec": {
     "specVersion": 1,
@@ -992,7 +994,7 @@
         "Alder Lantern Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

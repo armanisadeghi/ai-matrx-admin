@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0106",
-  "version": 2,
+  "version": 3,
   "title": "Docs Hub",
-  "description": "One database for every document, with status, owner, team, tags and a review dashboard.",
+  "description": "Teams that write a lot: every document in one place with status, owner and review.",
   "forWho": "Teams that write and share lots of documents",
   "icon": {
     "emoji": "📚"
@@ -17,7 +17,9 @@
     "docs",
     "knowledge",
     "documents",
-    "library"
+    "library",
+    "wiki",
+    "review"
   ],
   "spec": {
     "specVersion": 1,
@@ -111,7 +113,14 @@
             "contextPolicy": "include",
             "via": "docs",
             "pick": "title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Draft",
+                "In review",
+                "Published"
+              ]
+            }
           },
           {
             "key": "published_count",
@@ -1146,7 +1155,7 @@
         "Ostrander Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1168,7 +1177,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "All our documents in one database. Find them by team, type or project, see what is still a draft, and know who owns each."
+              "text": "All our documents in one place. Find them by team, type or project, see what is still a draft, and know who owns each."
             }
           ],
           "background": "blue",

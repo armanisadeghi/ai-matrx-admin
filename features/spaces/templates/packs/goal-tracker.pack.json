@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0203",
-  "version": 2,
-  "title": "Goal Tracker",
-  "description": "Turn yearly goals into steps and quarterly check-ins with live progress counts.",
-  "forWho": "Planners and goal setters",
+  "version": 3,
+  "title": "Personal Goal Tracker",
+  "description": "Individuals: break yearly goals into steps and review progress each quarter.",
+  "forWho": "Individuals planning their year",
   "icon": {
     "emoji": "🎯"
   },
@@ -16,7 +16,10 @@
   "tags": [
     "goals",
     "planning",
-    "review"
+    "review",
+    "milestones",
+    "yearly",
+    "progress"
   ],
   "spec": {
     "specVersion": 1,
@@ -1129,13 +1132,13 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
       "key": "goal-tracker",
       "parent": null,
-      "title": "Goal Tracker",
+      "title": "Personal Goal Tracker",
       "icon": {
         "emoji": "🎯"
       },
@@ -1151,7 +1154,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Set a few goals, break each into steps, and check in every quarter. Progress bars come from the steps you finish."
+              "text": "Your own goals, year by year. Set a few goals, break each into steps, and check in every quarter. Progress bars come from the steps you finish."
             }
           ],
           "background": "blue",

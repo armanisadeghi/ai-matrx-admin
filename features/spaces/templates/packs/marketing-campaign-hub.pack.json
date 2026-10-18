@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0152",
-  "version": 2,
+  "version": 3,
   "title": "Marketing Campaign Hub",
-  "description": "Campaigns with their content and KPIs, so budget and results roll up on their own.",
+  "description": "Campaign managers: track each campaign's content, budget and results in one place.",
   "forWho": "Marketing leads and campaign managers",
   "icon": {
     "emoji": "📣"
@@ -17,7 +17,9 @@
     "campaigns",
     "marketing",
     "kpis",
-    "budget"
+    "budget",
+    "results",
+    "reporting"
   ],
   "spec": {
     "specVersion": 1,
@@ -190,7 +192,10 @@
             "contextPolicy": "include",
             "via": "pieces",
             "pick": "cost",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "stage": "Live"
+            }
           },
           {
             "key": "remaining",
@@ -218,6 +223,7 @@
             "pick": "cost",
             "agg": "sum",
             "filter": {
+              "stage": "Live",
               "publish_on": {
                 "relative": "this_month"
               }
@@ -1532,7 +1538,7 @@
         "Gullwing Quay"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2099,7 +2105,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Budget remaining and Budget used are calculated from each campaign’s Budget and the cost of its content, so they stay right as you log work."
+              "text": "Budget remaining and Budget used come from each campaign’s Budget and the cost of content that has gone live, so they stay right as you log work."
             }
           ],
           "background": "blue",

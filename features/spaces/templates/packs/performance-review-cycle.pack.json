@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0256",
-  "version": 2,
+  "version": 3,
   "title": "Performance Review Cycle",
-  "description": "Reviews, goals and feedback for one or many review rounds.",
+  "description": "HR and managers: run review rounds with goals, feedback and sign-off.",
   "forWho": "HR and managers running reviews",
   "icon": {
     "emoji": "⭐"
@@ -17,7 +17,9 @@
     "performance",
     "reviews",
     "goals",
-    "feedback"
+    "feedback",
+    "hr",
+    "appraisal"
   ],
   "spec": {
     "specVersion": 1,
@@ -1498,7 +1500,7 @@
         "Saltmarsh Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1779,7 +1781,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+              "text": "These numbers update as you work. Use this page for the weekly check, then open the list behind any number to act on it."
             }
           ],
           "background": "blue",
@@ -2062,7 +2064,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+              "text": "Each chart groups your entries as shown; click a slice to see the entries behind it."
             }
           ]
         },
@@ -2070,7 +2072,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "The lists below show only the rows that need attention now."
+              "text": "The lists below show only what needs attention now."
             }
           ]
         },
@@ -2078,7 +2080,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+              "text": "If a chart looks off, check that every entry is connected to the right person or item."
             }
           ]
         }

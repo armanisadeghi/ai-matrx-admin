@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0204",
-  "version": 2,
+  "version": 3,
   "title": "Daily Journal",
-  "description": "One page a day with mood, energy and gratitude, plus calendar and mood charts.",
+  "description": "Journalers: one page a day with mood, energy and gratitude, plus mood charts.",
   "forWho": "Journalers and reflective planners",
   "icon": {
     "emoji": "📔"
@@ -15,8 +15,11 @@
   "category": "personal",
   "tags": [
     "journal",
+    "diary",
     "reflection",
-    "mood"
+    "mood",
+    "daily",
+    "gratitude"
   ],
   "spec": {
     "specVersion": 1,
@@ -760,7 +763,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

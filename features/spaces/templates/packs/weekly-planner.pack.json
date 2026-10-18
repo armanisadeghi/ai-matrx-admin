@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0205",
-  "version": 2,
-  "title": "Weekly Planner",
-  "description": "Plan the week by day with time blocks, weekly goals and a calendar.",
-  "forWho": "Students and professionals planning their week",
+  "version": 3,
+  "title": "Weekly Time-Block Planner",
+  "description": "Students and professionals: block out each day by the hour, with weekly goals.",
+  "forWho": "Students and professionals who plan by the hour",
   "icon": {
     "emoji": "🗓️"
   },
@@ -16,7 +16,10 @@
   "tags": [
     "weekly",
     "planner",
-    "time-blocking"
+    "time blocking",
+    "calendar",
+    "schedule",
+    "goals"
   ],
   "spec": {
     "specVersion": 1,
@@ -1114,13 +1117,13 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
       "key": "weekly-planner",
       "parent": null,
-      "title": "Weekly Planner",
+      "title": "Weekly Time-Block Planner",
       "icon": {
         "emoji": "🗓️"
       },
@@ -1136,7 +1139,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Pick two or three weekly goals, then drop tasks onto the days. Move what slips; check off what lands."
+              "text": "Your week in time blocks. Pick two or three weekly goals, then drop tasks onto the days. Move what slips; check off what lands."
             }
           ],
           "background": "blue",

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0353",
-  "version": 2,
+  "version": 3,
   "title": "Public Roadmap & Feedback Forms",
-  "description": "Share a roadmap and collect feature requests and bug reports through forms.",
+  "description": "Product teams: publish a roadmap and take feature and bug reports by form.",
   "forWho": "Product teams with outside customers",
   "icon": {
     "emoji": "🗺️"
@@ -17,7 +17,9 @@
     "roadmap",
     "public",
     "feedback",
-    "bugs"
+    "forms",
+    "bugs",
+    "changelog"
   ],
   "spec": {
     "specVersion": 1,
@@ -1185,7 +1187,7 @@
         "Larkspur Mews"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

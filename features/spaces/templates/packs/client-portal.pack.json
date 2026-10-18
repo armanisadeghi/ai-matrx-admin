@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
-  "version": 2,
-  "title": "Client Portal",
-  "description": "Private client home pages with projects, deliverables, requests and invoices.",
-  "forWho": "Agencies and freelancers sharing work with clients",
+  "version": 3,
+  "title": "Agency Client Portal",
+  "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
+  "forWho": "Agencies sharing work with several clients",
   "icon": {
     "emoji": "🤝"
   },
@@ -14,10 +14,12 @@
   },
   "category": "clients",
   "tags": [
-    "client",
+    "clients",
     "portal",
+    "agency",
     "invoices",
-    "deliverables"
+    "deliverables",
+    "projects"
   ],
   "spec": {
     "specVersion": 1,
@@ -1433,13 +1435,13 @@
         "Moss Lantern Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
       "key": "client-portal",
       "parent": null,
-      "title": "Client Portal",
+      "title": "Agency Client Portal",
       "icon": {
         "emoji": "🤝"
       },
@@ -1451,7 +1453,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The backend of a client portal. Everything for every client lives here; each client home page shows only their own rows."
+              "text": "The control room behind your client pages. Everything for every client lives here; each client page shows only that client's work."
             }
           ],
           "background": "blue",
@@ -2176,7 +2178,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Keep this backend private. Clients should never see other clients' rows."
+              "text": "Keep this page private. Clients should never see other clients' work."
             }
           ],
           "background": "red",

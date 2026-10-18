@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 5,
+  "version": 6,
   "title": "Incident Postmortems",
-  "description": "Log incidents, write blameless postmortems and track the actions that prevent repeats.",
+  "description": "Engineering and ops teams: log incidents, write blameless postmortems, track the fixes.",
   "forWho": "Engineering and operations teams",
   "icon": {
     "emoji": "🚨"
@@ -17,7 +17,9 @@
     "incident",
     "postmortem",
     "reliability",
-    "sre"
+    "outage",
+    "sre",
+    "actions"
   ],
   "spec": {
     "specVersion": 1,
@@ -1446,7 +1448,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

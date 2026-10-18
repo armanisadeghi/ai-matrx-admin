@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0355",
-  "version": 3,
+  "version": 4,
   "title": "Competitor Analysis",
-  "description": "Profile competitors, compare features and track pricing and threat level.",
+  "description": "Product and marketing teams: profile rivals, compare features and track pricing.",
   "forWho": "Product and marketing teams",
   "icon": {
     "emoji": "🧭"
@@ -17,7 +17,9 @@
     "competitors",
     "research",
     "pricing",
-    "strategy"
+    "strategy",
+    "swot",
+    "market"
   ],
   "spec": {
     "specVersion": 1,
@@ -897,7 +899,7 @@
         "Tansy Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

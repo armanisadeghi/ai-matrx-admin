@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 5,
+  "version": 6,
   "title": "Workout Log",
-  "description": "Log sessions, exercises and sets with totals, personal bests and body metrics.",
+  "description": "Lifters and runners: log sessions, exercises and sets, with totals and personal bests.",
   "forWho": "Lifters and runners",
   "icon": {
     "emoji": "💪"
@@ -16,7 +16,10 @@
   "tags": [
     "fitness",
     "workout",
-    "training"
+    "training",
+    "gym",
+    "exercise",
+    "log"
   ],
   "spec": {
     "specVersion": 1,
@@ -1380,7 +1383,7 @@
               "check_name": "Weigh-in after pull day",
               "on": "@today-1d",
               "weight": 180.1,
-              "body_fat": 18.0,
+              "body_fat": 18,
               "notes": "Fasted, morning"
             }
           }
@@ -1670,7 +1673,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

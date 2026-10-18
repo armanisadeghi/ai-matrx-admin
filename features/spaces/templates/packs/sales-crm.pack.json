@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 5,
+  "version": 6,
   "title": "Sales CRM",
-  "description": "Deals on a pipeline board, a contact book, and every call or email logged.",
+  "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
   "icon": {
     "emoji": "🤝"
@@ -18,7 +18,8 @@
     "crm",
     "pipeline",
     "contacts",
-    "deals"
+    "deals",
+    "kanban"
   ],
   "spec": {
     "specVersion": 1,
@@ -189,7 +190,16 @@
             "contextPolicy": "include",
             "via": "deals",
             "pick": "value",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "stage": [
+                "Lead",
+                "Contacted",
+                "Qualified",
+                "Proposal",
+                "Negotiation"
+              ]
+            }
           },
           {
             "key": "deal_count",
@@ -209,7 +219,16 @@
             "contextPolicy": "include",
             "via": "deals",
             "pick": "weighted_value",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "stage": [
+                "Lead",
+                "Contacted",
+                "Qualified",
+                "Proposal",
+                "Negotiation"
+              ]
+            }
           },
           {
             "key": "created",
@@ -1798,7 +1817,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1816,7 +1835,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Keep every deal and contact in one place. Move deals across the pipeline, log each touch, and use the lists below to decide who to call next."
+              "text": "For a small team working deals one by one. Keep every deal and contact in one place. Move deals across the pipeline, log each touch, and use the lists below to decide who to call next."
             }
           ],
           "background": "blue",

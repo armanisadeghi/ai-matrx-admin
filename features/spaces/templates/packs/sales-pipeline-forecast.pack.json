@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0154",
-  "version": 3,
+  "version": 4,
   "title": "Sales Pipeline Forecast",
-  "description": "Deals with stage probabilities and weighted value so the forecast is always current.",
+  "description": "Sales managers: forecast revenue from deal stages and weighted value.",
   "forWho": "Sales managers and revenue teams",
   "icon": {
     "emoji": "📈"
@@ -17,7 +17,9 @@
     "sales",
     "pipeline",
     "forecast",
-    "deals"
+    "deals",
+    "revenue",
+    "crm"
   ],
   "spec": {
     "specVersion": 1,
@@ -128,7 +130,16 @@
             "contextPolicy": "include",
             "via": "deals",
             "pick": "value",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "stage": [
+                "Prospecting",
+                "Qualified",
+                "Proposal sent",
+                "Negotiation",
+                "Closed won"
+              ]
+            }
           },
           {
             "key": "weighted_total",
@@ -138,7 +149,16 @@
             "contextPolicy": "include",
             "via": "deals",
             "pick": "weighted_value",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "stage": [
+                "Prospecting",
+                "Qualified",
+                "Proposal sent",
+                "Negotiation",
+                "Closed won"
+              ]
+            }
           },
           {
             "key": "coverage",
@@ -156,7 +176,16 @@
             "contextPolicy": "include",
             "via": "deals",
             "pick": "deal_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "stage": [
+                "Prospecting",
+                "Qualified",
+                "Proposal sent",
+                "Negotiation",
+                "Closed won"
+              ]
+            }
           },
           {
             "key": "notes",
@@ -1179,7 +1208,7 @@
         "Aspenglow Drive"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

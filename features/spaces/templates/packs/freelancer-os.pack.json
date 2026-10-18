@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 3,
+  "version": 4,
   "title": "Freelancer OS",
-  "description": "Run clients, projects, tasks, time and invoices from one home page.",
+  "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
   "icon": {
     "emoji": "🧑‍💻"
@@ -17,7 +17,9 @@
     "freelance",
     "clients",
     "invoices",
-    "time"
+    "time tracking",
+    "projects",
+    "crm"
   ],
   "spec": {
     "specVersion": 1,
@@ -154,7 +156,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid",
+                "Overdue"
+              ]
+            }
           },
           {
             "key": "paid_total",
@@ -655,7 +664,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid",
+                "Overdue"
+              ]
+            }
           },
           {
             "key": "left_to_bill",
@@ -2823,7 +2839,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -3691,7 +3707,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What is worked out for you"
+              "text": "What fills in for you"
             }
           ],
           "props": {

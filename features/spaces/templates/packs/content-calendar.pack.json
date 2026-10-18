@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0151",
-  "version": 3,
+  "version": 4,
   "title": "Content Calendar",
-  "description": "Plan posts, emails and videos on a calendar, board and timeline across channels.",
+  "description": "Content teams: plan blog posts, emails and videos across channels on one calendar.",
   "forWho": "Marketers, creators and small content teams",
   "icon": {
     "emoji": "🗓️"
@@ -17,7 +17,9 @@
     "content",
     "calendar",
     "editorial",
-    "publishing"
+    "publishing",
+    "blog",
+    "kanban"
   ],
   "spec": {
     "specVersion": 1,
@@ -1230,7 +1232,7 @@
         "Larkin Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

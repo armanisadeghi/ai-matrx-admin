@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0111",
-  "version": 3,
+  "version": 4,
   "title": "Release Notes & API Docs",
-  "description": "Releases, changes and an API reference with a public changelog and writing guide.",
+  "description": "Product and developer teams: release notes, a public changelog and an API reference.",
   "forWho": "Product and developer-experience teams",
   "icon": {
     "emoji": "📣"
@@ -17,7 +17,9 @@
     "release notes",
     "changelog",
     "api",
-    "docs"
+    "docs",
+    "releases",
+    "developer"
   ],
   "spec": {
     "specVersion": 1,
@@ -1396,7 +1398,7 @@
         "Larchmont Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

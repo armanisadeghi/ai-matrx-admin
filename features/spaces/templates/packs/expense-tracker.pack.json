@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0350",
-  "version": 2,
+  "version": 3,
   "title": "Expense Tracker",
-  "description": "Log spending, set category budgets and see where the month went.",
+  "description": "Individuals and freelancers: log spending, set category budgets, see where it went.",
   "forWho": "Individuals and freelancers",
   "icon": {
     "emoji": "💸"
@@ -17,7 +17,9 @@
     "expenses",
     "budget",
     "spending",
-    "categories"
+    "categories",
+    "money",
+    "tracker"
   ],
   "spec": {
     "specVersion": 1,
@@ -834,7 +836,7 @@
         "Fennel Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1390,7 +1392,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Open the This month view on the Expenses table, then read each category line in the budget table: Spent this month, Left this month and Budget used (%) are worked out for you."
+              "text": "Open the This month view on the Expenses table, then read each category line in the budget table: Spent this month, Left this month and Budget used (%) fill in by themselves."
             }
           ],
           "props": {

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0315",
-  "version": 2,
+  "version": 3,
   "title": "Support and Feedback Tracker",
-  "description": "Triage customer tickets, track feature requests and link answers to help articles.",
+  "description": "Small support teams: triage tickets, track feature requests, link help articles.",
   "forWho": "Small teams handling customer support",
   "icon": {
     "emoji": "🛟"
@@ -17,7 +17,9 @@
     "support",
     "tickets",
     "feedback",
-    "help center"
+    "help center",
+    "helpdesk",
+    "customer"
   ],
   "spec": {
     "specVersion": 1,
@@ -132,7 +134,10 @@
             "contextPolicy": "include",
             "via": "tickets",
             "pick": "subject",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": "Resolved"
+            }
           },
           {
             "key": "updated_at",
@@ -1457,7 +1462,7 @@
         "Ferrule Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

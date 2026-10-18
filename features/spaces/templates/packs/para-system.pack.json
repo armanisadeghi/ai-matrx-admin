@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0207",
-  "version": 3,
+  "version": 4,
   "title": "PARA System",
-  "description": "Projects, areas, resources and archive with an inbox and a weekly review.",
+  "description": "Second-brain builders: projects, areas, resources and archive, with an inbox.",
   "forWho": "People organising a second brain",
   "icon": {
     "emoji": "🗂️"
@@ -15,8 +15,11 @@
   "category": "personal",
   "tags": [
     "para",
-    "second-brain",
-    "notes"
+    "second brain",
+    "notes",
+    "productivity",
+    "inbox",
+    "organize"
   ],
   "spec": {
     "specVersion": 1,
@@ -1328,7 +1331,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

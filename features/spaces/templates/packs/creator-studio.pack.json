@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 3,
+  "version": 4,
   "title": "Creator Studio",
-  "description": "Take video ideas to publish day, with sponsors, results and gear in one place.",
+  "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
   "icon": {
     "emoji": "🎬"
@@ -17,7 +17,9 @@
     "video",
     "youtube",
     "creator",
-    "sponsors"
+    "sponsors",
+    "channel",
+    "production"
   ],
   "spec": {
     "specVersion": 1,
@@ -182,7 +184,10 @@
             "contextPolicy": "include",
             "via": "videos",
             "pick": "views",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": "Published"
+            }
           },
           {
             "key": "left_to_make",
@@ -1856,7 +1861,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

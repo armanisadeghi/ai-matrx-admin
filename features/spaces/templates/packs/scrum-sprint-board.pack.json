@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 4,
+  "version": 5,
   "title": "Scrum Sprint Board",
-  "description": "Epics, stories, sprints with points rollups, ceremonies and retrospectives.",
+  "description": "Scrum teams: epics and stories with points, sprint ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
   "icon": {
     "emoji": "🏴"
@@ -17,7 +17,9 @@
     "scrum",
     "sprint",
     "agile",
-    "velocity"
+    "velocity",
+    "kanban",
+    "backlog"
   ],
   "spec": {
     "specVersion": 1,
@@ -1565,7 +1567,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

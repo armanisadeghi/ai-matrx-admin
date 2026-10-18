@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0206",
-  "version": 2,
+  "version": 3,
   "title": "Reading List",
-  "description": "A book shelf with status, ratings, a reading log and genre roll-ups.",
+  "description": "Readers: a bookshelf with status and ratings, a reading log and genre totals.",
   "forWho": "Readers who like to track",
   "icon": {
     "emoji": "📚"
@@ -16,7 +16,10 @@
   "tags": [
     "books",
     "reading",
-    "library"
+    "library",
+    "reading list",
+    "ratings",
+    "tracker"
   ],
   "spec": {
     "specVersion": 1,
@@ -1154,7 +1157,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

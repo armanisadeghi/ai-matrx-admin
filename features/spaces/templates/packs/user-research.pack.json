@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0352",
-  "version": 3,
+  "version": 4,
   "title": "User Research Repository",
-  "description": "Studies, sessions, participants and insights linked so every finding has evidence.",
+  "description": "Researchers: studies, sessions, participants and insights linked to their evidence.",
   "forWho": "Product and research teams",
   "icon": {
     "emoji": "🔬"
@@ -17,7 +17,9 @@
     "research",
     "interviews",
     "insights",
-    "studies"
+    "studies",
+    "ux",
+    "participants"
   ],
   "spec": {
     "specVersion": 1,
@@ -810,7 +812,10 @@
             "contextPolicy": "include",
             "via": "sessions_attended",
             "pick": "session_title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
           },
           {
             "key": "last_session",
@@ -820,7 +825,10 @@
             "contextPolicy": "include",
             "via": "sessions_attended",
             "pick": "held_on",
-            "agg": "max"
+            "agg": "max",
+            "filter": {
+              "status": "Done"
+            }
           }
         ],
         "rows": [
@@ -1606,7 +1614,7 @@
         "Wren Hollow Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

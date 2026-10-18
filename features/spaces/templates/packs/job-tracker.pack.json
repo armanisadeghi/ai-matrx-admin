@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0212",
-  "version": 3,
+  "version": 4,
   "title": "Job Application Tracker",
-  "description": "Pipeline board for roles, contacts and interviews with follow-up dates.",
+  "description": "Job seekers: track every application, contact and interview in one pipeline.",
   "forWho": "Job seekers",
   "icon": {
     "emoji": "💼"
@@ -16,7 +16,10 @@
   "tags": [
     "jobs",
     "career",
-    "pipeline"
+    "job search",
+    "applications",
+    "interviews",
+    "kanban"
   ],
   "spec": {
     "specVersion": 1,
@@ -1475,7 +1478,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

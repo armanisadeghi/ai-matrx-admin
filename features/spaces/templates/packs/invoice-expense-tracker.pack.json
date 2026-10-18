@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0313",
-  "version": 2,
-  "title": "Invoice and Expense Tracker",
-  "description": "Send invoices, spot late payers and see where the money goes each month.",
-  "forWho": "Freelancers and micro-businesses",
+  "version": 3,
+  "title": "Invoicing & Expenses for Small Business",
+  "description": "Small business owners: bill clients, chase late payers and watch monthly spending.",
+  "forWho": "Small business owners",
   "icon": {
     "emoji": "💵"
   },
@@ -17,7 +17,9 @@
     "invoices",
     "expenses",
     "cash flow",
-    "clients"
+    "clients",
+    "small business",
+    "bookkeeping"
   ],
   "spec": {
     "specVersion": 1,
@@ -109,7 +111,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid",
+                "Overdue"
+              ]
+            }
           },
           {
             "key": "paid",
@@ -153,7 +162,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "memo",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid",
+                "Overdue"
+              ]
+            }
           },
           {
             "key": "late_count",
@@ -1358,13 +1374,13 @@
         "Linnet Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
       "key": "invoice-expense-tracker",
       "parent": null,
-      "title": "Invoice and Expense Tracker",
+      "title": "Invoicing & Expenses for Small Business",
       "icon": {
         "emoji": "💵"
       },
@@ -1380,7 +1396,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Mark invoices Sent, Paid or Overdue and log every cost. The dashboard shows what is owed and what you spent by category."
+              "text": "For a small business that bills clients and pays its own costs. Mark invoices Sent, Paid or Overdue and log every cost. The dashboard shows what is owed and what you spent by category."
             }
           ],
           "background": "blue",

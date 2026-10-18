@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0103",
-  "version": 5,
+  "version": 6,
   "title": "OKRs & Goals",
-  "description": "Objectives and key results with live progress rollups, weekly check-ins, cycle review.",
+  "description": "Leadership teams: set quarterly objectives and key results, then check in weekly.",
   "forWho": "Leadership teams setting quarterly goals",
   "icon": {
     "emoji": "🎯"
@@ -17,7 +17,9 @@
     "okr",
     "goals",
     "strategy",
-    "quarterly"
+    "quarterly",
+    "objectives",
+    "key results"
   ],
   "spec": {
     "specVersion": 1,
@@ -1113,7 +1115,7 @@
         "Wrenhall Avenue"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1135,7 +1137,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Set a few objectives each cycle, measure each with two or three key results, and update the numbers every week. Progress rolls up by itself."
+              "text": "Set a few objectives each cycle, measure each with two or three key results, and update the numbers every week. Progress adds up by itself."
             }
           ],
           "background": "blue",

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0262",
-  "version": 3,
+  "version": 4,
   "title": "Thesis & Research Tracker",
-  "description": "Chapters, sources, tasks and advisor meetings for a thesis from outline to defence.",
+  "description": "Graduate students: chapters, sources, tasks and advisor meetings, from outline to defence.",
   "forWho": "Graduate students and researchers",
   "icon": {
     "emoji": "🎓"
@@ -17,7 +17,9 @@
     "thesis",
     "research",
     "writing",
-    "sources"
+    "sources",
+    "dissertation",
+    "phd"
   ],
   "spec": {
     "specVersion": 1,
@@ -1643,7 +1645,7 @@
         "Quillfeather Place"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0361",
-  "version": 3,
+  "version": 4,
   "title": "Customer Interview Notes",
-  "description": "Log customer calls with themes, sentiment and follow-ups, and spot patterns.",
+  "description": "Product and success teams: log customer calls with themes, mood and follow-ups.",
   "forWho": "Product and customer success teams",
   "icon": {
     "emoji": "🎙️"
@@ -12,12 +12,14 @@
     "url": "gallery:photo-desert-dunes",
     "offsetY": 50
   },
-  "category": "marketing",
+  "category": "meetings",
   "tags": [
     "interviews",
     "customers",
     "research",
-    "themes"
+    "themes",
+    "notes",
+    "calls"
   ],
   "spec": {
     "specVersion": 1,
@@ -807,7 +809,7 @@
         "Piper Cove Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
