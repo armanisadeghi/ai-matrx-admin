@@ -106,7 +106,11 @@ interface TestResultRow {
   conversation_id: string | null;
   user_request_ids: string[] | null;
   /** `outcome.judge` carries the fact judge's own call ids (server `agent_tests` judge step). */
-  outcome?: { judge?: { conversation_id?: string | null; request_id?: string | null; verdict?: string | null; model?: string | null } | null } | null;
+  outcome?: {
+    judge?: { conversation_id?: string | null; request_id?: string | null; verdict?: string | null; model?: string | null } | null;
+    /** A battle's pairwise verdict row (door `pairwise`): the comparative judge's own call. */
+    pairwise?: { conversation_id?: string | null; request_id?: string | null; winner?: string | null; model?: string | null } | null;
+  } | null;
 }
 
 /** An eval run: one step per case result (its answer run) with the judge's verdict beside it. */
@@ -119,6 +123,20 @@ export function resolveTestRun(
   const status = typeof run?.status === "string" ? run.status : null;
   const steps: FollowedStep[] = [];
   for (const r of results) {
+    const pair = r.outcome?.pairwise;
+    if (pair) {
+      // Not an answer: the battle's blind pairwise judge comparing two answers to this case.
+      steps.push({
+        id: `pairwise.${r.id}`,
+        label: `pairwise judge · case ${r.case_id ?? r.id.slice(0, 8)}`,
+        status: pair.winner ?? r.status,
+        mandateKey: "evaluators.comparative_judge",
+        userRequestId: pair.request_id ?? null,
+        conversationId: pair.conversation_id ?? null,
+        record: pair,
+      });
+      continue;
+    }
     steps.push({
       id: `result.${r.id}`,
       label: `case ${r.case_id ?? r.id.slice(0, 8)}`,

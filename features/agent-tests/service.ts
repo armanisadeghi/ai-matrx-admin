@@ -37,6 +37,7 @@ import type {
   CheckResultView,
   JudgeVerdictView,
   OutcomeJudgeView,
+  PairwiseOutcomeView,
   RunOptions,
   TestCaseView,
   TestResultView,
@@ -196,6 +197,20 @@ function parseOutcomeJudge(raw: unknown): OutcomeJudgeView | null {
   };
 }
 
+function parsePairwise(raw: unknown): PairwiseOutcomeView | null {
+  if (!isJsonObject(raw) || !isJsonObject(raw.pairwise)) return null;
+  const p = raw.pairwise;
+  return {
+    baseline: str(p.baseline),
+    challenger: str(p.challenger),
+    winner: str(p.winner) || null,
+    reason: str(p.reason) || null,
+    model: str(p.model) || null,
+    conversationId: str(p.conversation_id) || null,
+    requestId: str(p.request_id) || null,
+  };
+}
+
 export function toResultView(row: ResultRow): TestResultView {
   const blocked = isJsonObject(row.blocked_by) ? row.blocked_by : null;
   return {
@@ -217,6 +232,7 @@ export function toResultView(row: ResultRow): TestResultView {
     verdict: isTestVerdict(row.verdict) ? row.verdict : null,
     verdictReason: row.verdict_reason,
     outcome: parseOutcome(row.outcome),
+    pairwise: parsePairwise(row.outcome),
     blockedBy: blocked
       ? {
           gate: str(blocked.gate) || undefined,
@@ -513,7 +529,8 @@ export interface BattleSetup {
 export async function launchBattle(
   agentId: string,
   setups: readonly BattleSetup[],
-  options: RunOptions,
+  /** `repeats` omitted: the server's battle default (knob agent_tests.battle_repeats). */
+  options: Omit<RunOptions, "repeats"> & { repeats?: number },
   caseIds?: readonly string[],
   /** The saved Agent Battle this run belongs to: its run history reads runs by this id. */
   comparisonSetId?: string | null,
@@ -522,7 +539,7 @@ export async function launchBattle(
     agent_ids: [agentId],
     setups: setups.map((s) => ({ ...s, patch: s.patch ?? {} })),
     door_policy: options.doorPolicy,
-    repeats: options.repeats,
+    ...(options.repeats ? { repeats: options.repeats } : {}),
     judge_policy: options.judgePolicy,
     purpose: "user",
     idempotency_key: crypto.randomUUID(),

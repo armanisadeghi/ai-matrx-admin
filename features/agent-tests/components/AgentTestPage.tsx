@@ -1,5 +1,6 @@
 "use client";
 
+import { answerRows } from "../battle";
 import { useEffect, useEffectEvent, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
@@ -236,7 +237,8 @@ export function TestRunPanel({
     `run:${runId}`,
   );
   const [resultsRead, rereadResults] = useRead<TestResultView[]>(
-    () => fetchRunResults(runId),
+    // The answers only: a battle's pairwise verdict rows are shown by the battle's own outcome view.
+    () => fetchRunResults(runId).then(answerRows),
     `results:${runId}`,
   );
   const [openResultId, setOpenResultId] = useState<string | null>(null);

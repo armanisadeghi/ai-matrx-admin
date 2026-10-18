@@ -31,7 +31,8 @@ import {
   type RunSetupBody,
   type StudioCandidate,
 } from "../battle";
-import { battleVerdict, keepLabel } from "../tab-logic";
+import { battleVerdict, keepLabel, pairwiseBattleVerdict } from "../tab-logic";
+import { pairwiseVerdict, type BattleVotes } from "@/features/agent-tests/battle";
 import { TabHead, Waiting } from "./StudioTabParts";
 
 type Challenger = "candidate" | "model" | "version";
@@ -71,6 +72,10 @@ export function StudioBattle({
   const [keeping, setKeeping] = useState(false);
   const [readError, setReadError] = useState<unknown>(null);
   const [kept, setKept] = useState(false);
+  /** Runs per case per side; null = the organization's default (knob agent_tests.battle_repeats). */
+  const [repeats, setRepeats] = useState<number | null>(null);
+  const [defaultRepeats, setDefaultRepeats] = useState<number | null>(null);
+  const [votes, setVotes] = useState<BattleVotes>({});
   /** The eval's own run view: open while the battle runs, folded away once it settles (null = follow that). */
   const [detailOpen, setDetailOpen] = useState<boolean | null>(null);
 
@@ -98,6 +103,17 @@ export function StudioBattle({
       if (live) setHistory(past);
     })();
     void createClient()
+      .schema("platform")
+      .from("feature_knob")
+      .select("value")
+      .eq("feature", "agent_tests")
+      .eq("key", "battle_repeats")
+      .maybeSingle()
+      .then(({ data }) => {
+        const n = Number((data as { value?: unknown } | null)?.value);
+        if (live && Number.isInteger(n) && n > 0) setDefaultRepeats(n);
+      });
+    void createClient()
       .schema("agent")
       .from("definition_version")
       .select("id, version_number")
@@ -123,7 +139,9 @@ export function StudioBattle({
   };
   const challengerReady = challengerSetup() !== null;
   const caseCount = cases?.length ?? 0;
-  const estimate = estimateBattleCents(history, caseCount, 2);
+  const runsPerCase = repeats ?? defaultRepeats;
+  // Answers: cases × 2 sides × runs; the pairwise judge adds about one cheap call per case × run.
+  const estimate = estimateBattleCents(history, caseCount * (runsPerCase ?? 1), 2.5);
 
   const run = async () => {
     const other = challengerSetup();
@@ -134,8 +152,14 @@ export function StudioBattle({
     setResults([]);
     setDetailOpen(null);
     setKept(false);
+    setVotes({});
     try {
-      const launched = await launchBattle(agentId, next, DEFAULT_RUN_OPTIONS, cases.map((c) => c.id));
+      const launched = await launchBattle(
+        agentId,
+        next,
+        { ...DEFAULT_RUN_OPTIONS, repeats: repeats ?? undefined },
+        cases.map((c) => c.id),
+      );
       setSetups(next);
       setRunId(launched.runId);
     } catch (e) {
@@ -191,8 +215,9 @@ export function StudioBattle({
   ];
   const score = battleScore(results, setups.map((s) => s.key));
   const labelOf = (key: string) => setups.find((s) => s.key === key)?.label ?? key;
-  const verdict = battleVerdict(score, labelOf);
-  const canKeep = score.settled && challenger === "candidate" && candidate !== null;
+  const pairs = pairwiseVerdict(results, votes);
+  const verdict = pairs ? pairwiseBattleVerdict(pairs, labelOf) : battleVerdict(score, labelOf);
+  const canKeep = (pairs ? pairs.settled : score.settled) && challenger === "candidate" && candidate !== null;
   /** One primary action per tab: Keep takes it only when the candidate won. */
   const keepPrimary = canKeep && verdict.keepIsPrimary && !kept;
   const showRunView = detailOpen ?? !score.settled;
@@ -246,7 +271,7 @@ export function StudioBattle({
       {/* Cost first, then the one action. */}
       <TabHead className="border-t border-border pt-2" >
         <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" data-testid="studio-battle-cost">
-          {caseCount} {caseCount === 1 ? "case" : "cases"} × 2 ·{" "}
+          {caseCount} {caseCount === 1 ? "case" : "cases"} × 2{runsPerCase && runsPerCase > 1 ? ` × ${runsPerCase} runs` : ""} ·{" "}
           {estimate !== null ? (
             <>
               About <Cost usd={estimate / 100} short />
@@ -255,6 +280,13 @@ export function StudioBattle({
             "Cost not measured yet"
           )}
         </span>
+        <SegmentedControl
+          aria-label="Runs per case"
+          value={String(runsPerCase ?? 1)}
+          onValueChange={(v) => setRepeats(Number(v))}
+          data={[1, 2, 3].map((n) => ({ value: String(n), label: `×${n}` }))}
+          data-testid="studio-battle-repeats"
+        />
         <Button
           variant={keepPrimary ? "outline" : "primary"}
           icon={<Swords />}
@@ -282,6 +314,9 @@ export function StudioBattle({
               line={verdict.line}
               tone={verdict.tone === "neutral" ? undefined : verdict.tone}
               surface="agent_studio_battle"
+              pairwise={pairs}
+              votes={votes}
+              onVote={(id, rating) => setVotes((v) => ({ ...v, [id]: rating }))}
               footer={
                 canKeep ? (
                   <Button

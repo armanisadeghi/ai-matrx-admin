@@ -4,7 +4,7 @@
  * is the primary action (only when the candidate won).
  */
 
-import { scoreTally, type SetupScore } from "@/features/agent-tests/battle";
+import { pairwiseLine, scoreTally, type PairwiseVerdict, type SetupScore } from "@/features/agent-tests/battle";
 
 export interface CaseInputDeclaration {
   name: string;
@@ -44,6 +44,17 @@ export function battleVerdict(
     tone: won ? "success" : "warning",
     keepIsPrimary: won,
   };
+}
+
+/**
+ * What a battle with pairwise verdicts says: who gave the better answers, how sure. Keep is primary
+ * only on a CLEAR candidate win (sign test p ≤ 1/8: 3–0, 4–0, 5–1 …); a lean or a tie never is.
+ */
+export function pairwiseBattleVerdict(v: PairwiseVerdict, labelOf: (key: string) => string): BattleVerdict {
+  const line = pairwiseLine(v, labelOf);
+  if (!v.settled || v.confidence !== "clear") return { line, tone: "neutral", keepIsPrimary: false };
+  const won = v.wins > v.losses && v.challenger === "candidate";
+  return { line, tone: v.wins > v.losses ? "success" : "warning", keepIsPrimary: won };
 }
 
 /** The Keep button's words: it says plainly when the candidate did not win. */
