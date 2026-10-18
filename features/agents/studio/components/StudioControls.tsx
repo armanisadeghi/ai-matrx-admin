@@ -34,6 +34,7 @@ import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
 import { StudioBattle } from "./StudioBattle";
+import { followServerWork } from "@/features/ai-watch/followed-work";
 import { candidateFromProposal, type StudioCandidate } from "../battle";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
@@ -297,6 +298,11 @@ function DebriefTab({
   );
   const key = runConversationId && messageId ? debriefKey(runConversationId, messageId) : "";
   const debrief = useDebrief(key);
+  // The debrief runs on its own fork: Watch AI and the Builder follow that conversation too.
+  const forkId = debrief?.forkConversationId ?? null;
+  useEffect(() => {
+    if (forkId) followServerWork({ kind: "conversation", id: forkId, label: "Debrief", source: "agent studio" });
+  }, [forkId]);
   if (!runConversationId || !messageId) {
     return <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Run the agent first" line="Debrief reads its latest answer" />;
   }
