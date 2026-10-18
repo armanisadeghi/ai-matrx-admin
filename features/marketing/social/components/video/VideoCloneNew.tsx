@@ -472,7 +472,9 @@ function BriefPanel({
     void queryClient.invalidateQueries({ queryKey: videoKeys.all });
   };
   const discardRef = useRef(discardUnplanned);
-  discardRef.current = discardUnplanned;
+  useEffect(() => {
+    discardRef.current = discardUnplanned;
+  });
   useEffect(() => () => void discardRef.current(), []);
 
   const brief = (): ServerCloneBrief => ({
