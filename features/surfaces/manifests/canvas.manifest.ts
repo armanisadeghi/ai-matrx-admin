@@ -227,4 +227,6 @@ refreshes. A session-only item (no reference) has no record to edit.
     pickBaseline("selection", "content", "context"),
     surfaceSpecific,
   ),
+  // The reply renders here: agents are told how (System Context `render_environment_note`).
+  systemNotes: ["render_environment_note"],
 };

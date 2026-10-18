@@ -64,6 +64,8 @@ You are on the Canvas Viewer — a floating window for viewing a SHARED canvas b
     pickBaseline("selection", "context"),
     surfaceSpecific,
   ),
+  // The reply renders here: agents are told how (System Context `render_environment_note`).
+  systemNotes: ["render_environment_note"],
 };
 
 export function createCanvasViewerScope(values: {
