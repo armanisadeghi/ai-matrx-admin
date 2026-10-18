@@ -1209,12 +1209,12 @@ function BindingDraft({
     writeReport?.contractCheck ??
     (holderChanged ? null : persistedContractCheck);
   const contractNotice = isUnmet(serverContractCheck) ? (
-    <ContractMismatchNotice check={serverContractCheck} />
+    <ContractMismatchNotice check={serverContractCheck} fix={agentId ? { mandateKey: data.mandate.mandate_key, agentId } : null} />
   ) : holder.kind === "agent" &&
     agentId !== null &&
     !verdict.checking &&
     !verdict.passed ? (
-    <ContractMismatchNotice problems={verdict.problems} />
+    <ContractMismatchNotice problems={verdict.problems} fix={agentId ? { mandateKey: data.mandate.mandate_key, agentId } : null} />
   ) : null;
 
   /**
