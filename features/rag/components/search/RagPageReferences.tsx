@@ -116,13 +116,6 @@ function tableGroupToTsv(group: DerivativePageGroup): string {
     return { header, cells, fallback: chunk.content_text };
   });
   const header = rows.find((row) => row.header.length)?.header ?? [];
-  const columns: MatrxColumnDef<(typeof rows)[number]>[] = header.map((cell, index) => ({
-    id: `c${index}`,
-    header: cell,
-    label: cell || `Column ${index + 1}`,
-    accessorFn: (row) => (row.cells.length ? (row.cells[index] ?? "") : index === 0 ? row.fallback : ""),
-    className: "align-top",
-  }));
   // THE one TSV writer: a cell holding a tab, a line break or a quote stays one cell; document
   // text starting with = + - @ is formula-guarded (parseDelimited reverses it on our own paste).
   return toDelimited(
@@ -1107,6 +1100,13 @@ function TableRowsPreview({
     return { id: chunk.id, header, cells, fallback: chunk.content_text };
   });
   const header = rows.find((row) => row.header.length)?.header ?? [];
+  const columns: MatrxColumnDef<(typeof rows)[number]>[] = header.map((cell, index) => ({
+    id: `c${index}`,
+    header: cell,
+    label: cell || `Column ${index + 1}`,
+    accessorFn: (row) => (row.cells.length ? (row.cells[index] ?? "") : index === 0 ? row.fallback : ""),
+    className: "align-top",
+  }));
 
   return (
     <div className="space-y-2">
