@@ -16,7 +16,7 @@
 
 import { NextResponse } from "next/server";
 
-import { bucketFor, confirmBooking, publicBooking } from "@/features/booking/service";
+import { bucketFor, confirmBooking, publicBooking, recordSmsConsent } from "@/features/booking/service";
 import { checkoutIfAsked } from "@/features/payments/server";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
 
@@ -28,7 +28,13 @@ export async function POST(
 ) {
   const { bookingId } = await params;
 
-  let body: { holdId?: string; values?: Record<string, unknown>; clientKey?: string | null };
+  let body: {
+    holdId?: string;
+    values?: Record<string, unknown>;
+    clientKey?: string | null;
+    /** "Text me reminders": the number and the exact words the person was shown. */
+    smsConsent?: { phone?: string; textShown?: string } | null;
+  };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -95,6 +101,18 @@ export async function POST(
       clientKey: typeof body.clientKey === "string" ? body.clientKey : null,
     });
     const done = outcome.state === "booked" || outcome.state === "held";
+    // TEXT REMINDERS, only when the booker ticked the box. The booking is already real: a refusal here
+    // (a number that is not a number) is SAID, never a reason the booking failed.
+    let sms: { recorded: boolean; say?: string } | null = null;
+    const consent = body.smsConsent;
+    if (outcome.state === "booked" && outcome.booking_ref && consent?.phone && consent.textShown) {
+      sms = await recordSmsConsent({ ref: outcome.booking_ref, phone: consent.phone, textShown: consent.textShown, origin })
+        .then((r) => ({ recorded: r.recorded, ...(r.say ? { say: r.say } : {}) }))
+        .catch((thrown: unknown) => ({
+          recorded: false,
+          say: `You are booked, but text reminders were not set up: ${thrown instanceof Error ? thrown.message : "the store refused."}`,
+        }));
+    }
     // PAYMENTS-CONNECT: a booking page that asks for payment sends the booker to Stripe Checkout
     // on the organization's own account right after the slot is confirmed; the booking record
     // says Unpaid until Stripe says paid (hold-until-paid is a store change, not built yet).
@@ -114,6 +132,7 @@ export async function POST(
         booking_ref: outcome.booking_ref,
         slot_at: outcome.slot_at,
         message: outcome.message,
+        ...(sms ? { sms } : {}),
         ...(payment && "url" in payment ? { payment_url: payment.url } : {}),
         ...(payment && "refused" in payment ? { payment_refused: payment.refused } : {}),
       },
