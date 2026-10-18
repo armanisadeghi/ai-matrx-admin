@@ -566,6 +566,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      user_overview: { Args: { p_user: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
@@ -38709,6 +38710,10 @@ export type Database = {
         Returns: undefined
       }
       _automation_advance: { Args: { p_run_id: string }; Returns: string }
+      _automation_app_patch: {
+        Args: { p_automation_id: string; p_patch: Json; p_table_id: string }
+        Returns: undefined
+      }
       _automation_bind: {
         Args: { p_expr: Json; p_values: Json }
         Returns: Json
@@ -38851,6 +38856,7 @@ export type Database = {
         Args: { p_key: string; p_organization_id: string; p_table_id: string }
         Returns: Json
       }
+      _blocks_fresh_ids: { Args: { p_blocks: Json }; Returns: Json }
       _booking_availability: {
         Args: { p_organization_id: string; p_raw: Json }
         Returns: Json
@@ -38919,7 +38925,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      _choice_ids_live: {
+        Args: { p_options_table_id: string; p_organization_id: string }
+        Returns: string[]
+      }
       _choice_words_array: { Args: { p_entries: Json }; Returns: Json }
+      _choices_paint_new: {
+        Args: { p_before: string[]; p_doc: Json; p_organization_id: string }
+        Returns: Json
+      }
       _code_depends_hold: {
         Args: {
           p_data: Json
@@ -39220,6 +39234,10 @@ export type Database = {
       _entity_reference_target_ok: {
         Args: { p_id: string; p_organization_id: string; p_token: string }
         Returns: boolean
+      }
+      _example_field_spec: {
+        Args: { p_f: Json; p_sort?: number }
+        Returns: Json
       }
       _example_placeholder: { Args: { p_text: string }; Returns: string }
       _field_choices_save: {
@@ -39859,6 +39877,10 @@ export type Database = {
           p_table_id: string
         }
         Returns: string
+      }
+      _row_template_values_now: {
+        Args: { p_organization_id: string; p_values: Json }
+        Returns: Json
       }
       _rule_choice_label_is: {
         Args: {
@@ -40674,6 +40696,15 @@ export type Database = {
         Args: { p_door: string; p_organization_id: string }
         Returns: undefined
       }
+      automation_app_event: {
+        Args: { p_automation_id: string; p_cursor: Json; p_items: Json }
+        Returns: Json
+      }
+      automation_app_note: {
+        Args: { p_automation_id: string; p_cursor?: Json; p_says: string }
+        Returns: Json
+      }
+      automation_app_watch: { Args: { p_automation_id: string }; Returns: Json }
       automation_archive: {
         Args: { p_automation_id: string; p_organization_id: string }
         Returns: Json
@@ -42775,6 +42806,7 @@ export type Database = {
           title: string
         }[]
       }
+      forms_archived_everywhere: { Args: never; Returns: Json }
       formula_compile_sql: {
         Args: { p_expr: Json; p_organization_id: string; p_values_sql: string }
         Returns: string
@@ -44537,6 +44569,10 @@ export type Database = {
           p_view_id?: string
         }
         Returns: Json
+      }
+      realtime_presence_topic_admits: {
+        Args: { p_topic: string }
+        Returns: boolean
       }
       realtime_topic_admits: { Args: { p_topic: string }; Returns: boolean }
       record_aggregate: {
@@ -102650,6 +102686,7 @@ export type Database = {
         Args: { p_anchor: string; p_grain: string; p_ps: string }
         Returns: string
       }
+      _drill_people_names: { Args: { p_ids: string[] }; Returns: Json }
       _drill_period_sql: {
         Args: { p_grain: string; p_local: string; p_shift: number }
         Returns: string
@@ -104558,6 +104595,10 @@ export type Database = {
       drill_knob: {
         Args: { p_name: string; p_organization_id: string }
         Returns: number
+      }
+      drill_relation_names: {
+        Args: { p_ids: string[]; p_person: boolean; p_token: string }
+        Returns: Json
       }
       drill_rows: {
         Args: { p_organization_id: string; p_question?: Json; p_source: Json }
