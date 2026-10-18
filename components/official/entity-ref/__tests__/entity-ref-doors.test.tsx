@@ -44,14 +44,14 @@ jest.mock("next/link", () => ({
   ),
 }));
 
-// The peek host statically drags peek components in. Keep it shallow here, but
-// retain its props so the test can prove a caller's destination reaches the
-// dialog host when the Quick look button is pressed.
-const mockResourcePeekHost = jest.fn((_props: unknown) => null);
+// A reference never mounts a peek host; it ASKS the app's one host through the
+// store. Capture the request so the test can prove a caller's destination
+// reaches the peek when the Quick look button is pressed.
+const mockOpenResourcePeek = jest.fn((_request: unknown) => () => {});
 
-jest.mock("@/features/organizations/peek/ResourcePeekHost", () => ({
+jest.mock("@/features/organizations/peek/resourcePeekStore", () => ({
   __esModule: true,
-  ResourcePeekHost: (props: unknown) => mockResourcePeekHost(props),
+  openResourcePeek: (request: unknown) => mockOpenResourcePeek(request),
 }));
 
 (
@@ -63,7 +63,7 @@ let root: Root;
 
 beforeEach(() => {
   __resetAgentAddressCache();
-  mockResourcePeekHost.mockClear();
+  mockOpenResourcePeek.mockClear();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -156,8 +156,8 @@ describe("EntityRef doors for mandates/shortcuts surfaces", () => {
     expect(peek).not.toBeNull();
     act(() => peek?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
 
-    expect(mockResourcePeekHost).toHaveBeenLastCalledWith(
-      expect.objectContaining({ kind: "app", id: "app-9", href }),
+    expect(mockOpenResourcePeek).toHaveBeenLastCalledWith(
+      expect.objectContaining({ kind: "app", id: "app-9", href, trigger: "click" }),
     );
   });
 

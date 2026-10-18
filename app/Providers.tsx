@@ -96,6 +96,7 @@ import { ContactValuesHost } from "@/components/official/ContactValuesHost";
 // The live host for `openAgentPeek(agentId)` — the app service bound to the
 // picker's `openPeek` port. Slim shell; the WindowPanel body is lazy.
 import { AgentPeekHost } from "@/providers/AgentPeekHost";
+import { ResourcePeekRoot } from "@/features/organizations/peek/ResourcePeekRoot";
 import DeferredSingletonWrapper from "./DeferredSingletonWrapper";
 import { ServerToggleQueryReset } from "@/providers/ServerToggleQueryReset";
 import { LoopbackApiAccessSync } from "@/providers/LoopbackApiAccessSync";
@@ -244,6 +245,10 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   See features/agents/components/agent-listings/
                                   openAgentPeek.ts. */}
                                           <AgentPeekHost />
+                                          {/* THE one resource-peek host: every EntityRef / door / table
+                                  peek asks it through `openResourcePeek`; its one lazy edge loads
+                                  on the first request. features/organizations/peek/ResourcePeekRoot.tsx */}
+                                          <ResourcePeekRoot />
                                           {/* Audio hosts (modal, TTS output, playback +
                                   session mirrors, devices, recording, recovery)
                                   all live inside <AudioSystemHost /> above. */}

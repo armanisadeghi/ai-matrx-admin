@@ -16,18 +16,18 @@
  *
  * It composes primitives, it does not duplicate them:
  *   - route + icon + label  → `getEntityInfo(token)` (features/scopes/registry)
- *   - preview               → `ResourcePeekHost` + `hasPeek` (features/organizations/peek)
+ *   - preview               → `openResourcePeek` + `hasPeek` (features/organizations/peek) —
+ *                             the app's ONE peek host draws it; a reference never mounts one
  *
- * Safe inside clickable table rows: every control stops propagation, AND so
- * does the portaled peek dialog (React events travel the React tree, not the
- * DOM tree — see the seam at the bottom of the render).
+ * Safe inside clickable table rows: every control stops propagation, and the
+ * peek renders in the app's one host, outside this reference's React tree.
  *
  * Adding a door for a new entity type is a registry edit, never a change here:
  * give the token an `hrefFor` in `entityRegistry.ts`, and/or a peek in
  * `features/organizations/peek/registry.ts` + `kinds-list.ts`.
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { AppLink } from "@/components/navigation/AppLink";
 import { ExternalLink, Lightbulb } from "lucide-react";
 import {
@@ -36,7 +36,7 @@ import {
 } from "@/features/scopes/registry/entityRegistry";
 import { useEntityHref } from "./useEntityHref";
 import { hasPeek } from "@/features/organizations/peek/kinds-list";
-import { ResourcePeekHost } from "@/features/organizations/peek/ResourcePeekHost";
+import { openResourcePeek } from "@/features/organizations/peek/resourcePeekStore";
 import { allowNativeNewTab } from "@/utils/navigation/should-open-in-new-tab";
 import { cn } from "@/lib/utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -190,7 +190,6 @@ export function EntityRef({
   className,
   children,
 }: EntityRefProps) {
-  const [peekOpen, setPeekOpen] = useState(false);
 
   // Canonicalise ONCE, up front. A surface often passes a `kind` column owned
   // by another system (`source_kind='cld_file'` from the ingest pipeline), and
@@ -221,7 +220,6 @@ export function EntityRef({
   const hasControls = canPeek || showNewTab || Boolean(extraActions);
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
-  const stopAny = (e: React.SyntheticEvent) => e.stopPropagation();
   // One string carries BOTH label decisions so the three label branches
   // (link / button / inert span) cannot drift apart — they already did once.
   const labelFit = cn(
@@ -335,7 +333,17 @@ export function EntityRef({
               aria-label={`Quick look at ${label}`}
               onClick={(e) => {
                 stop(e);
-                setPeekOpen(true);
+                openResourcePeek({
+                  kind: canonicalToken,
+                  id,
+                  // Keep the peek's footer aligned with the door that opened it.
+                  // `AppletRef`, for example, deliberately overrides the generic
+                  // app route with the administration editor route.
+                  href,
+                  anchor: e.currentTarget,
+                  trigger: "click",
+                  fallbackHref: resolvedHref,
+                });
               }}
               className={CONTROL_CLASS}
             >
@@ -360,56 +368,10 @@ export function EntityRef({
         </span>
       )}
 
-      {/*
-        The peek dialog is PORTALED to the document body, but React events
-        propagate through the REACT tree, not the DOM tree — so without this
-        seam every click, mousedown and keystroke inside an open peek still
-        reaches whatever clickable container the `EntityRef` was dropped into.
-        That is not theoretical: the notes global-search row toggles its match
-        list on click and `preventDefault`s mousedown to protect the find
-        input's focus, so opening a peek there made the preview un-selectable
-        and collapsed the row when you clicked the peek's own close button.
-
-        The block belongs HERE, not at each call site: `EntityRef` is designed
-        to be dropped inside clickable rows (see the header), so every consumer
-        inherits the bug. `contents` keeps the wrapper out of the layout — it
-        must not become a flex item and open a `gap` beside the name.
-      */}
-      {canPeek && peekOpen && (
-        <span
-          className="contents"
-          // NARROW ON PURPOSE — mouse/click only.
-          //
-          // `pointerdown` and `pointerup` are deliberately NOT stopped: Radix's
-          // dismissable layer listens for `pointerdown` on `ownerDocument` in
-          // the BUBBLE phase, and React 19 delegates portal events at
-          // `document.body` — one node below `document`. Stopping it here
-          // therefore kills click-outside-to-close for every peek, every time,
-          // since a modal dialog's full-screen overlay means every outside
-          // click lands inside this seam. Keyboard is left alone for the same
-          // reason in reverse: Escape-to-close registers with `{capture:true}`
-          // and survives, but blocking bubble-phase keys here would silently
-          // swallow global shortcuts while a peek is open.
-          //
-          // The mouse events below are the ones the seam actually exists for:
-          // a row that toggles on `click` and `preventDefault`s `mousedown`.
-          onClick={stopAny}
-          onDoubleClick={stopAny}
-          onMouseDown={stopAny}
-          onMouseUp={stopAny}
-          onContextMenu={stopAny}
-        >
-          <ResourcePeekHost
-            kind={canonicalToken}
-            id={id}
-            onClose={() => setPeekOpen(false)}
-            // Keep the peek's footer aligned with the door that opened it.
-            // `AppletRef`, for example, deliberately overrides the generic
-            // app route with the administration editor route.
-            href={href}
-          />
-        </span>
-      )}
+      {/* No peek mounts here: the app's ONE host (`ResourcePeekRoot`, app/Providers.tsx) draws it
+          OUTSIDE this reference's React tree, so a click inside an open peek can no longer reach
+          the clickable row or popover this reference sits in, and a popover that closes no
+          longer takes the peek with it. */}
     </span>
   );
 }

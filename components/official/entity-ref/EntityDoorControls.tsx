@@ -47,34 +47,25 @@
  * can raise these intentionally compact desktop controls to the 44px
  * coarse-pointer floor without treating prose links as controls.
  *
- * 🚨 **MOUNTING THIS INSIDE A DISMISS-ON-OUTSIDE-CLICK CONTAINER? FIX THE
- * CONTAINER FIRST.** The peek renders through `ResourcePeekHost` → a Radix
- * `Dialog`, which PORTALS to `document.body` — outside your popover's ref. A
- * hand-rolled `document.addEventListener("mousedown", …)` +
- * `ref.contains(e.target)` therefore treats the first click inside the peek as
- * "outside", closes the popover, unmounts this component, and takes `peekOpen`
- * with it: the preview disappears mid-click, and the peek's own "Open" link
- * never fires at all, because the node is gone before `click` is dispatched.
- * A door that deletes itself when used is worse than no door. The container
- * must ignore events whose target is inside a dialog:
+ * The peek opens through `openResourcePeek` and renders in the app's ONE host
+ * (`ResourcePeekRoot`, app/Providers.tsx), outside this component's tree — so a
+ * popover that closes because the person clicked into the peek no longer
+ * unmounts the peek with it (the "door that deletes itself" trap, 2026-08-09).
+ * The popover still closes; a container that should stay open must ignore
+ * events whose target is inside a dialog:
  *
  *     if (target?.closest?.('[role="dialog"], [role="alertdialog"]')) return;
- *
- * Shipped exactly this way on `/pick-lists` (2026-08-09) and caught by an
- * adversarial pass, NOT by type-check — it is statically decidable, so do not
- * file it as "needs a browser". 25 hand-rolled dismissers exist across 23
- * files; each is this trap waiting for a door to be added to it.
  *
  * Adding a door for a new entity type is a registry edit, never a change here:
  *   route → `hrefFor` in `features/scopes/registry/entityRegistry.ts`
  *   peek  → `features/organizations/peek/registry.ts` + `kinds-list.ts`
  */
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { ArrowUpRight, ExternalLink, Lightbulb } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
-import { ResourcePeekHost } from "@/features/organizations/peek/ResourcePeekHost";
+import { openResourcePeek } from "@/features/organizations/peek/resourcePeekStore";
 import { cn } from "@/lib/utils";
 import { resolveEntityDoors } from "./doors";
 
@@ -130,7 +121,6 @@ export function EntityDoorControls({
   className,
 }: EntityDoorControlsProps) {
   const glyph = "h-3 w-3";
-  const [peekOpen, setPeekOpen] = useState(false);
 
   const doors = resolveEntityDoors(token, id, href);
   const resolvedHref = doors.href;
@@ -142,6 +132,23 @@ export function EntityDoorControls({
   if (!canPeek && !resolvedHref && !extraActions) return null;
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
+  const openPeek = (anchor: Element) =>
+    openResourcePeek({
+      kind: doors.peekKind,
+      id,
+      // Forward the CALLER's `href`, not our resolved one. When a caller
+      // overrode it — because the token alone cannot say which surface
+      // this record opens on — the dialog would otherwise send "Open"
+      // somewhere our new-tab link does not go. Passing `resolvedHref`
+      // here instead would set the override on EVERY peek, including the
+      // ones where nobody overrode anything, and would then suppress the
+      // hardcoded href a token-less bespoke peek supplies for itself.
+      // `undefined` (no caller opinion) is the correct default.
+      href,
+      anchor,
+      trigger: "click",
+      fallbackHref: resolvedHref,
+    });
 
   return (
     <>
@@ -166,7 +173,7 @@ export function EntityDoorControls({
                 aria-label={`Quick look at ${label}`}
                 onClick={(e) => {
                   stop(e);
-                  setPeekOpen(true);
+                  openPeek(e.currentTarget);
                 }}
               />
             )}
@@ -204,7 +211,7 @@ export function EntityDoorControls({
                 aria-label={`Quick look at ${label}`}
                 onClick={(e) => {
                   stop(e);
-                  setPeekOpen(true);
+                  openPeek(e.currentTarget);
                 }}
                 className={ENTITY_DOOR_CONTROL_CLASS}
               >
@@ -242,22 +249,6 @@ export function EntityDoorControls({
         {extraActions}
       </span>
 
-      {canPeek && peekOpen && (
-        <ResourcePeekHost
-          kind={doors.peekKind}
-          id={id}
-          onClose={() => setPeekOpen(false)}
-          // Forward the CALLER's `href`, not our resolved one. When a caller
-          // overrode it — because the token alone cannot say which surface
-          // this record opens on — the dialog would otherwise send "Open"
-          // somewhere our new-tab link does not go. Passing `resolvedHref`
-          // here instead would set the override on EVERY peek, including the
-          // ones where nobody overrode anything, and would then suppress the
-          // hardcoded href a token-less bespoke peek supplies for itself.
-          // `undefined` (no caller opinion) is the correct default.
-          href={href}
-        />
-      )}
     </>
   );
 }
