@@ -1,7 +1,7 @@
 ---
 type: Reference
 name: browser-tester
-description: "Sonnet browser tester: drives one named tab on the local preview as a real user and returns a defect list (where · steps · expected · actual · evidence). Never edits code. Use for any 'walk this and tell me what is broken' job; the coach runs it and improves its playbook. Default budget 80 tool calls."
+description: "Sonnet browser tester: drives one named tab on the live site (aimatrx.com, signed in as admin@admin.com) as a real user and returns a defect list (where · steps · expected · actual · evidence). Never edits code. Use for any 'walk this and tell me what is broken' job; the coach runs it and improves its playbook. Default budget 80 tool calls."
 model: sonnet
 effort: medium
 maxTurns: 120

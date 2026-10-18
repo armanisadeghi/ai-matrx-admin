@@ -207,15 +207,17 @@ finding; do not hide the import or narrow the contract just to clear the scan.
   `system_error` kind is durably captured; another log line is insufficient.
 - Recover localhost/tooling faults autonomously. Inspect ownership, coordinate
   with another task, and use the repo's managed server commands. Do not kill an
-  unrelated live server. Repeated friction warrants a durable repair. Production
-  verification does not depend on starting localhost when a live surface suffices.
+  unrelated live server. Repeated friction warrants a durable repair. Checks and
+  verification run on the live site (aimatrx.com, `server.app.matrxserver.com`), signed in as
+  admin@admin.com through `node scripts/real-tests/pw.mjs <run> signin`; localhost is only a rapid
+  fix-and-look loop on UI being changed right now.
 - UI work uses an isolated browser first through the available tool's documented
   API; Computer Use is allowed and no particular API or skill name is required.
   If the isolated browser cannot complete the task, use Arman's browser in a new
   tab (for example, for an account signed in only there). This fallback is
   pre-authorized. Never navigate, control, or close a tab Arman is using.
   Sign in to Matrx as `admin@admin.com` using `AI_ADMIN_PASSWORD` from the aidream
-  or frontend `.env`, or the local dev-login nonce handshake where available
+  or frontend `.env`, or, in the local fix-and-look loop only, the dev-login nonce handshake
   (`openssl rand -hex 16 > .dev-login-nonce`, then `/api/dev-login?nonce=<that value>`).
   Routine login is preauthorized; credentials never enter output.
   Close every owned tab/group before the run ends; leave pre-existing ones untouched.

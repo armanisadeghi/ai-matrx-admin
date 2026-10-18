@@ -61,10 +61,10 @@ timestamp: 2026-09-10T00:00:00Z
 7. **Ship the live demo — the standing proof format.** `app/(dev)/demos/<family>/page.dev.tsx`:
    an input, a real call to the Stage A endpoint via `useBackendApi` + `consumeStream`, the
    result rendered through `KindInstanceRender` (the production route path), the translation
-   report shown (unknown keys = red banner). ZERO mocks, zero pasted fixtures. Verify in the
-   in-app browser against localhost (`MATRX_PREVIEW_PROFILE=user pnpm preview:start`; `/demos/*`
-   is parked under the default profile) and on `https://demos.aimatrx.com/demos/<family>` after
-   deploy; also render each item kind on the admin preview
+   report shown (unknown keys = red banner). ZERO mocks, zero pasted fixtures. Verify on
+   `https://demos.aimatrx.com/demos/<family>` after the release (the check runs live, not on
+   localhost; localhost, `MATRX_PREVIEW_PROFILE=user pnpm preview:start` with `/demos/*` parked under
+   the default profile, is only the fix-and-look loop while you build the demo); also render each item kind on the admin preview
    `/administration/utilities/kind-registry/<slug>`. Untested-in-browser = untested.
 8. **Gate: Arman approves the rendering on the demo.** Iterate on look there. Update the ledger
    (Stage B DONE, demo URL), push, and **fire V + D** (first run of a pilot: fire C instead, which
