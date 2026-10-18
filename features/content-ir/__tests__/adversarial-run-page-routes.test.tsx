@@ -46,6 +46,7 @@ import { componentRegistry } from "../registry/component-registry";
 import { kindRegistry } from "../registry/kind-registry";
 import { envelopeFromCompleteValue } from "@ai-matrx/content-ir";
 import { IR_ENVELOPE_KEY } from "@ai-matrx/content-ir";
+import { settleKindLookups } from "@/__tests__/helpers/settle-kind-lookups";
 
 function kindBlock(kind: string, value: Record<string, unknown>) {
   const complete = { __kind: kind, ...value };
@@ -118,7 +119,7 @@ describe("HOLE A — the wire contract's workflow kinds reach the reader only by
 });
 
 describe("HOLE B — evicted fingerprint slugs still arrive on the wire as output_kind", () => {
-  it("an evicted contract slug is unknown to the registry and reaches the unregistered generic floor", () => {
+  it("an evicted contract slug is unknown to the registry and reaches the unregistered generic floor", async () => {
     // 607 node_completed events declared this exact slug in the 14 days
     // before 2026-08-21; the eviction removed it from kind_definition, so no
     // FE registry tier can ever deliver it. The unregistered floor must hold.
@@ -128,6 +129,8 @@ describe("HOLE B — evicted fingerprint slugs still arrive on the wire as outpu
     // that has actually looked. An empty replace is how a test declares the
     // list loaded and this slug genuinely is not in it.
     componentRegistry.replaceDbRows([]);
+    // ...and its own definition read answered "none" (per-kind cold verdict).
+    await settleKindLookups(evictedSlug);
 
     const block = kindBlock(evictedSlug, { anything: true });
     const routed = applyIrKindRoute(block);

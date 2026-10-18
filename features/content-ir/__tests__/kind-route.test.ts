@@ -12,6 +12,7 @@ import { componentRegistry } from "@/features/content-ir/registry/component-regi
 import { IR_ENVELOPE_KEY } from "@ai-matrx/content-ir";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
 import { flashcardsServerDataFromEnvelope } from "@ai-matrx/rich-content/kinds/definitions/flashcard-set";
+import { settleKindLookups } from "@/__tests__/helpers/settle-kind-lookups";
 
 const FLASHCARDS = JSON.stringify({
   __kind: "flashcard_set",
@@ -58,7 +59,7 @@ describe("applyIrKindRoute", () => {
     expect(applyIrKindRoute(block)).toBe(block);
   });
 
-  it("routes an UNREGISTERED __kind raw to the honest generic floor", () => {
+  it("routes an UNREGISTERED __kind raw to the honest generic floor", async () => {
     // The kind was identified from `__kind` but the platform has NO
     // definition for it (typo / hypothetical example in teaching content).
     // The envelope preserves the kind (so a late registration can upgrade
@@ -70,6 +71,8 @@ describe("applyIrKindRoute", () => {
     // list loaded and this kind genuinely is not in it", which is the only
     // state in which "unregistered" is an honest thing to say.
     componentRegistry.replaceDbRows([]);
+    // ...and this kind's own definition read has answered "none" (per-kind cold verdict).
+    await settleKindLookups("not_registered_anywhere");
     const envelope = envelopeFor(
       JSON.stringify({ __kind: "not_registered_anywhere", a: 1 }),
     );

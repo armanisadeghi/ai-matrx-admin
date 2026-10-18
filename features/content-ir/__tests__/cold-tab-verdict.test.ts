@@ -22,6 +22,7 @@ import { applyIrKindRoute, readIrRouteMarker } from "@ai-matrx/rich-content/kind
 import { normalizeJsonRegion } from "@ai-matrx/content-ir";
 import { kindRegistry } from "../registry/kind-registry";
 import type { KindComponentProjection } from "../registry/schema-source-kind-components";
+import { settleKindLookups } from "@/__tests__/helpers/settle-kind-lookups";
 
 // 🚨 A PARTIAL MOCK OF A REAL MODULE IS A SUITE THAT DIES ON THE NEXT EXPORT
 // (DD-239). This used to replace the whole capture store with `{ captureError }`.
@@ -97,8 +98,9 @@ describe("a fresh tab never publishes a verdict from an unloaded registry", () =
     });
   });
 
-  it("still tells the truth about a kind that genuinely has no component", () => {
+  it("still tells the truth about a kind that genuinely has no component", async () => {
     componentRegistry.replaceDbRows([]);
+    await settleKindLookups("nothing_registered_here");
     const block = {
       type: "code",
       content: '{"__kind":"nothing_registered_here"}',
