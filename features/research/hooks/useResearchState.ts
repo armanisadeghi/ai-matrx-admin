@@ -135,6 +135,15 @@ export function useTopic(topicId: string | undefined) {
 // Keyword hooks
 // ============================================================================
 
+export function useTopicVideoCounts(topicId: string) {
+  return useServiceQuery<{ found: number; transcribed: number }>(
+    "useTopicVideoCounts",
+    () => service.getTopicVideoCounts(topicId),
+    [topicId],
+    !!topicId,
+  );
+}
+
 export function useResearchKeywords(topicId: string) {
   return useServiceQuery<ResearchKeyword[]>(
     "useResearchKeywords",

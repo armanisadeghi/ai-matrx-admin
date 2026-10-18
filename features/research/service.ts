@@ -738,6 +738,31 @@ const YOUTUBE_IDENTITY_COLUMNS =
  * Returns a map keyed by `youtube_video_id`; ids with no library row are
  * simply absent (discovered outside the canonical paths).
  */
+/** How many videos a topic found, and how many it captured a transcript for. */
+export async function getTopicVideoCounts(
+  topicId: string,
+): Promise<{ found: number; transcribed: number }> {
+  const [found, transcribed] = await Promise.all([
+    supabase
+      .schema("research")
+      .from("rs_source")
+      .select("id", { count: "exact", head: true })
+      .eq("topic_id", topicId)
+      .eq("source_type", "youtube")
+      .is("deleted_at", null),
+    supabase
+      .schema("research")
+      .from("rs_content")
+      .select("id", { count: "exact", head: true })
+      .eq("topic_id", topicId)
+      .eq("content_type", "youtube_transcript")
+      .eq("is_good_scrape", true),
+  ]);
+  if (found.error) throw found.error;
+  if (transcribed.error) throw transcribed.error;
+  return { found: found.count ?? 0, transcribed: transcribed.count ?? 0 };
+}
+
 export async function getYouTubeVideoIdentities(
   videoIds: string[],
 ): Promise<Map<string, YouTubeVideoIdentity>> {

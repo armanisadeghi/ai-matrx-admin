@@ -1,4 +1,5 @@
 import { PipelineGraph } from "./pipeline-graph/PipelineGraph";
+import { TopicHeadline } from "./TopicHeadline";
 
 /**
  * Thin host for the research topic overview. The PipelineGraph owns
@@ -10,5 +11,10 @@ import { PipelineGraph } from "./pipeline-graph/PipelineGraph";
  * or been replaced by it.
  */
 export default function ResearchOverview() {
-  return <PipelineGraph />;
+  return (
+    <>
+      <TopicHeadline />
+      <PipelineGraph />
+    </>
+  );
 }
