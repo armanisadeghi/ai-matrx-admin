@@ -107,6 +107,11 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 
 ## Change log
 
+- **2026-10-18 (c)** — Held Cloud folder deletes: `CloudFolderNotice` (in the Computer screen) shows a
+  hold with **Delete N in cloud** / **Restore to folder** and the skipped-entry count (aidream
+  `/browser-manager/cloud-computer/files[/resolve]`); `CloudComputerDeepLink` opens the tab from the
+  `?cloudComputer=files` notice. common-docs FIX-SYNC-RESOLVE-2026-10-18.
+
 - **2026-10-18 (b)** — Cold open overlap: the screen (and its sandbox run start) mounts once the
   machine is `starting` (`startsScreen`), so the run's activation joins the boot and Chrome launches
   the moment the machine answers; a provisioning Cloud Computer run is re-read every 750 ms
