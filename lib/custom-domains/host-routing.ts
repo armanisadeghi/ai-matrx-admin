@@ -112,3 +112,15 @@ export function passthroughOnCustomHost(pathname: string, domain: ResolvedDomain
   if (kinds.has("booking") && path.startsWith("/b/manage/")) return true;
   return false;
 }
+
+/**
+ * The inverse of internalPathFor: the path THIS host shows an internal target at (/f/<id> → "/intake"),
+ * or null when the host does not map it. Used to build links a visitor follows on the host they are on.
+ */
+export function publicPathFor(internalPath: string, domain: ResolvedDomain): string | null {
+  const routes = [...domain.routes].sort((a, b) => a.path_prefix.length - b.path_prefix.length);
+  for (const route of routes) {
+    if (basePath(route, domain.organization_id) === internalPath) return route.path_prefix;
+  }
+  return null;
+}

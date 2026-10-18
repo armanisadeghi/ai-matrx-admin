@@ -19,6 +19,8 @@ import * as doors from "@/features/unified-data/hub/doors";
 import { buildDataHomeRows, customFieldsRow, type DataHomeRow } from "./dataHomeRows";
 import { kindIsListed } from "./dataHomeKindWords";
 import { DATA_HOME_ROW_CAP, type ServerMatches } from "./dataHomeService";
+import { readOrgPublicUrls } from "@/lib/custom-domains/public-url-reader";
+import { HUB_CAPABILITIES } from "@/features/unified-data/hub/capabilities";
 
 
 export const SERVER_SEARCH_DEBOUNCE_MS = 250;
@@ -82,7 +84,7 @@ export function createDataHomeCorpus(
     if (!answered.ok) {
       throw new Error(`Could not read tables. ${doors.doorFailureLine(answered.error)}`, { cause: answered.error });
     }
-    const built = await buildDataHomeRows({ client, dataSource, answer: answered.data });
+    const built = await buildDataHomeRows({ client, dataSource, answer: answered.data }, HUB_CAPABILITIES, readOrgPublicUrls);
     meta.refusals = built.refusals.map((r) => ({ listing: r.listing, message: doors.doorFailureLine(r.error) }));
     // THE ONE RULE (`isKeptTable`, folded onto each row as `platformOwned`): the door answers a
     // choice column's Lists whether or not platform tables were asked for, so the home leaves them out here.

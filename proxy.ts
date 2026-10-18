@@ -37,6 +37,7 @@ import {
   passthroughOnCustomHost,
 } from "@/lib/custom-domains/host-routing";
 import { lookupDomain } from "@/lib/custom-domains/lookup";
+import { recheckWaitingHost } from "@/lib/custom-domains/recheck";
 
 // ---------------------------------------------------------------------------
 // Edu host gate — learn.aimatrx.com (Arman's decision, 2026-07)
@@ -219,6 +220,7 @@ function isEduAllowedPath(pathname: string): boolean {
 async function customDomainResponse(
   request: NextRequest,
   requestHost: string | null,
+  event?: NextFetchEvent,
 ): Promise<NextResponse | null> {
   const kind = hostClass(requestHost, [MAIN_HOST, ADMIN_HOST, DEMOS_HOST, EDU_HOST]);
   if (kind === "platform" || !requestHost) return null;
@@ -232,7 +234,11 @@ async function customDomainResponse(
     return new NextResponse("This site is temporarily unavailable.", { status: 503 });
   }
   if (!domain) {
-    return kind === "dev" ? null : new NextResponse("Not found", { status: 404 });
+    if (kind === "dev") return null;
+    // A connected domain still waiting for DNS: somebody is visiting it, so ask Vercel again now
+    // (throttled per host) — the visit after DNS lands is served without waiting for anyone.
+    event?.waitUntil(recheckWaitingHost(normalizeHost(requestHost)));
+    return new NextResponse("Not found", { status: 404 });
   }
   const target = internalPathFor(request.nextUrl.pathname, domain);
   if (!target) {
@@ -267,7 +273,7 @@ async function customDomainApiGate(request: NextRequest): Promise<NextResponse |
   return NextResponse.json({ error: "Not found" }, { status: 404 });
 }
 
-async function routeRequest(request: NextRequest) {
+async function routeRequest(request: NextRequest, event?: NextFetchEvent) {
   const requestHost = request.headers.get("host");
 
   // appmatrx.com pages belong on the main host (lib/seo/legacy-brand-host.ts).
@@ -281,7 +287,7 @@ async function routeRequest(request: NextRequest) {
 
   // A business's own domain serves only the published things its routes map (iam.org_domain_route);
   // anything else on that host is a 404, never the app. *.localhost previews fall back to the app.
-  const customHost = await customDomainResponse(request, requestHost);
+  const customHost = await customDomainResponse(request, requestHost, event);
   if (customHost) return customHost;
 
   // Satellite hosts serve ONLY their surface; everything else bounces to the
@@ -441,7 +447,7 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   // carries X-Robots-Tag. Started before the session pass so the two run side by side.
   const robotsLookup = startRecordRobotsLookup(request.nextUrl.pathname);
   const sessionStarted = performance.now();
-  const response = await routeRequest(request);
+  const response = await routeRequest(request, event);
   stampProxyTiming(request, response, performance.now() - sessionStarted);
   await applyRecordRobotsHeader(robotsLookup, response);
   return applyLocalAgentTrafficCookie(

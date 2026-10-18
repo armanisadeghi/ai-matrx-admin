@@ -63,6 +63,7 @@ import { DescribeBox } from "./describe/DescribeBox";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { readOrgPublicUrls } from "@/lib/custom-domains/public-url-reader";
 // ─────────────────────────────────────────────────────────────────────────────
 // Two reads across every organization: Recent (the data home's one call) and step 1's tables.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,6 +124,7 @@ function useRecentRead(userId: string | null) {
     const built = await buildDataHomeRows(
       { client, dataSource: source, answer: answerForRecent(answered.data, new Set()) },
       HUB_CAPABILITIES.filter((c) => c.id !== "shared-with-me"),
+      readOrgPublicUrls,
     );
     return { ok: true, data: built.rows };
   });
