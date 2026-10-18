@@ -11,6 +11,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Plus, X } from "lucide-react";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
+import { EditableLabel } from "@ai-matrx/design-system";
+import { VariableChip } from "@ai-matrx/rich-content/display/chat-markdown/matrx-variables/VariableChip";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { toast } from "@/lib/toast";
 import {
@@ -60,7 +62,7 @@ function QuietText({
       data-testid={testId}
       onChange={(e) => onChange(e.target.value)}
       style={{ fieldSizing: "content" } as CSSProperties}
-      className={`block w-full min-w-0 resize-none rounded-md border border-transparent bg-transparent px-1.5 py-1 text-xs leading-snug outline-none placeholder:text-muted-foreground/60 hover:border-border focus:border-ring focus:bg-background ${
+      className={`block w-full min-w-0 resize-none rounded-md border border-transparent bg-transparent px-1.5 py-1 text-sm leading-snug outline-none placeholder:text-muted-foreground hover:border-border focus:border-ring focus:bg-background ${
         emphasis ? "font-medium text-foreground" : "text-foreground"
       } ${className}`}
     />
@@ -106,6 +108,62 @@ export function useStudioWorkspace(conversationId: string | null) {
     }
   };
   return { ws, edit };
+}
+
+/**
+ * One input the person gave: its name as THE variable pill (what it becomes in the agent), the value
+ * under it. Pressing the pill renames it in place; Enter or leaving keeps it, Esc puts it back.
+ */
+function InputRow({
+  input,
+  onRename,
+  onValue,
+  onRemove,
+}: {
+  input: WorkspaceInput;
+  onRename: (label: string) => void;
+  onValue: (value: string) => void;
+  onRemove: () => void;
+}) {
+  const [renaming, setRenaming] = useState(false);
+  const label = input.label?.trim() || input.name;
+  return (
+    <div className="group flex items-start gap-1" data-testid={`workspace-input-${input.name}`}>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex min-h-7 items-center px-1.5 text-sm">
+          {renaming ? (
+            <EditableLabel
+              activation="controlled"
+              editing
+              onEditingChange={setRenaming}
+              value={label}
+              onCommit={(next) => onRename(next)}
+              ariaLabel={`Name for ${label}`}
+              className="min-w-0 flex-1"
+            />
+          ) : (
+            <VariableChip
+              state="declared"
+              label={label}
+              role="button"
+              tabIndex={0}
+              title="Rename"
+              aria-label={`Rename ${label}`}
+              onClick={() => setRenaming(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setRenaming(true);
+                }
+              }}
+            />
+          )}
+        </div>
+        <QuietText label={`Value of ${label}`} value={input.value ?? ""} onChange={onValue} />
+      </div>
+      <Button variant="quiet" icon={<X />} aria-label={`Remove ${label}`} title={`Remove ${label}`} onClick={onRemove} />
+    </div>
+  );
 }
 
 const LISTS: { field: TextListField; title: string }[] = [
@@ -160,23 +218,13 @@ export function StudioWorkspacePane({
             <p className="text-xs text-muted-foreground">None yet</p>
           )}
           {ws.inputs.map((i) => (
-            <div key={i.name} className="flex items-start gap-1" data-testid={`workspace-input-${i.name}`}>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <QuietText
-                  emphasis
-                  label={`Label for ${i.name}`}
-                  value={i.label ?? i.name}
-                  onChange={(v) => void edit((w) => personSetInput(w, i.name, { label: v }))}
-                />
-                <QuietText
-                  label={`Value of ${i.label ?? i.name}`}
-                  value={i.value ?? ""}
-                  onChange={(v) => void edit((w) => personSetInput(w, i.name, { value: v }))}
-                  className="text-muted-foreground"
-                />
-              </div>
-              <Button variant="quiet" icon={<X />} aria-label={`Remove ${i.label ?? i.name}`} onClick={() => void edit((w) => personRemoveInput(w, i.name))} />
-            </div>
+            <InputRow
+              key={i.name}
+              input={i}
+              onRename={(label) => void edit((w) => personSetInput(w, i.name, { label }))}
+              onValue={(value) => void edit((w) => personSetInput(w, i.name, { value }))}
+              onRemove={() => void edit((w) => personRemoveInput(w, i.name))}
+            />
           ))}
           {suggestions.map((s) => (
             <div

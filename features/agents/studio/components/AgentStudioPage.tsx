@@ -30,9 +30,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, RotateCcw } from "lucide-react";
-import { Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
-import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
+import { ArrowLeft, FlaskConical, RotateCcw } from "lucide-react";
+import { Button, EmptyState, SegmentedControl, StageSteps, Tabs } from "@ai-matrx/design-system/controls";
+import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
@@ -48,7 +48,10 @@ import { selectOwnSubmittedFirstTurnValues } from "@ai-matrx/chat/agents/redux/e
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { STUDIO_MIN_THREE_PANE_PX, STUDIO_PANE_MIN_PX } from "../studio-layout";
+import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
+import { STUDIO_PANE_MIN_PX, STUDIO_SIDE_MIN_PX, studioLayoutFor } from "../studio-layout";
+import { studioStage } from "../studio-stage";
+import { useMeasuredWidth } from "../use-width";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";
 import { getFactoryBuild } from "@/features/agents/factory/service";
@@ -84,9 +87,11 @@ import { StudioWorkspacePane, useStudioWorkspace } from "./StudioWorkspacePane";
 import { useStudioBuilderFeed } from "../studio-builder-feed";
 import { StudioStart } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
-import { StudioControls } from "./StudioControls";
+import { StudioControls, type ControlsTab } from "./StudioControls";
+import { StudioTurnModel } from "./StudioTurnModel";
+import { PaneBar, PaneLabel } from "./PaneBar";
 import { StudioCost } from "./StudioCost";
-import { StudioPath } from "./StudioEmpty";
+import { StudioAgentPending } from "./StudioEmpty";
 import { StudioCompare } from "./StudioCompare";
 import { PlanBackLink, writeAgentToPlanStep } from "./PlanBackLink";
 
@@ -95,6 +100,9 @@ const ASSISTANT_SURFACE = "agent-studio:assistant";
 const tryKey = (agentId: string) => `agent-builder:${agentId}`;
 /** The assistant is a MANDATE (the server resolves its holder); the page never names an agent for it. */
 const ASSISTANT_MANDATE = storedMandateKey(STUDIO_ASSISTANT_MANDATE);
+const ASSISTANT_DOES = "does the job with you, then turns it into an agent";
+/** The Studio's fixed job, in the top Agents menu (never on the page). */
+const STUDIO_DISCLOSURE = [{ mandateKey: ASSISTANT_MANDATE, does: ASSISTANT_DOES }] as const;
 
 type MakePhase =
   | { kind: "idle" }
@@ -131,10 +139,13 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const store = useAppStore();
   const router = useRouter();
   const isMobile = useIsMobile();
-  // Below the width the three minimums fit in, the panes become tabs (never overlap).
-  const tabbedPanes = useMediaQuery(`(max-width: ${STUDIO_MIN_THREE_PANE_PX - 1}px)`);
+  // The layout follows the workspace's OWN width, not the window's: Watch AI or the Builder panel
+  // opening beside the Studio takes half a 1440 screen, and three panes must never squeeze into it.
+  const { ref: bodyRef, width: bodyWidth } = useMeasuredWidth<HTMLDivElement>();
+  const layout = bodyWidth === null ? null : studioLayoutFor(bodyWidth);
   const mode = studioMode(state.mode)!;
   const { mandate, error: doerError } = useMandate(ASSISTANT_MANDATE);
+  useDeclaredSurfaceMandates(STUDIO_DISCLOSURE);
   const assistantReady = Boolean(mandate);
   const { launchMandate } = useAgentLauncher();
 
@@ -145,6 +156,14 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [rerunSeed, setRerunSeed] = useState<{ variables: Record<string, string>; userInput: string } | null>(null);
   const [phase, setPhase] = useState<MakePhase>({ kind: "idle" });
   const [paneTab, setPaneTab] = useState<"assistant" | "agent" | "controls">("assistant");
+  /** Two-pane layout: which one the side column shows beside the agent. */
+  const [side, setSide] = useState<"assistant" | "controls">("assistant");
+  /** The controls' tab, held here so a layout change (which re-parents the panes) keeps it. */
+  const [controlsTab, setControlsTab] = useState<ControlsTab>(mode.id === "improve" ? "debrief" : "settings");
+  /** Show the agent's pane where the layout hides it (tabs only; two and three always show it). */
+  const showAgent = () => {
+    if (layout === "tabs") setPaneTab("agent");
+  };
   /** The assistant's open conversation, kept out of the URL until the person sends something. */
   const [openChat, setOpenChat] = useState<string | null>(null);
   const openChatSent = useAppSelector((s) => (openChat ? selectOrderedMessageIds(openChat)(s).length > 0 : false));
@@ -384,7 +403,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       const started = await buildFromWorkspace(dispatch, state.chatId, accepted);
       setPhase({ kind: "idle" });
       go({ buildId: started.buildId });
-      if (isMobile) setPaneTab("agent");
+      showAgent();
     } catch (e) {
       setPhase({ kind: "idle" });
       toast.error("The build did not start", { description: e instanceof Error ? e.message : String(e) });
@@ -417,7 +436,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     }
     setRerunSeed({ variables, userInput: sampleInputText(sample) });
     setRunKey((k) => k + 1);
-    if (isMobile) setPaneTab("agent");
+    showAgent();
   };
 
   // ── panes ──
@@ -429,6 +448,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     <StudioRun
       mandateKey={ASSISTANT_MANDATE}
       mandateVariables={assistantVariables}
+      mandateDoes={ASSISTANT_DOES}
       surfaceName={STUDIO_SURFACE_NAME}
       conversationId={state.chatId}
       surfaceKey={ASSISTANT_SURFACE}
@@ -484,6 +504,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         seed={seed}
         showVariables
         runKey={runKey}
+        turnModelBar={!studioCase?.approved}
         onConversation={(id) => {
           setRunConversation(id);
           // The run lives in the URL: a reload reopens it instead of starting (and paying for) a new one.
@@ -497,6 +518,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         original={studioCase.approved}
         originalLabel={mode.id === "from-examples" ? "Your example" : "Approved"}
         phone={isMobile}
+        toolbar={runConversation ? <StudioTurnModel conversationId={runConversation} /> : null}
       />
     ) : (
       run
@@ -512,29 +534,74 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       mode.id === "improve" ? (
         <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Pick an agent to improve" />
       ) : (
-        <StudioPath mode={mode.id === "do-with-me" ? "do-with-me" : "describe"} current={hasAnswer ? 1 : 0} />
+        <StudioAgentPending mode={mode.id === "do-with-me" ? "do-with-me" : "describe"} hasAnswer={hasAnswer} />
       );
   }
 
   const suggestions = phase.kind === "suggest" ? phase.suggestions.filter((x) => !dropped.has(x.name)) : [];
-  const right = !state.agentId && mode.id === "do-with-me" ? (
-    <StudioWorkspacePane
-      ws={ws}
-      edit={edit}
-      suggestions={suggestions}
-      onDropSuggestion={(name) => setDropped((d) => new Set(d).add(name))}
-    />
+  const workspaceSide = !state.agentId && mode.id === "do-with-me";
+  const right = workspaceSide ? (
+    <div className="flex h-full min-h-0 flex-col">
+      <PaneBar>
+        <PaneLabel>Workspace</PaneLabel>
+      </PaneBar>
+      <div className="min-h-0 flex-1">
+        <StudioWorkspacePane
+          ws={ws}
+          edit={edit}
+          suggestions={suggestions}
+          onDropSuggestion={(name) => setDropped((d) => new Set(d).add(name))}
+        />
+      </div>
+    </div>
   ) : (
     <StudioControls
       agentId={state.agentId}
       runConversationId={runConversation}
-      onFeedback={(text) => void sendToAssistant(text)}
+      onFeedback={(text) => {
+        void sendToAssistant(text);
+        // The reply comes in the assistant's chat: bring it into view where the layout hides it.
+        if (layout === "two") setSide("assistant");
+        if (layout === "tabs") setPaneTab("assistant");
+      }}
       onSaved={runAgain}
       onUseCase={runCase}
       casesVersion={casesVersion}
-      initialTab={mode.id === "improve" ? "debrief" : "settings"}
+      tab={controlsTab}
+      onTabChange={setControlsTab}
     />
   );
+  const rightName = workspaceSide ? "Workspace" : "Controls";
+  /** The center before a run is on screen gets the same top row, so the panes' hairlines line up. */
+  const centerHasBar = Boolean(state.agentId && improveReady && phase.kind === "idle");
+  const centerPane = centerHasBar ? (
+    center
+  ) : (
+    <div className="flex h-full min-h-0 flex-col">
+      <PaneBar>
+        <PaneLabel>{state.agentId ? (agentName ?? "Your agent") : "Your agent"}</PaneLabel>
+      </PaneBar>
+      <div className="min-h-0 flex-1">{center}</div>
+    </div>
+  );
+  const assistantPane = (
+    <div className="flex h-full min-h-0 flex-col">
+      <PaneBar>
+        <PaneLabel>Assistant</PaneLabel>
+      </PaneBar>
+      <div className="min-h-0 flex-1">{left}</div>
+    </div>
+  );
+
+  const making = phase.kind !== "idle";
+  const stage = studioStage({
+    mode: mode.id,
+    making,
+    buildId: state.buildId ?? null,
+    agentId: state.agentId ?? null,
+    runOpen: Boolean(shownRun),
+  });
+  const compactHeader = layout !== "three";
 
   const header = (
     <div
@@ -544,9 +611,17 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     >
       <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={() => router.push(studioHref({}))} />
       {!isMobile && <span className="shrink-0 text-sm font-semibold text-foreground">Agent Studio</span>}
-      <span className="min-w-0 truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>
+      {!compactHeader && <span className="min-w-0 max-w-[16rem] truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>}
       <PlanBackLink state={state} />
-      <div className="ml-auto flex shrink-0 items-center gap-2">
+      <StageSteps
+        aria-label="Where you are"
+        steps={stage.steps}
+        current={stage.current}
+        labels={compactHeader ? "current" : "all"}
+        className="mx-auto min-w-0"
+        data-testid="studio-stage"
+      />
+      <div className="flex shrink-0 items-center gap-2">
         <StudioCost
           buildId={state.buildId}
           buildDone={Boolean(state.agentId) || Boolean(build?.outcome)}
@@ -556,10 +631,11 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           <Button
             variant="primary"
             data-testid="studio-make-agent"
-            disabled={!state.chatId || phase.kind !== "idle"}
+            disabled={!state.chatId || !hasAnswer || making}
+            title={!hasAnswer ? "Get a result you like first" : undefined}
             onClick={() => void makeThisAnAgent()}
           >
-            Make this an agent
+            {isMobile ? "Make agent" : "Make this an agent"}
           </Button>
         )}
         {state.agentId && shownRun && (
@@ -567,13 +643,23 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
             variant="outline"
             data-testid="studio-save-case"
             disabled={savingCase || savedRuns.has(shownRun)}
+            aria-label={savedRuns.has(shownRun) ? "Saved as test case" : "Save as test case"}
+            title={savedRuns.has(shownRun) ? "Saved as test case" : "Save this run as a test case"}
+            icon={compactHeader ? <FlaskConical /> : undefined}
             onClick={() => void saveRunAsCase()}
           >
-            {savedRuns.has(shownRun) ? "Saved as test case" : "Save as test case"}
+            {compactHeader ? null : savedRuns.has(shownRun) ? "Saved as test case" : "Save as test case"}
           </Button>
         )}
         {state.agentId && (
-          <Button variant="outline" icon={<RotateCcw />} aria-label="Run again" onClick={runAgain}>
+          <Button
+            variant="primary"
+            icon={<RotateCcw />}
+            aria-label="Run again"
+            title="Run again, fresh"
+            data-testid="studio-run-again"
+            onClick={runAgain}
+          >
             {isMobile ? null : "Run again"}
           </Button>
         )}
@@ -581,46 +667,78 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     </div>
   );
 
-  const body = isMobile || tabbedPanes ? (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-border px-2">
-        <Tabs
-          value={paneTab}
-          onValueChange={(v) => setPaneTab(v as typeof paneTab)}
-          data={[
-            { value: "assistant", label: "Assistant" },
-            { value: "agent", label: "Agent" },
-            { value: "controls", label: "Controls" },
-          ]}
-          aria-label="Studio panes"
-        />
+  const sideIsControls = side === "controls";
+  const body =
+    layout === null ? null : layout === "tabs" ? (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 border-b border-border px-2">
+          <Tabs
+            value={paneTab}
+            onValueChange={(v) => setPaneTab(v as typeof paneTab)}
+            data={[
+              { value: "assistant", label: "Assistant" },
+              { value: "agent", label: "Agent" },
+              { value: "controls", label: rightName },
+            ]}
+            aria-label="Studio panes"
+          />
+        </div>
+        <div className="min-h-0 flex-1">
+          <div className={paneTab === "assistant" ? "h-full" : "hidden"}>{left}</div>
+          <div className={paneTab === "agent" ? "h-full" : "hidden"}>{centerPane}</div>
+          <div className={paneTab === "controls" ? "h-full" : "hidden"}>{right}</div>
+        </div>
       </div>
-      <div className="min-h-0 flex-1">
-        <div className={paneTab === "assistant" ? "h-full" : "hidden"}>{left}</div>
-        <div className={paneTab === "agent" ? "h-full" : "hidden"}>{center}</div>
-        <div className={paneTab === "controls" ? "h-full" : "hidden"}>{right}</div>
-      </div>
-    </div>
-  ) : (
-    <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-      <ResizablePanel defaultSize="28%" minSize={`${STUDIO_PANE_MIN_PX.assistant}px`} collapsible>
-        <div className="h-full min-h-0" data-testid="studio-pane-assistant" data-assist-dock-avoid>{left}</div>
-      </ResizablePanel>
-      <ResizableHandle />
-      <ResizablePanel defaultSize="44%" minSize={`${STUDIO_PANE_MIN_PX.agent}px`}>
-        <div className="h-full min-h-0" data-testid="studio-pane-agent" data-assist-dock-avoid>{center}</div>
-      </ResizablePanel>
-      <ResizableHandle />
-      <ResizablePanel defaultSize="28%" minSize={`${STUDIO_PANE_MIN_PX.controls}px`} collapsible>
-        <div className="h-full min-h-0" data-testid="studio-pane-controls" data-assist-dock-avoid>{right}</div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
-  );
+    ) : layout === "two" ? (
+      <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
+        <ResizablePanel defaultSize="42%" minSize={`${STUDIO_SIDE_MIN_PX}px`}>
+          <div className="flex h-full min-h-0 flex-col" data-testid="studio-pane-side" data-assist-dock-avoid>
+            <PaneBar>
+              <SegmentedControl
+                aria-label="Beside your agent"
+                value={side}
+                onValueChange={(v) => setSide(v as typeof side)}
+                data={[
+                  { value: "assistant", label: "Assistant" },
+                  { value: "controls", label: rightName },
+                ]}
+              />
+            </PaneBar>
+            <div className={sideIsControls ? "hidden" : "min-h-0 flex-1"} data-testid="studio-pane-assistant">
+              {left}
+            </div>
+            <div className={sideIsControls ? "min-h-0 flex-1" : "hidden"} data-testid="studio-pane-controls">
+              {right}
+            </div>
+          </div>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel defaultSize="58%" minSize={`${STUDIO_PANE_MIN_PX.agent}px`}>
+          <div className="h-full min-h-0" data-testid="studio-pane-agent" data-assist-dock-avoid>{centerPane}</div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    ) : (
+      <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
+        <ResizablePanel defaultSize="27%" minSize={`${STUDIO_PANE_MIN_PX.assistant}px`}>
+          <div className="h-full min-h-0" data-testid="studio-pane-assistant" data-assist-dock-avoid>{assistantPane}</div>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel defaultSize="46%" minSize={`${STUDIO_PANE_MIN_PX.agent}px`}>
+          <div className="h-full min-h-0" data-testid="studio-pane-agent" data-assist-dock-avoid>{centerPane}</div>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel defaultSize="27%" minSize={`${STUDIO_PANE_MIN_PX.controls}px`}>
+          <div className="h-full min-h-0" data-testid="studio-pane-controls" data-assist-dock-avoid>{right}</div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    );
 
   const page = (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]" data-testid="agent-studio">
       {header}
-      {body}
+      <div ref={bodyRef} className="flex min-h-0 flex-1 flex-col" data-studio-layout={layout ?? "measuring"}>
+        {body}
+      </div>
     </div>
   );
   return state.agentId ? <BuilderSurface agentId={state.agentId}>{page}</BuilderSurface> : <StudioSurface>{page}</StudioSurface>;

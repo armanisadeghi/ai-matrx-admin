@@ -17,9 +17,9 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { FlaskConical, Swords } from "lucide-react";
+import { FlaskConical, Send, Swords } from "lucide-react";
 import Link from "next/link";
-import { Badge, Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
+import { Badge, Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { selectAgentById, selectAgentIsDirty } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
@@ -42,6 +42,8 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { StudioControlsPreview } from "./StudioEmpty";
+import { PaneBar } from "./PaneBar";
+import { StudioInputPills, type StudioInputDefinition } from "./StudioInputPills";
 
 export type ControlsTab = "settings" | "cases" | "versions" | "battle" | "debrief";
 const TABS: { value: ControlsTab; label: string }[] = [
@@ -64,8 +66,9 @@ interface StudioControlsProps {
   onUseCase: (testCase: TestCaseRow) => void;
   /** Changes when the page added test cases (the Cases list re-reads). */
   casesVersion?: number;
-  /** The tab the pane opens on (mode "Improve" opens on Debrief: its first action). */
-  initialTab?: ControlsTab;
+  /** The tab on screen, held by the page so a layout change keeps it (mode "Improve" opens on Debrief). */
+  tab: ControlsTab;
+  onTabChange: (tab: ControlsTab) => void;
 }
 
 export function StudioControls({
@@ -75,9 +78,9 @@ export function StudioControls({
   onSaved,
   onUseCase,
   casesVersion = 0,
-  initialTab = "settings",
+  tab,
+  onTabChange: setTab,
 }: StudioControlsProps) {
-  const [tab, setTab] = useState<ControlsTab>(initialTab);
   const dispatch = useAppDispatch();
   const record = useAppSelector((s) => (agentId ? selectAgentById(s, agentId) : undefined));
   const [candidate, setCandidate] = useState<StudioCandidate | null>(null);
@@ -135,10 +138,10 @@ export function StudioControls({
   };
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="shrink-0 overflow-x-auto border-b border-border px-2" data-testid="studio-controls-tabs">
+      <PaneBar className="items-end overflow-x-auto py-0" data-testid="studio-controls-tabs">
         <Tabs value={tab} onValueChange={(v) => setTab(v as ControlsTab)} data={TABS} aria-label="Agent controls" />
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+      </PaneBar>
+      <div className="min-h-0 flex-1 overflow-y-auto p-3" data-controls-scroll="">
         {!agentId ? (
           <StudioControlsPreview tab={tab} />
         ) : tab === "settings" ? (
@@ -174,7 +177,7 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
   const dirty = useAppSelector((s) => selectAgentIsDirty(s, agentId));
   const [feedback, setFeedback] = useState("");
   const [saving, setSaving] = useState(false);
-  if (!record) return <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Loading the agent" />;
+  if (!record) return <RegionSkeleton />;
 
   const save = async () => {
     setSaving(true);
@@ -188,71 +191,99 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
       setSaving(false);
     }
   };
+  const discard = () => {
+    for (const field of ["name", "description", "modelId"] as const) dispatch(resetAgentField({ id: agentId, field }));
+  };
+  const send = () => {
+    const text = feedback.trim();
+    if (!text) return;
+    onFeedback(text);
+    setFeedback("");
+  };
 
-  const inputs = record.variableDefinitions ?? [];
+  const inputs = (record.variableDefinitions ?? []) as StudioInputDefinition[];
   return (
-    <div className="flex flex-col gap-3" data-testid="studio-settings">
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Name
-        <ProInput
-          value={record.name ?? ""}
-          onChange={(e) => dispatch(setAgentField({ id: agentId, field: "name", value: e.target.value }))}
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Goal
-        <ProTextarea
-          value={record.description ?? ""}
-          onChange={(e) => dispatch(setAgentField({ id: agentId, field: "description", value: e.target.value }))}
-          minHeight={64}
-          autoGrow
-        />
-      </label>
-      <div className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Model
-        <ModelListDropdown
-          aria-label="Model"
-          modelOnly
-          inputModalities={["text"]}
-          selectionPurpose="agent"
-          value={record.modelId ?? null}
-          onValueChange={(modelId) => {
-            dispatch(setAgentField({ id: agentId, field: "modelId", value: modelId }));
-          }}
-        />
-      </div>
-      <div className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Inputs
-        <div className="flex flex-wrap gap-1">
+    <div className="flex min-h-full flex-col" data-testid="studio-settings">
+      <div className="flex flex-1 flex-col gap-4">
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Name</span>
+          <ProInput
+            value={record.name ?? ""}
+            onChange={(e) => dispatch(setAgentField({ id: agentId, field: "name", value: e.target.value }))}
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Goal</span>
+          <ProTextarea
+            value={record.description ?? ""}
+            onChange={(e) => dispatch(setAgentField({ id: agentId, field: "description", value: e.target.value }))}
+            minHeight={56}
+            autoGrow
+          />
+        </label>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Model</span>
+          <ModelListDropdown
+            aria-label="Model"
+            modelOnly
+            inputModalities={["text"]}
+            selectionPurpose="agent"
+            triggerVariant="settings"
+            value={record.modelId ?? null}
+            onValueChange={(modelId) => {
+              dispatch(setAgentField({ id: agentId, field: "modelId", value: modelId }));
+            }}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-muted-foreground">Inputs</span>
           {inputs.length === 0 ? (
-            <span className="text-xs font-normal">None — it takes what you type</span>
+            <span className="text-sm text-muted-foreground">None. It works from what you type</span>
           ) : (
-            inputs.map((v) => <Badge key={v.name}>{v.name}</Badge>)
+            <StudioInputPills definitions={inputs} />
           )}
         </div>
+        <div className="flex flex-col gap-1 border-t border-border pt-4">
+          <span className="text-xs font-medium text-muted-foreground">Tell the assistant</span>
+          <div className="flex items-end gap-1.5">
+            <ProTextarea
+              aria-label="Tell the assistant what to change"
+              placeholder="What should change?"
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
+              minHeight={36}
+              autoGrow
+              className="min-w-0 flex-1"
+            />
+            <Button variant="outline" icon={<Send />} aria-label="Send to the assistant" title="Send to the assistant" disabled={!feedback.trim()} onClick={send} />
+          </div>
+        </div>
       </div>
-      <Button variant="primary" onClick={() => void save()} disabled={!dirty || saving}>
-        {saving ? "Saving…" : "Save version"}
-      </Button>
-      <div className="flex flex-col gap-1 border-t border-border pt-3 text-xs font-medium text-muted-foreground">
-        Feedback for the assistant
-        <ProTextarea
-          aria-label="Feedback for the assistant"
-          value={feedback}
-          onChange={(e) => setFeedback(e.target.value)}
-          minHeight={64}
-          autoGrow
-        />
-        <Button
-          variant="outline"
-          disabled={!feedback.trim()}
-          onClick={() => {
-            onFeedback(feedback.trim());
-            setFeedback("");
-          }}
-        >
-          Send to assistant
-        </Button>
+      {/* One fixed bar for the save: the same height clean or dirty, so nothing above it moves. */}
+      <div
+        className="sticky bottom-0 -mx-3 -mb-3 mt-4 flex h-11 shrink-0 items-center justify-end gap-1 border-t border-border bg-card px-3"
+        data-testid="studio-save-bar"
+        data-dirty={dirty ? "" : undefined}
+      >
+        {dirty ? (
+          <>
+            <span className="mr-auto text-xs text-muted-foreground">Unsaved changes</span>
+            <Button variant="quiet" onClick={discard} disabled={saving}>
+              Discard
+            </Button>
+            <Button variant="primary" onClick={() => void save()} disabled={saving}>
+              {saving ? "Saving…" : "Save version"}
+            </Button>
+          </>
+        ) : (
+          <span className="mr-auto text-xs text-muted-foreground">Every save is a new version</span>
+        )}
       </div>
     </div>
   );
