@@ -41,6 +41,10 @@ const CHOKEPOINT_ALLOW = new Map([
   ["features/scopes/registry/entityContentAdapters.ts", "entity content reads (not scope data)"],
 ]);
 
+/** The one file outside the package that names the value door: the organization-form write (organization_id, no scope_id) the scope doors do not speak. */
+const DOOR_STRING_ALLOW = new Map([
+  ["features/organizations/system-values/orgSystemValues.ts", "an organization's own value for a System item (context_value_write, organization form)"],
+]);
 const DOOR_STRING = /(?:\.rpc|Door\w*)\(\s*["'`]context_(tree|types|type_scopes|search|scopes|items|values|archived_types|system_items|templates|type_write|scope_write|item_write|value_write|type_archive|type_restore|scope_archive|scope_restore|item_archive|item_restore|tags_set|template_apply|template_define)["'`]/;
 const ARCHIVED_TABLES = "scope_types|scopes|context_items|context_item_values|context_value_refs|scope_dataset_instances";
 const ARCHIVED_READ = new RegExp(`schema\\(\\s*["']context["']\\s*\\)[\\s\\S]{0,80}?\\.from\\(\\s*["'](${ARCHIVED_TABLES})["']|["'](${ARCHIVED_TABLES})["'][^\\n]{0,120}["']context["']`);
@@ -94,7 +98,7 @@ export function findings(path, text) {
     out.push(`${path}: keeps a React-state copy of scope fields/values — read the holder's selectors`);
   }
   if (VALUE_ENCODING.test(text)) out.push(`${path}: encodes a scope value (value_* slot / fence write) — only @ai-matrx/records/scopes may`);
-  if (DOOR_STRING.test(text)) out.push(`${path}: names a custom.context_* door — only @ai-matrx/records may`);
+  if (!DOOR_STRING_ALLOW.has(path) && DOOR_STRING.test(text)) out.push(`${path}: names a custom.context_* door — only @ai-matrx/records may`);
   if (ARCHIVED_READ.test(text)) out.push(`${path}: reads an archived scope table in "context" (moved to deprecated)`);
   if (DEPRECATED_ROW.test(text)) out.push(`${path}: types a row of an archived scope table (Database["deprecated"])`);
   return out;
