@@ -30,6 +30,18 @@ export async function hasSignedInSession(): Promise<boolean> {
   }
 }
 
+/**
+ * Runs `read` only for a signed-in tab. A visitor's tree read is a guaranteed 401 (anon is refused
+ * by design), so it is never made: the answer is "signed-out" and the sign-in state shows. Signing in
+ * later re-reads through `onSignedIn`.
+ */
+export async function readWhenSignedIn<T>(
+  read: () => Promise<T>,
+): Promise<{ kind: "signed-out" } | { kind: "read"; value: T }> {
+  if (!(await hasSignedInSession())) return { kind: "signed-out" };
+  return { kind: "read", value: await read() };
+}
+
 /** Calls `listener` when the person signs in (or the session attaches) in this tab. */
 export function onSignedIn(listener: () => void): () => void {
   const { data } = createClient().auth.onAuthStateChange((event, session) => {

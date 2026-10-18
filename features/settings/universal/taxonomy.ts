@@ -38,7 +38,27 @@ export type TaxonomyIndex = {
 export const UNFILED_DOMAIN_SLUG = "not-filed-yet";
 export const UNFILED_DOMAIN_NAME = "Other settings";
 
-export async function fetchTaxonomyIndex(): Promise<TaxonomyIndex> {
+let taxonomyInFlight: Promise<TaxonomyIndex> | null = null;
+
+/**
+ * One read at a time: the provider's three effects (taxonomy, knobs, system rows) each need the
+ * index at the same moment, and each used to page the whole table itself (two identical
+ * `taxonomy_node` reads on every /user-settings load). Callers that arrive while a read is in
+ * flight share it; the next read after it settles asks the database again.
+ */
+export function fetchTaxonomyIndex(): Promise<TaxonomyIndex> {
+  if (!taxonomyInFlight) {
+    const read = readTaxonomyIndex();
+    taxonomyInFlight = read;
+    const clear = () => {
+      if (taxonomyInFlight === read) taxonomyInFlight = null;
+    };
+    read.then(clear, clear);
+  }
+  return taxonomyInFlight;
+}
+
+async function readTaxonomyIndex(): Promise<TaxonomyIndex> {
   const supabase = createClient();
   const rows = await readAllRows<TaxonomyNode>(
     ({ from, to }) =>
