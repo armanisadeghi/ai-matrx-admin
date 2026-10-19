@@ -34,7 +34,8 @@ import { selectActiveProjectId } from "@/features/scopes/redux/selectors/active-
 import { useAppSelector } from "@/lib/redux/hooks";
 import { InteractionTimeline } from "../record/InteractionTimeline";
 import { PartyNotes } from "../record/PartyNotes";
-import { SectionCard, SectionEmpty } from "../record/SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { SectionEmpty } from "../record/SectionEmpty";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useDealDetail } from "../../deals/useDealDetail";
 import { usePipelines } from "../../deals/usePipelines";
@@ -246,7 +247,7 @@ export function DealRecordPage({ dealId }: Props) {
             >
               {/* Facts rail */}
               <div className="space-y-3">
-                <SectionCard title="Deal" Icon={Handshake}>
+                <SectionCard dense bodyClassName="p-2" title="Deal" Icon={Handshake}>
                   <dl className="space-y-1.5 text-sm">
                     <div className="flex items-center justify-between gap-2">
                       <dt className="text-xs text-muted-foreground">Value</dt>
@@ -389,9 +390,9 @@ export function DealRecordPage({ dealId }: Props) {
                     organization declares a field on deals. */}
                 <EntityCustomFields entityToken="crm_deal" recordId={deal.id} organizationId={deal.organization_id} />
 
-                <SectionCard
+                <SectionCard dense bodyClassName="p-2"
                   title="Stage history"
-                  Icon={History}
+                  icon={History}
                   // read-gate-exempt: section of the deal detail that renders only after its read succeeded (detail && deal guard above)
                   count={detail.stageEvents.length}
                 >
@@ -445,7 +446,7 @@ export function DealRecordPage({ dealId }: Props) {
                     dealLabel={deal.name}
                   />
                 ) : (
-                  <SectionCard title="Activity" Icon={History}>
+                  <SectionCard dense bodyClassName="p-2" title="Activity" Icon={History}>
                     {/* read-gate-exempt: guidance for a deal with no party (a field of the loaded deal); AccessGate and the refresh notice above own the read's failure */}
                     <SectionEmpty>
                       Attach a person or company to log activity — an

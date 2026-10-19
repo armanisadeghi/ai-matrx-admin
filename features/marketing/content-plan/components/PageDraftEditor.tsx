@@ -134,7 +134,7 @@ const GUIDED_REVISIONS: {
   },
 ];
 
-function SectionCard({
+function DraftSectionEditor({
   section,
   index,
   total,
@@ -655,7 +655,7 @@ export function PageDraftEditor({
           </div>
 
           {value.sections.map((section, index) => (
-            <SectionCard
+            <DraftSectionEditor
               key={index}
               section={section}
               index={index}

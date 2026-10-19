@@ -53,7 +53,7 @@ import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -229,13 +229,13 @@ export function ContactCandidatesCard({
   };
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       empty={!loading && error == null && rows?.length === 0}
       title="Suggested contacts"
       compactAction
-      Icon={ContactRound}
+      icon={ContactRound}
       count={error == null ? rows?.length : undefined}
-      action={
+      headerExtra={
         <div className="flex items-center gap-1">
           <Button
             icon={finding ? (

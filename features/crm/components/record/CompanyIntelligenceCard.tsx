@@ -32,7 +32,7 @@ import {
   withIntel,
   type IntelSource,
 } from "../../company-intelligence";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { toolLookupHref } from "@/features/data-sources/library/tools/people/lookupPlan";
 import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
 
@@ -58,11 +58,11 @@ export function CompanyIntelligenceCard({
   });
   const stored = storedIntel(party.attributes);
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       title="Company intelligence"
-      Icon={Building2}
+      icon={Building2}
       compactAction
-      action={
+      headerExtra={
         party.primary_domain ? (
           <NewTabLink href={toolLookupHref("company_profile", { domain: party.primary_domain })} label="Look up the company profile" />
         ) : undefined

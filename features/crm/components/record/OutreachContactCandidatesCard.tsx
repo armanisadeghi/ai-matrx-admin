@@ -19,7 +19,7 @@ import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -144,11 +144,11 @@ export function OutreachContactCandidatesCard({ outletPartyId }: Props) {
   };
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       title="People found on this outlet"
-      Icon={MailSearch}
+      icon={MailSearch}
       count={data && error == null ? candidates.length : undefined}
-      action={
+      headerExtra={
         <Button
           icon={<RefreshCw
             className={loading ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"}

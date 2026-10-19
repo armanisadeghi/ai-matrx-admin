@@ -68,7 +68,8 @@ import {
   type ContactChannel,
   type ContactPoint,
 } from "../../types";
-import { SectionCard, SectionEmpty } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { SectionEmpty } from "./SectionEmpty";
 import { CrmRecordCopyButtons } from "./CrmRecordCopyButtons";
 import { toolLookupHref } from "@/features/data-sources/library/tools/people/lookupPlan";
 import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
@@ -340,13 +341,13 @@ export function ContactPointsCard({
 
   return (
     <div ref={cardRef}>
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       empty={points.length === 0 && !adding}
       title="Contact points"
-      Icon={AtSign}
+      icon={AtSign}
       count={points.length}
       compactAction
-      action={
+      headerExtra={
         <div className="flex items-center">
           {points.length > 0 && (
             <CrmRecordCopyButtons

@@ -79,6 +79,7 @@ import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapt
 import { recordPageCapture } from "@/components/agent-copy/page-capture/pageCapture";
 import { PageCaptureButton } from "@/components/agent-copy/page-capture/PageCaptureButton";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 interface OrgManageProps {
   organization: Organization;
@@ -377,10 +378,12 @@ export function OrgManage({
 
           {/* General */}
           <SectionCard
-            id="general"
+            anchor="general"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={Settings}
             title="General"
-            description="Name, logo, website, and description."
+            about="Name, logo, website, and description."
           >
             <GeneralSettings
               organization={displayOrganization}
@@ -394,10 +397,12 @@ export function OrgManage({
               The card is shared with the person's own settings so the two
               surfaces can never disagree on what a limit means. */}
           <SectionCard
-            id="ai-budget"
+            anchor="ai-budget"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={Gauge}
             title="AI budget"
-            description="What the plan includes, what this organization has spent, and the lower ceiling it chooses for itself."
+            about="What the plan includes, what this organization has spent, and the lower ceiling it chooses for itself."
           >
             <div className="flex flex-col gap-3">
               <SpendBudgetCard
@@ -412,10 +417,12 @@ export function OrgManage({
           {/* Members */}
           {canManageMembers && (
             <SectionCard
-              id="members"
+              anchor="members"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={Users}
               title="Members"
-              description="Who is in this organization and what they can do. Put people who work together on a team, below, and their lists gain a My team view."
+              about="Who is in this organization and what they can do. Put people who work together on a team, below, and their lists gain a My team view."
             >
               <MemberManagement
                 organizationId={displayOrganization.id}
@@ -429,10 +436,12 @@ export function OrgManage({
 
           {/* Teams — the grouping behind "my team or department" list defaults. */}
           <SectionCard
-            id="teams"
+            anchor="teams"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={UsersRound}
             title="Teams"
-            description="Groups of people inside this organization, like departments. A person can be on several; a team can take its members from an HR department."
+            about="Groups of people inside this organization, like departments. A person can be on several; a team can take its members from an HR department."
           >
             <TeamManagement
               organizationId={displayOrganization.id}
@@ -444,10 +453,12 @@ export function OrgManage({
           {/* Trash — members' archived items in this organization (owners and admins). */}
           {showOrgTrash && (
             <SectionCard
-              id="trash"
+              anchor="trash"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={Trash2}
               title="Trash"
-              description="What members archived here. Restoring puts it back, records it in the audit log and tells its owner; nothing here is deleted for good."
+              about="What members archived here. Restoring puts it back, records it in the audit log and tells its owner; nothing here is deleted for good."
             >
               <OrgTrashSection organizationId={displayOrganization.id} />
             </SectionCard>
@@ -456,10 +467,12 @@ export function OrgManage({
           {/* Invitations */}
           {mayManageInvitations && (
             <SectionCard
-              id="invitations"
+              anchor="invitations"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={Mail}
               title="Invitations"
-              description="Invite new members by email and manage pending invites."
+              about="Invite new members by email and manage pending invites."
             >
               <InvitationManager
                 organizationId={displayOrganization.id}
@@ -474,10 +487,12 @@ export function OrgManage({
               settings below, and every HR setting lives at /hr/settings/*. */}
           {canManageSettings && (
             <SectionCard
-              id="people"
+              anchor="people"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={UserCog}
               title="People"
-              description="Employee records, the directory, and where HR is configured."
+              about="Employee records, the directory, and where HR is configured."
             >
               <OrgHrPeopleSection
                 organizationId={displayOrganization.id}
@@ -522,20 +537,24 @@ export function OrgManage({
           )}
 
           <SectionCard
-            id="data"
+            anchor="data"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={Database}
             title="Data"
-            description="Where this organization's data lives while the old and new systems run side by side. Each part switches to the new system with one press by an owner, and back with one press."
+            about="Where this organization's data lives while the old and new systems run side by side. Each part switches to the new system with one press by an owner, and back with one press."
           >
             <OrgDataSwitches organizationId={displayOrganization.id} />
           </SectionCard>
 
           {canManageSettings && (
             <SectionCard
-              id="mandates"
+              anchor="mandates"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={Plug}
               title="Mandates"
-              description="Choose which agent or workflow runs each AI job for this organization. Your choice replaces the system default for every member."
+              about="Choose which agent or workflow runs each AI job for this organization. Your choice replaces the system default for every member."
             >
               <Button asChild variant="outline">
                 <Link href={`/organizations/${slug}/settings/mandates`}>
@@ -552,10 +571,12 @@ export function OrgManage({
           </section>
 
           <SectionCard
-            id="competitor-labels"
+            anchor="competitor-labels"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={Tags}
             title="Competitor labels"
-            description="Shared labels available in every competitor classification dropdown for this organization."
+            about="Shared labels available in every competitor classification dropdown for this organization."
           >
             <OrgCompetitorLabelsSettings
               orgId={displayOrganization.id}
@@ -567,10 +588,12 @@ export function OrgManage({
           {/* Module settings — per-kind org rules (placeholder tasklist UI) */}
           {canManageSettings && (
             <SectionCard
-              id="modules"
+              anchor="modules"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={SlidersHorizontal}
               title="Module settings"
-              description="Org rules for each kind of resource — agents, notes, files, and the rest."
+              about="Org rules for each kind of resource — agents, notes, files, and the rest."
             >
               <OrgModuleSettings
                 orgId={displayOrganization.id}
@@ -582,10 +605,12 @@ export function OrgManage({
           {/* Configuration — the org rung of Code → System → Org → User */}
           {canManageSettings && (
             <SectionCard
-              id="configuration"
+              anchor="configuration"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={SlidersHorizontal}
               title="Configuration"
-              description="Every platform setting this organization may override — the platform default stays visible, your value wins, one click inherits it back."
+              about="Every platform setting this organization may override — the platform default stays visible, your value wins, one click inherits it back."
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <p className="text-sm text-muted-foreground flex-1">
@@ -605,10 +630,12 @@ export function OrgManage({
           {/* API keys — machine credentials (owner-gated, ruling C16) */}
           {isOwner && (
             <SectionCard
-              id="api-keys"
+              anchor="api-keys"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={KeyRound}
               title="API keys"
-              description="Machine credentials for this organization — each key acts as its own service identity, scoped to exactly this org."
+              about="Machine credentials for this organization — each key acts as its own service identity, scoped to exactly this org."
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <p className="text-sm text-muted-foreground flex-1">
@@ -628,10 +655,12 @@ export function OrgManage({
           {/* Payments — collect into the organization's own Stripe account (PAYMENTS-CONNECT) */}
           {canManageSettings && (
             <SectionCard
-              id="payments"
+              anchor="payments"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={CreditCard}
               title="Payments"
-              description="Take payments on forms, booking pages and portals."
+              about="Take payments on forms, booking pages and portals."
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <p className="text-sm text-muted-foreground flex-1">Money goes to your own Stripe account.</p>
@@ -648,10 +677,12 @@ export function OrgManage({
           {/* Domains — forms, booking pages and the portal on the organization's own address (CUSTOM-DOMAINS) */}
           {canManageSettings && (
             <SectionCard
-              id="domains"
+              anchor="domains"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={Globe}
               title="Domains"
-              description="Show your forms, booking pages and portal on your own address."
+              about="Show your forms, booking pages and portal on your own address."
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <p className="text-sm text-muted-foreground flex-1">Like book.yourbusiness.com.</p>
@@ -667,10 +698,12 @@ export function OrgManage({
 
           {/* Change policy (C-18) — how AI-proposed changes are handled */}
           <SectionCard
-            id="change-policy"
+            anchor="change-policy"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={ShieldCheck}
             title="Change policy"
-            description="How this organization wants each kind of AI-proposed change handled — automatic, reviewed, or off, per change type."
+            about="How this organization wants each kind of AI-proposed change handled — automatic, reviewed, or off, per change type."
           >
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <p className="text-sm text-muted-foreground flex-1">
@@ -690,10 +723,12 @@ export function OrgManage({
           {/* Keyword value — the org rung of platform → org → brand → site (KI-046) */}
           {canManageSettings && (
             <SectionCard
-              id="keyword-value"
+              anchor="keyword-value"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={BadgeDollarSign}
               title="Keyword value"
-              description="How keywords are valued for every brand and site here."
+              about="How keywords are valued for every brand and site here."
             >
               <div className="flex justify-end">
                 <Button asChild variant="outline">
@@ -708,7 +743,9 @@ export function OrgManage({
 
           {/* System context — this organization's own value for a curated System item */}
           <SectionCard
-            id="system-context"
+            anchor="system-context"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={SlidersHorizontal}
             title="System context"
           >
@@ -736,20 +773,24 @@ export function OrgManage({
 
           {/* Provider-native operating accounts and their organization-Vault coverage. */}
           <SectionCard
-            id="provider-accounts"
+            anchor="provider-accounts"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={PlugZap}
             title="Provider accounts"
-            description="The exact developer, publisher, partner, and operating accounts this organization uses with external services. Credentials stay in the organization Vault."
+            about="The exact developer, publisher, partner, and operating accounts this organization uses with external services. Credentials stay in the organization Vault."
           >
             <ProviderAccountsSection organizationId={displayOrganization.id} />
           </SectionCard>
 
           {/* Organization vault — all members can use/contribute; admins manage. */}
           <SectionCard
-            id="vault"
+            anchor="vault"
+            tabIndex={-1}
+            bodyClassName="p-5"
             icon={KeyRound}
             title="Organization vault"
-            description="Shared API keys and credentials. Members can use values without revealing them."
+            about="Shared API keys and credentials. Members can use values without revealing them."
           >
             <OrganizationVault organizationId={displayOrganization.id} />
           </SectionCard>
@@ -776,10 +817,12 @@ export function OrgManage({
           {/* Email */}
           {canManageMembers && (
             <SectionCard
-              id="email"
+              anchor="email"
+              tabIndex={-1}
+              bodyClassName="p-5"
               icon={Send}
               title="Email"
-              description="Send a message to everyone in this organization."
+              about="Send a message to everyone in this organization."
             >
               <OrgEmailTab
                 organizationId={displayOrganization.id}
@@ -836,27 +879,3 @@ function SectionHeading({
   );
 }
 
-function SectionCard({
-  id,
-  icon,
-  title,
-  description,
-  children,
-}: {
-  id: string;
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section id={id} tabIndex={-1}>
-      <Card className="p-5">
-        <div className="mb-4">
-          <SectionHeading icon={icon} title={title} description={description} />
-        </div>
-        {children}
-      </Card>
-    </section>
-  );
-}

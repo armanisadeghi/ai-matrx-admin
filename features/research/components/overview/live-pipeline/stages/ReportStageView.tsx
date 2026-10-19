@@ -6,7 +6,7 @@ import type {
   PipelineState,
   WorkItem,
 } from "../../../../hooks/usePipelineProgress";
-import { SectionCard } from "../ui/SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { StageHeader } from "../ui/StageHeader";
 import { StatusDot } from "../ui/StatusDot";
 import { cn } from "@/lib/utils";

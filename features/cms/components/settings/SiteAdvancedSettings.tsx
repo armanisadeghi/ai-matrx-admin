@@ -50,6 +50,7 @@ import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/Surface
 import { CMS_SITE_CONTEXT_MENU_PROPS } from "@/features/cms/agent-context/cmsSiteContextMenuProps";
 import { useCmsResearchLineage } from "@/features/cms/hooks/useCmsResearchLineage";
 import { ResearchLineagePanel } from "@/features/cms/components/ResearchLineagePanel";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 const SURFACE_NAME = CMS_SITE_CONTEXT_MENU_PROPS.surfaceName;
 
@@ -135,7 +136,7 @@ function requireLinkRows(value: unknown, what: string): LinkRow[] {
   });
 }
 
-function SectionCard({
+function SettingsSection({
   sectionId,
   title,
   hint,
@@ -160,40 +161,37 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section
-      id={sectionId}
-      className="scroll-mt-24 rounded-lg border border-border bg-card p-5 space-y-3"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>
-        </div>
-        {aiRole ? (
-          <SurfaceRoleAgentButton
-            surfaceName="matrx-user/cms-site"
-            roleName={aiRole}
-            label={aiLabel ?? "Do it with AI"}
+    <SectionCard
+      anchor={sectionId}
+      title={title}
+      about={hint}
+      className="scroll-mt-24"
+      bodyClassName="space-y-3 p-5"
+      headerExtra={
+        <>
+          {aiRole ? (
+            <SurfaceRoleAgentButton
+              surfaceName="matrx-user/cms-site"
+              roleName={aiRole}
+              label={aiLabel ?? "Do it with AI"}
+              className="shrink-0"
+            />
+          ) : null}
+          <Button
+            icon={saving ? <Loader2 className="animate-spin" /> : <Save />}
+            variant={dirty ? "primary" : "outline"}
+            disabled={!dirty || saving}
+            onClick={onSave}
+            aria-label={`Save ${title}`}
             className="shrink-0"
-          />
-        ) : null}
-        <Button
-          icon={saving ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <Save />
-          )}
-          variant={dirty ? "primary" : "outline"}
-          disabled={!dirty || saving}
-          onClick={onSave}
-          aria-label={`Save ${title}`}
-          className="shrink-0"
-        >
-          Save
-        </Button>
-      </div>
+          >
+            Save
+          </Button>
+        </>
+      }
+    >
       {children}
-    </section>
+    </SectionCard>
   );
 }
 

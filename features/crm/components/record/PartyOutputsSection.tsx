@@ -34,7 +34,7 @@
 
 import { AnchorRecordsList } from "@/features/content-ir/records/AnchorRecordsList";
 import { useAnchorRecords } from "@/features/content-ir/records/useAnchorRecords";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
 export interface PartyOutputsSectionProps {
@@ -56,7 +56,7 @@ export function PartyOutputsSection({
   if (state.status === "ready" && state.records.length === 0) return null;
 
   return (
-    <SectionCard title="Outputs about this customer" Icon={AGENT_ICON}>
+    <SectionCard dense bodyClassName="p-2" title="Outputs about this customer" Icon={AGENT_ICON}>
       <div className="p-2.5">
         <AnchorRecordsList
           state={state}

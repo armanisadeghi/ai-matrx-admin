@@ -12,7 +12,7 @@ import type {
 } from "../../../../hooks/usePipelineProgress";
 import { sourcesDiscoveredFromItems } from "../../../../hooks/usePipelineProgress";
 import type { ResearchSource } from "../../../../types";
-import { SectionCard } from "../ui/SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { StageHeader } from "../ui/StageHeader";
 import { StatusDot } from "../ui/StatusDot";
 import { Favicon } from "../ui/Favicon";

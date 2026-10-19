@@ -23,7 +23,8 @@ import { addAddress, removeAddress } from "../../service";
 import { parseAddress } from "../../agent-context/crmRecordSurfaceWrite";
 import type { AddressPurpose, AddressRow } from "../../types";
 import { ADDRESS_PURPOSES } from "../../types";
-import { SectionCard, SectionEmpty } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { SectionEmpty } from "./SectionEmpty";
 import { CrmRecordCopyButtons } from "./CrmRecordCopyButtons";
 import {
   addressesAgentPayload,
@@ -133,13 +134,13 @@ export function AddressesCard({
   });
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       empty={addresses.length === 0 && !adding}
       title="Addresses"
-      Icon={MapPin}
+      icon={MapPin}
       count={addresses.length}
       compactAction
-      action={
+      headerExtra={
         <div className="flex items-center">
           {addresses.length > 0 && (
             <CrmRecordCopyButtons

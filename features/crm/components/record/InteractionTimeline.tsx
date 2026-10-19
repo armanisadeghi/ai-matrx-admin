@@ -53,7 +53,8 @@ import type {
   InteractionDirection,
   InteractionRow,
 } from "../../types";
-import { SectionCard, SectionEmpty } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { SectionEmpty } from "./SectionEmpty";
 import { CrmRecordCopyButtons } from "./CrmRecordCopyButtons";
 import {
   buildInteractionCopyView,
@@ -291,12 +292,12 @@ export function InteractionTimeline({
   });
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       title="Activity"
-      Icon={History}
+      icon={History}
       count={interactions.length}
       compactAction
-      action={
+      headerExtra={
         <div className="flex items-center">
           {/* 🚨 SENDING AN EMAIL IS A FIRST-CLASS ACTION, not a mode of the
               log-a-past-activity strip. Until 2026-09-17 it appeared only after

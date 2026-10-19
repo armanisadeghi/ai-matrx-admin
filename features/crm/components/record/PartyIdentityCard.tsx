@@ -38,7 +38,7 @@ import {
   identityAgentPayload,
   type CrmRecordCopyParent,
 } from "./record-copy";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { EntityBackLinks } from "@/features/unified-data/components/EntityBackLinks";
 import { RecordsMount, StandardRecordForm } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { StandardColumn } from "@ai-matrx/records-ui";
@@ -269,11 +269,11 @@ export function PartyIdentityCard({ party, onChanged }: Props) {
   });
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       title="Identity"
-      Icon={IdCard}
+      icon={IdCard}
       compactAction
-      action={
+      headerExtra={
         <CrmRecordCopyButtons
           label={`${party.display_name} identity`}
           human={() => formatIdentityCopy(identityCopyView)}

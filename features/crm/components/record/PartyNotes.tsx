@@ -24,7 +24,8 @@ import type { PlatformComment as Comment } from "@ai-matrx/associations";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { formatRelativeTime } from "@/utils/datetime";
-import { SectionCard, SectionEmpty } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { SectionEmpty } from "./SectionEmpty";
 import { CrmRecordCopyButtons } from "./CrmRecordCopyButtons";
 import {
   buildNoteCopyView,
@@ -200,14 +201,14 @@ export function PartyNotes({
   };
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       title="Notes"
-      Icon={NotebookText}
+      icon={NotebookText}
       // No count while the load is failing — an authoritative "0" is the same
       // lie as "No notes yet".
       count={loadError ? undefined : comments.length}
       compactAction
-      action={
+      headerExtra={
         <div className="flex items-center">
           {copyParent && comments.length > 0 && (
             <CrmRecordCopyButtons

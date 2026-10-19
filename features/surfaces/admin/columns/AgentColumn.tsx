@@ -23,6 +23,7 @@ import type {
 } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import type { ContextPolicy } from "@ai-matrx/chat/agents/types/agent-api-types";
 import { humanizeIdentifier, displayLabel } from "@ai-matrx/kit/text-case";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 /**
  * Column 2 — Agent.
@@ -70,7 +71,7 @@ export function AgentColumn({ agent }: { agent: AgentDefinition }) {
           title="Variables"
           icon={Variable}
           count={variables.length}
-          accent="text-emerald-600 bg-emerald-500/10"
+          iconClassName="bg-success/10 text-success-ink"
         >
           {variables.length === 0 ? (
             <EmptyRow label="No variables declared" />
@@ -91,7 +92,7 @@ export function AgentColumn({ agent }: { agent: AgentDefinition }) {
           title="Context Policies"
           icon={Boxes}
           count={slots.length}
-          accent="text-sky-600 bg-sky-500/10"
+          iconClassName="bg-info/10 text-info-ink"
         >
           {slots.length === 0 ? (
             <EmptyRow label="No context policies declared" />
@@ -122,40 +123,6 @@ export function AgentColumn({ agent }: { agent: AgentDefinition }) {
         />
       )}
     </div>
-  );
-}
-
-function SectionCard({
-  title,
-  icon: Icon,
-  count,
-  accent,
-  children,
-}: {
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  count: number;
-  accent: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-      <header className="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/30">
-        <div
-          className={cn(
-            "flex h-6 w-6 items-center justify-center rounded-md",
-            accent,
-          )}
-        >
-          <Icon className="h-3 w-3" />
-        </div>
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        <span className="ml-auto inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-full text-[11px] font-medium tabular-nums bg-background text-muted-foreground border border-border">
-          {count}
-        </span>
-      </header>
-      <div className="bg-card">{children}</div>
-    </section>
   );
 }
 

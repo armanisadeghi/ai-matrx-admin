@@ -28,43 +28,6 @@ import {
 } from "@/features/employee-performance-reviews/schema";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 
-// ── Section card with a numbered/lettered badge ──────────────────────────────
-export function SectionCard({
-  badge,
-  title,
-  description,
-  children,
-  className,
-  anchor,
-}: {
-  badge: React.ReactNode;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-  className?: string;
-  anchor?: string;
-}) {
-  return (
-    <Card
-      className={cn("overflow-hidden", className)}
-      data-surface-value={anchor}
-    >
-      <CardHeader className="p-4 pb-2">
-        <div className="flex items-center gap-3">
-          <span className="grid h-7 w-7 flex-none place-items-center rounded-lg bg-primary/10 text-sm font-bold text-primary-ink">
-            {badge}
-          </span>
-          <CardTitle className="text-base">{title}</CardTitle>
-        </div>
-        {description ? (
-          <p className="pl-10 text-xs text-muted-foreground">{description}</p>
-        ) : null}
-      </CardHeader>
-      <CardContent className="p-4 pt-2">{children}</CardContent>
-    </Card>
-  );
-}
-
 // ── Labeled field wrapper ────────────────────────────────────────────────────
 export function Field({
   label,

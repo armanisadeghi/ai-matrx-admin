@@ -8,7 +8,7 @@ import type {
   PipelineDerived,
   WorkItem,
 } from "../../../../hooks/usePipelineProgress";
-import { SectionCard } from "../ui/SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { StageHeader } from "../ui/StageHeader";
 import { WorkItemCard } from "../ui/WorkItemCard";
 import { ModelBadge } from "../ui/ModelBadge";
@@ -110,7 +110,7 @@ export function AnalyzeStageView({
           <span>Analyzing content</span>
         </>
       }
-      trailing={
+      headerExtra={
         derived.rate > 0.1 && (
           <div className="flex items-center gap-1.5 type-meta text-muted-foreground">
             <Sparkline

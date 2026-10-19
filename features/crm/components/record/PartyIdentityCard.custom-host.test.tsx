@@ -64,7 +64,7 @@ jest.mock("@/components/ui/switch", () => ({ Switch: () => null }));
 jest.mock("../../service", () => ({ allowPartyContact: jest.fn(), blockPartyContact: jest.fn(), updateParty: jest.fn() }));
 jest.mock("../../agent-context/crmRecordSurfaceWrite", () => ({ parseIdentityFields: (v: unknown) => v }));
 jest.mock("./CrmRecordCopyButtons", () => ({ CrmRecordCopyButtons: () => null }));
-jest.mock("./SectionCard", () => ({ SectionCard: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
+jest.mock("@/features/marketing/components/shared/MarketingUi", () => ({ SectionCard: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 jest.mock("./record-copy", () => ({
   buildIdentityCopyView: () => ({}),
   formatIdentityCopy: () => "",
