@@ -452,8 +452,6 @@ async function maxChargeCents(organizationId: string): Promise<number> {
     p_feature: "billing.payments",
     p_key: "max_charge_cents",
     p_organization_id: organizationId,
-    p_user_id: null,
-    p_scopes: null,
   });
   if (error) throw new Error(`Reading the payment limit failed: ${error.message}`);
   const raw = data as unknown;
