@@ -25,6 +25,7 @@ import {
 } from "@/features/marketing/components/shared/MarketingUi";
 import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { BrandCompetitorDirectory } from "./BrandCompetitorDirectory";
 import CompetitorAutopsyWorkspace from "./CompetitorAutopsyWorkspace";
 
@@ -54,9 +55,22 @@ export function BrandScopedCompetitors({
   if (socialOnly) {
     // The directory answers the list screens; the other modes are the website competitor
     // analysis, so they say so instead of repeating the directory six times.
-    if (!view || DIRECTORY_VIEWS.has(view)) return <BrandCompetitorDirectory />;
+    // The same page top the website state mounts (CompetitorAutopsyWorkspace), so the
+    // route never changes its header with the brand's website count.
+    const top = (
+      <EntityModeHeader backHref={marketingRoutes.home()} entityLabel={brand.name} />
+    );
+    if (!view || DIRECTORY_VIEWS.has(view)) {
+      return (
+        <>
+          {top}
+          <BrandCompetitorDirectory />
+        </>
+      );
+    }
     return (
-      <div className="p-3 pt-[calc(var(--shell-header-h)+0.75rem)]">
+      <div className="mx-auto w-full max-w-6xl px-3 pb-3 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-4">
+        {top}
         <NoWebsiteState
           compact
           brandId={brand.id}

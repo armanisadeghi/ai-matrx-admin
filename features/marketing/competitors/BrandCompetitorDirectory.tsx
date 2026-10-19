@@ -413,7 +413,7 @@ export function BrandCompetitorDirectory() {
         sortable: false,
         filter: false,
         customActions: (row) => <RowSocialActions row={row} brand={{ id: brand.id, organizationId: brand.organizationId }} />,
-        width: 180,
+        width: 220,
       },
     );
     return cols;
