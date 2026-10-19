@@ -168,7 +168,8 @@ export default function MobileNotesList({
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Notes List */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      {/* A page: its last note scrolls to half the screen (styles/shell.css --matrx-page-runway). */}
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-[var(--matrx-page-runway)]">
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />

@@ -913,7 +913,7 @@ export function SignerSurface({
         ) : null}
 
         <main
-          className={cn("relative min-h-0 flex-1 overflow-auto", compact && active && !locked && "pb-[45dvh]")}
+          className={cn("relative min-h-0 flex-1 overflow-auto", compact && active && !locked && "pb-[var(--matrx-page-runway,50dvh)]")}
           data-matrx-page-scroll
         >
           {formView && !locked ? (
