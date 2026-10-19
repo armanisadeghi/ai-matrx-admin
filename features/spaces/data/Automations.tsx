@@ -945,8 +945,8 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
               ) : (
                 <>
                   <Input aria-label="Agent prompt" placeholder="Ask an agent" value={d.prompt} onChange={(e) => put(i, { prompt: e.target.value })} />
-                  {/* The agent step records the question for a person to run; it spends nothing by itself (0 pts a run). */}
-                  <span className="type-secondary text-muted-foreground" data-testid="spaces-automation-agent-cost">Waits for a person · runs no AI · 0 pts</span>
+                  {/* The agent step records the question for a person to run; it spends nothing by itself. */}
+                  <span className="type-secondary text-muted-foreground" data-testid="spaces-automation-agent-cost">Waits for a person · runs no AI</span>
                 </>
               )}
               <Button variant="quiet" icon={<X size={14} />} aria-label="Remove action" onClick={() => setDrafts(drafts.filter((_, j) => j !== i))} />
@@ -1014,8 +1014,8 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   <span className={`type-secondary min-w-0 flex-1 truncate ${a.app_says ? "text-destructive" : "text-muted-foreground"}`}>
                     {a.app_says ?? (a.app_checked_at ? `Checked ${new Date(a.app_checked_at).toLocaleString()}` : "Not checked yet")}
                   </span>
-                  <Button variant="quiet" disabled={checking === a.id} title={appTerms ? `${appTerms.points_per_check} points` : undefined} onClick={() => void checkNow(a)}>
-                    {checking === a.id ? "Checking…" : `Check now${appTerms ? ` · ${appTerms.points_per_check} pts` : ""}`}
+                  <Button variant="quiet" disabled={checking === a.id} onClick={() => void checkNow(a)}>
+                    {checking === a.id ? "Checking…" : "Check now"}
                   </Button>
                 </div>
               ) : null}

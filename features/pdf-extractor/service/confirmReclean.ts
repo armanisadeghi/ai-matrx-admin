@@ -1,5 +1,5 @@
 /**
- * Re-cleaning an already-cleaned document spends AI credits and replaces the
+ * Re-cleaning an already-cleaned document replaces the
  * clean text, so a manual click asks first (the expensive-click law). A
  * document that is not cleaned yet runs without a question — there is nothing
  * to replace — and the auto-run on open (`force: false`) never reaches here.
@@ -10,7 +10,7 @@ export async function confirmRecleanIfCleaned(alreadyCleaned: boolean): Promise<
   if (!alreadyCleaned) return true;
   return confirm({
     title: "Re-clean this document?",
-    description: "Uses AI credits.",
+    description: "This replaces the current clean text.",
     confirmLabel: "Re-clean",
     cancelLabel: "Cancel",
   });

@@ -1,21 +1,17 @@
 "use client";
 
 /**
- * The result of one Tool call, as its kind (the platform's one answer viewer), with what it cost,
- * where the answer came from and — for builders — the raw data the agent would get. The call is a
+ * The result of one Tool call, as its kind (the platform's one answer viewer), where the answer came from and — for builders — the raw data the agent would get. The call is a
  * durable record: this panel only READS it, so a closed tab, a slow source or a refresh never loses
- * a paid answer. Members read points; only a seat that may see dollars sees the vendor cost.
+ * a paid answer. No price shows here: a result is work being done.
  */
 
 import { useState } from "react";
 import { CircleAlert, Clock, PackageOpen } from "lucide-react";
 import { Badge, Button, EmptyState, SegmentedControl } from "@ai-matrx/design-system/controls";
-import { formatPoints } from "@ai-matrx/kit/format";
 import { isCallRunning, type ToolCallView } from "@ai-matrx/agents/tools";
 import { ResultJson } from "@ai-matrx/chat/tool-call-visualization/result-fields/ResultJson";
 
-import { formatAdminUsd } from "@/components/cost/formatAdminCost";
-import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
 import { ToolResultTableBar } from "@/features/tool-result-tables/ToolResultTableBar";
@@ -46,7 +42,6 @@ export function ToolResult({
   showRaw?: boolean;
 }) {
   const [pane, setPane] = useState<Pane>("answer");
-  const seesDollars = useSeesDollars();
 
   if (clientError && !view) {
     return (
@@ -105,7 +100,6 @@ export function ToolResult({
           <div className="h-full w-1/3 animate-pulse rounded-full bg-primary/60" />
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {view.points_held > 0 ? <span>{formatPoints(view.points_held)} held until it finishes</span> : null}
           {view.stage === "done" || view.stage === "storing" ? null : (
             <Button variant="quiet" className="ml-auto" onClick={onCancel}>
               Stop
@@ -164,7 +158,6 @@ export function ToolResult({
     );
   }
 
-  const free = view.points_charged <= 0;
   return (
     <div data-tool-result="succeeded" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -182,8 +175,6 @@ export function ToolResult({
         <span className="ml-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground" data-tool-cost="">
           {view.cache !== "none" ? <Badge tone="neutral">Saved answer</Badge> : null}
           {view.display_source ? <Badge tone="neutral">{view.display_source}</Badge> : null}
-          <span className="font-medium text-foreground">{free ? "No charge" : `Cost ${formatPoints(view.points_charged)}`}</span>
-          {seesDollars && view.cost_usd != null ? <span>· {formatAdminUsd(view.cost_usd)}</span> : null}
         </span>
       </div>
       <div className="rounded-xl border border-border bg-card p-4">

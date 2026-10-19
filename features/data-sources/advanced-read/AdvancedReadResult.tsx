@@ -3,7 +3,6 @@
 import { Copy } from "lucide-react";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { Button } from "@ai-matrx/design-system/controls";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";
@@ -11,12 +10,12 @@ import { copyToClipboard } from "@/lib/clipboard/copy";
 import type { AdvancedItem } from "./contract";
 
 /**
- * What the advanced reader got for ONE page: the reader used, seconds and points in one muted line;
+ * What the advanced reader got for ONE page: the reader used, seconds in one muted line;
  * on success the page as markdown with Copy; on failure one plain sentence.
  */
 export function AdvancedReadResult({ item }: { item: AdvancedItem }) {
   const body = item.markdown ?? item.text;
-  const facts = [item.reader ? capitalize(item.reader) : null, `${item.seconds.toFixed(1)} s`, formatPoints(item.points)].filter(Boolean).join(" · ");
+  const facts = [item.reader ? capitalize(item.reader) : null, `${item.seconds.toFixed(1)} s`].filter(Boolean).join(" · ");
   if (!item.ok) {
     return (
       <div className="flex flex-col gap-1" data-advanced-read-result="failed">

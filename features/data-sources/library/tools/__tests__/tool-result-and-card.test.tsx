@@ -66,21 +66,14 @@ afterEach(() => {
 });
 
 describe("ToolResult", () => {
-  it("shows the answer with its cost in points, and never the vendor cost to a member", () => {
+  it("shows the answer and never a price: no points, no vendor cost, even to a seat that sees dollars", () => {
+    seesDollars = true;
     show(view("succeeded", { output: { domain: "example.org" }, points_charged: 481, cost_usd: 0.02, raw: { domain: "example.org" } }));
     expect(host.querySelector("[data-answer]")?.textContent).toBe("example.org");
     const cost = host.querySelector("[data-tool-cost]")?.textContent ?? "";
-    expect(cost).toContain("Cost");
+    expect(cost).not.toContain("Cost");
     expect(cost).not.toContain("$");
     expect(host.textContent).toContain("Raw data");
-  });
-
-  it("a seat that may see dollars sees the vendor cost; a single-answer Tool (no source from the layer) names none", () => {
-    seesDollars = true;
-    show(view("succeeded", { output: { domain: "x.org" }, points_charged: 10, cost_usd: 0.02, display_source: null }));
-    const cost = host.querySelector("[data-tool-cost]")?.textContent ?? "";
-    expect(cost).toContain("$0.02");
-    expect(cost).not.toContain("Matrx");
   });
 
   it("a compare Tool's source (what the layer sends only for compare) is shown beside the answer", () => {
@@ -88,11 +81,11 @@ describe("ToolResult", () => {
     expect(host.querySelector("[data-tool-cost]")?.textContent).toContain("Moz");
   });
 
-  it("says a saved answer is saved, and free when nothing was charged", () => {
+  it("says a saved answer is saved, and never says free", () => {
     show(view("succeeded", { output: { domain: "x.org" }, points_charged: 0, cache: "own" }));
     const cost = host.querySelector("[data-tool-cost]")?.textContent ?? "";
     expect(cost).toContain("Saved answer");
-    expect(cost).toContain("No charge");
+    expect(cost).not.toContain("No charge");
   });
 
   it("an empty answer promises no charge; a refusal carries our sentence and the copy menu", () => {
@@ -103,10 +96,10 @@ describe("ToolResult", () => {
     expect(host.querySelector("[data-alchemy]")).toBeTruthy();
   });
 
-  it("a running call shows its stage and the points held", () => {
+  it("a running call shows its stage and no points held", () => {
     show(view("waiting", { stage_label: "Waiting on source", points_held: 400 }));
     expect(host.querySelector("[data-tool-result='running']")?.textContent).toContain("Waiting on source");
-    expect(host.textContent).toContain("held");
+    expect(host.textContent).not.toContain("held");
   });
 
   it("a finishing call offers no Stop, and a call that cannot be read says it is saved and can be reopened", () => {

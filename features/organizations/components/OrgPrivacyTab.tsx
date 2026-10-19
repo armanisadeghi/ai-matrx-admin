@@ -153,7 +153,7 @@ export function OrgPrivacyTab({ organizationId, canEdit }: OrgPrivacyTabProps) {
     try {
       await pref.setBudgetUsd(parsedUsd);
       setEditingBudget(false);
-      toast.success(`Daily budget set to ${formatCostDisplay(parsedUsd)}`);
+      toast.success("Daily budget saved");
     } catch (err) {
       toastWriteFailure(err, { action: FIELD_ACTION.budget });
     }
