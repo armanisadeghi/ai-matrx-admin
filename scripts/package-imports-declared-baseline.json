@@ -17,12 +17,6 @@
   "features/content-ir/sandbox/generate-class-safelist.ts": [
     "@tailwindcss/oxide"
   ],
-  "features/documents/hooks/useUniverDocSurfaceTheme.ts": [
-    "@univerjs/engine-render"
-  ],
-  "features/documents/univer-doc-canvas-colors.ts": [
-    "@univerjs/engine-render"
-  ],
   "features/hr/shared/__tests__/validate-hr-session.test.ts": [
     "@supabase/auth-js"
   ],
