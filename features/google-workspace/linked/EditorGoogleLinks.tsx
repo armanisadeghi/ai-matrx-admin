@@ -26,6 +26,7 @@ import type { Deck } from "@/features/presentations/deck-model";
 import { sanitizeUniverDocSnapshot } from "@ai-matrx/office/docs";
 
 import { GoogleLinkControl, googleLinkParts, useGoogleLink, type GoogleLinkAdapter } from "./GoogleLinkControl";
+import { readLiveRoom, writeIntoLiveRoom } from "@/lib/collab/live-room-write";
 
 // An open editor registers its live adapter here, so the record's File menu (mounted elsewhere in
 // the page) offers the SAME Google actions over the same live content as the toolbar button.
@@ -83,6 +84,8 @@ export function workbookGoogleAdapter(
       const snapshot = { ...(content as Partial<IWorkbookData>) };
       // Same unit id as the open workbook: collab peers address it by id.
       if (current) snapshot.id = current.getId();
+      // people co-editing: Google's version merges into the room as ops; the open editors receive it
+      if (await writeIntoLiveRoom("workbook", workbookId, snapshot)) return null;
       const res = await saveSnapshot({
         workbookId,
         snapshot,
@@ -150,6 +153,8 @@ export function documentGoogleAdapter(
         markdownToUniverDoc(String(content ?? ""), documentName) as Partial<IDocumentData>,
         documentId,
       );
+      // people co-editing: Google's version merges into the room as ops; the open editors receive it
+      if (await writeIntoLiveRoom("udt_document", documentId, snapshot)) return null;
       const res = await saveDocumentSnapshot({
         documentId,
         snapshot,
@@ -242,12 +247,15 @@ export function savedRecordGoogleAdapter(
       recordId,
       title,
       readLocal: async () => {
+        const live = await readLiveRoom("workbook", recordId);
+        if (live) return live;
         const res = await getLatestSnapshot(recordId);
         if (isServiceFailure(res)) throw new Error(res.error);
         if (!res.data) throw new Error("Open this workbook once before sending it to Google.");
         return res.data.snapshot;
       },
       applyRemote: async (content) => {
+        if (await writeIntoLiveRoom("workbook", recordId, { ...(content as object) })) return null;
         const res = await saveSnapshot({
           workbookId: recordId,
           snapshot: { ...(content as object) },
@@ -268,6 +276,8 @@ export function savedRecordGoogleAdapter(
     recordId,
     title,
     readLocal: async () => {
+      const live = await readLiveRoom("udt_document", recordId);
+      if (live) return univerDocToMarkdown(live as IDocumentData);
       const res = await getLatestDocumentSnapshot(recordId);
       if (!res.success) throw new Error(res.error);
       if (!res.data) throw new Error("Open this document once before sending it to Google.");
@@ -278,6 +288,7 @@ export function savedRecordGoogleAdapter(
         markdownToUniverDoc(String(content ?? ""), title) as Partial<IDocumentData>,
         recordId,
       );
+      if (await writeIntoLiveRoom("udt_document", recordId, snapshot)) return null;
       const res = await saveDocumentSnapshot({
         documentId: recordId,
         snapshot,
