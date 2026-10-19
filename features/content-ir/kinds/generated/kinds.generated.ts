@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1609 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1616 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "b4a1a9b86370";
+export const KIND_REGISTRY_FINGERPRINT = "25a251542f13";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1668,6 +1668,92 @@ export interface Bindings {
 }
 
 /**
+ * * From kind `board_comment_list`.
+ */
+export interface BoardComment {
+  body?: string;
+  token?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  row_id: string;
+  table_id?: string | null;
+  comment_id: string;
+}
+
+/**
+ * * From kind `board_outline`.
+ */
+export interface BoardOutlineChapter {
+  note?: string | null;
+  tiles?: BoardOutlineTile[];
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  chapter_id?: string | null;
+}
+
+/**
+ * * From kind `board_outline`.
+ */
+export interface BoardOutlineTile {
+  /**
+   * table, cover, note, text, … (the tile's source).
+   */
+  kind?: string;
+  look?: string | null;
+  title?: string;
+  /**
+   * The pack table token (color, type_style …), when known.
+   */
+  token?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  tile_id: string;
+  table_id?: string | null;
+  row_count?: number | null;
+}
+
+/**
+ * * Shared by 2 kinds (board_table, board_table_list).
+ */
+export interface BoardTableField {
+  key: string;
+  type?: string;
+  label?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * * Shared by 2 kinds (board_table, board_table_list).
+ */
+export interface BoardTableRow {
+  id: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  values?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  /**
+   * The row's version; a write sends it as expected_version.
+   */
+  version?: number | null;
+}
+
+/**
  * * From kind `brand_intake_facts`.
  */
 export interface BrandFact {
@@ -3163,6 +3249,60 @@ export interface DecisionUsage {
   __kind?: string;
   input_tokens: number;
   output_tokens: number;
+}
+
+/**
+ * * From kind `design_system_build_result`.
+ */
+export interface DesignRowWritten {
+  name?: string;
+  /**
+   * The table token the row belongs to (color, type_style, component …).
+   */
+  token: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  row_id: string;
+  /**
+   * The row's version after the write.
+   */
+  version?: number | null;
+}
+
+/**
+ * * From kind `design_starter_list`.
+ */
+export interface DesignStarter {
+  mood?: string[];
+  /**
+   * Type style → font, weight, size.
+   */
+  type?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  for_who?: string | null;
+  /**
+   * Color role → its value (light and dark).
+   */
+  palette?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  description?: string | null;
+  template_id: string;
+  catalogue_id: string;
 }
 
 /**
@@ -16433,6 +16573,93 @@ export interface BlogPostOutline {
 }
 
 /**
+ * Unresolved comments on the board's table rows, each with its row and table anchor.
+ *  *
+ *  * Kind `board_comment_list` (registry v1).
+ */
+export interface BoardCommentList {
+  items?: BoardComment[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "board_comment_list";
+}
+
+/**
+ * The board's cover tile: its hero (HTML in the board's own variables) and its prose (markdown).
+ *  *
+ *  * Kind `board_cover` (registry v1).
+ */
+export interface BoardCover {
+  hero?: string;
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "board_cover";
+  tile_id: string;
+  markdown?: string;
+}
+
+/**
+ * A board's chapters and tiles in reading order; each table tile with its table id, token and row count.
+ *  *
+ *  * Kind `board_outline` (registry v1).
+ */
+export interface BoardOutline {
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "board_outline";
+  layout?: string | null;
+  version?: number | null;
+  board_id: string;
+  chapters?: BoardOutlineChapter[];
+  /**
+   * Tiles that sit in no chapter, in reading order.
+   */
+  loose_tiles?: BoardOutlineTile[];
+}
+
+/**
+ * One table on a board: its id, pack token, look, fields, and its rows, each with id and version.
+ *  *
+ *  * Kind `board_table` (registry v1).
+ */
+export interface BoardTable {
+  look?: string | null;
+  name?: string;
+  rows?: BoardTableRow[];
+  token?: string | null;
+  /**
+   * Rows in the table; more than len(rows) when capped.
+   */
+  total?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "board_table";
+  fields?: BoardTableField[];
+  table_id: string;
+  tile_title?: string;
+  description?: string | null;
+}
+
+/**
+ * The board's other tables (no known token), each as a board table.
+ *  *
+ *  * Kind `board_table_list` (registry v1).
+ */
+export interface BoardTableList {
+  items?: BoardTable[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "board_table_list";
+}
+
+/**
  * Kind `boolean` (registry v5).
  */
 export type BooleanKind = boolean;
@@ -25809,6 +26036,39 @@ export interface DescribedLinks {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   })[];
+}
+
+/**
+ * The published design-system starter templates (SP0490–SP0499): who each is for, its mood, palette and type.
+ *  *
+ *  * Kind `design_starter_list` (registry v1).
+ */
+export interface DesignStarterList {
+  items?: DesignStarter[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "design_starter_list";
+}
+
+/**
+ * What the design-system Conductor did on one board: a short summary, every row it wrote, whether it wrote
+ * the cover, and anything it left open.
+ *  *
+ *  * Kind `design_system_build_result` (registry v1).
+ */
+export interface DesignSystemBuildResult {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "design_system_build_result";
+  summary: string;
+  /**
+   * What it could not do, each in one line.
+   */
+  left_open?: string[];
+  rows_written?: DesignRowWritten[];
+  cover_written?: boolean;
 }
 
 /**
@@ -62948,6 +63208,11 @@ export type GeneratedKindSlug =
   | "batch_review"
   | "batched_list_result"
   | "blog_post_outline"
+  | "board_comment_list"
+  | "board_cover"
+  | "board_outline"
+  | "board_table"
+  | "board_table_list"
   | "boolean"
   | "branch_result"
   | "brand.voice_rewrite.offer"
@@ -63160,6 +63425,8 @@ export type GeneratedKindSlug =
   | "decision_tree"
   | "deferred_work_result"
   | "described_links"
+  | "design_starter_list"
+  | "design_system_build_result"
   | "desktop_tools_load_result"
   | "diagram_edge"
   | "diagram_node"
@@ -64560,6 +64827,11 @@ export interface KindPayloadBySlug {
   "batch_review": BatchReview;
   "batched_list_result": BatchedListResult;
   "blog_post_outline": BlogPostOutline;
+  "board_comment_list": BoardCommentList;
+  "board_cover": BoardCover;
+  "board_outline": BoardOutline;
+  "board_table": BoardTable;
+  "board_table_list": BoardTableList;
   "boolean": BooleanKind;
   "branch_result": BranchResult;
   "brand.voice_rewrite.offer": BrandVoiceRewriteOffer;
@@ -64772,6 +65044,8 @@ export interface KindPayloadBySlug {
   "decision_tree": DecisionTree;
   "deferred_work_result": DeferredWorkResult;
   "described_links": DescribedLinks;
+  "design_starter_list": DesignStarterList;
+  "design_system_build_result": DesignSystemBuildResult;
   "desktop_tools_load_result": DesktopToolsLoadResult;
   "diagram_edge": DiagramEdge;
   "diagram_node": DiagramNode;
@@ -66176,6 +66450,11 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "batch_review",
   "batched_list_result",
   "blog_post_outline",
+  "board_comment_list",
+  "board_cover",
+  "board_outline",
+  "board_table",
+  "board_table_list",
   "boolean",
   "branch_result",
   "brand.voice_rewrite.offer",
@@ -66388,6 +66667,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "decision_tree",
   "deferred_work_result",
   "described_links",
+  "design_starter_list",
+  "design_system_build_result",
   "desktop_tools_load_result",
   "diagram_edge",
   "diagram_node",

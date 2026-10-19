@@ -12,6 +12,7 @@ import { useEffect, useRef } from "react";
 import type { BoardCameraStore } from "../engine/camera-store";
 import { type Rect, screenToWorld } from "../engine/camera";
 import { boundsOfPoints, isConnector } from "../engine/shapes";
+import { frameAtTop } from "../engine/arrange";
 import type { JsonValue } from "@/types/json";
 import { CANVAS_LAYOUT_SETTING, CHAPTER_ORDER_SETTING, LAYOUT_SETTING } from "../persistence/boardsService";
 import {
@@ -22,6 +23,7 @@ import {
   chapterOrder,
   PAGE_COLUMN_W,
   pageLanding,
+  type PagePlan,
   planPageLayout,
   restoreCanvas,
 } from "../engine/page-layout";
@@ -41,15 +43,32 @@ const REFLOW_MS = 120;
 const tileTitle = (t: BoardTileBase): string | undefined =>
   "title" in t && typeof t.title === "string" ? t.title : undefined;
 
+/** The chapter (frame id) a tile is filed in, when its host keeps one (`BoardNode.chapter`). */
+const tileChapter = (t: BoardTileBase): string | undefined =>
+  "chapter" in t && typeof t.chapter === "string" ? t.chapter : undefined;
+
+/**
+ * Keep each tile's filing (`chapter`) as the plan filed it, without an undo step: a reload (or another
+ * device) then opens every tile in its own chapter, never re-reading it from geometry.
+ */
+function keepFiling<T extends BoardTileBase>(board: BoardStore<T>, members: ReadonlyMap<string, string>): void {
+  for (const t of board.read().tiles) {
+    const next = members.get(t.id);
+    if (tileChapter(t) === next) continue;
+    board.updateTile(t.id, { chapter: next } as unknown as Partial<T>, { history: false });
+  }
+}
+
 export function pageScene<T extends BoardTileBase>(board: BoardStore<T>) {
   const now = board.read();
   return {
     tiles: [
-      ...now.tiles.map((t) => ({ id: t.id, rect: t.rect, title: tileTitle(t) })),
+      ...now.tiles.map((t) => ({ id: t.id, rect: t.rect, title: tileTitle(t), chapter: tileChapter(t) })),
+      // A drawn mark or canvas text stacks with the rest but keeps its own size (never stretched).
       ...board
         .getShapes()
         .filter((sh) => !isConnector(sh.kind))
-        .map((sh) => ({ id: sh.id, rect: boundsOfPoints(sh.points) })),
+        .map((sh) => ({ id: sh.id, rect: boundsOfPoints(sh.points), fixedSize: true })),
     ],
     frames: now.frames.map((f) => ({ id: f.id, rect: f.rect, title: f.title })),
   };
@@ -95,6 +114,17 @@ export function usePageLayout<T extends BoardTileBase>({
   });
   /** The chapter each tile was placed in: kept between re-flows so a growing tile stays in its chapter. */
   const membersRef = useRef<ReadonlyMap<string, string> | undefined>(undefined);
+  /** Where the last plan put each tile: a tile no longer there was moved by the person (refiled by place). */
+  const placedRef = useRef<ReadonlyMap<string, { x: number; y: number }> | undefined>(undefined);
+  /** The next plan files every tile by where it sits (the switch in from the canvas the person arranged). */
+  const byPlaceRef = useRef(false);
+  /** A plan landed: remember its filing and placement, and keep the filing on the tiles. */
+  const settle = (plan: PagePlan) => {
+    membersRef.current = plan.members;
+    placedRef.current = plan.placed;
+    if (plan.moves.length) board.reflow(plan.moves);
+    keepFiling(board, plan.members);
+  };
   /** The chapter order the next page arrangement applies (set on the switch into page layout). */
   const entryOrder = useRef<readonly string[] | null>(null);
 
@@ -108,8 +138,17 @@ export function usePageLayout<T extends BoardTileBase>({
     if (next === layout) return;
     if (!saveLayout) throw new Error("This board cannot change its layout.");
     if (next === "page") {
+      // The person switched from the canvas they arranged: the first page plan files tiles by place. Set
+      // here, never on a layout prop change alone (a board whose settings load after its tiles would
+      // otherwise refile every tile by geometry on open).
+      byPlaceRef.current = true;
       const kept = canvasSnapshot(pageScene(board));
-      await saveLayout({ [LAYOUT_SETTING]: "page", [CANVAS_LAYOUT_SETTING]: kept as unknown as JsonValue });
+      try {
+        await saveLayout({ [LAYOUT_SETTING]: "page", [CANVAS_LAYOUT_SETTING]: kept as unknown as JsonValue });
+      } catch (e) {
+        byPlaceRef.current = false;
+        throw e;
+      }
       return;
     }
     const order = chapterOrder(board.read().frames).map((f) => f.id);
@@ -148,7 +187,27 @@ export function usePageLayout<T extends BoardTileBase>({
     if (!store) return;
     if (layout !== "page") {
       store.setPageLock(null);
-      return;
+      // On the canvas the person files a tile by where they put it: a filed tile dragged into another
+      // frame (or out of every frame) takes that filing, so page layout never pulls it back.
+      let canvasTimer: ReturnType<typeof setTimeout> | null = null;
+      const refile = () => {
+        canvasTimer = null;
+        const now = board.read();
+        for (const t of now.tiles) {
+          const filed = tileChapter(t);
+          if (!filed) continue;
+          const here = frameAtTop(t.rect, now.frames) ?? undefined;
+          if (here !== filed) board.updateTile(t.id, { chapter: here } as unknown as Partial<T>, { history: false });
+        }
+      };
+      const unsubscribeCanvas = board.subscribe(() => {
+        if (canvasTimer) clearTimeout(canvasTimer);
+        canvasTimer = setTimeout(refile, REFLOW_MS);
+      });
+      return () => {
+        if (canvasTimer) clearTimeout(canvasTimer);
+        unsubscribeCanvas();
+      };
     }
     let timer: ReturnType<typeof setTimeout> | null = null;
     let pressing = false;
@@ -157,10 +216,16 @@ export function usePageLayout<T extends BoardTileBase>({
       timer = null;
       if (pressing) return; // the press's end runs it
       column = pageColumnFor(store);
-      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, { columnW: column, members: membersRef.current });
-      membersRef.current = plan.members;
+      const byPlace = byPlaceRef.current;
+      byPlaceRef.current = false;
+      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, {
+        columnW: column,
+        members: byPlace ? undefined : membersRef.current,
+        placed: byPlace ? undefined : placedRef.current,
+        byPlace,
+      });
       entryOrder.current = null;
-      if (plan.moves.length) board.reflow(plan.moves);
+      settle(plan);
       store.setPageLock({ column: plan.column });
     };
     const schedule = () => {
@@ -227,9 +292,12 @@ export function usePageLayout<T extends BoardTileBase>({
     const j = i + dir;
     if (i < 0 || j < 0 || j >= order.length) return;
     [order[i], order[j]] = [order[j], order[i]];
-    const plan = planPageLayout(pageScene(board), order, { columnW: store ? pageColumnFor(store) : undefined, members: membersRef.current });
-    membersRef.current = plan.members;
-    if (plan.moves.length) board.reflow(plan.moves);
+    const plan = planPageLayout(pageScene(board), order, {
+      columnW: store ? pageColumnFor(store) : undefined,
+      members: membersRef.current,
+      placed: placedRef.current,
+    });
+    settle(plan);
     const moved = board.read().frames.find((f) => f.id === id);
     if (moved && store) store.pageScrollTo(moved.rect.y - PAGE_LABEL_ROOM);
   };

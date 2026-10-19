@@ -73,10 +73,10 @@ describe("never a name twice", () => {
 
   it("in page layout a section tile shows no header and no tile frame; on the canvas it keeps both", () => {
     const own = { namesItself: table.namesItself!(section), autoHeight: table.autoHeight!(section) };
-    expect(tileChrome("page", own)).toEqual({ headerless: true, bare: true, autoHeight: true });
-    expect(tileChrome("canvas", own)).toEqual({ headerless: false, bare: false, autoHeight: false });
+    expect(tileChrome("page", own)).toEqual({ headerless: true, bare: true, autoHeight: true, growToFit: false });
+    expect(tileChrome("canvas", own)).toEqual({ headerless: false, bare: false, autoHeight: false, growToFit: false });
     const page = { namesItself: table.namesItself!(plain), autoHeight: table.autoHeight!(plain) };
-    expect(tileChrome("page", page)).toEqual({ headerless: false, bare: false, autoHeight: false });
+    expect(tileChrome("page", page)).toEqual({ headerless: false, bare: false, autoHeight: false, growToFit: false });
   });
 
   it("page layout gives a labeled chapter label room, and none to a chapter its tile names", () => {
@@ -128,7 +128,7 @@ describe("a phone reflows the page to its own width", () => {
     const at = new Map(plan.moves.map((m) => [m.id, m]));
     expect(plan.column.w).toBe(342);
     expect(at.get("a")!.w).toBe(342 - PAGE_FRAME_PAD * 2);
-    expect(at.get("b")?.w).toBeUndefined(); // already narrower: keeps its size
+    expect(at.get("b")!.w).toBe(342 - PAGE_FRAME_PAD * 2); // every tile takes the chapter's width (a column of cards)
     expect(planPageLayout(scene).column.w).toBe(1100); // a wide view keeps the column
   });
 });

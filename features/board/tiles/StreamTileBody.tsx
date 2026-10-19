@@ -38,10 +38,13 @@ export function StreamTileBody({
   source,
   tier,
   emptyLabel = "Waiting for the first words…",
+  fit = false,
 }: {
   source: PacedSource;
   tier: PaceTier;
   emptyLabel?: string;
+  /** Lay out at the content's height (a tile in page layout, `useTileAutoHeight`): no inner scroll. */
+  fit?: boolean;
 }) {
   const store = useBoardCameraStore();
   const { snapshot, seq, revealMs } = usePacedSnapshot(source, tier, store.isInteracting);
@@ -54,7 +57,7 @@ export function StreamTileBody({
     const scroller = scrollRef.current;
     const content = contentRef.current;
     if (!scroller || !content || seq === 0) return;
-    if (following.current) followToBottom(scroller, revealMs > 0);
+    if (following.current && !fit) followToBottom(scroller, revealMs > 0);
     // Opacity only: it runs on the compositor. A blur filter here was the
     // largest raster cost on a busy board.
     if (revealMs > 0 && typeof content.animate === "function") {
@@ -63,7 +66,7 @@ export function StreamTileBody({
         easing: "cubic-bezier(0.22, 1, 0.36, 1)",
       });
     }
-  }, [seq, revealMs]);
+  }, [seq, revealMs, fit]);
 
   const streaming = snapshot.phase === "streaming";
 
@@ -75,7 +78,7 @@ export function StreamTileBody({
         const el = e.currentTarget;
         following.current = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
       }}
-      className="h-full overflow-y-auto overscroll-contain px-4 py-3"
+      className={fit ? "px-4 py-3" : "h-full overflow-y-auto overscroll-contain px-4 py-3"}
     >
       <div ref={contentRef} className="text-sm">
         {snapshot.blocks.length === 0 ? (

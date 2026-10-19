@@ -26,3 +26,26 @@ export function describeVersionNote(
   if (ids.length > 0 || SYSTEM_MARKERS.test(text)) return SYSTEM_NOTE_LABEL;
   return text;
 }
+
+const FIELD_PHRASES: Record<string, string> = {
+  messages: "Instructions updated",
+  name: "Renamed",
+  description: "Goal changed",
+  modelId: "Model changed",
+  variableDefinitions: "Inputs changed",
+  tools: "Tools changed",
+  settings: "Settings changed",
+  outputSchema: "Answer format changed",
+};
+
+/**
+ * The note a Studio save writes (a version otherwise carries only "less than a minute ago"): the
+ * applied proposal's title when one was applied, else one short phrase per kind of change.
+ */
+export function studioChangeNote(dirtyFields: string[], proposalTitle?: string | null): string | null {
+  const title = proposalTitle?.trim();
+  if (title) return title.length > 140 ? `${title.slice(0, 139).trimEnd()}…` : title;
+  const phrases = [...new Set(dirtyFields.map((f) => FIELD_PHRASES[f]).filter((p): p is string => !!p))];
+  if (phrases.length === 0) return null;
+  return phrases.length === 1 ? phrases[0]! : `${phrases.slice(0, 3).join(", ")}`;
+}

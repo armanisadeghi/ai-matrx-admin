@@ -155,6 +155,16 @@ export function frameOf(tile: Rect, frames: readonly Placed[]): string | null {
 }
 
 /**
+ * The frame a tile sits in by PLACE: the one holding its top edge (a point just inside its top, at its
+ * horizontal middle). The top, not the center: growing to content never moves a tile's top, and the
+ * server's board reader (aidream `board_state.py`) files by the top edge too, so both sides agree.
+ */
+export function frameAtTop(tile: Rect, frames: readonly Placed[]): string | null {
+  const probe = { x: tile.x + tile.w / 2 - 1, y: tile.y, w: 2, h: Math.min(2, tile.h) };
+  return frameOf(probe, frames);
+}
+
+/**
  * The top-level things a board-wide arrangement moves: every frame (its tiles
  * ride along) and every tile outside a frame. A frame is the person's own
  * grouping, so arranging the board never breaks one up.

@@ -85,6 +85,12 @@ export interface BoardNode {
    * (`tools/item-surfaces.ts` `StoredBasics`). Never the item's content — that lives in its record.
    */
   basics?: { values: Record<string, unknown>; at: string; stale?: boolean };
+  /**
+   * The chapter (a group id) the tile is filed in. A template files each tile in its chapter, and page
+   * layout keeps it there until the person moves the tile (`engine/page-layout.ts` `pageMembership`);
+   * absent = filed by where it sits.
+   */
+  chapter?: string;
 }
 
 export interface BoardGroup {
@@ -170,6 +176,7 @@ export function parseBoardDocument(raw: {
       source: n.source,
       parked: n.parked === true,
       ...(basics ? { basics } : {}),
+      ...(typeof n.chapter === "string" && n.chapter ? { chapter: n.chapter } : {}),
     });
   }
   if (!Array.isArray(raw.nodes)) problems.push("nodes was not a list");

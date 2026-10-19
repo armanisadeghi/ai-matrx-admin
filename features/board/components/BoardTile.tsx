@@ -71,7 +71,7 @@ import type { BoardAccent } from "../items/types";
 import { ConnectHandles, type ConnectPoint } from "./ConnectHandles";
 import { OverviewCard, StatusChip } from "./TileFace";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
-import { FULL_CHROME, type TileChrome, autoHeightChange } from "../engine/tile-chrome";
+import { FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerOverflow } from "../engine/tile-chrome";
 
 /**
  * The tile lays out at its content's height (page layout, `BoardItemType.autoHeight`): a body reads
@@ -549,6 +549,50 @@ export function BoardTile({
     };
   }, [autoHeight, id]);
 
+  // Grow to fit: the body keeps filling the tile (an editor with its own scroller), so the tile grows by
+  // whatever its scroller still hides, re-checked whenever the content changes. A growth that revealed
+  // nothing (the scroller did not grow with the tile) stops there: never a runaway.
+  const growToFit = chrome.growToFit && !focused && !overview;
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!growToFit || !card || typeof ResizeObserver === "undefined") return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    /** Overflow a growth did not reveal (padding under a full-height child, a box with its own max height). */
+    let floor = 0;
+    /** The last growth: the overflow it answered and by how much it grew. */
+    let pending: { hidden: number; by: number } | null = null;
+    const measure = () => {
+      timer = null;
+      const boxes: ScrollerBox[] = [];
+      for (const el of card.querySelectorAll<HTMLElement>("*")) {
+        if (el.scrollHeight - el.clientHeight <= 1) continue;
+        boxes.push({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, overflowY: getComputedStyle(el).overflowY });
+      }
+      const step = growStep(innerOverflow(card.clientHeight, boxes), floor, pending);
+      floor = step.floor;
+      pending = step.grow > 0 ? { hidden: step.hidden, by: step.grow } : null;
+      if (step.grow <= 0) return;
+      const next = autoHeightChange(rectRef.current.h, rectRef.current.h + step.grow);
+      if (next !== null) onAutoHeightRef.current?.(id, next);
+    };
+    const schedule = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(measure, AUTO_HEIGHT_MS);
+    };
+    const ro = new ResizeObserver(schedule);
+    ro.observe(card);
+    const mo = new MutationObserver(schedule);
+    mo.observe(card, { childList: true, subtree: true, characterData: true });
+    card.addEventListener("input", schedule, true);
+    schedule();
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+      card.removeEventListener("input", schedule, true);
+      if (timer) clearTimeout(timer);
+    };
+  }, [growToFit, id]);
+
   const tileMenu = (
     <TileMenu
       title={title}
@@ -635,7 +679,7 @@ export function BoardTile({
             // store subscriptions, channels and timers are torn down until it
             // is needed again (React's Activity, Chrome's tab freezing).
             // An auto-height tile never sleeps: in page layout it IS the page (a frozen body is an empty card).
-            <Activity mode={sleeps && !chrome.autoHeight && life !== "live" && !focused ? "hidden" : "visible"}>
+            <Activity mode={sleeps && !chrome.autoHeight && !chrome.growToFit && life !== "live" && !focused ? "hidden" : "visible"}>
               <TileNavigationBoundary>
                 {/* One tile's crash stays in that tile: the board and every other
                     tile keep working, and this one offers a retry. */}
@@ -739,7 +783,7 @@ export function BoardTile({
         zIndex: lift,
         ...(overview && !focused ? FACE_RADIUS : null),
         // An auto-height tile is never culled: it must measure while off screen, or the page would shift as it scrolls.
-        contentVisibility: culled && !focused && !chrome.autoHeight ? "hidden" : "visible",
+        contentVisibility: culled && !focused && !chrome.autoHeight && !chrome.growToFit ? "hidden" : "visible",
       }}
     >
       {card}

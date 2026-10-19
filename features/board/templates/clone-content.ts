@@ -126,7 +126,15 @@ export async function cloneBoardContent(
     }),
   );
 
-  const groups = doc.groups.map((g) => ({ ...g, id: newId() }));
+  const groupIds = new Map(doc.groups.map((g) => [g.id, newId()] as const));
+  const groups = doc.groups.map((g) => ({ ...g, id: groupIds.get(g.id)! }));
+  // A tile's filing (its chapter) follows its frame's new id; one whose frame is gone is filed by place.
+  for (const n of nodes) {
+    if (!n.chapter) continue;
+    const chapter = groupIds.get(n.chapter);
+    if (chapter) n.chapter = chapter;
+    else delete n.chapter;
+  }
   const edges = doc.edges.flatMap((e) => {
     const from = idMap.get(e.from);
     const to = idMap.get(e.to);

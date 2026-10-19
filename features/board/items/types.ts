@@ -293,11 +293,14 @@ export interface BoardItemType {
    */
   namesItself?: (source: NodeSource) => boolean;
   /**
-   * The body lays out at its content's natural height for this source (no `h-full`, no inner scroll
-   * when `useTileAutoHeight()` is true). In page layout such a tile grows and shrinks to its content
-   * and the page scrolls; on the canvas it keeps its size.
+   * In page layout the tile takes its content's height and the page scrolls — no tile scrolls inside
+   * itself there. On the canvas it keeps its size.
+   *   · `true`: the body lays out at its natural height (no `h-full`, no inner scroll when
+   *     `useTileAutoHeight()` is true); the tile grows and shrinks to it.
+   *   · `"fill"`: the body keeps filling the tile (a shared editor that owns its own scroller, like the
+   *     notes core); the tile grows until nothing inside it scrolls (`innerOverflow`).
    */
-  autoHeight?: (source: NodeSource) => boolean;
+  autoHeight?: (source: NodeSource) => boolean | "fill";
   /** The body reads `tier` (pauses media, paces streams). Others get a constant,
    * so a zoom across a tier boundary never re-renders their content. */
   usesTier?: boolean;

@@ -15,7 +15,7 @@ jest.mock("@/utils/supabase/client", () => ({ supabase: { schema: () => ({ from:
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: jest.fn() }));
 
 import type { Rect } from "../engine/camera";
-import { frameOf, type Placed } from "../engine/arrange";
+import { frameAtTop, frameOf, type Placed } from "../engine/arrange";
 import {
   PAGE_COLUMN_W,
   canvasSnapshot,
@@ -143,12 +143,13 @@ describe("pageLanding — new things in page layout", () => {
     const fresh = p("fresh", 1600, frameB.y, 400, 300); // the view's free spot, beside the column
     const at = pageLanding(fresh.rect, scene.frames, frameB.y + 50, bottom)!;
     const withNew = { tiles: [...scene.tiles, { id: "fresh", rect: { ...fresh.rect, ...at } }], frames: scene.frames };
-    expect(frameOf(withNew.tiles.at(-1)!.rect, withNew.frames)).toBe("frame:B");
+    // Filed by its top edge (`frameAtTop`, as page layout and the server's reader file an unfiled tile).
+    expect(frameAtTop(withNew.tiles.at(-1)!.rect, withNew.frames)).toBe("frame:B");
     const after = applied(withNew, planPageLayout(withNew).moves);
     const nB = after.tiles.find((t) => t.id === "nB")!.rect;
     const placed = after.tiles.find((t) => t.id === "fresh")!.rect;
-    expect(frameOf(placed, after.frames)).toBe("frame:B");
-    expect(placed.x > nB.x || placed.y > nB.y).toBe(true);
+    expect(frameAtTop(placed, after.frames)).toBe("frame:B");
+    expect(placed.y).toBeGreaterThan(nB.y);
   });
 
   it("with no chapter in view, starts a new section at the bottom", () => {

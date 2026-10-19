@@ -165,7 +165,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [runKey, setRunKey] = useState(0);
   const [runConversation, setRunConversation] = useState<string | null>(null);
   /** Mode 1's "Run again": the last run's own inputs, re-sent on a fresh conversation. */
-  const [rerunSeed, setRerunSeed] = useState<{ variables: Record<string, string>; userInput: string } | null>(null);
+  const [rerunSeed, setRerunSeed] = useState<{ variables: Record<string, string>; userInput: string; autoRun?: boolean } | null>(null);
   const [phase, setPhase] = useState<MakePhase>({ kind: "idle" });
   /** Phone tabs open on the most useful pane: the agent and its run once there is an agent, else the assistant. */
   const [paneTab, setPaneTab] = useState<"assistant" | "agent" | "controls">(
@@ -220,6 +220,41 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     studioCase && (studioCase.userInput.trim() || Object.keys(studioCase.variables).length > 0)
       ? { variables: studioCase.variables, userInput: studioCase.userInput }
       : null;
+  /**
+   * A first test of an agent with no run yet fills the inputs from its first saved test case (never
+   * runs by itself); no test case → the fields stay empty and the person fills them in.
+   */
+  const [sampleSeed, setSampleSeed] = useState<{ variables: Record<string, string>; userInput: string; autoRun: false } | null>(null);
+  const [sampleFor, setSampleFor] = useState<string | null>(null);
+  const sampleReady = !state.agentId || Boolean(state.runId) || Boolean(caseSeed) || sampleFor === state.agentId;
+  useEffect(() => {
+    const id = state.agentId;
+    if (!id || state.runId || caseSeed || sampleFor === id) return;
+    let live = true;
+    void fetchTestCaseRows(id).then(
+      (rows) => {
+        if (!live) return;
+        for (const row of rows) {
+          const variables: Record<string, string> = {};
+          if (row.variables && typeof row.variables === "object" && !Array.isArray(row.variables)) {
+            for (const [k, v] of Object.entries(row.variables)) {
+              if (v !== null && v !== undefined && v !== "") variables[k] = typeof v === "string" ? v : JSON.stringify(v);
+            }
+          }
+          const userInput = sampleInputText(row);
+          if (Object.keys(variables).length > 0 || userInput.trim()) {
+            setSampleSeed({ variables, userInput, autoRun: false });
+            break;
+          }
+        }
+        setSampleFor(id);
+      },
+      () => live && setSampleFor(id),
+    );
+    return () => {
+      live = false;
+    };
+  }, [state.agentId, state.runId, caseSeed, sampleFor]);
   /** Bumped when the agent's test cases change, so the Cases list re-reads them. */
   const [casesVersion, setCasesVersion] = useState(0);
 
@@ -251,6 +286,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [savingCase, setSavingCase] = useState(false);
   const [savedRuns, setSavedRuns] = useState<ReadonlySet<string>>(new Set());
   const shownRun = runConversation ?? state.runId;
+  /** "Run again" only once something ran: a stored run, or a conversation that has a sent message. */
+  const hasRun = useAppSelector((s) => Boolean(state.runId) || (runConversation ? selectOrderedMessageIds(runConversation)(s).length > 0 : false));
   const saveRunAsCase = async () => {
     const agentId = state.agentId;
     if (!agentId || !shownRun) return;
@@ -445,7 +482,9 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
 
   /** Fresh every time: a NEW conversation on the same inputs (the case's own, or the last run's). */
   const runAgain = () => {
-    if (!caseSeed && runConversation) {
+    // The first Run of a test whose inputs were filled from its sample runs those inputs now.
+    if (!hasRun && sampleSeed && !caseSeed) setRerunSeed({ ...sampleSeed, autoRun: true });
+    else if (!caseSeed && runConversation) {
       const s = store.getState();
       const values = selectOwnSubmittedFirstTurnValues(runConversation)(s) as Record<string, unknown> | undefined;
       const messages = selectConversationMessages(runConversation)(s) as StudioMessageRecord[];
@@ -519,11 +558,11 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         }
       />
     );
-  } else if (state.agentId && !improveReady) {
+  } else if (state.agentId && (!improveReady || !sampleReady)) {
     center = <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Opening its latest run" />;
   } else if (state.agentId) {
     // A picked case (Cases tab) or "Run again" wins over the case the build started from.
-    const seed = runKey > 0 && rerunSeed ? rerunSeed : (caseSeed ?? rerunSeed);
+    const seed = runKey > 0 && rerunSeed ? rerunSeed : (caseSeed ?? rerunSeed ?? sampleSeed);
     const run = (
       <StudioRun
         agentId={state.agentId}
@@ -695,12 +734,12 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           <Button
             variant="primary"
             icon={<RotateCcw />}
-            aria-label="Run again"
-            title="Run again, fresh"
+            aria-label={hasRun ? "Run again" : "Run"}
+            title={hasRun ? "Run again, fresh" : "Run the agent"}
             data-testid="studio-run-again"
             onClick={runAgain}
           >
-            {isMobile ? null : "Run again"}
+            {isMobile ? null : hasRun ? "Run again" : "Run"}
           </Button>
         )}
       </div>

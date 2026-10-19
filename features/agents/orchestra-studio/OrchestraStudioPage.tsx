@@ -26,6 +26,8 @@ import { needsAgent, stepKind } from "./step-kind";
 import { confidenceLabel, fitScore, matchStep, type StepMatch } from "./step-match";
 import { readStepAgents, type StepAgentInfo } from "./step-agents";
 import { useMakeOrchestra } from "./make-orchestra";
+import { planWantsWorkflow, workflowBrief } from "./workflow-brief";
+import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 import type { SystemPlan, SystemPlanStep } from "./types";
 
 async function agentNameOf(id: string): Promise<string | null> {
@@ -399,6 +401,18 @@ export default function OrchestraStudioPage() {
     }
   }
 
+  /** Workflow Studio takes the plan's steps as the Conductor's first message: copied, then opened. */
+  async function buildAsWorkflow() {
+    if (!plan) return;
+    try {
+      await navigator.clipboard.writeText(workflowBrief(plan));
+      toast.success("The plan's steps are copied", { description: "Paste them into the Conductor's box to start." });
+    } catch {
+      toast.error("The steps could not be copied", { description: "Open Workflow Studio and describe the plan there." });
+    }
+    window.open(`${WORKFLOWS_APP_URL}/workflows/new`, "_blank", "noopener");
+  }
+
   async function turnIntoOrchestra() {
     if (!plan || !planId || makingStep) return;
     setFailure(null);
@@ -558,6 +572,17 @@ export default function OrchestraStudioPage() {
                     <span className="sm:hidden">Orchestra</span>
                   </Button>
                 )}
+                <Button
+                  variant={planWantsWorkflow(plan) ? "primary" : "outline"}
+                  type="button"
+                  onClick={() => void buildAsWorkflow()}
+                  data-testid="build-as-workflow"
+                  title="Open Workflow Studio with this plan's steps copied"
+                >
+                  <Workflow className="mr-1 h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Build as a workflow</span>
+                  <span className="sm:hidden">Workflow</span>
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="quiet" icon={<MoreHorizontal />} aria-label="Plan options" />

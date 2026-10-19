@@ -2,9 +2,9 @@
 name: ci-spend
 type: Skill
 title: "ci-spend — GitHub Actions cost discipline"
-description: "The GitHub Actions cost rules ($100/week cap). Use when editing .github/workflows, adding a schedule or cron, dispatching a workflow, publishing a package version, hitting a billing block, or seeing a CI SPEND OFF TRACK line, ci-breaker issue or spend alert."
+description: "The CI cost rules ($100/week of real money, all CI). Use when editing .github/workflows, adding a schedule or cron, dispatching a workflow, publishing a package version, hitting a billing block, or seeing a CI SPEND OFF TRACK line, ci-breaker issue or spend alert."
 tags: [skill, ci, cost, github-actions]
-timestamp: 2026-10-11
+timestamp: 2026-10-18
 ---
 
 <!-- SYNCED COPY — do not edit here.
@@ -22,4 +22,4 @@ The law is [ci-spend.md](/policies/ci-spend.md); read it, it is short. How to ap
 3. **Dispatching a workflow**: pass `requested_by`; never loop a dispatch; if a run goes red, fix it before dispatching again.
 4. **Billing or spending block**: stop. Do not move the job elsewhere. Tell Arman in plain English.
 5. **Seen cost without benefit** (any shape in the policy): fix it if it is yours, else one plain sentence to Arman: what, roughly how much, no benefit.
-6. **Check spend**: the one-liner in the policy, or the `github_actions_spend_watch` result.
+6. **Check spend**: `GET /ci-spend/status` (the weekly total, each component's $/week and share, the cap), or the one-liner in the policy for GitHub alone. Off track means the weekly total of real money is over the cap; free minutes running out is future billing.

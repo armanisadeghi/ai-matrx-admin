@@ -19,6 +19,7 @@ import {
   fetchEverythingPage,
   mergeEverything,
   rowTitle,
+  agentLabel,
   humanizeFeature,
   type EverythingFilters,
   type EverythingRow,
@@ -141,7 +142,7 @@ export default function EverythingFeed({
         <div className="flex items-center gap-1">
           <select aria-label="Agent" className={selectCls} value={filters.agentId ?? ""} onChange={(e) => set({ agentId: e.target.value || null })}>
             <option value="">Any agent</option>
-            {[...s.agents].map(([id, name]) => <option key={id} value={id}>{agentNames[id] ?? name}</option>)}
+            {[...s.agents].map(([id, name]) => <option key={id} value={id}>{agentLabel(agentNames[id] ?? name)}</option>)}
           </select>
           <label className="flex shrink-0 items-center gap-1 text-muted-foreground">
             <input type="checkbox" checked={filters.backgroundOnly} onChange={(e) => set({ backgroundOnly: e.target.checked })} />

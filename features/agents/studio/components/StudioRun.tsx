@@ -55,6 +55,8 @@ export function rememberLaunchedRun(key: string, conversationId: string): void {
 export interface StudioRunSeed {
   variables?: Record<string, string>;
   userInput?: string;
+  /** false → the inputs are only filled in (the person presses Run); default true runs at once. */
+  autoRun?: boolean;
 }
 
 interface StudioRunProps {
@@ -129,7 +131,7 @@ export function StudioRun({
       sourceFeature: "agent-studio",
       config: {
         displayMode: "direct" as const,
-        autoRun: Boolean(seed),
+        autoRun: Boolean(seed) && seed?.autoRun !== false,
         allowChat: true,
         showVariablePanel: showVariables,
       },
@@ -156,13 +158,21 @@ export function StudioRun({
       );
     // Every turn goes through the mandate with the page's CURRENT offered values (the server rebuilds the
     // workspace from the conversation id; the client sends ids and where we are, nothing else).
+    // The Studio shows what the person typed and attached on their own bubble: the "N sent" receipt
+    // chip is the chat package's own host option (`hostSuppliesContext`, display only; the receipt
+    // stays in Debug and the canvas tab).
     const hookUp = (id: string) => {
-      if (!mandateKey) return;
       unhook.current?.();
-      unhook.current = registerConversationHooks(id, {
-        everyTurnThroughMandate: true,
-        beforeSend: async () => ({ variables: variablesRef.current?.() ?? {} }),
-      });
+      unhook.current = registerConversationHooks(
+        id,
+        mandateKey
+          ? {
+              hostSuppliesContext: true,
+              everyTurnThroughMandate: true,
+              beforeSend: async () => ({ variables: variablesRef.current?.() ?? {} }),
+            }
+          : { hostSuppliesContext: true },
+      );
     };
 
     if (openId) {

@@ -43,21 +43,22 @@ export function MeetMatrxWindow({ onClose }: { onClose: () => void }) {
       onClose={leave}
     >
       <div
-        className="min-h-0 flex-1 overflow-y-auto px-5 pt-6"
+        className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-6"
         data-testid="meet-matrx-window"
         onClickCapture={(e) => {
           if ((e.target as HTMLElement).closest("[data-intro-item]")) void rememberMet();
         }}
       >
         <MeetMatrx />
-        <div className="sticky bottom-0 z-10 -mx-5 flex items-center justify-center gap-2 bg-gradient-to-t from-background via-background/90 to-transparent px-5 pb-4 pt-6">
-          <Button variant="primary" onClick={leave} data-testid="meet-window-continue">
-            Continue
-          </Button>
-          <Button variant="quiet" onClick={leave} data-testid="meet-window-later">
-            Later
-          </Button>
-        </div>
+      </div>
+      {/* A footer of its own under the scrolling content: it never covers a pill. */}
+      <div className="flex shrink-0 items-center justify-center gap-2 border-t border-border bg-background px-5 py-3" data-testid="meet-window-footer">
+        <Button variant="primary" onClick={leave} data-testid="meet-window-continue">
+          Continue
+        </Button>
+        <Button variant="quiet" onClick={leave} data-testid="meet-window-later">
+          Later
+        </Button>
       </div>
     </WindowPanel>
   );

@@ -114,6 +114,8 @@ export interface UserBoardTile {
   source: NodeSource;
   /** Last-known basics (`BoardNode.basics`): what an agent knows of the item while its tile sleeps. */
   basics?: StoredBasics;
+  /** The chapter (frame id) the tile is filed in (`BoardNode.chapter`; page layout keeps it). */
+  chapter?: string;
 }
 
 /** An item's kind word and the agent surface its feature publishes (null for board-only content). */
@@ -195,6 +197,7 @@ export function UserBoard({
       title: n.title,
       source: n.source,
       ...(n.basics ? { basics: n.basics } : {}),
+      ...(n.chapter ? { chapter: n.chapter } : {}),
     })),
     parked: doc.nodes.filter((n) => n.parked).map((n) => n.id),
     frames: doc.groups,
@@ -263,6 +266,7 @@ export function UserBoard({
         source: t.source,
         ...(parkedIds.has(t.id) ? { parked: true } : {}),
         ...(t.basics ? { basics: t.basics } : {}),
+        ...(t.chapter ? { chapter: t.chapter } : {}),
       })),
       groups: now.frames,
       edges: [],
@@ -1275,7 +1279,7 @@ function BoardItemTile({
         chrome={tileChrome(layoutMode, { namesItself: type?.namesItself?.(source), autoHeight: type?.autoHeight?.(source) })}
         onAutoHeight={(tid, h) => {
           const now = board.getTile(tid);
-          if (now) board.reflow(autoHeightMoves(now.rect, tid, h, board.read().frames));
+          if (now) board.reflow(autoHeightMoves(now.rect, tid, h, board.read().frames, now.chapter));
         }}
       >
         {(tier) => (

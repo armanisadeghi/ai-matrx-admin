@@ -106,6 +106,11 @@ export function humanizeFeature(key: string): string {
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : key;
 }
 
+/** An agent's name for a person: the internal author tag some names end with ("… (Jev)") is not part of it. */
+export function agentLabel(name: string): string {
+  return name.replace(/\s*\((?:Jev)\)\s*$/i, "").trim() || name;
+}
+
 /**
  * The title a row wears: the mandate or holder if it has one, else THE AGENT'S NAME (looked up by id), else the
  * feature as words. A raw source key ("manual", "chat") alone never names a run when an agent ran it.
@@ -117,9 +122,9 @@ export function rowTitle(
 ): string {
   // A mandate wears its registry label; a key the registry cannot name is shown as words, never the code key.
   if (row.labelSource === "mandate") return (row.mandateKey ? mandateLabels[row.mandateKey] : undefined) ?? humanizeFeature(row.label);
-  if (row.labelSource === "holder" || row.labelSource === "agent") return row.label;
+  if (row.labelSource === "holder" || row.labelSource === "agent") return agentLabel(row.label);
   const agent = row.agentId ? agentNames[row.agentId] : undefined;
-  if (agent) return agent;
+  if (agent) return agentLabel(agent);
   return row.labelSource === "feature" ? humanizeFeature(row.label) : row.label;
 }
 

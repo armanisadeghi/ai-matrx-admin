@@ -13,6 +13,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import type { NodeSource } from "../board/document";
 import { HtmlTileBody, ImageTileBody } from "../tiles/MediaTileBodies";
 import { MarkdownTileBody } from "../tiles/MarkdownTileBody";
+import { useTileAutoHeight } from "../components/BoardTile";
 import { TextTileBody } from "../tiles/TextTileBody";
 import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
 import { parseWebUrl } from "./web-address";
@@ -94,8 +95,10 @@ function ImageBody({ source, title }: ItemBodyProps) {
 }
 
 function WriteUpBody({ tileId, source, tier }: ItemBodyProps) {
+  // Page layout: the write-up reads at its full length and the page scrolls, never the tile.
+  const fit = useTileAutoHeight();
   if (source.kind !== "text") return null;
-  return <MarkdownTileBody id={tileId} text={source.markdown} tier={tier} />;
+  return <MarkdownTileBody id={tileId} text={source.markdown} tier={tier} fit={fit} />;
 }
 
 function LabelBody({ source, onSource }: ItemBodyProps) {
@@ -168,6 +171,8 @@ export const CONTENT_ITEMS: BoardItemType[] = [
     status: { none: "Board text; it saves with the board." },
     defaultSize: { w: 640, h: 720 },
     matches: (s) => s.kind === "text",
+    // Page layout: the tile takes the write-up's full height (`WriteUpBody` drops its inner scroll).
+    autoHeight: () => true,
     Body: WriteUpBody,
     Face: WriteUpFace,
     kindLabel: "markdown",

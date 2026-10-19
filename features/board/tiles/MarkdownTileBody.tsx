@@ -16,10 +16,13 @@ export function MarkdownTileBody({
   id,
   text,
   tier,
+  fit = false,
 }: {
   id: string;
   text: string;
   tier: PaceTier;
+  /** Lay out at the content's height (page layout): no inner scroll. */
+  fit?: boolean;
 }) {
   const [source, setSource] = useState(() => ({
     text,
@@ -35,5 +38,5 @@ export function MarkdownTileBody({
     stream.start({ instant: true });
     return () => stream.stop();
   }, [stream]);
-  return <StreamTileBody source={stream} tier={tier} />;
+  return <StreamTileBody source={stream} tier={tier} fit={fit} />;
 }
