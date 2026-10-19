@@ -255,7 +255,7 @@ export function useSheetComments({
   const origin = wrapperRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
 
   const layer = (
-    <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" data-comment-cells="">
+    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" data-comment-cells="">
       {[...boxes].map(([anchorId, b]) =>
         openByAnchor.has(anchorId) || anchorId === draft?.anchorId ? (
           <div
