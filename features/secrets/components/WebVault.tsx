@@ -74,9 +74,12 @@ function useVaultHost(organizationId: string | null): VaultHostCapabilities {
     organizationId && userId
       ? createVaultKnobs(packageKnobClient(supabase), { organizationId, userId })
       : undefined;
+  // The website's own right-click menu (VaultContextMenu: agents, Copy, Export) answers on rows;
+  // the row's More button still carries copy-any-field.
+  const rowContextMenu = "host" as const;
   return knobs
-    ? { identity, openUrl, openItemInNewTab, signIn, knobs }
-    : { identity, openUrl, openItemInNewTab, signIn };
+    ? { identity, openUrl, openItemInNewTab, signIn, knobs, rowContextMenu }
+    : { identity, openUrl, openItemInNewTab, signIn, rowContextMenu };
 }
 
 export interface WebVaultProps {

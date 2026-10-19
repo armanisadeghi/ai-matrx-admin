@@ -7,7 +7,7 @@
  * Status is inline: Queued → Starting browser → Signing in → (Waiting for you) → Capturing → Done.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Cloud } from "lucide-react";
 
 import { Button, Select } from "@ai-matrx/design-system/controls";
@@ -22,6 +22,7 @@ import { cloudRefusal, getCloudReadiness, startCloudCapture } from "./cloudCaptu
 import { profileUrlFor } from "../link";
 import { SOCIAL_PLATFORMS, type SocialPlatform } from "../types";
 import { cloudView, type CloudReadiness } from "./cloudJob";
+import { addedLogin, addLoginLocation } from "./addLogin";
 
 export function CloudCaptureButton({
   organizationId,
@@ -42,6 +43,8 @@ export function CloudCaptureButton({
   const vaultOpen = useAppSelector((s) => selectIsOverlayOpen(s, "credentialVaultWindow"));
   const [addingLogin, setAddingLogin] = useState(false);
   const [readyTick, setReadyTick] = useState(0);
+  // The saved logins when "Add <platform> login" opened the Vault window (the new one is picked after).
+  const loginsBefore = useRef<ReadonlySet<string> | null>(null);
   const { row } = useGuidedJob(job?.id ?? null, job);
   const view = cloudView(row);
 
@@ -51,7 +54,10 @@ export function CloudCaptureButton({
     getCloudReadiness(platform, organizationId, abort.signal)
       .then((r) => {
         setReady(r);
-        setItemId((current) => (r.logins.some((l) => l.itemId === current) ? current : (r.logins[0]?.itemId ?? "")));
+        // Back from "Add <platform> login": the login added in the Vault window is the one picked.
+        const added = loginsBefore.current ? addedLogin(loginsBefore.current, r.logins) : null;
+        if (added) loginsBefore.current = null;
+        setItemId((current) => added ?? (r.logins.some((l) => l.itemId === current) ? current : (r.logins[0]?.itemId ?? "")));
       })
       .catch((err: unknown) => {
         if (!abort.signal.aborted) setLine(cloudRefusal(err));
@@ -59,13 +65,15 @@ export function CloudCaptureButton({
     return () => abort.abort();
   }, [platform, organizationId, readyTick]);
 
-  // The login is added in the Vault window; when it closes, read the saved logins again.
+  // The login is added in the Vault window; when it closes, read the saved logins again and pick
+  // the one that was just added (the login that was not there when the window opened).
   useEffect(() => {
     if (addingLogin && !vaultOpen) {
       setAddingLogin(false);
       setReadyTick((n) => n + 1);
     }
   }, [addingLogin, vaultOpen]);
+
 
   useEffect(() => {
     if (view?.stage === "done") onCaptured?.();
@@ -95,15 +103,14 @@ export function CloudCaptureButton({
   const loginUrl = known ? new URL(profileUrlFor(known, "x")).origin + "/" : "";
   // The Vault's own new-login flow in its window, over this page (no navigation).
   const addLogin = () => {
-    const location = new URLSearchParams({ mode: "new", kind: "website_login" });
-    if (loginUrl) location.set("url", loginUrl);
     dispatch(
       openOverlay({
         overlayId: "credentialVaultWindow",
         instanceId: "default",
-        data: { selectedItemId: null, location: location.toString() },
+        data: { selectedItemId: null, location: addLoginLocation(name, loginUrl) },
       }),
     );
+    loginsBefore.current = new Set(ready.logins.map((l) => l.itemId));
     setAddingLogin(true);
   };
 
