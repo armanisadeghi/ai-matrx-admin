@@ -1,10 +1,22 @@
 ---
 name: server-log-analyzer
-subject: matrx-frontend:.claude/skills/server-log-analyzer
+subject: architecture/observability
 description: "Workflow for classifying AI Matrx server log lines in features/server-logs/log-rules.ts. Use when examining raw server logs, new [ModuleName] bracket tokens appear unclassified, log categories are wrong, or adding module recognition to the log viewer."
 ---
 
 # Server Log Analyzer
+
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/architecture/observability/STATE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+- Nothing runs and has its findings ignored: every finding is fixed by an agent or marked OK once, with a reason, and never raised again. A check that cannot judge says "check <id> could not establish truth: <reason>", never a finding about the code.
+- Checks run in the app on their own cadence (a knob), never in a release script, a laptop timer or a code editor; each run records its timing and cost. No check that reads live data runs in GitHub Actions (the frontend repository is public).
+- One finding per item with a stable key (table, signature, path without line, rule id), never the summary line. Hand off only items above the baseline, grouped into work units; standing debt is a number that only shrinks.
+- Mark OK is a commit to the check's own allowlist; "accepted" is never mixed with "resolved".
+- Performance is measured signed in: live truth is `platform.page_vitals` rows with `created_by` not null; never quote a signed-out number as the headline. A watch carries a budget, an owner and a state, and a collector that stops is itself an alert; nothing collects inside a user's request.
+- A failure that is not a row a human can read did not get handled: stderr, a log line and a streamed event are not capture (see error-surfaces).
+- Log classification lives in `log-rules.ts`: a new `[ModuleName]` bracket token is classified there, in the same change that introduces it.
+<!-- rules:stamp-end -->
 
 Analyzes raw logs from the AWS CloudWatch production services and the residual Coolify stream/scraper services, and keeps the parsing system in sync. `CoolifyLogViewer.tsx` is a legacy component name, not a statement that the primary server still runs on Coolify.
 

@@ -1,10 +1,23 @@
 ---
 name: code-splitting
-subject: matrx-frontend:.claude/skills/code-splitting
+subject: architecture/frontend
 description: "next/dynamic code splitting and build-graph cost; first stop for build failures. Use before lazy-loading or deferring a heavy component, adding a dynamic import, React.lazy, or ssr: false; on 'window is not defined' or a hydration mismatch; shrinking the bundle; or on 'build failed', OOM, SIGKILL, a slower build, or 'Collecting page data'."
 ---
 
 # code-splitting — `next/dynamic` done right
+
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/architecture/frontend/STATE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+- Server Component shell with fixed-dimension frames; dynamic content streams into sized Suspense holes, and skeletons match the final dimensions, so layout shift is zero. `"use client"` goes on the smallest island.
+- A Server Component cannot use `dynamic({ ssr: false })`; the heavy widget below a thin server shell owns its splitting inside a `"use client"` child. Never stack `ssr:false` boundaries down one render path (a waterfall), never mass-convert `React.lazy` to `next/dynamic`, and a dynamic import that is always rendered is cost with no deferral: gate it. A user-triggered chunk always has a `loading` and an error boundary.
+- Nothing fetches until needed: no provider, context or hook calls Supabase, an API or IndexedDB on mount; providers mount as empty shells and the consumer that needs data triggers its load. Every removal from boot ships its on-click load.
+- Nothing runs twice: never wrap a second `<XProvider>` for a context the global tree already provides. Redux for all new state; context providers are legacy and are not expanded.
+- No client-side Supabase auth calls; identity is in Redux. A read that needs a session never leaves the client without one, and a refusal is never silent: use the existing session barrier (`utils/supabase/sessionBarrier.ts`), never hand-roll a session check, subscription or retry.
+- Choose the sharing tier by rule: database leaf (renders one shape's data, no deploy) then `@ai-matrx/*` package (every app needs it, identical everywhere) then host (this app's wiring, never shared "just in case"). Package source never imports host aliases (`@/`), and a package change is the first option, never a copy or workaround.
+- A new subdomain app is a project, not an architecture change; cross-host auth rides the `.aimatrx.com` cookie and hard navigation between hosts is fine.
+- A route group's shell posture is deliberate: `(kiosk)`, `(meet)`, `(link)` and `(lab)` are ungated or shell-less on purpose; never add auth or `AppShell` to them to match `(core)`.
+<!-- rules:stamp-end -->
 
 One job: keep heavy **client** code out of the server render and out of the initial load, fetching its chunk only when actually needed. Done wrong it's pure cost (extra waterfalls, blank screens, hydration mismatches) with none of the win.
 

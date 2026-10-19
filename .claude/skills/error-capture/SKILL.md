@@ -1,10 +1,27 @@
 ---
 name: error-capture
-subject: matrx-frontend:.claude/skills/error-capture
+subject: architecture/observability/error-surfaces
 description: "The frontend Error Inspector capture system (captureError, lib/diagnostics/**). Use when wiring a new CapturedErrorSource or adapter, calling captureError from a new site, picking a red/orange/yellow tier or errorTierRules downgrade, or turning a console.error or swallowed catch into a captured error."
 ---
 
 # Error Capture
+
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/architecture/observability/error-surfaces/STATE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+- Capture means a row with the inputs, the full traceback and the context that a human can read, acknowledge and dismiss. stderr, `log.warning`, `print` and a streamed event are not capture.
+- Extend `record_error` / `system_error`; never invent a per-feature error table or a second error tool. `public.system_error` is the one actionable incident queue; the specialized stores (`app_log`, `system_write_failure`, `cx_tool_trace`, `ops_issue_event`) stay.
+- Capture is best-effort: never raises, fresh connection, swallows its own failure (and screams to stdout).
+- Every paid or state-holding operation has an explicit `except asyncio.CancelledError` that records cost and state before re-raising; `except Exception` alone misses it. Detached DB writes use `matrx_utils.detached_task`, never `asyncio.create_task` inside a request.
+- Declare both `source_app` and `source_feature` on a captured error, or neither (the carried AppContext answers); SQL that inserts into `ops.system_error` names `source_feature` and uses the registered app `database`.
+- Group by a persistent fingerprint. The count is "since last cleared": resolve zeroes it, a recurrence after resolution reopens as one and links the prior incident. Fewer rows is the product; a count is a number on an existing row, never a new row on a human queue.
+- Every grouped row carries what it is, how many since cleared, and when it last happened; slight variances are kept (`variants`, `variant_count`); never merge genuinely distinct bugs to hit a smaller number.
+- One normalization law, server-side: clients consume the class token, never reimplement it.
+- Tool output is concise and redacted: rows never carry stacks or payloads, details cap each field and name the cut, and no secrets, cookies or signed URLs reach agent context.
+- Resolve only after the fix is deployed and the incident stays absent for its verification window; record the commit. Never resolve by suppressing a signal unless proven benign, with the reason recorded.
+- Retain all useful evidence, promote only actionable problems: uncaught exceptions, build or deploy failure, timeouts, OOM, dropped writes promote at once; successes, info logs, expected validation failures and health checks never queue.
+- The Fix-It Bar and the kind-problems reader are the human repair path and file no incidents; the `GenericStructuredBlock` alarm does.
+<!-- rules:stamp-end -->
 
 > **Read [`features/admin/error-inspector/FEATURE.md`](../../../features/admin/error-inspector/FEATURE.md) first** — the architecture, the adapter list, and the invariants. This skill is the recipe; that doc is the map.
 
