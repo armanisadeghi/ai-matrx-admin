@@ -27,6 +27,7 @@ import { useAppStore } from "@/lib/redux/hooks";
 import { entityComments, type BoardItemType, type ItemBodyProps, type PickerProps } from "./types";
 import { RecordList } from "./feature-items";
 import { titleToAdopt } from "./feature-items.logic";
+import { MeetingNotesStructure } from "./structures";
 import { nameMatches } from "./record-finders";
 import { NEW_TRANSCRIPT_TITLE, TRANSCRIPT_ITEM_KEY, transcriptHref, transcriptIdOf, transcriptSource } from "./transcript-items.logic";
 
@@ -113,6 +114,7 @@ export const TRANSCRIPT_ITEMS: readonly BoardItemType[] = [
     group: "work",
     section: "meetings",
     accent: "cyan",
+    structure: MeetingNotesStructure,
     status: { none: "A saved transcript has no running state; recording and drafts live in the New transcript dialog." },
     // Header, audio player, then a long run of timecoded segments.
     defaultSize: { w: 860, h: 1000 },

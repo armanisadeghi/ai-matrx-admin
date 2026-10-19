@@ -725,6 +725,27 @@ export const PartyStructure: S = () => (
   </Pad>
 );
 
+/** An agent's page: who it is, what it does, its model and tools. */
+export const AgentStructure: S = () => (
+  <Pad>
+    <Row gap={12}>
+      <div className="flex shrink-0 items-center justify-center rounded-xl" style={{ width: u(40), height: u(40), background: accentFill(0.18) }} />
+      <Stack gap={7} className="flex-1">
+        <Bar w="42%" h={10} strong />
+        <Bar w="24%" h={6} />
+      </Stack>
+      <Pill w={64} h={24} solid />
+    </Row>
+    <Lines widths={["100%", "90%", "58%"]} gap={7} h={7} />
+    <Row gap={8}>
+      <Pill w={70} />
+      <Pill w={52} />
+      <Pill w={60} />
+    </Row>
+    <Field h={34} action />
+  </Pad>
+);
+
 // ── canvas ────────────────────────────────────────────────────────────────────
 
 /** The retired Label tile: its one line, centered. */

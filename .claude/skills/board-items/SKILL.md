@@ -39,6 +39,7 @@ catalog) appears in every board's Add menu, Start panel and agent tools with no 
 | `comments` | REQUIRED. `entityComments(token)` for a record item (its own thread, the same one its page shows); `null` for board-only content, whose door then posts on the Board and says so. `every-tile-has-one-comment-door.test.ts` fails without it |
 | `sleeps` | Opt-in, and only after the type's remount-safety case passes (see "Sleeping tiles" below) |
 | `Keep` | Optional. Mounted for as long as the tile is on the Board, outside the part that sleeps: what must outlive the body (a chat holds its live run and keeps the tile awake while replying) |
+| `structure` | Its L1 zoom skeleton (`items/structures.tsx`, from `components/lod/StructureKit.tsx`): the component with words as bars, props only, no reads. Or `structureGeneric: "<why>"`. Required by `__tests__/tile-levels.test.tsx`; the ladder: `features/board/FEATURE.md` § Zoom levels of detail |
 | `guestSafe` | Set only for board-only content or a meeting's own parts: a meeting guest with no account may add it |
 
 The saved form is a REFERENCE (`{ kind: "entity", entity, id, meta? }`, `board/document.ts`), never a
