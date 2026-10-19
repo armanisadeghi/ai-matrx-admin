@@ -44,20 +44,35 @@ interface WorkbookFacade {
   getSheetBySheetId?(id: string): { getSheetName(): string } | null;
 }
 
+let warnedPlacement = false;
+/** Say once, with the reason, when cell marks cannot be placed (never silently empty). */
+function warnPlacement(why: string, extra?: unknown) {
+  if (warnedPlacement) return;
+  warnedPlacement = true;
+  console.warn(`[comments] cell comment marks cannot be placed: ${why}`, extra ?? "");
+}
+
 function injectorOf(univer: Univer | null): Injector | null {
   return (univer as unknown as { __getInjector?: () => Injector } | null)?.__getInjector?.() ?? null;
 }
 
 /** A cell's box on screen (client coordinates), the way Univer's own cell popups place themselves. */
 function cellBox(injector: Injector, unitId: string, row: number, col: number): Box | null {
-  const render = injector.get<{ getRenderById?: (id: string) => unknown }>(IRenderManagerService).getRenderById?.(unitId) as
+  const manager = injector.get<{ getRenderUnitById?: (id: string) => unknown; getRenderById?: (id: string) => unknown }>(IRenderManagerService);
+  const render = (manager.getRenderUnitById?.(unitId) ?? manager.getRenderById?.(unitId)) as
     | { scene: { getAncestorScale(): { scaleX: number; scaleY: number }; getViewport(key: string): { viewportScrollX: number; viewportScrollY: number } | null }; engine: { getCanvasElement(): HTMLCanvasElement | null }; with<T>(t: unknown): T }
     | undefined;
-  if (!render) return null;
+  if (!render) {
+    warnPlacement("no render for the workbook");
+    return null;
+  }
   const skeleton = render.with<{ getCurrentParam(): { skeleton?: { getCellWithCoordByIndex(r: number, c: number): { startX: number; startY: number; endX: number; endY: number; isMergedMainCell?: boolean; mergeInfo?: { startX: number; startY: number; endX: number; endY: number } } } } | null }>(SheetSkeletonManagerService).getCurrentParam()?.skeleton;
   const viewport = render.scene.getViewport("viewMain");
   const canvas = render.engine.getCanvasElement();
-  if (!skeleton || !viewport || !canvas) return null;
+  if (!skeleton || !viewport || !canvas) {
+    warnPlacement("render pieces missing", { skeleton: !!skeleton, viewport: !!viewport, canvas: !!canvas });
+    return null;
+  }
   const p = skeleton.getCellWithCoordByIndex(row, col);
   const cell = p.isMergedMainCell && p.mergeInfo ? p.mergeInfo : p;
   const { scaleX, scaleY } = render.scene.getAncestorScale();
@@ -227,8 +242,8 @@ export function useSheetComments({
         try {
           const b = cellBox(injector, wb.getId(), cell.row, cell.col);
           if (b) next.set(anchorId, b);
-        } catch {
-          /* layout not ready */
+        } catch (err) {
+          warnPlacement("placing a cell threw", err);
         }
       }
       setBoxes((prev) => (JSON.stringify([...prev].map(([k, b]) => [k, Math.round(b.left), Math.round(b.top)])) === JSON.stringify([...next].map(([k, b]) => [k, Math.round(b.left), Math.round(b.top)])) ? prev : next));

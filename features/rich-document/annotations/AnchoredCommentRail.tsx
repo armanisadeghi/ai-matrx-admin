@@ -295,6 +295,17 @@ export function AnchoredCommentRail({
     }
   }
 
+  // Nothing floats above the area's top (an anchor scrolled above it, or under the removed list): keep the
+  // order, push down, never overlap.
+  {
+    let bottom = -GAP;
+    for (const f of floats) {
+      const y = Math.max(placed.get(f.key) ?? f.top, bottom + GAP);
+      placed.set(f.key, y);
+      bottom = y + h(f.key);
+    }
+  }
+
   return (
     <aside
       aria-label="Comments"
