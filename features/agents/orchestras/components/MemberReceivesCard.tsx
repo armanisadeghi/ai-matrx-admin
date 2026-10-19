@@ -189,15 +189,17 @@ export function MemberReceivesCard({
                 </div>
               ))}
               <div className="flex items-center gap-1 px-1.5 pt-1">
-                <Input
-                  value={adding}
-                  onChange={(e) => setAdding(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") addKey();
-                  }}
-                  placeholder="Value name"
-                  aria-label="Add a value name"
-                />
+                <div className="min-w-0 flex-1">
+                  <Input
+                    value={adding}
+                    onChange={(e) => setAdding(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") addKey();
+                    }}
+                    placeholder="Value name"
+                    aria-label="Add a value name"
+                  />
+                </div>
                 <Button variant="outline" onClick={addKey} disabled={saving || !VALUE_REF_PATTERN.test(adding.trim())}>
                   Add
                 </Button>
