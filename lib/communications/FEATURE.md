@@ -20,7 +20,7 @@ when `NEXT_PUBLIC_SUPABASE_URL` is production's (`db.matrxserver.com` or
 seam returns its own failure carrying `suppressed_on_clone` (logged, never a success). Seams:
 `lib/email/client.ts::sendEmail`, `app/api/test-email`, `lib/sms/send.ts::sendSms`,
 `lib/sms/verify.ts::sendVerification`, `lib/sms/numbers.ts` (`purchasePhoneNumber`,
-`updateAllWebhookUrls`), `app/api/slack-proxy`. A new provider send or provider-account write calls
+`updateAllWebhookUrls`). A new provider send or provider-account write calls
 it first. `LOOPBACK_TEST_HANDSETS` mirrors `aidream/aidream/designated_test_recipients.py` (the
 single home); `outbound-guard.test.ts` fails when they disagree. aidream's twin:
 `aidream/services/clone_connection/outbound_guard.py`.

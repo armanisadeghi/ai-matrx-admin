@@ -297,8 +297,9 @@ export interface BoardItemType {
    * itself there. On the canvas it keeps its size.
    *   · `true`: the body lays out at its natural height (no `h-full`, no inner scroll when
    *     `useTileAutoHeight()` is true); the tile grows and shrinks to it.
-   *   · `"fill"`: the body keeps filling the tile (a shared editor that owns its own scroller, like the
-   *     notes core); the tile grows until nothing inside it scrolls (`innerOverflow`).
+   *   · `"fill"`: the body keeps filling the tile (an editor that owns its own scroller); the body marks
+   *     that scroller `data-board-scroll-root` and the tile grows until it no longer scrolls
+   *     (`innerSlack`). Only the marked scroller is measured.
    */
   autoHeight?: (source: NodeSource) => boolean | "fill";
   /** The body reads `tier` (pauses media, paces streams). Others get a constant,

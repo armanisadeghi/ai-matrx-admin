@@ -1,6 +1,7 @@
 "use client";
 
 import SourceInspectorWindow from "@/features/window-panels/windows/source-inspector/SourceInspectorWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -14,6 +15,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
               (n): n is number => typeof n === "number",
             )
           : null;
+        if (typeof data?.sourceKind !== "string" || !data.sourceKind || typeof data?.sourceId !== "string" || !data.sourceId) return <OverlayNeedsData overlayId="sourceInspectorWindow" onClose={close} />;
         return (
           <SourceInspectorWindow
             // Data-derived key: this is a SINGLETON overlay, so opening a new

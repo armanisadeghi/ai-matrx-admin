@@ -467,7 +467,15 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
       setBase(b);
       const when = label.trim() || new Date().toLocaleString();
       const res = await snapshotBase(port, { organizationId, tables: tables.map((t) => ({ id: t.id, name: t.name })), label: when, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
-      if (!res.ok) { setNote(`The snapshot stopped at ${res.stoppedAt.name}; nothing is left in your lists.`); return; }
+      if (!res.ok) {
+        // `leftInLists` (@ai-matrx/records ≥ the W4 fix): copies the snapshot could not put away. Read loosely so this
+        // compiles against the published package until it carries the field; absent means none were left.
+        const left = (res as { leftInLists?: readonly string[] }).leftInLists ?? [];
+        setNote(left.length > 0
+          ? `The snapshot stopped at ${res.stoppedAt.name}; ${left.length === 1 ? "1 copy is" : `${left.length} copies are`} still in your lists as "Snapshot ${when} · …".`
+          : `The snapshot stopped at ${res.stoppedAt.name}; nothing is left in your lists.`);
+        return;
+      }
       await saveSnapshot(organizationId, b.id, res.snapshot);
       setLabel(""); await load(b);
     } catch (e) { setNote(e instanceof Error ? e.message : "The snapshot failed."); } finally { setBusy(null); }

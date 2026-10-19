@@ -12,7 +12,7 @@ export const metadata: Metadata = createRouteMetadata("/education", {
   titlePrefix: "Community Library",
   title: "Education",
   description:
-    "Free, public study decks from the AI Matrx community — study a copy, suggest an improvement, and look for editorially Certified decks.",
+    "Public study decks from the AI Matrx community — study a copy, suggest an improvement, and look for editorially Certified decks.",
   letter: "Lc",
   canonicalPath: "/education/library/community",
 });

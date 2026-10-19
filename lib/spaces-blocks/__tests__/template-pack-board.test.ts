@@ -42,10 +42,12 @@ describe("checkPack: the board key", () => {
   });
   it("names a note tile with no words and an unknown tile kind", () => {
     const p = fresh();
-    p.board!.chapters[0].tiles[0].text = " ";
+    const note = p.board!.chapters.findIndex((c) => c.tiles[0]?.kind === "note");
+    expect(note).toBeGreaterThanOrEqual(0);
+    p.board!.chapters[note].tiles[0].text = " ";
     (p.board!.chapters[6].tiles[0] as unknown as { kind: string }).kind = "sticker";
     const found = ats(p);
-    expect(found).toContain("board.chapters[0].tiles[0].text");
+    expect(found).toContain(`board.chapters[${note}].tiles[0].text`);
     expect(found).toContain("board.chapters[6].tiles[0].kind");
   });
   it("names a seed value its design look cannot draw, and a ground row that does not exist", () => {
@@ -83,7 +85,7 @@ describe("checkPack: the board key", () => {
     expect(found.filter((f) => f.at === "spec.tables (color).titleField" && /names rows by their name/.test(f.says))).toHaveLength(1);
   });
   it("puts the board on the card face; the top board comes first", () => {
-    expect(packCardFace(PACK).board).toEqual({ title: "Design system", chapters: 8, pages: 1 });
+    expect(packCardFace(PACK).board).toEqual({ title: "Design system", chapters: 10, pages: 1 });
     expect(packCardFace(PACK).pages).toBe(0);
     expect(packBoards(PACK.board!).map((b) => b.key)).toEqual(["design-system", "files"]);
   });

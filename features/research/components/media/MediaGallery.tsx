@@ -425,7 +425,7 @@ function MediaSectionNav({ sections, trailing }: { sections: MediaSectionLink[];
   const [current, setCurrent] = useState<string | null>(null);
   /** A click owns the highlight until its scroll settles (a short last
    * section can never reach the top, so the spy would pick its neighbour). */
-  const clickedRef = useRef<{ key: string; until: number } | null>(null);
+  const clickedRef = useRef<string | null>(null);
   const keys = sections.map((section) => section.key).join(",");
 
   useEffect(() => {
@@ -434,8 +434,7 @@ function MediaSectionNav({ sections, trailing }: { sections: MediaSectionLink[];
     let frame = 0;
     const measure = () => {
       frame = 0;
-      const clicked = clickedRef.current;
-      if (clicked && Date.now() < clicked.until) return;
+      if (clickedRef.current) return;
       const line = (bar?.getBoundingClientRect().bottom ?? 0) + 12;
       let active: string | null = null;
       for (const key of keys.split(",")) {
@@ -447,9 +446,19 @@ function MediaSectionNav({ sections, trailing }: { sections: MediaSectionLink[];
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(measure);
     };
+    // A clicked chip keeps the highlight until the person scrolls themself.
+    const release = () => {
+      if (clickedRef.current) {
+        clickedRef.current = null;
+        onScroll();
+      }
+    };
+    const inputs = ["wheel", "touchmove", "keydown", "pointerdown"] as const;
     measure();
     scroller.addEventListener("scroll", onScroll, { passive: true });
+    for (const name of inputs) window.addEventListener(name, release, { passive: true });
     return () => {
+      for (const name of inputs) window.removeEventListener(name, release);
       scroller.removeEventListener("scroll", onScroll);
       if (frame) cancelAnimationFrame(frame);
     };
@@ -461,7 +470,7 @@ function MediaSectionNav({ sections, trailing }: { sections: MediaSectionLink[];
     const scroller = scrollParentOf(navRef.current);
     const bar = navRef.current?.closest("[data-media-bar]") as HTMLElement | null;
     const barHeight = bar?.getBoundingClientRect().height ?? 0;
-    clickedRef.current = { key, until: Date.now() + 900 };
+    clickedRef.current = key;
     setCurrent(key);
     // Scroll only the pane that scrolls; scrollIntoView also nudges the outer
     // shell and pushes the sticky bar's top row out of view.

@@ -1,6 +1,7 @@
 "use client";
 
 import SiteQuickViewWindow from "@/features/window-panels/windows/marketing/SiteQuickViewWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -15,7 +16,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
             : null;
         const siteId = str("siteId");
         // The window's whole subject is one site.
-        if (!siteId) return null;
+        if (!siteId) return <OverlayNeedsData overlayId="siteQuickViewWindow" onClose={close} />;
         return (
           <SiteQuickViewWindow
             isOpen

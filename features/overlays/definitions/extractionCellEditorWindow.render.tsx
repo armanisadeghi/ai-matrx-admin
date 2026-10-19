@@ -2,6 +2,7 @@
 
 import type { ExtractionCellEditorTargetInput } from "@/features/page-extraction/data-review/extractionCellEditorCallbacks";
 import ExtractionCellEditorWindow from "@/features/window-panels/windows/page-extraction/ExtractionCellEditorWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -13,7 +14,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const writeKey =
           typeof data?.writeKey === "string" ? data.writeKey : null;
         const readOnly = data?.readOnly === true;
-        if (!rowId || !columnKey) return null;
+        if (!rowId || !columnKey) return <OverlayNeedsData overlayId="extractionCellEditorWindow" onClose={close} />;
         const currentPayload = data?.currentPayload;
         if (
           !readOnly &&
@@ -21,7 +22,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
             !currentPayload ||
             typeof currentPayload !== "object" ||
             Array.isArray(currentPayload))
-        ) return null;
+        ) return <OverlayNeedsData overlayId="extractionCellEditorWindow" onClose={close} />;
         const commonTarget = {
           rowId,
           columnKey,

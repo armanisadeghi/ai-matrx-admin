@@ -25,8 +25,10 @@
  */
 
 import { useNoteHomeNames } from "@/features/notes/homes/useNoteHomes";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
+import { provideHostValues, type HostValuesFor } from "@/features/mandates/host-values/host-values";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import type { RefObject } from "react";
 
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
@@ -78,6 +80,18 @@ export interface UseNotesSurfaceScopeParams {
  * renders for a given (instanceId, noteId) — the live values are pulled from
  * Redux + the textarea DOM at call time.
  */
+/** The `notes.page_guidance` offered values this surface holds — sent on the
+ * Notes guide's first turn (audit F-7: it rendered `I have the note "" open`). */
+const NOTES_GUIDE_VALUES = [
+  "text_before", "text_after", "current_note_id", "current_note_title", "content",
+  "current_note_home", "current_note_tags", "current_note_shown_to",
+  "current_note_published_to_web", "current_note_word_count", "current_note_updated_at",
+  "current_note_is_dirty", "is_new_note", "current_heading", "current_section_text",
+  "cursor_offset", "editor_mode", "open_note_ids", "open_notes_summary", "split_note_id",
+  "history_pane_open", "all_homes", "current_home_note_ids", "note_scope_assignments",
+  "shared_access", "find_replace", "custom_fields",
+] as const satisfies readonly (keyof HostValuesFor<"notes.page_guidance">)[];
+
 export function useNotesSurfaceScope(
   params: UseNotesSurfaceScopeParams,
 ): () => SurfaceScopePayload {
@@ -108,7 +122,7 @@ export function useNotesSurfaceScope(
     return { id: noteId, type: "note", title: record?.label ?? null };
   });
 
-  return useCallback(() => {
+  const buildScope = useCallback(() => {
     const ta = textareaRef.current;
     const text = ta?.value ?? content ?? "";
     const selectionStart = ta?.selectionStart ?? 0;
@@ -210,4 +224,23 @@ export function useNotesSurfaceScope(
     openTabs,
     splitNoteId,
   ]);
+
+  // The Notes guide reads the open note by name; it is read at submit time.
+  // The builder re-identifies as the body changes, so the provider reads it
+  // through a ref and registers once per note (no per-keystroke churn).
+  const latestBuild = useRef(buildScope);
+  useEffect(() => {
+    latestBuild.current = buildScope;
+  });
+  useEffect(() => {
+    if (!noteId) return undefined;
+    return provideHostValues(MANDATE_KEYS.notes__page_guidance, "notes.page_guidance", () => {
+      const scope = latestBuild.current() as Record<string, unknown>;
+      return Object.fromEntries(
+        NOTES_GUIDE_VALUES.map((name) => [name, scope[name]]),
+      ) as HostValuesFor<"notes.page_guidance">;
+    });
+  }, [noteId]);
+
+  return buildScope;
 }

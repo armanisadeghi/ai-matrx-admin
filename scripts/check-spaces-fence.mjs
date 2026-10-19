@@ -49,7 +49,15 @@ const ENTRY_POINTS = [/features\/spaces\/embed\/RecordBodySpace["'/]/, /features
 //   (components/official/tiered-breadcrumb, which imports nothing from Spaces; the fenced
 //   features/spaces/nav/tiered-crumbs.tsx feeds it) and moved the record page's breadcrumb onto it
 //   (features/unified-data/table-page/UnifiedRecordPage.tsx). Later edits to those files use another prefix.
-const KNOWN_CROSS_FENCE_COMMITS = new Set(["da849360e99c097e83b22e7b125de0e9a49301d0"]);
+//   79ea2b4f9d: "spaces: industry templates B" — a shared-checkout sweep staged other sessions' uncommitted
+//   files (features/make/describe, scripts/airtable-walk) into this pack commit; the Spaces change itself was packs only.
+//   51a1004104: "spaces: Design system board pack v5" — the Board session's own board-pack work under a spaces:
+//   subject (features/board tests); its later commits use a board: prefix.
+const KNOWN_CROSS_FENCE_COMMITS = new Set([
+  "da849360e99c097e83b22e7b125de0e9a49301d0",
+  "79ea2b4f9df333fd60e9a1f69e6453c9e631c8b9",
+  "51a10041046618fd008bd2508e1c619e38424e2d",
+]);
 const IMPORT_INTO_FENCE = /(?:from\s+|import\s*\(\s*|require\s*\(\s*)["'](?:@\/features\/spaces(?:\/|["'])|[./]+(?:[^"']*\/)?features\/spaces(?:\/|["']))/;
 
 export function insideFence(path) {

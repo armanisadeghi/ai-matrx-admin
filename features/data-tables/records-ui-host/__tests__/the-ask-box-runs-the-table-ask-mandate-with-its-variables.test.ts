@@ -31,7 +31,6 @@ describe("askTableByMandate", () => {
         proposed_changes: [{ record_id: "r1", field_key: "status", from: "Scheduled", to: "No-show", reason: "Past" }],
         could_not: ["No phone column"],
       },
-      costPoints: null,
     });
   });
   it("hands the model the person's date and zone as `today`, formatted YYYY-MM-DD (Zone)", async () => {
@@ -42,14 +41,6 @@ describe("askTableByMandate", () => {
     const [, options] = launchMandate.mock.calls[0] as unknown as [string, Record<string, any>];
     expect(options.runtime.variables.today).toBe("2026-10-10 (America/Los_Angeles)");
     expect(tableAskToday("Asia/Tokyo", now)).toBe("2026-10-11 (Asia/Tokyo)");
-  });
-  it("hands back the run's cost in points at the viewer's rate, and null when unmeasured", async () => {
-    const launchMandate = jest.fn(async () => ({ conversationId: "c1", requestId: "req1", responseText: "Nine visits." }));
-    const ask = { tableId: TABLE as never, question: "x", viewId: "" };
-    const got = await askTableByMandate({ launchMandate: launchMandate as never, organizationId: null, ask, readCostUsd: () => 0.0123, pointsRate: () => 20000 });
-    expect(got).toMatchObject({ ok: true, costPoints: 246 });
-    const noRate = await askTableByMandate({ launchMandate: launchMandate as never, organizationId: null, ask, readCostUsd: () => 0.0123, pointsRate: () => null });
-    expect(noRate).toMatchObject({ ok: true, costPoints: null });
   });
   it("says why when the run fails or answers nothing", async () => {
     const boom = await askTableByMandate({ launchMandate: (async () => { throw new Error("Unknown mandate"); }) as never, organizationId: null, ask: { tableId: TABLE as never, question: "x", viewId: "" } });

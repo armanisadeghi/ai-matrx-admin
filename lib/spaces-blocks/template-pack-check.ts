@@ -17,7 +17,7 @@
 import type { ValidateFunction } from "ajv";
 import { Ajv2020 } from "ajv/dist/2020";
 import { allTables, validateTemplate, type AgentSnapshotRow, type TemplateSpec } from "@ai-matrx/records/templates";
-import { contrastRatio, readColorPair, readMotion, readOpacity, readShadowPair, readTypeStyle } from "@ai-matrx/design-system/field-formats";
+import { TEXT_CONTRAST, contrastRatio, readColorPair, readMotion, readOpacity, readShadowPair, readTypeStyle } from "@ai-matrx/design-system/field-formats";
 
 import { buildSpaceSnapshotSchema } from "./jsonSchema";
 import { validateSnapshot } from "./schema";
@@ -305,13 +305,14 @@ function checkLookValues(t: TemplateSpec["tables"][number], say: (at: string, sa
         const base = (t.rows ?? []).find((x) => nameOf(x) === ground);
         const under = base ? readColorPair((base.values as Record<string, unknown>)?.[f.key]) : null;
         if (!ink || !under) return;
-        // Lines (control edges, field outlines, focus) need 3:1 (WCAG 1.4.11); every other color is text, 4.5:1.
-        const isLine = (r.values as Record<string, unknown>)?.group === "Lines";
-        const need = isLine ? 3 : 4.5;
+        // A color carries its own minimum (`min`: 3 for a line, a field outline, a focus ring); text is 4.5:1.
+        // The same rule the section card draws (records-ui looks), so a board never shows a warning the pack passed.
+        const need = ink.min ?? TEXT_CONTRAST;
+        const isLine = need < TEXT_CONTRAST;
         for (const theme of ["light", "dark"] as const) {
           const ratio = contrastRatio(ink[theme] ?? ink.light, under[theme] ?? under.light);
           if (ratio !== null && ratio < need)
-            say(where, `"${nameOf(r)}" on "${ground}" reads at ${ratio}:1 in ${theme}; ${isLine ? "a Lines color reaches 3:1" : "seeded text colors reach 4.5:1"} on what it is read on.`);
+            say(where, `"${nameOf(r)}" on "${ground}" reads at ${ratio}:1 in ${theme}; ${isLine ? `a line color reaches its ${need}:1` : "seeded text colors reach 4.5:1"} on what it is read on.`);
         }
       }
     });

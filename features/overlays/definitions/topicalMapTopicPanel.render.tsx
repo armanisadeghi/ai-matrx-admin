@@ -1,6 +1,7 @@
 "use client";
 
 import TopicalMapTopicPanel from "@/features/window-panels/windows/marketing/TopicalMapTopicPanel";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -10,9 +11,9 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         // would paint an empty frame, so the malformed instance is skipped —
         // the opener never produces one, and a stale persisted session can.
         if (typeof data?.mapId !== "string" || typeof data?.slug !== "string") {
-          return null;
+          return <OverlayNeedsData overlayId="topicalMapTopicPanel" onClose={close} />;
         }
-        if (!data.mapId || !data.slug) return null;
+        if (!data.mapId || !data.slug) return <OverlayNeedsData overlayId="topicalMapTopicPanel" onClose={close} />;
         return (
           <TopicalMapTopicPanel
             key={instanceId}

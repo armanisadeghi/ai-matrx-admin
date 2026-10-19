@@ -239,7 +239,7 @@ const CAUSE_COPY: Record<string, CauseCopy> = {
     headline: (what, where) =>
       `${where ?? what} couldn't get through — the AI provider was too busy at that moment.`,
     nextStep:
-      "Wait about a minute and press Run it again. Nothing was charged for the attempt.",
+      "Wait about a minute and press Run it again.",
   },
   content_filtered: {
     headline: () =>
@@ -301,7 +301,7 @@ const CAUSE_COPY: Record<string, CauseCopy> = {
   run_stranded: {
     headline: () => `We dropped this run before it could finish — nothing you did caused it.`,
     nextStep:
-      "Press Run it again and it should go through. Nothing was charged for the part that was lost, and your rules are untouched. If it happens twice, tell us — a dropped run is a bug on our side and we want to see it.",
+      "Press Run it again and it should go through. Your rules are untouched. If it happens twice, tell us — a dropped run is a bug on our side and we want to see it.",
   },
 };
 

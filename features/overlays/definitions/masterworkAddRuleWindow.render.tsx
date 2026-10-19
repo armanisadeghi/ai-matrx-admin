@@ -1,6 +1,7 @@
 "use client";
 
 import MasterworkAddRuleWindow from "@/features/window-panels/windows/masterwork/AddRuleWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -11,7 +12,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const rulebookId =
           typeof data?.rulebookId === "string" ? data.rulebookId : null;
         // No Rulebook, no window — a rule has to land somewhere.
-        if (!isOpen || !rulebookId) return null;
+        if (!isOpen || !rulebookId) return <OverlayNeedsData overlayId="masterworkAddRuleWindow" onClose={close} />;
         return (
           <MasterworkAddRuleWindow
             isOpen

@@ -1,6 +1,7 @@
 "use client";
 
 import DataSourceWindow from "@/features/window-panels/windows/data-sources/DataSourceWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -13,7 +14,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           data?.values && typeof data.values === "object"
             ? (data.values as Record<string, string>)
             : undefined;
-        if (!isOpen || !sourceKey) return null;
+        if (!isOpen || !sourceKey) return <OverlayNeedsData overlayId="dataSourceWindow" onClose={close} />;
         return (
           <DataSourceWindow
             isOpen

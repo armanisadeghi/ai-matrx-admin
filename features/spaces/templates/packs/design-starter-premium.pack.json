@@ -114,15 +114,15 @@
       {
         "token": "color",
         "name": "Colors",
-        "labelSingular": "Colour",
-        "labelPlural": "Colours",
+        "labelSingular": "Color",
+        "labelPlural": "Colors",
         "type": "entity",
         "display": "grid",
         "weight": "light",
         "ordered": true,
         "icon": "palette",
         "titleField": "name",
-        "describes": "Every colour the product uses, light and dark, and what each is read on.",
+        "describes": "Every color the product uses, light and dark, and what each is read on.",
         "subject": "thing",
         "fields": [
           {
@@ -337,7 +337,7 @@
             "values": {
               "name": "border",
               "group": "Lines",
-              "value": "{\"light\":\"#8e8679\",\"dark\":\"#6a6459\"}",
+              "value": "{\"light\":\"#8e8679\",\"dark\":\"#6a6459\",\"min\":3}",
               "usage_note": "Edges of controls and outline buttons; 3:1 so they are found.",
               "reads_on": "background"
             }
@@ -347,7 +347,7 @@
             "values": {
               "name": "input",
               "group": "Lines",
-              "value": "{\"light\":\"#776f63\",\"dark\":\"#7d776b\"}",
+              "value": "{\"light\":\"#776f63\",\"dark\":\"#7d776b\",\"min\":3}",
               "usage_note": "The outline of a field and an off switch.",
               "reads_on": "card"
             }
@@ -357,7 +357,7 @@
             "values": {
               "name": "divider",
               "group": "Lines",
-              "value": "{\"light\":\"#e6e0d4\",\"dark\":\"#2a2723\"}",
+              "value": "{\"light\":\"#e6e0d4\",\"dark\":\"#2a2723\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
             }
           },
@@ -366,7 +366,7 @@
             "values": {
               "name": "ring",
               "group": "Lines",
-              "value": "{\"light\":\"#8f7035\",\"dark\":\"#c9a961\"}",
+              "value": "{\"light\":\"#8f7035\",\"dark\":\"#c9a961\",\"min\":3}",
               "usage_note": "Keyboard focus. Always visible, never removed.",
               "reads_on": "background"
             }
@@ -913,7 +913,7 @@
               "name": "Badge",
               "group": "Status",
               "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2)}.x{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;border:1px solid var(--divider);color:var(--foreground);background:var(--muted)}.x i{width:.5em;height:.5em;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--accent);color:var(--accent-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">Suite</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>Confirmed</span><span class=\"x wa\"><i></i>Waitlist</span><span class=\"x er\"><i></i>Unavailable</span></div>",
-              "usage_note": "A status always pairs its colour with a word."
+              "usage_note": "A status always pairs its color with a word."
             }
           },
           {
@@ -1103,14 +1103,14 @@
     "forms": [
       {
         "token": "color_request",
-        "name": "Propose a colour",
-        "describes": "Suggest a new colour for the system.",
+        "name": "Propose a color",
+        "describes": "Suggest a new color for the system.",
         "audience": "staff",
         "table": "color",
         "fields": [
           {
             "fieldKey": "name",
-            "ask": "What is the colour called?",
+            "ask": "What is the color called?",
             "required": true
           },
           {
@@ -1131,7 +1131,7 @@
     "views": [
       {
         "token": "all_color",
-        "name": "All colours",
+        "name": "All colors",
         "table": "color",
         "kind": "grid",
         "isDefault": true
@@ -1196,7 +1196,7 @@
         {
           "name": "primary_table",
           "table": "color",
-          "describes": "Every colour, its light and dark values and what it is read on."
+          "describes": "Every color, its light and dark values and what it is read on."
         },
         {
           "name": "related_tables",
@@ -1205,7 +1205,7 @@
         }
       ],
       "question": {
-        "ask": "How many colours are in the Surfaces group?",
+        "ask": "How many colors are in the Surfaces group?",
         "whyItMatters": "Sebastien keeps the surfaces to a handful so screens stay calm.",
         "expect": {
           "table": "color",
@@ -1287,7 +1287,7 @@
             "kind": "cover",
             "title": "Design system — Premium",
             "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--space-8);align-items:center;padding:var(--space-2) 0;font-family:var(--font-body);color:var(--foreground)}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 var(--space-3);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--link)}.x{margin:0;font-family:var(--font-display);font-size:var(--text-display);line-height:var(--leading-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);color:var(--foreground)}.t{margin:var(--space-4) 0 0;max-width:32ch;font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}.c{display:flex;gap:var(--space-2);margin-top:var(--space-6);flex-wrap:wrap}.c span{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block}.a{inset:0;border:1px solid var(--accent)}.b{inset:8%;background:var(--muted)}.d{left:20%;right:20%;top:48%;height:1px;background:var(--accent)}.e{width:0;height:0}</style><div class=\"h\"><div><p class=\"k\">Maison</p><h1 class=\"x\">Quiet<br>excellence.</h1><p class=\"t\">Ivory and ink, a line of gold, and room to breathe.</p><div class=\"c\"><span>Reserve</span><span>Suites</span><span>Dining</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
-            "text": "## Principles\n\n- Less, better: one image, one line, one action.\n- Type is the ornament: fine serifs, wide tracking on small capitals.\n- Unhurried: slower motion and generous space signal care.\n\n## Starter profile\n\n- **Fits:** hotels, restaurants, fashion, jewellery, real estate, galleries, private banking. Not for children, discount retail.\n- **Mood:** luxurious, formal; density airy; shape sharp; contrast high; light first.\n- **Type:** Cormorant Garamond, Jost, ui-monospace.\n- **Adapt first:** accent, ring, link. **Keep:** primary, background, font-display.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colours, type, spacing, corners, shadows, opacity and motion. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "text": "## Principles\n\n- Less, better: one image, one line, one action.\n- Type is the ornament: fine serifs, wide tracking on small capitals.\n- Unhurried: slower motion and generous space signal care.\n\n## Starter profile\n\n- **Fits:** hotels, restaurants, fashion, jewellery, real estate, galleries, private banking. Not for children, discount retail.\n- **Mood:** luxurious, formal; density airy; shape sharp; contrast high; light first.\n- **Type:** Cormorant Garamond, Jost, ui-monospace.\n- **Adapt first:** accent, ring, link. **Keep:** primary, background, font-display.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colors, type, spacing, corners, shadows, opacity and motion. Each color shows its light and dark values and is checked against the color it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by color alone.\n",
             "size": {
               "w": 1020,
               "h": 1000
@@ -1421,7 +1421,7 @@
           {
             "kind": "note",
             "title": "Assets",
-            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
             "size": {
               "w": 1020,
               "h": 280

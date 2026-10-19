@@ -37,7 +37,7 @@ describe("the cover's Edit lives in the tile's one menu", () => {
     const Body = cover.Body!;
     act(() =>
       root.render(
-        <Body tileId="cover-1" source={source} title="Design system" tier="full" interacting={false} onSource={() => {}} />,
+        <Body tileId="cover-1" source={source} title="Design system" tier="read" interacting={false} onSource={() => {}} />,
       ),
     );
     const buttons = [...host.querySelectorAll("button")].map((b) => b.textContent?.trim());

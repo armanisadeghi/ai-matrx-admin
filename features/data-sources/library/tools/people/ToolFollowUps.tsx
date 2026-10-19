@@ -12,7 +12,7 @@ import { ArrowRight } from "lucide-react";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
 import { Button } from "@ai-matrx/design-system/controls";
-import { toolPriceText, type ToolCallView } from "@ai-matrx/agents/tools";
+import type { ToolCallView } from "@ai-matrx/agents/tools";
 
 import { ToolResult } from "../ToolResult";
 import { useToolCall } from "../useToolCall";
@@ -25,10 +25,9 @@ export interface FollowUp {
   inputs: Record<string, string>;
 }
 
-/** One next step as a button, with the price its Tool states before anything is pressed. */
+/** One next step as a button. */
 export function NextStepButton({ step, started, onPick }: { step: NextStep; started: boolean; onPick: () => void }) {
   const form = useToolRunForm(step.jobKey);
-  const price = form.data ? toolPriceText({ price_hint_points: form.data.facts.priceHintPoints }) : null;
   return (
     <Button
       variant="outline"
@@ -38,7 +37,6 @@ export function NextStepButton({ step, started, onPick }: { step: NextStep; star
       data-next-step={step.jobKey}
     >
       {step.label}
-      {price ? <span className="ml-1.5 text-muted-foreground">{price}</span> : null}
     </Button>
   );
 }

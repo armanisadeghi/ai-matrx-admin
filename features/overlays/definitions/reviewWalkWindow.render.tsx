@@ -2,6 +2,7 @@
 
 import { isWalkUnitKind } from "@/features/review-walk/address";
 import ReviewWalkWindow from "@/features/review-walk/components/ReviewWalkWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -11,7 +12,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         // deep-linked or restored step walk must not render nothing.
         const unitKind = isWalkUnitKind(data?.unitKind) ? data.unitKind : null;
         if (typeof data?.unitId !== "string" || unitKind === null) {
-          return null;
+          return <OverlayNeedsData overlayId="reviewWalkWindow" onClose={close} />;
         }
         return (
           <ReviewWalkWindow

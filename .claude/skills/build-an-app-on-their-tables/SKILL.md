@@ -6,6 +6,28 @@ description: "Recipe for an agent building a small custom web app (an Applet) fo
 
 # Build an Applet on a person's tables
 
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/data/custom-data/STATE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Doors only.** `authenticated` has no grant on `custom.record`; every read and write goes through a `custom.*` door. Doors refuse in plain sentences.
+2. **Clients use the packages.** Client code reaches the store only through `@ai-matrx/records` (source `aidream/apps/shared/records`); UI through `@ai-matrx/records-ui` (`aidream/apps/shared/records-ui`), always at `latest`. matrx-extend's guard: `tests/unit/records-one-door.test.ts`.
+3. **Old tables take no writes.** Each `deprecated.udt_*` table has one enabled trigger `_0_deprecated_takes_no_writes`; old `public` list doors read the store or refuse. Guard: `pnpm check:old-system-unreachable:db` (matrx-frontend).
+4. **Every Table is `type = 'entity'`**, `display` `list` or `page`. Field behaviors: `text`, `range`, `list`, `relation`, `formula`, `boolean`; the user-facing field kinds (~30, e.g. rich text, status, rating, duration, button) are declared in the registry on top of those behaviors.
+5. **A Pick list is a Table of choices.** A `list` field points at it through `custom.field.options_table_id`; each choice is a Record. The word on screen is "Pick list".
+6. **Relations are `relation` fields** (`relation_target`, `relation_max`, `inverse_key`, `on_target_delete`), never values holding ids.
+7. **Custom fields on any record live in `custom_fields`** (`custom.record.custom_fields` and the same column on standard tables).
+8. **A view's document lives in `platform.saved_view.definition`**, read through `custom.views` / `custom.view_*`.
+9. **Production reads by tools and tests use the `matrx_reader` role** (read-only, needs `SUPABASE_READER_PASSWORD`) via `matrx-frontend/scripts/lib/pooled-db.mjs` and `aidream/db/pooled_read.py`; writes run on the [nightly clone](/operations/clone/CURRENT.md).
+10. **Schema names:** retired tables are in `deprecated`; `workspace` is now `projects` (6 `workspace` alias views remain until every client says `projects`). Actor tiers are `system` / `agent` / `user`.
+11. **A table inside a card** uses `MatrxTableCard` (design-system `data-table`, `appearance="embedded"`) or `RecordsTableCard` (records-ui Grid); org home and Scopes render one `OrgScopeTypeSection` on it.
+12. **There is ONE template product: Template** ("kit" is retired for this meaning; `/kits` and `features/kits` are gone). Installs, the installed view, Save as template and claim-then-create live in matrx-frontend `features/templates` + `features/make/gallery` on the `custom.template*` doors; agent variables read template tables through a `merge_field` binding.
+13. **The platform may keep its own data in the store only under the app-data gate** in [DECISIONS.md](DECISIONS.md) § When the platform may keep its own data.
+14. **Knobs** live in `platform.feature_knob` (`feature in ('custom','data_tables','cutover')`); `custom.system_enabled` and `custom.data_home_shell` are true.
+15. DB changes ship from matrx-frontend; the web store code's landmines are in `matrx-frontend/features/unified-data/FEATURE.md`.
+16. **The entity doors serve every active registered table.** `platform.entity_columns`, `drill_describe`, `entity_list_scoped`, `entity_insert`, `entity_update` and `entity_archive` resolve a token through `platform.entity_table` (no custom-fields check); `custom.entity_table` adds the custom-fields guard and only custom-field doors ask it, so a `_custom` value on a table that takes none is refused. Writes also need the table in knob `table_api.standard_tables`; one it does not name is read-only. Guard: matrx-frontend `scripts/campaign-tests/entitydoors_every_table_green.sql`.
+17. **The record store is ON by default for every organization,** and so is every core capability switch: OFF is an explicit choice with a reason, never a per-organization opt-in (Arman, 2026-09-23). There are no gates in the share path: naming a person is the only act, every capability defaults open, and a lockdown may exist only as a hidden administrator setting, never a step a user meets while doing the thing.
+<!-- rules:stamp-end -->
+
 The person's data already lives in the store (tables they made in /data, imported from Notion, or made
 through the Table API). The app is an **Applet**: one `app.definition` row holding its files, pages,
 data sources and jobs. **No app code goes in this repo.** `/applets/<slug>` reads the row and renders it

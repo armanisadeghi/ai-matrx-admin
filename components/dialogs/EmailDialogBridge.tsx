@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@ai-matrx/summon/open";
 import { toast } from "@/lib/toast-service";
 import { EmailInputDialog } from "./EmailInputDialog";
 
@@ -10,8 +8,11 @@ import { EmailInputDialog } from "./EmailInputDialog";
  * Bridges the `emailDialog` overlay to `EmailInputDialog`.
  *
  * `EmailInputDialog` needs `onSubmit` as a prop, which can't travel through
- * Redux. So this bridge subscribes to the overlay's open state + data,
- * resolves the submit logic locally, and renders the dialog underneath.
+ * Redux. So this bridge takes the overlay instance's data + close from the
+ * render, resolves the submit logic locally, and renders the dialog. It reads
+ * nothing from the store: `emailDialog` is a MULTI-instance overlay, and a
+ * default-instance read (`selectIsOverlayOpen(s, "emailDialog")`) is false for
+ * every real instance, so the dialog never appeared (sweep 2026-10-18).
  *
  * Dispatchers pass `{ content, metadata }` via `openOverlay("emailDialog")`.
  * On submit, we POST to `/api/chat/email-response` with that content + the
@@ -28,16 +29,14 @@ interface EmailDialogOverlayData {
   title?: string;
 }
 
-export function EmailDialogBridge() {
-  const dispatch = useAppDispatch();
-  const isOpen = useAppSelector((s) => selectIsOverlayOpen(s, "emailDialog"));
-  const data = useAppSelector(
-    (s) => selectOverlayData(s, "emailDialog") as EmailDialogOverlayData | null,
-  );
-
-  const handleClose = useCallback(() => {
-    dispatch(closeOverlay({ overlayId: "emailDialog" }));
-  }, [dispatch]);
+export function EmailDialogBridge({
+  data,
+  onClose,
+}: {
+  data: EmailDialogOverlayData | null;
+  onClose: () => void;
+}) {
+  const handleClose = onClose;
 
   const handleSubmit = useCallback(
     async (email: string) => {
@@ -67,7 +66,6 @@ export function EmailDialogBridge() {
     [data],
   );
 
-  if (!isOpen) return null;
   return (
     <EmailInputDialog
       isOpen

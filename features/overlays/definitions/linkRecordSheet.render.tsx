@@ -1,6 +1,7 @@
 "use client";
 
 import { LinkRecordOverlay } from "@/features/rich-document/annotations/LinkRecordOverlay";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -11,7 +12,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           data?.target && typeof data.target === "object"
             ? (data.target as Record<string, unknown>)
             : null;
-        if (!raw || typeof raw.token !== "string" || typeof raw.id !== "string") return null;
+        if (!raw || typeof raw.token !== "string" || typeof raw.id !== "string") return <OverlayNeedsData overlayId="linkRecordSheet" onClose={close} />;
         return (
           <LinkRecordOverlay
             target={{

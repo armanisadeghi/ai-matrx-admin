@@ -32,7 +32,7 @@ describe("the wheel over a card in page layout", () => {
         <BoardViewport initialCamera={{ x: 0, y: 0, z: 1 }} fitOnMount={false} onStore={(s) => {
             store = s;
           }}>
-          <BoardTile id="cover" rect={{ x: 0, y: 0, w: 1000, h: 600 }} title="Overview" onMove={null} onResize={null}>
+          <BoardTile id="cover" rect={{ x: 0, y: 0, w: 1000, h: 600 }} title="Overview" onResize={null}>
             {() => <p id="prose">Prose</p>}
           </BoardTile>
           <div data-board-chrome id="toolbar">

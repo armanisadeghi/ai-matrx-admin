@@ -115,15 +115,15 @@
       {
         "token": "color",
         "name": "Colors",
-        "labelSingular": "Colour",
-        "labelPlural": "Colours",
+        "labelSingular": "Color",
+        "labelPlural": "Colors",
         "type": "entity",
         "display": "grid",
         "weight": "light",
         "ordered": true,
         "icon": "palette",
         "titleField": "name",
-        "describes": "Every colour the product uses, light and dark, and what each is read on.",
+        "describes": "Every color the product uses, light and dark, and what each is read on.",
         "subject": "thing",
         "fields": [
           {
@@ -329,7 +329,7 @@
               "name": "link",
               "group": "Accent",
               "value": "{\"light\":\"#b8203a\",\"dark\":\"#ff9aa0\"}",
-              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
               "reads_on": "background"
             }
           },
@@ -338,7 +338,7 @@
             "values": {
               "name": "border",
               "group": "Lines",
-              "value": "{\"light\":\"#9b8796\",\"dark\":\"#7c6c90\"}",
+              "value": "{\"light\":\"#9b8796\",\"dark\":\"#7c6c90\",\"min\":3}",
               "usage_note": "Edges of controls and outline buttons; 3:1 so they are found.",
               "reads_on": "background"
             }
@@ -348,7 +348,7 @@
             "values": {
               "name": "input",
               "group": "Lines",
-              "value": "{\"light\":\"#84707f\",\"dark\":\"#8c7ca0\"}",
+              "value": "{\"light\":\"#84707f\",\"dark\":\"#8c7ca0\",\"min\":3}",
               "usage_note": "The outline of a field and an off switch.",
               "reads_on": "card"
             }
@@ -358,7 +358,7 @@
             "values": {
               "name": "divider",
               "group": "Lines",
-              "value": "{\"light\":\"#f1e1d3\",\"dark\":\"#3a2e4f\"}",
+              "value": "{\"light\":\"#f1e1d3\",\"dark\":\"#3a2e4f\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
             }
           },
@@ -367,7 +367,7 @@
             "values": {
               "name": "ring",
               "group": "Lines",
-              "value": "{\"light\":\"#2f6bff\",\"dark\":\"#7aa6ff\"}",
+              "value": "{\"light\":\"#2f6bff\",\"dark\":\"#7aa6ff\",\"min\":3}",
               "usage_note": "Keyboard focus. Always visible, never removed.",
               "reads_on": "background"
             }
@@ -886,7 +886,7 @@
             "values": {
               "name": "Button variants",
               "group": "Actions",
-              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}.b{font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);line-height:var(--leading-label);letter-spacing:var(--tracking-label);text-transform:none;min-height:var(--control-height);padding:0 var(--space-4);border-radius:var(--radius-full);border:2px solid transparent;cursor:pointer;transition:background-color var(--motion-fast),box-shadow var(--motion-fast),transform var(--motion-fast)}.b:focus-visible,.b.f{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.b:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}.p{background:var(--primary);color:var(--primary-foreground)}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--link)}.d{background:var(--destructive);color:var(--destructive-foreground)}.p:hover,.p.h{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--primary-foreground) calc(var(--opacity-hover) * 100%),transparent)}.p,.s{box-shadow:var(--shadow-sm)}</style><div class=\"w r\"><button class=\"b s\">Favourite</button><button class=\"b o\">Share</button><button class=\"b q\">Menu</button><button class=\"b d\">Remove</button></div>",
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}.b{font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);line-height:var(--leading-label);letter-spacing:var(--tracking-label);text-transform:none;min-height:var(--control-height);padding:0 var(--space-4);border-radius:var(--radius-full);border:2px solid transparent;cursor:pointer;transition:background-color var(--motion-fast),box-shadow var(--motion-fast),transform var(--motion-fast)}.b:focus-visible,.b.f{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.b:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}.p{background:var(--primary);color:var(--primary-foreground)}.s{background:var(--secondary);color:var(--secondary-foreground)}.o{background:transparent;color:var(--foreground);border-color:var(--border)}.q{background:transparent;color:var(--link)}.d{background:var(--destructive);color:var(--destructive-foreground)}.p:hover,.p.h{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--primary-foreground) calc(var(--opacity-hover) * 100%),transparent)}.p,.s{box-shadow:var(--shadow-sm)}</style><div class=\"w r\"><button class=\"b s\">Favorite</button><button class=\"b o\">Share</button><button class=\"b q\">Menu</button><button class=\"b d\">Remove</button></div>",
               "usage_note": "Secondary, outline and quiet for everything else; danger only for what cannot be undone."
             }
           },
@@ -914,7 +914,7 @@
               "name": "Badge",
               "group": "Status",
               "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2)}.x{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-full);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:none;border:1px solid var(--divider);color:var(--foreground);background:var(--muted)}.x i{width:.5em;height:.5em;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--accent);color:var(--accent-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">Hot</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>Ready</span><span class=\"x wa\"><i></i>Baking</span><span class=\"x er\"><i></i>Sold out</span></div>",
-              "usage_note": "A status always pairs its colour with a word."
+              "usage_note": "A status always pairs its color with a word."
             }
           },
           {
@@ -1096,14 +1096,14 @@
     "forms": [
       {
         "token": "color_request",
-        "name": "Propose a colour",
-        "describes": "Suggest a new colour for the system.",
+        "name": "Propose a color",
+        "describes": "Suggest a new color for the system.",
         "audience": "staff",
         "table": "color",
         "fields": [
           {
             "fieldKey": "name",
-            "ask": "What is the colour called?",
+            "ask": "What is the color called?",
             "required": true
           },
           {
@@ -1124,7 +1124,7 @@
     "views": [
       {
         "token": "all_color",
-        "name": "All colours",
+        "name": "All colors",
         "table": "color",
         "kind": "grid",
         "isDefault": true
@@ -1189,7 +1189,7 @@
         {
           "name": "primary_table",
           "table": "color",
-          "describes": "Every colour, its light and dark values and what it is read on."
+          "describes": "Every color, its light and dark values and what it is read on."
         },
         {
           "name": "related_tables",
@@ -1198,7 +1198,7 @@
         }
       ],
       "question": {
-        "ask": "How many colours are in the Surfaces group?",
+        "ask": "How many colors are in the Surfaces group?",
         "whyItMatters": "Leilani keeps the surfaces to a handful so screens stay calm.",
         "expect": {
           "table": "color",
@@ -1280,7 +1280,7 @@
             "kind": "cover",
             "title": "Design system — Playful consumer",
             "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--space-8);align-items:center;padding:var(--space-2) 0;font-family:var(--font-body);color:var(--foreground)}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 var(--space-3);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--link)}.x{margin:0;font-family:var(--font-display);font-size:var(--text-display);line-height:var(--leading-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);color:var(--foreground)}.t{margin:var(--space-4) 0 0;max-width:32ch;font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}.c{display:flex;gap:var(--space-2);margin-top:var(--space-6);flex-wrap:wrap}.c span{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block}.a{inset:0 25% 25% 0;background:var(--primary);border-radius:var(--radius-lg);transform:rotate(-6deg);box-shadow:var(--shadow-md)}.b{inset:28% 0 0 28%;background:var(--secondary);border-radius:var(--radius-full)}.d{inset:6% 6% 62% 62%;background:var(--accent);border-radius:50%}.e{width:18%;height:18%;left:8%;bottom:6%;background:var(--link);border-radius:var(--radius-sm);transform:rotate(18deg)}</style><div class=\"h\"><div><p class=\"k\">Fresh out the oven</p><h1 class=\"x\">Little joys,<br>delivered.</h1><p class=\"t\">Coral, sunshine and sky blue. Pills, chunky shadows, a bounce.</p><div class=\"c\"><span>Order</span><span>Track</span><span>Rate</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
-            "text": "## Principles\n\n- Joy in the details: a bounce, a colour, a friendly word.\n- Bright fills, dark words: labels on coral and yellow stay dark; coloured text uses link.\n- Big and tappable: pill buttons, chunky controls.\n\n## Starter profile\n\n- **Fits:** consumer apps, food, delivery, games, social, entertainment, kids brands. Not for legal, finance, healthcare.\n- **Mood:** playful, loud; density medium; shape pill; contrast standard; light first.\n- **Type:** Baloo 2, Nunito Sans, ui-monospace.\n- **Adapt first:** primary, secondary, accent, link. **Keep:** primary-foreground, motion-base.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colours, type, spacing, corners, shadows, opacity and motion. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "text": "## Principles\n\n- Joy in the details: a bounce, a color, a friendly word.\n- Bright fills, dark words: labels on coral and yellow stay dark; colored text uses link.\n- Big and tappable: pill buttons, chunky controls.\n\n## Starter profile\n\n- **Fits:** consumer apps, food, delivery, games, social, entertainment, kids brands. Not for legal, finance, healthcare.\n- **Mood:** playful, loud; density medium; shape pill; contrast standard; light first.\n- **Type:** Baloo 2, Nunito Sans, ui-monospace.\n- **Adapt first:** primary, secondary, accent, link. **Keep:** primary-foreground, motion-base.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colors, type, spacing, corners, shadows, opacity and motion. Each color shows its light and dark values and is checked against the color it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by color alone.\n",
             "size": {
               "w": 1020,
               "h": 1000
@@ -1414,7 +1414,7 @@
           {
             "kind": "note",
             "title": "Assets",
-            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
             "size": {
               "w": 1020,
               "h": 280

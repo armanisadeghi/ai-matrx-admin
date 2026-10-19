@@ -2,6 +2,7 @@
 
 import { DirectiveReferencePickerWindow } from "@/features/window-panels/windows/admin/directive-reference-picker/DirectiveReferencePickerWindow";
 import { isEntityTypeToken } from "@ai-matrx/associations";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -12,7 +13,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           isEntityTypeToken(data.entityToken)
             ? data.entityToken
             : null;
-        if (!entityToken) return null;
+        if (!entityToken) return <OverlayNeedsData overlayId="directiveReferencePickerWindow" onClose={close} />;
         return (
           <DirectiveReferencePickerWindow
             key={instanceId}

@@ -295,7 +295,7 @@ export function ActionRunDialog(props: ActionRunDialogProps) {
                                     cost" reads as a promise that those N items
                                     get watched. They do not. The server's own
                                     sentence below names the same count AND says
-                                    plainly that nothing was charged and how to
+                                    plainly that paid work was not run and how to
                                     allow it — so this row is absent rather than
                                     misleading, and nothing goes unsaid. */}
                                 {paidAllowed && (

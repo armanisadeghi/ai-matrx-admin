@@ -119,6 +119,7 @@ function MediaTile({
         alt={label}
         onClick={onOpen}
         onError={onFailed}
+        onBlank={onFailed}
         className="h-full w-full cursor-zoom-in transition-transform duration-300 group-hover:scale-105"
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />

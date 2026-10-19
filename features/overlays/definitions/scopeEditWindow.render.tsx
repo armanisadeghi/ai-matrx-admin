@@ -2,6 +2,7 @@
 
 import ScopeEditWindow from "@/features/window-panels/windows/context-scopes/ScopeEditWindow";
 import type { ScopeEditWindowData } from "@/features/window-panels/windows/context-scopes/ScopeEditWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -25,6 +26,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
                     : undefined,
               }
             : undefined;
+        if (!data) return <OverlayNeedsData overlayId="scopeEditWindow" onClose={close} />;
         return (
           <ScopeEditWindow
             isOpen

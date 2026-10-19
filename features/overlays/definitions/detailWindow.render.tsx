@@ -2,6 +2,7 @@
 
 import { readDetailOverlayData } from "@/features/window-panels/detail/detailOverlayData";
 import DetailWindow from "@/features/window-panels/windows/detail/DetailWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -9,7 +10,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const isOpen = true;
         if (!isOpen) return null;
         const data = readDetailOverlayData(overlayData);
-        if (!data) return null;
+        if (!data) return <OverlayNeedsData overlayId="detailWindow" onClose={close} />;
         return (
           <DetailWindow
             isOpen

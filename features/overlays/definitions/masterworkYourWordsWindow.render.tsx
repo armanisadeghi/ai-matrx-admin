@@ -1,6 +1,7 @@
 "use client";
 
 import MasterworkYourWordsWindow from "@/features/window-panels/windows/masterwork/YourWordsWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -10,7 +11,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           Record<string, unknown> | null | undefined;
         const rulebookId =
           typeof data?.rulebookId === "string" ? data.rulebookId : null;
-        if (!isOpen || !rulebookId) return null;
+        if (!isOpen || !rulebookId) return <OverlayNeedsData overlayId="masterworkYourWordsWindow" onClose={close} />;
         return (
           <MasterworkYourWordsWindow
             isOpen

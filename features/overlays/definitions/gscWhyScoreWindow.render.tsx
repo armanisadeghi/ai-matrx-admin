@@ -1,6 +1,7 @@
 "use client";
 
 import GscWhyScoreWindow from "@/features/marketing/search-console/windows/GscWhyScoreWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -10,7 +11,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           typeof data?.siteId !== "string" ||
           typeof data?.keywordId !== "string"
         ) {
-          return null;
+          return <OverlayNeedsData overlayId="gscWhyScoreWindow" onClose={close} />;
         }
         return (
           <GscWhyScoreWindow

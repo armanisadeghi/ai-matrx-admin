@@ -246,14 +246,6 @@ export function shortDate(value: string | null | undefined): string {
   return formatAbsoluteDate(value, { month: "short", day: "numeric", year: "numeric" });
 }
 
-/** A USD cost → the viewer's string (`useCostDisplay().format`); points unless an admin chose dollars. */
-export type CostFormat = (usd: number | null | undefined) => string;
-
-/** The price of a heavy run, for the step that confirms it; "" when the tool named none. */
-export function costText(format: CostFormat, value: number | null | undefined): string {
-  return value == null ? "" : format(value);
-}
-
 /**
  * The grid's source line: "Reused from <date>" when every point was a stored
  * run, "N of M points reused" when some were, else what was bought.

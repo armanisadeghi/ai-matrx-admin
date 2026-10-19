@@ -14,7 +14,6 @@
 
 import { dayKeyInZone } from "@/lib/time/personTimeZone";
 import { launchRefusal } from "@/features/unified-data/row-agent-action/rowAgentAction";
-import { usdToPoints } from "@ai-matrx/kit/format";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import type { TableAskAgentAnswer, TableAskOutcome, TableAskRequest } from "@ai-matrx/records-ui";
 import type { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
@@ -78,16 +77,12 @@ export async function askTableByMandate(args: {
   launchMandate: LaunchMandate;
   organizationId: string | null;
   ask: TableAskRequest;
-  /** The USD this run cost, read from the request's usage (null = not recorded). Converted to points here, never shown as dollars. */
-  readCostUsd?: ((requestId: string) => number | null) | undefined;
-  /** The viewer's points-per-dollar rate (null until the knob has answered: the cost is then not measured). */
-  pointsRate?: (() => number | null) | undefined;
   /** The person's saved time zone (IANA); the device zone when absent. */
   zone?: string | null | undefined;
   /** The moment of the ask (tests pin it). */
   now?: Date | undefined;
 }): Promise<TableAskOutcome> {
-  const { launchMandate, organizationId, ask, readCostUsd, pointsRate, zone, now } = args;
+  const { launchMandate, organizationId, ask, zone, now } = args;
   try {
     const launched = await launchMandate(TABLE_ASK_MANDATE_KEY, { initiation: "user",
       surfaceKey: `data:${ask.tableId}`,
@@ -100,9 +95,7 @@ export async function askTableByMandate(args: {
     });
     const text = launched.responseText?.trim() ?? "";
     if (text === "") return { ok: false, message: "No answer came back" };
-    const usd = launched.requestId && readCostUsd ? readCostUsd(launched.requestId) : null;
-    const costPoints = usdToPoints(usd, { rate: pointsRate?.() ?? null });
-    return { ok: true, answer: tableAskAnswerFrom(text), costPoints };
+    return { ok: true, answer: tableAskAnswerFrom(text) };
   } catch (thrown) {
     // The refusal's own words (the server's, when it refused) - never a generic "try again".
     return { ok: false, message: launchRefusal(thrown) };

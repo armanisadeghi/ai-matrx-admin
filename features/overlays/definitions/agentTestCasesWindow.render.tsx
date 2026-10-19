@@ -1,6 +1,7 @@
 "use client";
 
 import AgentTestCasesWindow from "@/features/window-panels/windows/agents/AgentTestCasesWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -9,6 +10,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const data = overlayData as
           Record<string, unknown> | null | undefined;
         if (!isOpen) return null;
+        if (typeof data?.agentId !== "string" || !data.agentId || typeof data?.conversationId !== "string" || !data.conversationId) return <OverlayNeedsData overlayId="agentTestCasesWindow" onClose={close} />;
         return (
           <AgentTestCasesWindow
             isOpen

@@ -1,6 +1,7 @@
 "use client";
 
 import MatcherReviewWindow from "@/features/window-panels/windows/marketing/MatcherReviewWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -16,7 +17,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const siteId = str("siteId");
         const matcherId = str("matcherId");
         // No match, no review — the window's whole subject is the matcher.
-        if (!siteId || !matcherId) return null;
+        if (!siteId || !matcherId) return <OverlayNeedsData overlayId="matcherReviewWindow" onClose={close} />;
         return (
           <MatcherReviewWindow
             isOpen

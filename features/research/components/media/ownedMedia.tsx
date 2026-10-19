@@ -70,6 +70,7 @@ export function ResearchMediaImage({
   alt,
   onClick,
   onError,
+  onBlank,
 }: {
   item: ResearchMedia;
   className?: string;
@@ -77,8 +78,10 @@ export function ResearchMediaImage({
   alt?: string;
   /** Opens this one item; the image becomes a keyboard-reachable button. */
   onClick?: () => void;
-  /** The image could not load even after the one retry. */
+  /** The image could not load even after the one retry (nothing is drawn). */
   onError?: () => void;
+  /** It loaded but is a tracking pixel / blank (2px or less wide). */
+  onBlank?: () => void;
 }) {
   return (
     <InlineMediaRef
@@ -92,6 +95,14 @@ export function ResearchMediaImage({
       className={className}
       onClick={onClick ? () => onClick() : undefined}
       onError={onError ? () => onError() : undefined}
+      errorFallback={onError ? null : undefined}
+      onLoad={
+        onBlank
+          ? (event) => {
+              if ((event.currentTarget as HTMLImageElement).naturalWidth <= 2) onBlank();
+            }
+          : undefined
+      }
     />
   );
 }

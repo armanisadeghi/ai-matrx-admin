@@ -449,7 +449,7 @@ STARTERS.append({
 
 BASE = {
     "slug": "base", "id": "SP0363", "name": "Design system", "file": "design-system-board.pack.json", "base": True,
-    "title": "Design Tokens Board",
+    "title": "Design system board",
     "description": "Product teams: colors, type, spacing, corners and shadows as one editable board.",
     "forWho": "Product teams keeping one design system",
     "tags": ["design", "tokens", "colors", "typography", "board", "ui"],
@@ -759,7 +759,9 @@ def build(s):
     notes = s.get("notes", {})
     color_rows = []
     for i, (name, group, on, note) in enumerate(COLOR_ROLES, 1):
-        v = {"name": name, "group": group, "value": jd({"light": c[name][0], "dark": c[name][1]}), "usage_note": notes.get(name, note)}
+        # A Lines color carries its own minimum (3:1, WCAG 1.4.11) in its value, so every checker reads one rule.
+        pair = {"light": c[name][0], "dark": c[name][1], **({"min": 3} if group == "Lines" else {})}
+        v = {"name": name, "group": group, "value": jd(pair), "usage_note": notes.get(name, note)}
         if on:
             v["reads_on"] = on
         color_rows.append({"key": f"col-{i:02d}", "values": v})
@@ -819,7 +821,7 @@ def build(s):
             sec("Colors", "color", 120 + 80 * len(color_rows)), sec("Typography", "type_style", 160 + 100 * len(type_rows)),
             sec("Spacing", "spacing", 160 + 64 * len(sp)), sec("Corner radius", "radius", 200 + 64 * len(rd)), sec("Shadows", "shadow", 220 + 70 * len(sh)),
             sec("Opacity", "opacity", 160 + 64 * len(op)), sec("Motion", "motion", 160 + 64 * len(mo)), sec("Components", "component", 200 + 150 * len(comp)),
-            {"title": "Assets", "tiles": [{"kind": "note", "title": "Assets", "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n", "size": {"w": 1020, "h": 280}}]},
+            {"title": "Assets", "tiles": [{"kind": "note", "title": "Assets", "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n", "size": {"w": 1020, "h": 280}}]},
         ],
         "pages": [{"key": "files", "title": "Files", "layout": "page", "chapters": [{"title": "Files", "tiles": [{"kind": "writeUp", "title": "Files", "text": "Drop logo files, icon sets and exports on this page. Each file becomes a tile you can open and share.", "size": {"w": 1020, "h": 200}}]}]}],
     }

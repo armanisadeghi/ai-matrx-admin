@@ -6,6 +6,17 @@ description: "Retiring a dead table by moving it to the deprecated schema and cl
 
 # Deprecate a table
 
+<!-- rules:stamp -->
+> Rules from `common-docs/policies/database-changeover-doctrine.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Fix what is actually broken right now.**
+2. **While doing that, move the changeover forward a little — a few tables at a time, each one complete in every repo.**
+3. **Database counts mean nothing** (Arman, 2026-09-12). There are zero users; all data is test data or his own, and a count only shows how much was tested. Never lead with a number, rank by volume, argue a name or design from row counts, or put counts in a brief as evidence; design for the live-week scale (100x today).
+4. **There is no real data and there are no real users** (Arman, 2026-09-28). Functionality first: primitive or store capability, then rendering, then editing, then a guard on the code path. Never spend a lane protecting, reconciling or carefully copying existing rows; the data copy is a plain mover step that can run again. Never open with a data census or a preservation gate. Data destruction still stops for confirmation; data fidelity does not.
+5. **Never report on graveyard tables, and do not triage `public` until the canonical tables are right** (Arman, 2026-08-12): graveyard is dead and known, `public` is a queue ([canonical-first triage](/policies/canonical-first-triage.md)).
+6. **Focus on what is right, not what is wrong.** Learn how the canonical system works when correct (base entity, `organization_id`, access, associations), so that when a table is named the correct answer is already known. Mention a legacy item only when Arman names it or a task requires it; big dug-up findings are not the small critical fixes he has in mind.
+<!-- rules:stamp-end -->
+
 > Once a table is here it is dead to every database check: findings on deprecated tables are never reported or fixed — [canonical-first triage](../../../../common-docs/policies/canonical-first-triage.md).
 
 Goal: get the table **offline and reversible** (`SET SCHEMA deprecated`, never `DROP`), then erase every reference. **Getting it offline is priority #1; reference cleanup follows and must not block the move.** Read [`../db-change/TOOLKIT.md`](../db-change/TOOLKIT.md) + [`../db-change/SKILL.md`](../db-change/SKILL.md) first. Project: `brsgrqvjdzwihsvnfqkf`.

@@ -2,6 +2,7 @@
 
 import ContextItemsWindow from "@/features/window-panels/windows/context-scopes/ContextItemsWindow";
 import type { ContextItemsWindowData } from "@/features/window-panels/windows/context-scopes/ContextItemsWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -21,6 +22,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
                 openNewOnMount: raw.openNewOnMount === true,
               }
             : undefined;
+        if (!data) return <OverlayNeedsData overlayId="contextItemsWindow" onClose={close} />;
         return (
           <ContextItemsWindow
             isOpen

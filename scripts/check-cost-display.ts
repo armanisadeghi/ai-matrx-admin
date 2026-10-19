@@ -120,6 +120,12 @@ export const DOMAIN_MONEY: Record<string, string> = {
   "features/admin/dated-changes/describe.ts": "the provider's per-million-token USD price schedule, shown only in the admin attention queue",
   "../aidream/apps/shared/chat/src/action-requests/components/spendAmount.ts": "the approve-spend amount box's dollar text, reached ONLY when the viewer's unit is usd (a system admin's switch); members type points",
   "features/tool-call-visualization/admin/ToolTestSamplesViewer.tsx": "the provider's per-million-token USD price list, shown to an admin debugging a tool-test sample's cost estimate",
+  "app/(core)/organizations/[orgId]/settings/payments/page.tsx": "an amount the organization asks a customer to pay through its own payment account",
+  "features/payments/server.ts": "an amount the organization asks a customer to pay through its own payment account",
+  "features/marketing/seo/domain-research/summaries.ts": "a domain's estimated organic value and ad budget in the ad market, in real dollars",
+  "features/admin/attention/sources/tool-health.ts": "the vendor's published price book entry, shown only in the admin attention queue",
+  "features/admin/tool-control/ToolAlertRecord.tsx": "the vendor's published price book entry, shown only on the admin tool alert record",
+  "features/tool-battle/derive.ts": "a tool's measured cost per success in the admin-only tool battle",
 };
 
 const SKIP_PREFIXES = ["components/cost/", "scripts/", "node_modules/", ".next/"];
@@ -339,6 +345,107 @@ export const ALLOWED_PLACES: Record<string, string> = {
   "features/marketing/components/operations/SeoSpendChart.tsx": "billing/usage/pricing/budget: the SEO spend dashboard",
   "features/research/components/costs/**": "billing/usage/pricing/budget: the research cost dashboard",
   "components/official/drill-explorer/**": "billing/usage/pricing/budget: the usage explorer",
+  // zero-baseline pass (Arman, 2026-10-18): each file below sits at a deciding or investigating moment
+  "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/CatalogToolsSection.tsx":
+    "option picker: the add-a-tool picker shows each tool's price hint, part of choosing it",
+  "../aidream/apps/shared/matrx-agents/tools/catalog-search.ts":
+    "option picker: the tool price hint the add-a-tool picker and tool info cards read",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/format.ts":
+    "info/details: the memory inspector's cost formatter",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/MemoryCostCard.tsx":
+    "info/details: the memory inspector's cost card",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/MemoryEventTimeline.tsx":
+    "info/details: the memory inspector's event timeline, opened to look up what memory work cost",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/ObservationalMemoryCore.tsx":
+    "info/details: the memory inspector",
+  "../aidream/apps/shared/records-ui/src/Enrich.tsx":
+    "info/details: an enrichment field's settings and run history line (runs, spend so far, per row)",
+  "../aidream/apps/shared/records-ui/src/pointsCost.ts":
+    "info/details: the points formatter for the enrichment settings and history line",
+  "features/agent-tests/components/TestCost.tsx":
+    "history table: the cost cell of the agent tests' run and result history",
+  "features/agent-tests/components/AgentTestsPlatformPage.tsx":
+    "history table: the platform's agent test runs table",
+  "features/agent-tests/components/AgentTestTables.tsx":
+    "history table: one agent's test runs and results tables",
+  "features/agent-tests/components/ResultDetail.tsx":
+    "info/details: one test result's details page",
+  "features/agents/components/shared/AgentOptionsMenu.tsx":
+    "admin-gated: the super-admin-only conversation cost row in an agent's options menu",
+  "features/audio/limits.ts":
+    "bulk/repeating confirm: the length, cost and time estimate shown before a long transcription spends",
+  "features/audio/transcriptionSpendGate.ts":
+    "bulk/repeating confirm: the estimate dialog before a long transcription runs",
+  "features/board/data-fetch/GetDataBody.tsx":
+    "bulk/repeating confirm: the points estimate for the chosen record count beside Fetch, before records are pulled",
+  "features/chat-tool-renderers/renderers/compare/CompareInline.tsx":
+    "bulk/repeating confirm: the compare quote shown on the confirm step, before the comparison runs",
+  "features/crm/components/record/ContactCandidatesCard.tsx":
+    "bulk/repeating confirm: the Find contact info dialog names the paid lookup's cost before it runs",
+  "features/crm/media-research/MediaResearchPreviewCard.tsx":
+    "bulk/repeating confirm: the research preview's maximum cost before Run it",
+  "features/data-sources/ChangesPanel.tsx":
+    "history table: a data source's refresh history (when, counts, points spent)",
+  "features/data-sources/hooks.ts":
+    "option picker: the data-source price text the library and Get data estimate read",
+  "features/data-sources/lab/DataToModelLab.tsx":
+    "battle: the lab compares handing data over against the model fetching it, price is part of the verdict",
+  "features/data-sources/library/catalog.ts":
+    "option picker: each data source's own price per record, part of choosing a source",
+  "features/data-sources/library/DataLibraryPage.tsx":
+    "option picker: the data library lists each source with its price per record",
+  "features/data-sources/library/hooks.ts":
+    "option picker: the price text for a source in the data library",
+  "features/data-sources/library/SourceDetail.tsx":
+    "info/details: a data source's detail page with its unit price and the total before Get data",
+  "features/data-sources/library/tools/ToolCard.tsx":
+    "info/details: a tool's info card in the tool catalog",
+  "features/data-sources/library/tools/ToolPage.tsx":
+    "info/details: a tool's own page states its price hint",
+  "features/data-sources/live-column/LiveDataColumnButton.tsx":
+    "bulk/repeating confirm: the points preview for filling a column, before anything is fetched",
+  "features/data-sources/unlock/UnlockPage.tsx":
+    "battle: the unlock page compares unlockers side by side with a verdict, cost per arm is part of it",
+  "features/marketing/content-plan/format.ts":
+    "history table: one past AI run's line in the content plan's AI runs history",
+  "features/marketing/data/operations-format.ts":
+    "billing/usage/pricing/budget: the SEO spend panel's runtime cost formatter",
+  "features/marketing/news-monitor/CostBanner.tsx":
+    "billing/usage/pricing/budget: the news monitor's monthly run-cost ceiling and month-to-date spend",
+  "features/marketing/news-monitor/NewsMonitorRunView.tsx":
+    "billing/usage/pricing/budget: the monitor's monthly run-cost ceiling banner mounted on its run view",
+  "features/marketing/offerings/BrandOfferingsPanel.tsx":
+    "bulk/repeating confirm: the refresh quote confirm names the points before paid sources run",
+  "features/marketing/seo/ai-visibility/brand/RunCheckButton.tsx":
+    "bulk/repeating confirm: a costly manual check asks first, naming the points",
+  "features/marketing/seo/ai-visibility/panels/format.ts":
+    "bulk/repeating confirm: the wave cost formatter for the gate review",
+  "features/marketing/seo/ai-visibility/panels/GateReviewCard.tsx":
+    "bulk/repeating confirm: the gate review shows the cost of one wave before the next is approved",
+  "features/marketing/smart-add/helpers/HelperPanel.tsx":
+    "admin-gated: the helper's admin block (estimate and measured cost), plus the expensive-search confirm",
+  "features/marketing/social/components/SocialProviderCard.tsx":
+    "billing/usage/pricing/budget: Operations > Connections shows the social provider's monthly spend",
+  "features/marketing/social/components/video/StudioParts.tsx":
+    "bulk/repeating confirm: the video studio's estimate line before anything is made",
+  "features/marketing/social/components/video/VideoFormatNew.tsx":
+    "bulk/repeating confirm: the planned video's estimate before it is made",
+  "features/marketing/social/components/video/VideoProjectStudio.tsx":
+    "bulk/repeating confirm: the Make it panel's estimate before a video is made",
+  "features/marketing/social/cost.ts":
+    "bulk/repeating confirm: the social spend confirm steps and agent approval cards name the points before spending",
+  "features/marketing/social/video/clone.ts":
+    "bulk/repeating confirm: the points formatter for the video estimate",
+  "features/marketing/social/video/estimate.ts":
+    "bulk/repeating confirm: the video estimate and the line telling when the studio stops to ask",
+  "features/masterwork/components/masterworks/MasterworksPage.tsx":
+    "history table: a masterwork's recent runs list",
+  "features/research/components/analysis/AnalysisList.tsx":
+    "info/details: an analysis's usage details",
+  "features/research/components/document/DocumentViewer.tsx":
+    "info/details: a document's token usage and cost details panel",
+  "features/source-library/components/JobPanel.tsx":
+    "info/details: a library job's own page with its promised cost, and the cancel confirm",
 };
 
 /** Exports of `components/cost/*` that put a price on screen. The rest of that

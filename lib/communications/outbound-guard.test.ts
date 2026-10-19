@@ -3,7 +3,7 @@
  * A server wired to a copy of production never reaches a real person or real provider state.
  *
  * Drives the REAL seams (sendEmail, test-email, sendSms, sendVerification, purchasePhoneNumber,
- * updateAllWebhookUrls, slack-proxy) with the providers mocked, and sets the server's database
+ * updateAllWebhookUrls) with the providers mocked, and sets the server's database
  * identity through its one source, `NEXT_PUBLIC_SUPABASE_URL`. Every refusal has a positive
  * control on the SAME seam with production's URL, so a seam that simply stopped calling its
  * provider cannot pass. No live database, no live provider.
@@ -209,18 +209,6 @@ test("repointing production's number webhooks from the clone is refused", async 
   await expect(updateAllWebhookUrls()).resolves.toMatchObject({ updated: 1 });
   expect(numberUpdate).toHaveBeenCalledTimes(1);
 });
-
-// ── Slack ───────────────────────────────────────────────────────────────────
-
-test("the Slack proxy on the clone is refused; on production it posts", async () => {
-  const { POST } = await import("@/app/api/slack-proxy/route");
-  const request = () =>
-    ({ json: async () => ({ endpoint: "chat.postMessage", payload: { text: "x" }, token: "xoxb" }) }) as never;
-  wire(CLONE_URL);
-  const refused = await POST(request());
-  expect(fetchMock).not.toHaveBeenCalled();
-  expect(refused.status).toBe(409);
-  expect(await refused.json()).toMatchObject({ code: SUPPRESSED_ON_CLONE });
   wire(PROD_URL);
   await POST(request());
   expect(fetchMock).toHaveBeenCalledTimes(1);

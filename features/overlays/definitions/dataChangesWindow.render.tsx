@@ -1,6 +1,7 @@
 "use client";
 
 import DataChangesWindow from "@/features/window-panels/windows/data-sources/DataChangesWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -9,7 +10,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const data = overlayData as
           Record<string, unknown> | null | undefined;
         const tableId = typeof data?.tableId === "string" ? data.tableId : null;
-        if (!isOpen || !tableId) return null;
+        if (!isOpen || !tableId) return <OverlayNeedsData overlayId="dataChangesWindow" onClose={close} />;
         return (
           <DataChangesWindow
             isOpen

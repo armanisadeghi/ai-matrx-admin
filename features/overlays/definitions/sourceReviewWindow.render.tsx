@@ -3,6 +3,7 @@
 import SourceReviewWindow from "@/features/resource-manager/source-input/review/SourceReviewWindow";
 import type { SourceReviewOptions } from "@/features/resource-manager/source-input/review/types";
 import { isSourceSet } from "@ai-matrx/agents/sources";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -11,6 +12,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const data = overlayData;
         const callbackId =
           typeof data?.callbackGroupId === "string" ? data.callbackGroupId : null;
+        if (!isSourceSet(data?.sourceSet)) return <OverlayNeedsData overlayId="sourceReviewWindow" onClose={close} />;
         return (
           <SourceReviewWindow
             key={callbackId ?? "source-review"}

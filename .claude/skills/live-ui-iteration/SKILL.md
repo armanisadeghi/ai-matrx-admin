@@ -6,6 +6,43 @@ description: "Continuous localhost UI iteration loop with Arman, through full su
 
 # Live UI iteration
 
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/platform/ui-shell/FEATURE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Delete means archive, everywhere.** A delete that does not archive is a defect.
+2. **A menu regroup ships as a side-by-side demo page** with a what-goes-where list, never as a
+   direct change.
+3. **Every surface mounts the canonical menu.** Use `NonEditableContextMenu` or
+   `EditableContextMenu` from `features/context-menu-v3/`. Never use a bespoke `DropdownMenu` or a
+   raw `contextmenu` handler, and never keep both.
+4. **A menu without a source is a defect.** A menu with no `contentSource`, `entity` or
+   `surfaceName` opens with every verb dark. Fix these before unwired surfaces.
+5. **Lists built on `EntityListPage` inherit the row menu** through `ItemContextMenu`. They need
+   their own wiring only for surface-specific sections.
+6. **A window or overlay mounts its own menu.** It never delegates to the page under it.
+7. **Reuse the domain's action registry.** Never create a second one.
+8. **Secret-bearing surfaces follow `VaultContextMenu`.** Pass `getApplicationScope`, force
+   `selection: ""`, put names and field keys in the content (never values or notes), and pass no
+   `entity`.
+9. **Done means the menu opens clean.** The console shows no `INERT MENU` or
+   `VALUE MAPPING GAP` scream.
+10. **Chat is a universal agent host.** Never bind a page-agent roster to it.
+11. **Anything with an id shows it through the one canonical id component** (display plus one-click
+    copy, in `@ai-matrx/design-system`). Never hand-built id text, never Copy ID buried in a menu;
+    Peek carries it for every record, and a guard refuses new hand-built id displays.
+12. **Flagship and first-run screens get a bespoke elevated stage**, not the 28px app-chrome controls:
+    display type, giant inputs, a living background, real-data animation, inside the feature folder
+    with theme and motion tokens. The brief names the champions; 3+ screenshot-critique rounds
+    precede any showing.
+13. **Before a link goes to Arman, every screen on its path is walked at the Steve Jobs bar** by an
+    Opus reviewer who fixes what it finds, then a fresh user walk confirms.
+14. **Admin tables filter, search and sort on the server** (controlled mode, footer total = server
+    total), and people are picked by name or email, never by an id input.
+15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
+    toolbar, buttons are mostly icons with short text, a button can carry status and action
+    together, and every status shown is backed by real state.
+<!-- rules:stamp-end -->
+
 Own the focused surface continuously: **requested changes first, then full surface completion, then certification.** Arman may inspect localhost while you work; that is visibility, not a pause or a request for an early handoff.
 
 ## The default is the full pass

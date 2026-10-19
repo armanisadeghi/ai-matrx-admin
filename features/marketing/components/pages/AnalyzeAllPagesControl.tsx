@@ -172,7 +172,7 @@ export function AnalyzeAllPagesControl({
         open={confirming}
         onOpenChange={(open) => !open && !submit.isPending && setConfirming(false)}
         title="Analyze all pages?"
-        description="Queues AI keyword analysis for up to 200 crawled pages that still need it; pages unchanged since their last analysis are skipped and cost nothing. It runs on the batch lane at about half the live price, so nothing appears instantly: results usually arrive within the hour (at most about 10 hours) and land on each page. Large sites queue 200 pages at a time; press again to queue the next ones."
+        description="Queues AI keyword analysis for up to 200 crawled pages that still need it; pages unchanged since their last analysis are skipped. It runs on the batch lane at about half the live price, so nothing appears instantly: results usually arrive within the hour (at most about 10 hours) and land on each page. Large sites queue 200 pages at a time; press again to queue the next ones."
         confirmLabel="Queue analysis"
         busy={submit.isPending}
         onConfirm={() => submit.mutate()}

@@ -999,7 +999,7 @@ def repair_skill_copies():
             subprocess.run([sys.executable, os.path.join(tools, args[0]), *args[1:]],
                            cwd=top, timeout=180, check=False)
         except Exception as exc:  # noqa: BLE001 — a repair failure never stops the sync
-            say("LAW 15 REPAIR SKIPPED (%s): %s" % (" ".join(args), exc))
+            say(f"LAW 15 REPAIR SKIPPED ({' '.join(args)}): {exc}")
 
 
 def commit_all():
