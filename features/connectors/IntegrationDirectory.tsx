@@ -69,7 +69,12 @@ export function IntegrationDirectory({
   const selected = items.find(
     (item) =>
       item.id === selectedId ||
-      (item.server && `provider:${item.server.slug}` === selectedId),
+      (item.server && `provider:${item.server.slug}` === selectedId) ||
+      item.abilities?.some(
+        (ability) =>
+          ability.item.server &&
+          `provider:${ability.item.server.slug}` === selectedId,
+      ),
   );
   const categories = Object.entries(MCP_CATEGORY_META)
     .filter(([key]) => items.some((item) => item.category === key))
