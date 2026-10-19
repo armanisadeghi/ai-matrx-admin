@@ -635,6 +635,7 @@ export function ConnectorConsentBody({
    * disabled with no way to ask what is wrong.
    */
   const [answer, setAnswer] = useState<string | null>(null);
+  const intentGeneration = useRef(0);
 
   const activeOrganization =
     organizations.find((org) => org.id === activeOrganizationId) ?? null;
@@ -677,6 +678,7 @@ export function ConnectorConsentBody({
    * account now being connected instead of carrying the last one's answers.
    */
   const chooseAccount = (nextId: string) => {
+    intentGeneration.current += 1;
     selectionReady.current = true;
     setChosenAccountId(nextId);
     setAttempted(false);
@@ -696,6 +698,7 @@ export function ConnectorConsentBody({
   };
 
   const toggle = (product: ConnectorProduct, next: boolean) => {
+    intentGeneration.current += 1;
     selectionReady.current = true;
     setAttempted(false);
     setExchangeCompleted(false);
@@ -712,6 +715,7 @@ export function ConnectorConsentBody({
   };
 
   const selectAll = () => {
+    intentGeneration.current += 1;
     selectionReady.current = true;
     setAttempted(false);
     setExchangeCompleted(false);
@@ -724,6 +728,7 @@ export function ConnectorConsentBody({
   };
 
   const clearOptional = () => {
+    intentGeneration.current += 1;
     selectionReady.current = true;
     setAttempted(false);
     setExchangeCompleted(false);
@@ -763,13 +768,24 @@ export function ConnectorConsentBody({
   };
 
   const refreshAttempt = async () => {
+    intentGeneration.current += 1;
+    const generation = intentGeneration.current;
+    const pendingPlan = attemptPlan;
+    const pendingAccountId = attemptAccountId;
     const refreshed = await refetch();
-    if (!attemptPlan || !attemptAccountId || !Array.isArray(refreshed)) return;
+    if (
+      generation !== intentGeneration.current ||
+      !pendingPlan ||
+      !pendingAccountId ||
+      !Array.isArray(refreshed)
+    ) {
+      return;
+    }
     const refreshedAccount = (refreshed as ConnectorAccount[]).find(
-      (row) => row.id === attemptAccountId,
+      (row) => row.id === pendingAccountId,
     ) ?? null;
     const nextContinuation = continuationAfterVerifiedStep(
-      attemptPlan,
+      pendingPlan,
       refreshedAccount,
     );
     if (nextContinuation !== undefined) {
@@ -778,6 +794,7 @@ export function ConnectorConsentBody({
   };
 
   const connect = async (inThisTab = false) => {
+    intentGeneration.current += 1;
     if (initialAccountId && accountId === initialAccountId && !account) {
       const sentence = "The selected Google account is no longer available. Choose another account or reopen this connection.";
       setAnswer(sentence);
@@ -1212,6 +1229,7 @@ export function ConnectorConsentBody({
               checked={forOrganization}
               disabled={busy}
               onCheckedChange={(next) => {
+                intentGeneration.current += 1;
                 setForOrganization(next);
                 setContinuationProductKeys(null);
                 setAttempted(false);

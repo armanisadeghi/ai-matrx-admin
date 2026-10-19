@@ -126,6 +126,7 @@ function ConsentFixture() {
 }
 
 beforeEach(() => {
+  HTMLElement.prototype.scrollIntoView = jest.fn();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -282,6 +283,118 @@ it("keeps the continuation bound until the returned account can be confirmed", a
   });
   expect(run).toHaveBeenCalledTimes(1);
   expect(container.textContent).toContain("Continue with YouTube");
+});
+
+it("does not restore deferred YouTube after the account changes during refresh", async () => {
+  const otherAccount: ConnectorAccount = {
+    ...broadAccount,
+    id: "other-google",
+    label: "other@harbor.test",
+    grantedScopes: [...provider.identityScopes],
+  };
+  let refreshCount = 0;
+  let finishRefresh: ((accounts: ConnectorAccount[]) => void) | null = null;
+  function SwitchingFixture() {
+    const [accounts, setAccounts] = useState<ConnectorAccount[]>([]);
+    return (
+      <ConnectorConsentBody
+        provider={provider}
+        accounts={accounts}
+        rollout={rollout}
+        isLoading={false}
+        rolloutUnavailable={false}
+        errorMessage={null}
+        initialProductKeys={["workspace_files", "youtube"]}
+        onDone={jest.fn()}
+        refetch={async () => {
+          refreshCount += 1;
+          if (refreshCount === 1) {
+            setAccounts([otherAccount]);
+            return [];
+          }
+          return new Promise<ConnectorAccount[]>((resolve) => {
+            finishRefresh = resolve;
+          });
+        }}
+      />
+    );
+  }
+  await act(async () => root.render(<SwitchingFixture />));
+  await act(async () => {
+    click(buttonNamed(provider.dialog.cta));
+    await Promise.resolve();
+  });
+
+  await act(async () => click(buttonNamed("Refresh connections")));
+  const selector = container.querySelector("#connector-consent-account");
+  if (!selector) throw new Error("Missing account selector");
+  await act(async () => {
+    selector.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    );
+  });
+  const option = [...document.querySelectorAll('[role="option"]')].find(
+    (candidate) => candidate.textContent?.includes(otherAccount.label),
+  );
+  if (!option) throw new Error("Missing alternate account option");
+  await act(async () => (option as HTMLElement).click());
+  await act(async () => {
+    finishRefresh?.([broadAccount]);
+    await Promise.resolve();
+  });
+
+  expect(container.textContent).toContain(otherAccount.label);
+  expect(container.textContent).not.toContain("Continue with YouTube");
+});
+
+it("does not restore an old continuation after another consent attempt starts", async () => {
+  run.mockReset();
+  run
+    .mockResolvedValueOnce({ connectionId: broadAccount.id })
+    .mockRejectedValueOnce(new Error("popup_closed"));
+  mockIsCancelled.mockImplementation(
+    (cause) => cause instanceof Error && cause.message === "popup_closed",
+  );
+  let refreshCount = 0;
+  let finishRefresh: ((accounts: ConnectorAccount[]) => void) | null = null;
+  function ReconnectFixture() {
+    return (
+      <ConnectorConsentBody
+        provider={provider}
+        accounts={[]}
+        rollout={rollout}
+        isLoading={false}
+        rolloutUnavailable={false}
+        errorMessage={null}
+        initialProductKeys={["workspace_files", "youtube"]}
+        onDone={jest.fn()}
+        refetch={async () => {
+          refreshCount += 1;
+          if (refreshCount === 1) return [];
+          return new Promise<ConnectorAccount[]>((resolve) => {
+            finishRefresh = resolve;
+          });
+        }}
+      />
+    );
+  }
+  await act(async () => root.render(<ReconnectFixture />));
+  await act(async () => {
+    click(buttonNamed(provider.dialog.cta));
+    await Promise.resolve();
+  });
+  await act(async () => click(buttonNamed("Refresh connections")));
+  await act(async () => {
+    click(buttonNamed(provider.dialog.cta));
+    await Promise.resolve();
+  });
+  await act(async () => {
+    finishRefresh?.([broadAccount]);
+    await Promise.resolve();
+  });
+
+  expect(run).toHaveBeenCalledTimes(2);
+  expect(container.textContent).not.toContain("Continue with YouTube");
 });
 
 it("keeps YouTube pending when the second approval is canceled", async () => {
