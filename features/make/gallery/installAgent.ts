@@ -17,6 +17,14 @@
 // the create and the note leaves a claim, not an unrecorded copy. A re-open taking over a stale
 // claim gets the orphans that run made: the first is finished and recorded, any others archived.
 // A fresh claim held by another tab stops this run with a sentence — it never creates beside it.
+//
+// ONE RUN PER INSTALL, AND A HOLD IS WAITED OUT (READ-SPEED-ORG, 2026-10-19). The first Nonprofit install
+// said "… is being made in another tab or window" when no other tab existed: two runs of the host steps for
+// the SAME install were in flight in ONE tab (a remount re-ran the install while the first run's steps were
+// still going — the stopped run's host calls are not cut off), so the second met the first's fresh claim.
+// Now (1) a second call for an install whose host steps are already running in this tab joins that run
+// instead of claiming beside it, and (2) a claim held elsewhere is waited out — re-asked until it is made
+// (then used) or its lease runs out (then taken over) — and only a hold that outlives its lease is refused.
 
 import type { TemplateDoorAnswer } from "@ai-matrx/records/templates";
 import type { TemplateAgentBinding, TemplateAgentCopier } from "@/features/templates/agentCopy";
@@ -138,6 +146,8 @@ export interface AddAgentPorts {
   archiveWorkflow?: (workflowId: string) => Promise<void>;
   /** aidream `POST /workflows` in `organizationId`, as the person. Returns the workflow's id. */
   createWorkflow?: (organizationId: string, workflow: { name: string; description: string; definition: unknown }) => Promise<string>;
+  /** Waits `ms` before a held claim is asked again. Default: a timer. */
+  wait?: (ms: number) => Promise<void>;
 }
 
 export type Claim =
@@ -152,6 +162,28 @@ export class HeldElsewhere extends Error {
   }
 }
 
+/** How often a held claim is asked again, and how long past its lease it may stay held before the run gives up. */
+const HELD_POLL_MS = 2_000;
+const HELD_GRACE_MS = 5_000;
+const HELD_UNKNOWN_MS = 200_000;
+
+/**
+ * Claims (kind, label), waiting out a hold: asked again every HELD_POLL_MS until it is made (that id is used) or
+ * claimed (its lease ran out: taken over). Throws HeldElsewhere only when the hold outlives its lease.
+ */
+async function claimWaitingOutHolds(ports: AddAgentPorts, installId: string, kind: "agent" | "workflow", label: string, sourceId: string | null): Promise<Exclude<Claim, { state: "held" }>> {
+  const wait = ports.wait ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  let deadline: number | null = null;
+  for (;;) {
+    const claim = await ports.claim(installId, kind, label, sourceId);
+    if (claim.state !== "held") return claim;
+    const until = claim.retryAt ? Date.parse(claim.retryAt) + HELD_GRACE_MS : NaN;
+    deadline ??= Number.isFinite(until) ? until : Date.now() + HELD_UNKNOWN_MS;
+    if (Date.now() >= deadline) throw new HeldElsewhere(label, claim.retryAt);
+    await wait(Math.max(0, Math.min(HELD_POLL_MS, deadline - Date.now())));
+  }
+}
+
 export type AddAgentResult = { ok: true; answer: InstallAnswer } | { ok: false; why: string; answer: InstallAnswer; retryAt?: string | null };
 
 async function copyAndNote(
@@ -161,9 +193,8 @@ async function copyAndNote(
   organizationId: string,
   agent: { platformAgentId: string; platformAgent: string; name: string; bindings: TemplateAgentBinding[] },
 ): Promise<{ answer: InstallAnswer; agentId: string }> {
-  const claim = await ports.claim(installId, "agent", agent.name, agent.platformAgentId || null);
+  const claim = await claimWaitingOutHolds(ports, installId, "agent", agent.name, agent.platformAgentId || null);
   if (claim.state === "made") return { agentId: claim.id, answer: await ports.note(installId, claim.id, agent.name) };
-  if (claim.state === "held") throw new HeldElsewhere(agent.name, claim.retryAt);
   const [adopt, ...extra] = claim.orphans;
   let created: string | null = adopt ?? null;
   try {
@@ -185,6 +216,9 @@ async function copyAndNote(
   }
 }
 
+/** The host steps running in this tab, by install: a second call for the same install joins the first. */
+const running = new Map<string, Promise<AddAgentResult>>();
+
 export async function addInstalledAgent(
   answer: InstallAnswer,
   organizationId: string,
@@ -192,6 +226,14 @@ export async function addInstalledAgent(
 ): Promise<AddAgentResult> {
   const installId = answer.install_id;
   if (!installId) return { ok: true, answer };
+  const already = running.get(installId);
+  if (already) return already;
+  const run = hostSteps(answer, installId, organizationId, ports).finally(() => running.delete(installId));
+  running.set(installId, run);
+  return run;
+}
+
+async function hostSteps(answer: InstallAnswer, installId: string, organizationId: string, ports: AddAgentPorts): Promise<AddAgentResult> {
   let current = answer;
   try {
     const resolver = installResolver(answer);
@@ -251,8 +293,7 @@ export async function addInstalledAgent(
       for (const wf of workflows) {
         if (madeOf(current, "workflow").some((m) => m.title === wf.name)) continue;
         if (!ports.createWorkflow) throw new Error(`The workflow "${wf.name}" could not be made: this screen cannot create workflows.`);
-        const claim = await ports.claim(installId, "workflow", wf.name, null);
-        if (claim.state === "held") throw new HeldElsewhere(wf.name, claim.retryAt);
+        const claim = await claimWaitingOutHolds(ports, installId, "workflow", wf.name, null);
         let workflowId: string;
         if (claim.state === "made") workflowId = claim.id;
         else if (claim.orphans.length) {
