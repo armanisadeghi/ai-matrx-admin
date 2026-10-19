@@ -62,7 +62,7 @@ export function MusicPicker({
   const fileReady = value.kind === "file" && value.file.fileId !== "";
   return (
     <div className="flex flex-col gap-2">
-      <SegmentedControl aria-label={label} value={value.kind} onValueChange={pickKind} data={KINDS} disabled={disabled} />
+      <SegmentedControl aria-label={label} value={value.kind} onValueChange={pickKind} data={KINDS.map((option) => ({ ...option, disabled }))} />
       {value.kind === "bed" ? (
         <div className="flex flex-wrap items-center gap-2">
           <Select
