@@ -13,38 +13,56 @@
 // first paint shows — and it is swapped for the live screens only once their code has loaded, in a box
 // that keeps its height, so nothing jumps.
 
-import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
-import type { TemplatePreviewProps } from "@ai-matrx/records-ui";
-import { loadRecordsUi } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
-import { BookingPicker } from "@/features/booking/BookingPicker";
-import type { PublicBooking } from "@/features/booking/service";
+import type { LiveScreens } from "./TemplateLivePreviewImpl";
 
+// ON DEMAND (GALLERY-PERF-2, 2026-10-19): the live screens load when the visitor reaches the preview (it scrolls
+// into view, or a pointer or focus enters it), through ONE import() of TemplateLivePreviewImpl — never on page load.
+// A failed load keeps the server HTML and says so in the console.
 export function TemplateLivePreview({ spec, today, children }: { spec: TemplateSpec; today: string; children: ReactNode }) {
-  const [Live, setLive] = useState<{ Preview: ComponentType<TemplatePreviewProps>; refusal: string } | null>(null);
+  const [wanted, setWanted] = useState(false);
+  const [Live, setLive] = useState<LiveScreens | null>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const box = boxRef.current;
+    if (wanted || !box || typeof IntersectionObserver === "undefined") return;
+    const seen = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) setWanted(true);
+    }, { rootMargin: "0px 0px -20% 0px" });
+    seen.observe(box);
+    return () => seen.disconnect();
+  }, [wanted]);
+  useEffect(() => {
+    if (!wanted) return;
     let gone = false;
-    void Promise.all([loadRecordsUi("TemplateLivePreview"), import("@ai-matrx/records/memory")]).then(([ui, memory]) => {
-      if (!gone) setLive({ Preview: ui.TemplatePreview, refusal: memory.PREVIEW_REFUSAL.message });
-    });
+    void import("./TemplateLivePreviewImpl")
+      .then((m) => m.loadLiveScreens())
+      .then(
+        (screens) => {
+          if (!gone) setLive(screens);
+        },
+        (error: unknown) => {
+          if (!gone) console.warn("[templates] the live preview did not load; the outline stays.", error);
+        },
+      );
     return () => {
       gone = true;
     };
-  }, []);
+  }, [wanted]);
+  const want = () => setWanted(true);
   return (
-    <div className="min-h-[36rem] min-w-0" data-template-live={Live ? "on" : "off"}>
-      {Live ? (
-        <Live.Preview
-          spec={spec}
-          today={today}
-          className="gap-6"
-          booking={(page) => <BookingPicker page={page as unknown as PublicBooking} preview={Live.refusal} />}
-        />
-      ) : (
-        children
-      )}
+    <div
+      ref={boxRef}
+      className="min-h-[36rem] min-w-0"
+      data-template-live={Live ? "on" : "off"}
+      onPointerEnter={want}
+      onFocusCapture={want}
+      onTouchStart={want}
+    >
+      {Live ? <Live.Preview spec={spec} today={today} className="gap-6" booking={Live.booking} /> : children}
     </div>
   );
 }
