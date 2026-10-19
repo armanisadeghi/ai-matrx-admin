@@ -218,10 +218,10 @@ function SentenceLine({ answer }: { answer: Extract<RecordsAnswer, { kind: "line
 }
 
 /** The answer view, or `null` when this answer is not one it draws (the caller's fallback draws). */
-export function RecordsAnswerBody({ answer }: { answer: RecordsAnswer }) {
+export function RecordsAnswerBody({ answer, conversationId, requestId }: { answer: RecordsAnswer; conversationId?: string; requestId?: string }) {
   if (answer.kind === "rows") return <RowsTable answer={answer} />;
   if (answer.kind === "write") return <WriteLine answer={answer} />;
-  if (answer.kind === "background") return <BackgroundRunCard runId={answer.runId} hint={answer.run} />;
+  if (answer.kind === "background") return <BackgroundRunCard runId={answer.runId} hint={answer.run} conversationId={conversationId} requestId={requestId} />;
   return <SentenceLine answer={answer} />;
 }
 

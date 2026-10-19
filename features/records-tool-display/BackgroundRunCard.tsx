@@ -21,7 +21,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowRightLeft, ArrowUpRight, CircleCheck, Download, Eye, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, ArrowUpRight, ChevronRight, CircleCheck, Download, Eye, Workflow } from "lucide-react";
 import { Card, CardContent, Progress, Skeleton, type ProgressTone } from "@ai-matrx/design-system";
 import { Badge, Button, DisclosureHeader, StageSteps, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -29,6 +29,9 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { tableKindSlug } from "@ai-matrx/records";
 import { formatCount } from "@ai-matrx/kit/format";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsExecuting, selectLatestRequestId } from "@ai-matrx/chat/agents/redux/execution-system/selectors/aggregate.selectors";
+import { cardShowsInFull, type BackgroundWorkPhase } from "@ai-matrx/chat/agents/background-work/background-work-model";
+import { useRegisterBackgroundWork } from "@ai-matrx/chat/agents/background-work/background-work-store";
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { selectRunState } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { useOpenWorkflowRunWindow } from "@/features/overlays/definitions/workflowRunWindow.overlay";
@@ -111,7 +114,34 @@ function DoorLink({ href, children }: { href: string; children: React.ReactNode 
   );
 }
 
-export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: BackgroundRunKind | null; name?: string | null }) {
+/** The run's phase as background work (the chat's dock and sidebar dot read this). */
+const WORK_PHASE: Record<BackgroundRunPhase, BackgroundWorkPhase> = {
+  opening: "working",
+  waiting: "working",
+  working: "working",
+  needs_you: "needs_you",
+  sleeping: "scheduled",
+  paused: "needs_you",
+  finished: "done",
+  stopped: "failed",
+  cancelled: "done",
+};
+
+export interface BackgroundRunCardProps {
+  runId: string;
+  hint: BackgroundRunKind | null;
+  name?: string | null;
+  /** The conversation and turn the card was drawn in (tool renderer props); absent outside chat. */
+  conversationId?: string;
+  requestId?: string;
+  /**
+   * "message" (default): in full while its turn streams, then folded to one line (opens on
+   * click) — the chat's bottom dock draws the live card from then on. "dock": always in full.
+   */
+  placement?: "message" | "dock";
+}
+
+export function BackgroundRunCard({ runId, hint, name, conversationId, requestId, placement = "message" }: BackgroundRunCardProps) {
   useWorkflowRun(runId);
   const run = useAppSelector(selectRunState(runId));
   const openRunWindow = useOpenWorkflowRunWindow();
@@ -152,6 +182,44 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
       ? Math.round(ratchet.fraction * 100)
       : view.phase === "stopped" || view.phase === "cancelled" || parked ? 0 : null;
   const detail = view.sample?.detail ?? null;
+
+  // AFTER THE TURN (Arman, 2026-10-19): no shift while the reply streams; when the turn ends the
+  // card folds here and ONE fresh live copy renders in the chat's bottom dock until it settles.
+  const executing = useAppSelector((state) => (conversationId ? selectIsExecuting(conversationId)(state) : false));
+  const latestRequestId = useAppSelector((state) => (conversationId ? selectLatestRequestId(conversationId)(state) : undefined));
+  const inFull = placement === "dock" || cardShowsInFull({ conversationId, requestId, latestRequestId, executing });
+  const [opened, setOpened] = useState(false);
+  useRegisterBackgroundWork(
+    placement === "message" && conversationId && !inFull
+      ? {
+          id: runId,
+          conversationId,
+          title,
+          phase: WORK_PHASE[view.phase],
+          wakeAt: view.wakeAt,
+          render: () => <BackgroundRunCard runId={runId} hint={hint} name={name} placement="dock" />,
+        }
+      : null,
+  );
+  if (!inFull && !opened) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpened(true)}
+        aria-expanded={false}
+        aria-label={`${title}, ${STATUS_WORD[view.phase]}`}
+        className="flex w-full max-w-2xl items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-left transition-colors hover:bg-accent/40"
+      >
+        <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="type-secondary min-w-0 flex-1 truncate text-foreground">{title}</span>
+        <Badge tone={BADGE_TONE[view.phase]}>{STATUS_WORD[view.phase]}</Badge>
+        <span className="type-meta w-14 shrink-0 text-right tabular-nums text-muted-foreground">
+          {elapsedMs != null && elapsedMs >= 1_000 ? formatElapsed(elapsedMs) : ""}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <Card size="sm" aria-label={title} className="w-full max-w-2xl">
