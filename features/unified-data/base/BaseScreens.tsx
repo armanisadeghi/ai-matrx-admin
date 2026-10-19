@@ -29,6 +29,7 @@ import { useOrganizationRequired } from "@/features/organizations/useOrganizatio
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
 import { makeEmptyBase } from "./makeEmptyBase";
+import { planBaseMove, readBaseMoveJob, startBaseMoveJob } from "./baseMoveJob";
 import { GithubImportDialog } from "./GithubImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
@@ -310,7 +311,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
 
       <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { await saveBase(org, homeId, v); setDialog(null); load(); }} />
       <DuplicateDialog open={dialog === "duplicate"} onClose={() => setDialog(null)} name={name} tables={tables} organizationId={org} identity={identity} />
-      <MoveBaseDialog open={dialog === "move"} onClose={() => setDialog(null)} homeId={homeId} name={name} organizationId={org} tableCount={tables.length} />
+      <MoveBaseDialog open={dialog === "move"} onClose={() => setDialog(null)} homeId={homeId} name={name} organizationId={org} tableCount={tables.length} tableIds={tables.map((t) => t.id)} />
       <SnapshotsDialog open={dialog === "snapshots"} onClose={() => setDialog(null)} homeId={homeId} organizationId={org} name={name} tables={tables} identity={identity} onNeedIdentity={async () => (await saveBase(org, homeId, { name })) } />
       <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
       <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
@@ -368,25 +369,65 @@ export function EditDialog({ open, onClose, current, fallbackName, onSave }: { o
 // ── duplicate ───────────────────────────────────────────────────────────────────────────────
 
 /** Moves the whole base (its Home, every table with its pages and automations) into another workspace the person belongs to: `custom.base_move`. */
-export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCount }: { open: boolean; onClose: () => void; homeId: string; name: string; organizationId: string; tableCount: number }) {
+export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCount, tableIds = [] }: { open: boolean; onClose: () => void; homeId: string; name: string; organizationId: string; tableCount: number; tableIds?: readonly string[] }) {
   const client = useRecordsClient();
   const router = useRouter();
   const destinations = useAppSelector(selectOrganizationsList).filter((o) => o.id !== organizationId);
   const [to, setTo] = useState<string>("");
-  const [phase, setPhase] = useState<{ kind: "ask" } | { kind: "moving" } | { kind: "refused"; text: string; error: unknown }>({ kind: "ask" });
-  const go = async () => {
-    setPhase({ kind: "moving" });
-    const res = await client.baseMove({ home_id: homeId, to_organization_id: to });
-    if (!res.ok) { setPhase({ kind: "refused", text: res.error.message, error: res.error }); return; }
+  const [phase, setPhase] = useState<
+    { kind: "ask" } | { kind: "moving" } | { kind: "job"; jobId: string; rows: number | null; startedAt: number; seconds: number } | { kind: "refused"; text: string; error: unknown }
+  >({ kind: "ask" });
+  const landed = () => {
     // The base now answers in the other workspace: reload so its page resolves there.
     router.refresh();
     window.location.assign(`/data/bases/${homeId}`);
   };
+  const go = async () => {
+    setPhase({ kind: "moving" });
+    let plan: { rows: number | null; job: boolean };
+    try { plan = await planBaseMove(client, tableIds); } catch (e) { setPhase({ kind: "refused", text: e instanceof Error ? e.message : String(e), error: e }); return; }
+    if (plan.job) {
+      // AT-MOVEJOB: above the direct budget the server moves it in one transaction; the dialog follows the job.
+      try {
+        const jobId = await startBaseMoveJob(organizationId, homeId, to);
+        setPhase({ kind: "job", jobId, rows: plan.rows, startedAt: Date.now(), seconds: 0 });
+      } catch (e) { setPhase({ kind: "refused", text: e instanceof Error ? e.message : String(e), error: e }); }
+      return;
+    }
+    const res = await client.baseMove({ home_id: homeId, to_organization_id: to });
+    if (!res.ok) { setPhase({ kind: "refused", text: res.error.message, error: res.error }); return; }
+    landed();
+  };
+  const jobId = phase.kind === "job" ? phase.jobId : null;
+  useEffect(() => {
+    if (!jobId) return;
+    let stop = false;
+    let misses = 0;
+    const tick = async () => {
+      if (stop) return;
+      try {
+        const view = await readBaseMoveJob(organizationId, jobId);
+        misses = 0;
+        if (stop) return;
+        if (view.state === "moved") { stop = true; router.refresh(); window.location.assign(`/data/bases/${homeId}`); return; }
+        if (view.state === "refused") { stop = true; setPhase({ kind: "refused", text: view.message, error: view }); return; }
+      } catch (e) {
+        misses += 1;
+        if (misses >= 10) { stop = true; setPhase({ kind: "refused", text: e instanceof Error ? e.message : String(e), error: e }); return; }
+      }
+      setPhase((p) => (p.kind === "job" && p.jobId === jobId ? { ...p, seconds: Math.round((Date.now() - p.startedAt) / 1000) } : p));
+      if (!stop) timer = setTimeout(() => void tick(), 1000);
+    };
+    let timer: ReturnType<typeof setTimeout> = setTimeout(() => void tick(), 1000);
+    return () => { stop = true; clearTimeout(timer); };
+  }, [jobId, organizationId, router, homeId]);
   return (
-    <Dialog open={open} onOpenChange={(o) => (!o && phase.kind !== "moving" ? (setPhase({ kind: "ask" }), onClose()) : undefined)}>
+    <Dialog open={open} onOpenChange={(o) => (!o && phase.kind !== "moving" && phase.kind !== "job" ? (setPhase({ kind: "ask" }), onClose()) : undefined)}>
       <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-base-move-dialog="">
         <DialogTitle>Move {name}</DialogTitle>
-        {phase.kind === "moving" ? <Words>Moving the base…</Words> : (
+        {phase.kind === "moving" ? <Words>Moving the base…</Words> : phase.kind === "job" ? (
+          <div data-base-move-progress=""><Words>{`Moving ${tableCount} tables${phase.rows === null ? "" : `, ${phase.rows.toLocaleString()} rows`}… ${phase.seconds} s`}</Words></div>
+        ) : (
           <>
             <label className="flex items-center justify-between gap-2 text-sm"><span>Workspace</span>
               <span className="min-w-0 flex-1" data-base-move-to="">
