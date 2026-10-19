@@ -41,7 +41,7 @@ const NAME_LABEL: Record<string, string> = {
 };
 
 export function Lineup({
-  kind, rows, onRows, near, onNear, organizationId, seesDollars, onCompare,
+  kind, rows, onRows, near, onNear, organizationId, seesDollars, onCompare, dense = false, starting = false,
 }: {
   kind: ComparisonKindInfo;
   rows: CompareRow[];
@@ -51,6 +51,10 @@ export function Lineup({
   organizationId: string;
   seesDollars: boolean;
   onCompare: (matches: LookupMatch[]) => void;
+  /** Inside a narrower host (a chat card): at most two cards a row, the action bar not floating. */
+  dense?: boolean;
+  /** The host is starting the run the person confirmed. */
+  starting?: boolean;
 }) {
   const places = kind.key === "local_business";
   const matched = foundMatches(rows);
@@ -110,7 +114,7 @@ export function Lineup({
         </div>
       ) : null}
 
-      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ol className={cn("grid gap-3 sm:grid-cols-2", !dense && "lg:grid-cols-3")}>
         {rows.map((row, i) => (
           <SlotCard key={row.key} index={i} row={row} kind={kind}
             onEdit={(p) => patch(row.key, (r) => editRow(r, p))}
@@ -133,7 +137,8 @@ export function Lineup({
 
       {kind.facets?.length ? <FacetOptions kind={kind} itemCount={matched.length} /> : null}
 
-      <div className="sticky bottom-3 z-10 flex flex-col gap-3 rounded-2xl border border-glass-edge bg-glass p-3 shadow-glass backdrop-blur-glass backdrop-saturate-glass sm:flex-row sm:items-center sm:justify-between sm:pl-5">
+      <div className={cn("flex flex-col gap-3 rounded-2xl p-3 sm:flex-row sm:items-center sm:justify-between sm:pl-5",
+        dense ? "border border-border bg-card" : "sticky bottom-3 z-10 border border-glass-edge bg-glass shadow-glass backdrop-blur-glass backdrop-saturate-glass")}>
         <div className="type-secondary min-h-5 text-muted-foreground" aria-live="polite">
           {matched.length < 2 ? (
             <><span className="tabular-nums text-foreground">{matched.length}</span> of 2 matched</>
@@ -145,8 +150,8 @@ export function Lineup({
               <Button variant="quiet" onClick={() => void quote.refetch()} disabled={quote.isFetching}>Try again</Button></span>
           ) : <span className="inline-block h-4 w-40 animate-pulse rounded bg-muted align-middle" aria-label="Pricing" />}
         </div>
-        <Button variant="primary" hero disabled={matched.length < 2 || busy || !quote.data}
-          onClick={() => onCompare(matched)}>
+        <Button variant="primary" hero={!dense} disabled={matched.length < 2 || busy || starting || !quote.data}
+          data-compare-confirm-button="" onClick={() => onCompare(matched)}>
           {matched.length >= 2 ? `Compare ${matched.length}` : "Compare"}
         </Button>
       </div>
@@ -231,13 +236,13 @@ function MatchBody({ match, category, photo, source }: { match: LookupMatch; cat
       <div className="min-w-0 space-y-1">
         {match.url ? (
           <a href={match.url} target="_blank" rel="noopener noreferrer"
-            className="group inline-flex max-w-full items-center gap-1 text-base font-semibold text-foreground hover:underline" title={match.name}>
-            <span className="truncate">{match.name}</span>
+            className="group inline-flex max-w-full items-start gap-1 text-base font-semibold text-foreground hover:underline" title={match.name}>
+            <span className="line-clamp-2">{match.name}</span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100" aria-hidden />
           </a>
-        ) : <span className="block truncate text-base font-semibold text-foreground" title={match.name}>{match.name}</span>}
-        {category ? <Chip label={category} tone="neutral" /> : null}
-        {match.detail ? <div className="type-secondary truncate text-muted-foreground" title={match.detail}>{match.detail}</div> : null}
+        ) : <span className="line-clamp-2 text-base font-semibold text-foreground" title={match.name}>{match.name}</span>}
+        {category ? <Chip label={category.split(",")[0]} tone="neutral" /> : null}
+        {match.detail && !category.startsWith(match.detail) ? <div className="type-secondary truncate text-muted-foreground" title={match.detail}>{match.detail}</div> : null}
         <RatingLine match={match} source={source} />
       </div>
     </div>

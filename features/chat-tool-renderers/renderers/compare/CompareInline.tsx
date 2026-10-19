@@ -6,16 +6,20 @@ import type { ToolRendererProps } from "@ai-matrx/chat/tool-call-visualization/t
 import { EntityCard } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/EntityCard";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { cn } from "@/lib/utils";
 import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { ItemLogo } from "@/features/comparison/components/ItemLogo";
-import type { ItemProgress, ItemStage } from "@/features/comparison/contract";
+import { Lineup } from "@/features/comparison/components/Lineup";
+import { PickList } from "@/features/comparison/components/PickList";
+import type { ItemProgress, ItemStage, LookupMatch } from "@/features/comparison/contract";
+import { discoveryRecord } from "@/features/comparison/discovery";
+import { useComparisonKinds } from "@/features/comparison/hooks";
+import { inLineup, placePick, startRows, type CompareRow } from "@/features/comparison/rows";
 
 import { CompactResult } from "./CompactResult";
-import { parseCompare, type FoundThing } from "./parseCompare";
+import { parseCompare, type FoundThing, type ParsedCompare } from "./parseCompare";
 import { useCompareRun } from "./useCompareRun";
 
 const STAGE_SHARE: Record<ItemStage, number> = { queued: 0.04, fetching: 0.15, reading: 0.45, storing: 0.85, done: 1 };
@@ -122,22 +126,9 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
             {data.howFound}{data.guessed ? " A best guess." : ""}
           </p>
         ) : null}
-        <ul className="space-y-2.5">{data.found.map((f, i) => <FoundRow key={i} f={f} photo={photo} />)}</ul>
         {run.failure ? <ErrorNotice size="inline" message={run.failure} /> : null}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2.5">
-          <span className="type-meta text-muted-foreground">
-            {data.quote ? (
-              <>
-                <span className="tabular-nums text-foreground">{formatPoints(data.quote.total_points)}</span>
-                {seesDollars && data.quote.total_usd_display ? <span className="tabular-nums"> · {data.quote.total_usd_display}</span> : null}
-                {" · about a minute or two"}
-              </>
-            ) : null}
-          </span>
-          <Button variant="primary" disabled={run.phase === "checking" || !organizationId} onClick={run.confirm} data-compare-confirm-button="">
-            Compare {data.request && typeof data.request === "object" && Array.isArray((data.request as { items?: unknown[] }).items) ? (data.request as { items: unknown[] }).items.length : ""}
-          </Button>
-        </div>
+        <ChatLineup data={data} organizationId={organizationId ?? ""} seesDollars={seesDollars}
+          starting={run.phase === "checking"} onStart={run.confirm} />
       </div>
     );
   }
@@ -146,5 +137,48 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
     <EntityCard expanded={expanded} onToggleExpanded={onToggleExpanded} icon={Scale} accent="cyan" title={title} subtitle={subtitle}>
       {body}
     </EntityCard>
+  );
+}
+
+/**
+ * The confirm step IS the /compare lineup (one shared component): the rows the agent found (clean name +
+ * city, each matched or offering its nearest real matches), a concept's found list to pick from, the price,
+ * and Compare — which starts the run with exactly the cards the person confirmed.
+ */
+function ChatLineup({ data, organizationId, seesDollars, starting, onStart }: {
+  data: ParsedCompare; organizationId: string; seesDollars: boolean; starting: boolean;
+  onStart: (request: unknown) => void;
+}) {
+  const kinds = useComparisonKinds(organizationId || null);
+  const kind = kinds.data?.find((k) => k.key === data.kind) ?? null;
+  const [rows, setRows] = useState<CompareRow[]>(() => (data.rows.length ? data.rows : startRows()));
+  const [near, setNear] = useState(() => data.discovered?.reading.area ?? "");
+  const [found, setFound] = useState(data.discovered);
+
+  if (!kind) {
+    return kinds.isError
+      ? <ErrorNotice size="inline" message="The comparison options could not be read. Try again." />
+      : <div className="h-40 animate-pulse rounded-2xl bg-muted" aria-label="Loading" />;
+  }
+
+  function start(matches: LookupMatch[]) {
+    const discovered = data.discovered;
+    const record = discovered
+      ? discoveryRecord(discovered.reading.summary, discovered, discovered.items.map((i) => ({
+        match: i.match, rank: i.rank, picked: inLineup(rows, i.match) })))
+      : null;
+    onStart({ kind: kind!.key, items: matches.map((m) => m.item), ...(record ? { discovery: record } : {}) });
+  }
+
+  return (
+    <div className="space-y-3">
+      {found ? (
+        <PickList result={found} rows={rows}
+          onAdd={(picks) => setRows((rs) => picks.reduce((acc, p) => placePick(acc, p.match, p.category), rs))}
+          onClose={() => setFound(null)} />
+      ) : null}
+      <Lineup kind={kind} rows={rows} onRows={setRows} near={near} onNear={setNear} organizationId={organizationId}
+        seesDollars={seesDollars} onCompare={start} dense starting={starting} />
+    </div>
   );
 }

@@ -71,8 +71,8 @@ export function AskBar({
         <ProInput value={text} onChange={(e) => onText(e.target.value)} aria-label="Describe or list"
           placeholder={PLACEHOLDER[kindKey] ?? "Describe it, or list names with vs"} wrapperClassName="flex-1" />
         <Button type="submit" variant="outline" disabled={find ? !canFind : !canFill}
-          icon={find ? <Search className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}>
-          {find ? (finding ? "Finding" : "Find") : `Fill ${Math.min(parsed.items.length || 1, 5)}`}
+          icon={find || !canFill ? <Search className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}>
+          {find || !canFill ? (finding ? "Finding" : "Find") : `Fill ${Math.min(parsed.items.length, 5)}`}
         </Button>
       </form>
       <div className="flex min-h-7 min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pl-1">
