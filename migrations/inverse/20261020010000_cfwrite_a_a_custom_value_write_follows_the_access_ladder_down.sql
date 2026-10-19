@@ -1,74 +1,9 @@
--- additive: no
--- chair-step: functions only. Replaces custom.entity_row_write (reads only the columns the person may select) and hr.custom_fields_write_gate (new 4th argument; a custom-value-only write on a row with no subject employee follows the access ladder). Edits one platform.client_callable_door row for the new signature. No table DDL, no policy change, no new lock; every table's own row rules and the HR write guard stand for their own columns.
--- GRANT NAMED: EXECUTE on hr.custom_fields_write_gate(uuid, text, uuid, boolean) to authenticated, service_role (the same grant the 3-argument door held).
--- lane: RECORD-VIEW-AUDIT-3
+-- INVERSE of migrations/20261020010000_cfwrite_a_a_custom_value_write_follows_the_access_ladder.sql (lane RECORD-VIEW-AUDIT-3): puts custom.entity_row_write and the 3-argument hr.custom_fields_write_gate back byte for byte, takes the 4-argument gate and its door row away. Nothing of anybody's data is touched.
+-- chair-step: restores function bodies, drops one function and deletes one door row.
 -- lock: custom, hr
--- Inverse: migrations/inverse/cfwrite_a_a_custom_value_write_follows_the_access_ladder_down.sql
--- based-on: custom.entity_row_write(uuid, text, uuid, jsonb, jsonb, integer, boolean) 246c2765aa3c4727d4c329a141e035591fa2e7099fcb3e4622067c6ea29d2dca
---
--- RECORD-VIEW-AUDIT-3 - SAVING A CUSTOM VALUE NEVER DEPENDS ON A TABLE'S OWN GRANTS OR AN HR-ONLY GUARD SHAPE.
--- Two record kinds refused every save of a custom value: hr_pay_period (HR's write guard arms only rows that have a
--- subject employee, and a pay period has none) and crm_sending_identity (authenticated has no table-wide SELECT on
--- crm.sending_identity, and the write door read the row with to_jsonb(x), which names every column). One class:
--- the write door's outcome rested on something other than the person's right on the parent record.
---   1. custom.entity_row_write reads the row as custom.entity_record_read does: only the columns the person may select.
---   2. For an HR row with no subject employee, a write that changes ONLY custom values is armed when the person
---      holds editor on the row (iam.has_access) or admin of its organization - the ladder every table uses. The
---      table's own row rule (std_update) still decides the UPDATE, and a write touching a real column is not armed.
+-- based-on: custom.entity_row_write(uuid, text, uuid, jsonb, jsonb, integer, boolean) 3cfc06502face966bf099fb1eaddf9e03f89b4bd5a09959c51e8b7d0b0068fc6
+-- based-on: hr.custom_fields_write_gate(uuid, text, uuid) f95a8afc65460b324a3021096fc3a5f5a874ec9088bb98d730f52ff2439a9e96
 set local lock_timeout = '3s';
-
-CREATE OR REPLACE FUNCTION hr.custom_fields_write_gate(p_organization_id uuid, p_token text, p_row_id uuid, p_custom_only boolean DEFAULT false)
- RETURNS boolean
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'hr', 'public'
-AS $function$
-declare
-  v_emp  uuid;
-  v_org  uuid;
-  v_gate jsonb;
-  v_semp uuid;
-begin
-  if auth.uid() is null then
-    return false;   -- no person to ask; HR's guard decides as it always has
-  end if;
-  select s.employee_id, s.organization_id into v_emp, v_org from hr.custom_field_subject(p_token, p_row_id) s;
-  if v_emp is null then
-    -- NO SUBJECT EMPLOYEE (a pay period, a pay group): HR's employee gate has no one to ask. A write that
-    -- changes ONLY custom values is decided by the access ladder every table uses - the person must hold
-    -- editor on this very row (or admin of its organization) - and then arms the one statement that asks.
-    -- A write that also touches a real column is not armed: HR's guard refuses it exactly as before.
-    if p_custom_only
-       and p_organization_id is not null
-       and (iam.has_org_admin(p_organization_id) or iam.has_access(p_token, p_row_id, 'editor'::public.permission_level)) then
-      perform hr.arm_write();
-      return true;
-    end if;
-    return false;
-  end if;
-  if v_org is distinct from p_organization_id then
-    return false;
-  end if;
-  select g.gate, g.subject_employment into v_gate, v_semp
-    from hr._l1_subject_write_gate(v_org, 'identity.write', v_emp, p_token, 'update', 'operational') g;
-  if v_gate is not null then
-    raise exception 'Changing this record''s fields takes HR''s edit access for this employee. Nothing was written.'
-      using errcode = '42501', hint = 'An HR admin for this employee can change them.';
-  end if;
-  perform hr.arm_write();
-  return true;
-end
-$function$;
-
--- the old 3-argument gate gives way to the 4-argument one; the door row follows the signature
-DROP FUNCTION hr.custom_fields_write_gate(uuid, text, uuid);
-GRANT EXECUTE ON FUNCTION hr.custom_fields_write_gate(uuid, text, uuid, boolean) TO authenticated, service_role;
-UPDATE platform.client_callable_door
-   SET identity_args = 'p_organization_id uuid, p_token text, p_row_id uuid, p_custom_only boolean DEFAULT false',
-       identity_argtypes = ARRAY['uuid'::regtype,'text'::regtype,'uuid'::regtype,'boolean'::regtype]::oid[],
-       reason = 'Called by custom.entity_row_write (SECURITY INVOKER, as the person) for an HR row: asks HR''s own write gate (hr._l1_subject_write_gate, identity.write, the row''s subject employee) for auth.uid(); a custom-value-only write on a row with no subject employee is decided by the access ladder (editor on the row). Arms only the calling statement; refuses in a sentence otherwise.',
-       argument_rules = '{"version": 1, "arguments": {"p_organization_id": {"type": "uuid", "position": 1, "optional": false, "null_rule": {}, "foreign": {"bounded": true, "note": "Must be the row''s own organization, or nothing is armed."}}, "p_token": {"type": "text", "position": 2, "optional": false, "null_rule": {}, "foreign": {"not_an_id": true}}, "p_row_id": {"type": "uuid", "position": 3, "optional": false, "null_rule": {}, "foreign": {"bounded": true, "note": "Resolved to its employee by hr.custom_field_subject, else judged by the access ladder on the row itself."}}, "p_custom_only": {"type": "boolean", "position": 4, "optional": true, "null_rule": {}, "foreign": {"not_an_id": true}}}}'::jsonb
- WHERE schema_name = 'hr' AND function_name = 'custom_fields_write_gate';
 
 CREATE OR REPLACE FUNCTION custom.entity_row_write(p_organization_id uuid, p_token text, p_record_id uuid, p_columns jsonb DEFAULT '{}'::jsonb, p_custom jsonb DEFAULT '{}'::jsonb, p_expected_version integer DEFAULT NULL::integer, p_archive boolean DEFAULT NULL::boolean)
  RETURNS jsonb
@@ -102,7 +37,6 @@ declare
   v_ins_vals text[];
   v_new    uuid;
   v_cur    integer;
-  v_readable text;
 begin
   -- the client wall is asked of an organization the call names; a change by id needs none
   if p_organization_id is not null or p_record_id is null then
@@ -182,19 +116,7 @@ begin
   end if;
 
   -- the row, as she may read it: its own organization, never one a caller supplies
-  -- ONLY THE COLUMNS SHE MAY READ (as custom.entity_record_read does): `to_jsonb(x)` names every column, so a
-  -- table that grants its readers some columns, not all (crm.sending_identity), refused the whole write with
-  -- "permission denied" before it looked at the value. A column she may not select is simply not in the row.
-  select string_agg(format('x.%I', a.attname), ', ' order by a.attnum)
-    into v_readable
-    from pg_attribute a
-   where a.attrelid = format('%I.%I', t.schema_name, t.table_name)::regclass
-     and a.attnum > 0 and not a.attisdropped
-     and has_column_privilege(a.attrelid, a.attnum, 'SELECT');
-  if v_readable is null then
-    raise exception 'There is no % you can open with that id.', t.label using errcode = '02000';
-  end if;
-  execute format('select to_jsonb(r) from (select %s from %I.%I x where x.id = $1) r', v_readable, t.schema_name, t.table_name)
+  execute format('select to_jsonb(x) from %I.%I x where x.id = $1', t.schema_name, t.table_name)
     into v_row using p_record_id;
   v_cf := case when jsonb_typeof(v_row -> 'custom_fields') = 'object' then v_row -> 'custom_fields' else '{}'::jsonb end;
   v_row := v_row - 'custom_fields';
@@ -273,11 +195,8 @@ begin
   -- LANE7-W4B[h1]: AN HR ROW is changed through HR's own edit rule — the write gate that gates
   -- hr_employee_update today asks the signed-in person and arms this statement; with no subject
   -- employee nothing is armed and HR's guard refuses exactly as before.
-  -- A CUSTOM-VALUE-ONLY WRITE ON A ROW WITH NO SUBJECT EMPLOYEE (a pay period, a pay group) is decided by the
-  -- same access ladder every table uses (editor on the row), asked inside the gate; a write that also
-  -- changes a real column stays HR's own guard's to decide.
   if t.schema_name = 'hr' then
-    perform hr.custom_fields_write_gate(v_org, p_token, p_record_id, (v_cols = '{}'::jsonb and p_archive is null));
+    perform hr.custom_fields_write_gate(v_org, p_token, p_record_id);
   end if;
   execute format('update %I.%I x set %s where %s', t.schema_name, t.table_name, array_to_string(v_sets, ', '), v_where)
     using p_record_id, v_args, v_clear, v_patch, p_expected_version;
@@ -322,3 +241,38 @@ begin
 end
 $function$
 ;
+
+CREATE OR REPLACE FUNCTION hr.custom_fields_write_gate(p_organization_id uuid, p_token text, p_row_id uuid)
+ RETURNS boolean
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'hr', 'public'
+AS $function$
+declare
+  v_emp  uuid;
+  v_org  uuid;
+  v_gate jsonb;
+  v_semp uuid;
+begin
+  if auth.uid() is null then
+    return false;   -- no person to ask; HR's guard decides as it always has
+  end if;
+  select s.employee_id, s.organization_id into v_emp, v_org from hr.custom_field_subject(p_token, p_row_id) s;
+  if v_emp is null or v_org is distinct from p_organization_id then
+    return false;   -- no subject employee: HR's guard refuses the write as today
+  end if;
+  select g.gate, g.subject_employment into v_gate, v_semp
+    from hr._l1_subject_write_gate(v_org, 'identity.write', v_emp, p_token, 'update', 'operational') g;
+  if v_gate is not null then
+    raise exception 'Changing this record''s fields takes HR''s edit access for this employee. Nothing was written.'
+      using errcode = '42501', hint = 'An HR admin for this employee can change them.';
+  end if;
+  perform hr.arm_write();
+  return true;
+end
+$function$
+;
+
+DELETE FROM platform.client_callable_door WHERE schema_name = 'hr' AND function_name = 'custom_fields_write_gate'
+   AND identity_argtypes = ARRAY['uuid'::regtype,'text'::regtype,'uuid'::regtype,'boolean'::regtype]::oid[];
+DROP FUNCTION hr.custom_fields_write_gate(uuid, text, uuid, boolean);

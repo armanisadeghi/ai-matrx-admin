@@ -280,6 +280,9 @@ type SignedOutReadable<T> = Omit<
   // Access ladder T-13: who published it to the web, and when, are not granted to `anon`.
   | "published_to_web_at"
   | "published_to_web_by"
+  // The test stamp (lib/test-run/marker.ts): bookkeeping a display page never reads.
+  | "test_run_id"
+  | "test_expires_at"
 > &
   Partial<
     Pick<
@@ -295,6 +298,8 @@ type SignedOutReadable<T> = Omit<
         | "shown_to"
         | "published_to_web_at"
         | "published_to_web_by"
+        | "test_run_id"
+        | "test_expires_at"
       >
     >
   >;

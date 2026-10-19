@@ -15,6 +15,8 @@ export type PublicDatabaseTool = Omit<
   DatabaseTool,
   'created_by' | 'updated_by' | 'organization_id' | 'metadata' | 'version' | 'shown_to'
   | 'published_to_web_at' | 'published_to_web_by'
+  // The test stamp (lib/test-run/marker.ts) is bookkeeping `anon` never reads.
+  | 'test_run_id' | 'test_expires_at'
 >;
 
 /**

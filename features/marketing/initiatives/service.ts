@@ -20,7 +20,7 @@ import { readListRpc } from "@/lib/entity-list/readListRpc";
 
 const db = supabase.schema("marketing");
 const COLUMNS =
-  "id,name,description,brand_id,status,objective,goal,starts_on,ends_on,budget_amount,budget_currency,details,organization_id,created_by,updated_by,created_at,updated_at,deleted_at,version,metadata,custom_fields,visibility,shown_to,published_to_web,published_to_web_at,published_to_web_by";
+  "id,name,description,brand_id,status,objective,goal,starts_on,ends_on,budget_amount,budget_currency,details,organization_id,created_by,updated_by,created_at,updated_at,deleted_at,version,metadata,custom_fields,visibility,shown_to,published_to_web,published_to_web_at,published_to_web_by,test_run_id,test_expires_at";
 
 export async function fetchInitiativeListPage(
   query: EntityListQuery,

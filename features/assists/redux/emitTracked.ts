@@ -98,6 +98,9 @@ export async function emitAssistTracked(
     version: 1,
     visibility: "personal",
     shown_to: null,
+    // The test stamp is written by the database on insert; the dock never reads it.
+    test_run_id: null,
+    test_expires_at: null,
     published_to_web: false,
     published_to_web_at: null,
     published_to_web_by: null,

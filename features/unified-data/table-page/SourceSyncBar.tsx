@@ -18,16 +18,19 @@ import { supabase } from "@/utils/supabase/client";
 
 import { SYNC_SOURCES, syncSentence, type SyncReport } from "./sourceSync";
 import { sayError } from "@/features/unified-data/base/sayError";
+import { HeldArchiveLine } from "./HeldArchiveLine";
+import { answerHold, openHold } from "./heldArchive";
 
-interface SourceRow { source_kind: string; synced_at: string | null }
+interface SourceRow { source_kind: string; synced_at: string | null; last_report?: SyncReport | null }
 
 export function SourceSyncBar({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
   const [source, setSource] = useState<SourceRow | null>(null);
   const [busy, setBusy] = useState(false);
+  const [was, setWas] = useState<number | null>(null);
 
   useEffect(() => {
     let live = true;
-    void supabase.schema("custom").from("synced_source").select("source_kind,synced_at")
+    void supabase.schema("custom").from("synced_source").select("source_kind,synced_at,last_report")
       .in("source_kind", Object.keys(SYNC_SOURCES)).eq("target", tableId).is("deleted_at", null)
       .order("updated_at", { ascending: false }).limit(1)
       .then(({ data }) => { if (live) setSource((data?.[0] as SourceRow | undefined) ?? null); });
@@ -35,15 +38,19 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
   }, [tableId]);
 
   const again = useRef<() => void>(() => {});
-  const syncNow = useCallback(async () => {
+  const syncNow = useCallback(async (confirmArchive?: string) => {
     if (!source) return;
     const kind = SYNC_SOURCES[source.source_kind]!;
     setBusy(true);
     try {
-      const { data } = await postJson<SyncReport & { finished_at?: string }, { table_id: string }>(kind.path, { table_id: tableId }, organizationId ? { organizationId } : {});
-      setSource({ ...source, synced_at: data.finished_at ?? new Date().toISOString() });
+      const body = confirmArchive ? { table_id: tableId, confirm_archive: confirmArchive } : { table_id: tableId };
+      const { data } = await postJson<SyncReport & { finished_at?: string }, { table_id: string; confirm_archive?: string }>(kind.path, body, organizationId ? { organizationId } : {});
+      setWas(confirmArchive && data.archive_held && data.archive_confirm !== confirmArchive ? Number(confirmArchive.split(":")[0]) : null);
+      setSource({ ...source, synced_at: data.finished_at ?? new Date().toISOString(),
+                  last_report: { ...data, archive_kept: source.last_report?.archive_kept ?? null } });
       tableShapeChanged(tableId);
-      toast.success(syncSentence(kind.name, data));
+      // a held archive is asked on the bar, never announced as "synced"
+      if (!data.archive_held) toast.success(syncSentence(kind.name, data));
     } catch (err) {
       toast.error(sayError(err, "The sync did not run."), { action: { label: "Try again", onClick: () => void again.current() } });
     } finally {
@@ -56,11 +63,26 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
   if (!source) return null;
   const kind = SYNC_SOURCES[source.source_kind]!;
   const when = source.synced_at ? formatRelativeTime(source.synced_at, { style: "intl" }) : "never";
+  const held = openHold(source.last_report);
+  const keep = async (token: string) => {
+    if (!organizationId) return;
+    try {
+      await answerHold(organizationId, tableId, "keep", token);
+      setSource({ ...source, last_report: { ...(source.last_report ?? {}), archive_kept: token } });
+    } catch (err) {
+      toast.error(sayError(err, "Keep was not saved."));
+    }
+  };
   return (
     <div className="flex shrink-0 items-center gap-1" data-source-sync-bar={source.source_kind}>
-      <span className="hidden max-w-[16rem] truncate px-1 text-xs text-muted-foreground md:inline" data-source-sync-when="">
-        {busy ? `Syncing ${kind.name}` : `${kind.name} synced ${when}`}
-      </span>
+      {held ? (
+        <HeldArchiveLine source={kind.name} held={held.held} was={was} busy={busy}
+          onArchive={() => void syncNow(held.confirm)} onKeep={() => void keep(held.confirm)} />
+      ) : (
+        <span className="hidden max-w-[16rem] truncate px-1 text-xs text-muted-foreground md:inline" data-source-sync-when="">
+          {busy ? `Syncing ${kind.name}` : `${kind.name} synced ${when}`}
+        </span>
+      )}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button icon={<RefreshCw className={busy ? "animate-spin" : undefined} />} variant="quiet" aria-label={`Sync now with ${kind.name}`} disabled={busy} onClick={() => void syncNow()} data-source-sync-now="" />

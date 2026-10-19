@@ -32,10 +32,10 @@ Its files stay as they are.
 
 ## Held files
 - _conflicts/2026-10-19-123326/features/settings/pages/IntegrationsSettingsPage.tsx.held — LOCAL latest 2026-10-19 12:49; GITHUB latest 2026-10-19 12:44; LOCAL lacks 0 of GITHUB's 12 new lines; GITHUB lacks 9 of LOCAL's 21 new lines; recover: git show fc3c3d9713:'features/settings/pages/IntegrationsSettingsPage.tsx' / ec8a41ffc3:'features/settings/pages/IntegrationsSettingsPage.tsx'
-- _conflicts/2026-10-19-132707/migrations/LEDGER.json.held — LOCAL latest 2026-10-19 13:25; GITHUB latest 2026-10-19 13:32; LOCAL lacks 0 of GITHUB's 9 new lines; GITHUB lacks 1 of LOCAL's 9 new lines; recover: git show 3a999e2830:'migrations/LEDGER.json' / 82add9cd3e:'migrations/LEDGER.json'
 
 ## Resolution log
 
+- 2026-10-19 PDT — Claude resolver resolved `_conflicts/2026-10-19-132707/migrations/LEDGER.json.held` by regenerating the snapshot (`pnpm refresh:ledger-snapshot`): LOCAL (3a999e2830) and GITHUB (82add9cd3e) held the identical 1932-file key set with identical entries; the regenerated file matches production (1935 files, `--check` OK) and so contains every entry of both. Owner: none found.
 - 2026-10-19 12:31 PDT — Codex resolved the two `2026-10-19-121519` record-page census held files. Owner: none found; active ship-all owner notified 12:28 PDT. Kept LOCAL's later 458 route classifications, six tokens and two records; declared the two newly added tool/search routes as non-record views; regenerated the map. `pnpm exec tsx scripts/record-pages/generate.ts` and the focused Jest census (9 tests) pass.
 
 - 2026-10-19 11:29 PDT — Codex resolved `_conflicts/2026-10-19-111501/migrations/LEDGER.json.held` by refreshing the production ledger snapshot. It now has 1932 files and contains every entry from LOCAL b5a582e68f and GITHUB 133a160cea with identical metadata, including readspeed_d missing from the prior snapshot; `pnpm refresh:ledger-snapshot --check` confirms it matches production. Owner: none found; current sweep owner notified urgently.

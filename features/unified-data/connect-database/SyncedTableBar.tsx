@@ -21,13 +21,15 @@ import { extractErrorMessage } from "@/utils/errors";
 
 import { OUTSIDE_DATABASE_PROVIDER, refreshAnySyncedTable, sourceTakesEdits, syncedFromLabel, type SyncAutoRefresh } from "./service";
 import { SyncedBadge } from "./SyncedBadge";
+import { HeldArchiveLine } from "@/features/unified-data/table-page/HeldArchiveLine";
+import { answerHold, openHold, type HeldArchive } from "@/features/unified-data/table-page/heldArchive";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { sayError } from "@/features/unified-data/base/sayError";
 
 /** A table refreshed this recently is not refreshed again just for being opened. */
 const OPEN_REFRESH_AFTER_MS = 60_000;
 
-interface SyncSource {
+interface SyncSource extends HeldArchive {
   provider?: string;
   synced_at?: string | null;
   label?: string | null;
@@ -66,6 +68,9 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
   const [busy, setBusy] = useState(false);
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const [auto, setAuto] = useState<SyncAutoRefresh | null>(null);
+  // the hold as the last refresh answered it (the table's sync_source says the same after its next read)
+  const [hold, setHold] = useState<HeldArchive | null>(null);
+  const [was, setWas] = useState<number | null>(null);
   const opened = useRef(false);
   const isOutside = source?.provider === OUTSIDE_DATABASE_PROVIDER;
   const lastSynced = syncedAt ?? source?.synced_at ?? null;
@@ -80,6 +85,8 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
       try {
         const answer = await refreshAnySyncedTable(orgId, tableId);
         setSyncedAt(answer.synced_at);
+        setHold((prev) => ({ archive_held: answer.rows_held ?? 0, archive_confirm: answer.archive_confirm ?? null,
+                             archive_kept: prev?.archive_kept ?? source?.archive_kept ?? null }));
         tableShapeChanged(tableId);
         if (!quiet && answer.warnings?.length) toast.warning(answer.warnings.join(" "));
       } catch (err) {
@@ -116,14 +123,40 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
     if (Date.now() - last > OPEN_REFRESH_AFTER_MS) void Promise.resolve().then(() => refresh(true));
   }, [isOutside, orgId, source?.synced_at, refresh]);
 
+  const held = openHold(hold ?? source);
+  const answer = async (kind: "keep" | "archive", token: string) => {
+    if (!orgId) return;
+    try {
+      await answerHold(orgId, tableId, kind, token);
+      if (kind === "keep") {
+        setHold((prev) => ({ ...(prev ?? source ?? {}), archive_kept: token }));
+        return;
+      }
+      await refresh(false);
+      // the refresh spent the yes; a different hold now means the rows changed under the click
+      setHold((prev) => {
+        setWas(prev?.archive_held && prev.archive_confirm !== token ? Number(token.split(":")[0]) : null);
+        return prev;
+      });
+    } catch (err) {
+      toast.error(sayError(err, kind === "keep" ? "Keep was not saved." : "The archive did not run."));
+    }
+  };
+
   if (!source?.provider) return null;
   const from = source.label ? `${syncedFromLabel(source.provider)} · ${source.label}` : syncedFromLabel(source.provider);
   return (
     <div className="flex shrink-0 items-center gap-1" data-synced-table-bar={source.provider}>
       <SyncedBadge provider={source.provider} />
-      <span className="hidden max-w-[16rem] truncate text-xs text-muted-foreground md:inline" data-synced-table-when="">
-        {busy ? "Syncing" : `Synced ${agoText(lastSynced)}`}
-      </span>
+      {held ? (
+        <HeldArchiveLine source={syncedFromLabel(source.provider).replace(/^an? /, (m) => m.toUpperCase()).replace(/^outside/, "Outside").replace(/^another/, "Another")}
+          held={held.held} was={was} busy={busy}
+          onArchive={() => void answer("archive", held.confirm)} onKeep={() => void answer("keep", held.confirm)} />
+      ) : (
+        <span className="hidden max-w-[16rem] truncate text-xs text-muted-foreground md:inline" data-synced-table-when="">
+          {busy ? "Syncing" : `Synced ${agoText(lastSynced)}`}
+        </span>
+      )}
       {/* A sheet shared by link, a CSV, an outside database or another table: edits happen at the source. */}
       {!sourceTakesEdits(source) ? (
         <span className="hidden text-xs text-muted-foreground lg:inline" data-synced-table-readonly="">

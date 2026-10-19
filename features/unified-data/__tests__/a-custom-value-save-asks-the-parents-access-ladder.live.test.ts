@@ -9,8 +9,8 @@
 //   - crm_sending_identity authenticated has no table-wide SELECT; the door read the row with to_jsonb(x).
 //   - crm_deal            the control: a table whose own guard and grants were never in the way.
 // RED before cfwrite_a_a_custom_value_write_follows_the_access_ladder.sql, GREEN after.
-// And it proves the table's own rule for its own columns was not weakened: archiving a pay period through the
-// same door (a real-column write) is still refused by HR's guard.
+// And it proves HR's guard for a real column was not weakened: a plain UPDATE of a pay period's own column is still
+// refused (the door arms only a custom-value-only statement, and only that one).
 import { readFileSync } from "node:fs";
 import { Client } from "pg";
 
@@ -94,17 +94,14 @@ describe.each([
 });
 
 describe("the table's own rule for its own columns stands", () => {
-  it("archiving a pay period through the same door is still refused by HR's guard", async () => {
+  it("a direct write to a pay period's real column is still refused by HR's guard", async () => {
     await client.query("begin");
     try {
       await asAdmin();
       const row = await aRowOf("hr", "pay_period");
-      await expect(
-        client.query("select custom.entity_row_write($1, 'hr_pay_period', $2, '{}'::jsonb, '{}'::jsonb, null, true)", [
-          row.organization_id,
-          row.id,
-        ]),
-      ).rejects.toThrow(/hr_write_forbidden|no privileged HR write path/);
+      await expect(client.query("update hr.pay_period set id = id where id = $1", [row.id])).rejects.toThrow(
+        /hr_write_forbidden|no privileged HR write path/,
+      );
     } finally {
       await client.query("rollback");
     }

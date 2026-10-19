@@ -106,6 +106,9 @@ export function publicCardsToStudyCards(
       shown_to: null,
       version: 1,
       visibility: "public",
+      // A public deck is never a test session's row; the stamp is not public.
+      test_run_id: null,
+      test_expires_at: null,
       details,
     };
   });
