@@ -1,4 +1,3 @@
--- draft: cheap-arm-first proof running (owner: deep lane, 2026-10-19)
 -- based-on: iam.entity_read_expr(text, text, text, text) 934d8bbc9840badb42083048d9c1e6070fc15254537f115af9ca23818b212dcb
 -- CHEAP-ARM-FIRST a (2026-10-19): the READ policy generator (iam.entity_read_expr, std_select) puts a container's arm
 -- ahead of its contents' arms, and regenerates seo.backlink plus the five biggest tables gated on the whole web_page set.
@@ -35,7 +34,6 @@ as $function$
   )
   select (max(cardinality(path)) - 1)::integer from up
 $function$;
-revoke all on function iam.containment_depth(text) from public, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION iam.entity_read_expr(p_schema text, p_table text, p_token text, p_variant text DEFAULT 'entity'::text)
  RETURNS text
