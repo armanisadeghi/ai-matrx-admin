@@ -34,7 +34,10 @@ function tileSource(tile: PackBoardTile, tables: Record<string, ResolvedTable>):
       const made = tile.table ? tables[tile.table] : undefined;
       // A token with no made table is the checker's finding; at use time it is a bug, said by name.
       if (!made) throw new Error(`The template's "${tile.table ?? "?"}" table was not made, so the "${tile.title}" tile has nothing to show.`);
-      return { kind: "entity", entity: TABLE_ENTITY, id: made.tableId, ...(tile.layout === "section" ? { meta: { layout: TABLE_LAYOUT_SECTION } } : {}) };
+      // The pack TOKEN rides on the tile from the start (`meta.token`): the server's board reader and the
+      // board's design tokens know which table is Colors before anyone has opened the board.
+      const meta = { ...(tile.table ? { token: tile.table } : {}), ...(tile.layout === "section" ? { layout: TABLE_LAYOUT_SECTION } : {}) };
+      return { kind: "entity", entity: TABLE_ENTITY, id: made.tableId, ...(Object.keys(meta).length ? { meta } : {}) };
     }
     case "note":
       // The note is named from its first line (starter-notes.ts files it in the board's organization).
