@@ -7,13 +7,22 @@
 // install door itself (TemplatePreview, bare): the organization it saves to, the live progress and
 // the landing. The server renders the guest link, so a crawler and a first paint both have an action.
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import { useSignedIn } from "@/lib/scoped-config/useSignedIn";
 
 import { INSTALL_ON_RETURN } from "./publicGallery";
-import { TemplatePreview } from "./TemplateGallery";
+
+// THE INSTALL DOOR LOADS ONLY FOR A SIGNED-IN PERSON (GALLERY-PERF-2, 2026-10-19). `TemplateGallery` is the whole
+// install door (organization picker, live progress, landing): a static import put it in every public template
+// page's first load (~3.7 MB of source on top of the site shell) for guests, who only ever get the link below.
+// ONE edge, rendered only on the signed-in branch (code-splitting skill, Method A); the guest link stays server HTML.
+const TemplatePreview = dynamic(() => import("./TemplateGallery").then((m) => m.TemplatePreview), {
+  ssr: false,
+  loading: () => <span className="block h-10" aria-busy="true" />,
+});
 
 export function TemplateUseAction({ templateId, signUpHref }: { templateId: string; signUpHref: string }) {
   const signedIn = useSignedIn();
