@@ -243,7 +243,7 @@ export function useActionRunner(
             setSubmitError(
                 error instanceof MediaApiError
                     ? error.message
-                    : "The server would not start this, and nothing was spent.",
+                    : "The server would not start this.",
             );
         }
     }, [close, dispatch, estimate, libraryId, onJobStarted, params, pending]);

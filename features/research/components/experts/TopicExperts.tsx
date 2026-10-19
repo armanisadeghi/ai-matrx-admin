@@ -346,9 +346,9 @@ export default function TopicExperts() {
           <div>
             {!extraction && !scanning && (
               <p className="px-2 py-6 text-center type-secondary text-muted-foreground">
-                Scanning reads the analyses this topic already paid for — the
+                Scanning reads the analyses this topic already ran — the
                 quotes, findings and credited authors on every page it read. It
-                costs nothing and writes nothing.
+                only reads and writes nothing.
               </p>
             )}
             {scanning && (

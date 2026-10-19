@@ -287,7 +287,7 @@ export function ActionRunDialog(props: ActionRunDialogProps) {
                             <dl className="divide-y divide-border text-sm">
                                 <Row
                                     icon={<Captions className="size-4" aria-hidden />}
-                                    label={`Free, from ${vocabulary.freeCaptionsSource ?? "its own captions"}`}
+                                    label={`From ${vocabulary.freeCaptionsSource ?? "its own captions"}`}
                                     value={`${formatCount(estimate.free_count)} ${estimate.free_count === 1 ? vocabulary.item.one : vocabulary.item.many.toLowerCase()}`}
                                 />
                                 {/* When paid work is switched off for this run,
@@ -336,7 +336,7 @@ export function ActionRunDialog(props: ActionRunDialogProps) {
                                     value={
                                         paid
                                             ? `${costText(estimate.cost.paid_cost_estimate)} (between ${costText(estimate.cost.paid_cost_low)} and ${costText(estimate.cost.paid_cost_high)})`
-                                            : "Free"
+                                            : "From captions only"
                                     }
                                     hint={speakMediaNouns(estimate.cost.basis, vocabulary)}
                                     strong

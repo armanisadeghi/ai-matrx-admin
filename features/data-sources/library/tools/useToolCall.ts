@@ -73,7 +73,7 @@ export function useToolCall(toolId: string, onCallId?: (callId: string) => void)
       setView(done);
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setClientError(lostTouch(cause) ? SAVED : extractErrorMessage(cause, "The Tool could not be reached. Nothing was charged."));
+      setClientError(lostTouch(cause) ? SAVED : extractErrorMessage(cause, "The Tool could not be reached. Try again."));
     }
   };
 

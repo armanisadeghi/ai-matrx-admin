@@ -559,7 +559,7 @@ export function AuditionDialog({
                     history.find((h) => h.id === reopened.runId)?.startedAt ??
                       new Date(),
                   )}
-                  . Nothing was re-run and nothing was charged.
+                  . Nothing was re-run.
                 </p>
               ) : null}
               <div className="flex flex-wrap items-center gap-2">

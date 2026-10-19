@@ -193,7 +193,6 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
     : serverTotal != null
       ? formatPoints(serverTotal)
       : null;
-  const estimateText = !made && priceSource ? price(priceSource, rowCount * (isItems ? recordsPerRow : 1) * Math.max(1, kept.length)) : null;
   const sourceGroups = useMemo(() => {
     if (!allSources && activeTask) {
       return [
@@ -334,11 +333,6 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                 <ProInput value={rows} onChange={(e) => setRows(e.target.value)} inputMode="numeric" />
               </label>
             )}
-            {estimateText && (
-              <p className="text-sm" data-live-column-estimate="">
-                {rowCount} {rowCount === 1 ? "row" : "rows"}: <strong>{estimateText}</strong>
-              </p>
-            )}
             <Button variant="primary" disabled={busy || !source || !inputField || kept.length === 0} onClick={() => void create()} data-live-column-add="">
               {allKeptExist ? (kept.length > 1 ? "Refill those columns" : "Refill that column") : kept.length > 1 ? `Add ${kept.length} columns` : "Add column"}
             </Button>
@@ -349,7 +343,6 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
               {made.map((m) => (
                 <li key={m.fieldId}>
                   {m.label}
-                  {m.quote ? ` - ${formatPoints(m.quote.pointsTotal)}` : ""}
                 </li>
               ))}
             </ul>
@@ -374,13 +367,13 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
             </p>
             {quote && quote.rowsKept > 0 && (
               <p className="text-sm" data-live-column-kept="">
-                {quote.rowsKept} {quote.rowsKept === 1 ? "row holds" : "rows hold"} records already paid for: filling them costs nothing.
+                {quote.rowsKept} {quote.rowsKept === 1 ? "row holds" : "rows hold"} records already fetched.
               </p>
             )}
             {made[0]?.says && !quote && <p className="text-sm">{made[0].says}</p>}
             <Button variant="primary" disabled={busy || made.length === 0 || costText == null} onClick={() => void fill()} data-live-column-run="">
               {quote && quote.rowsKept > 0 && total === 0
-                ? "Retry without paying again"
+                ? "Fill again"
                 : `Fill ${quote?.rows ?? rowCount} ${(quote?.rows ?? rowCount) === 1 ? "row" : "rows"}`}
             </Button>
           </div>

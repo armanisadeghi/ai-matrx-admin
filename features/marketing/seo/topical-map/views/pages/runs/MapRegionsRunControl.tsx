@@ -200,7 +200,7 @@ export function MapRegionsRunControl({
             <SwitchField
               id="map-regions-retire"
               label="Retire this map's geography branches"
-              note="Moves every page they carry onto the service topics it already covers, then retires the branch. Turning this on first rehearses it — for free — and shows you exactly what would move."
+              note="Moves every page they carry onto the service topics it already covers, then retires the branch. Turning this on first rehearses it and shows you exactly what would move."
               checked={retire}
               onChange={onRetireChange}
               tone="destructive"
@@ -294,7 +294,7 @@ function RetirementPlan({
   if (probeState !== "answered") {
     return (
       <p className="text-muted-foreground">
-        Rehearsing the retirement — it costs nothing and answers with exactly
+        Rehearsing the retirement — nothing changes, and it answers with exactly
         what would move.
       </p>
     );

@@ -121,8 +121,8 @@ describe("ToolResult", () => {
   it("nothing sent yet is a quiet placeholder; a call that never reached the server says so", () => {
     show(null);
     expect(host.querySelector("[data-tool-result='idle']")).toBeTruthy();
-    show(null, "The Tool could not be reached. Nothing was charged.");
-    expect(host.textContent).toContain("Nothing was charged.");
+    show(null, "The Tool could not be reached. Try again.");
+    expect(host.textContent).toContain("Try again.");
   });
 });
 

@@ -137,10 +137,7 @@ function DataStep({ organizationId, sources, onLoaded }: { organizationId: strin
   const [error, setError] = useState<string | null>(null);
   const [tableId, setTableId] = useState("");
   const tables = useFetchedTables();
-  const price = usePriceText();
-  const priceSource = source ? { pointsPerRecord: source.points_per_record ?? null, usd_per_record: source.usd_per_record } : null;
   const urls = inputs.map((u) => u.trim()).filter(Boolean);
-  const estimate = priceSource ? price(priceSource, urls.length * perInput) : null;
 
   const fetchNow = async () => {
     if (!organizationId || !source || urls.length === 0) return;
@@ -189,7 +186,7 @@ function DataStep({ organizationId, sources, onLoaded }: { organizationId: strin
             <span className="text-xs text-muted-foreground">Per input</span>
             {/* ui-exception: a record count is a raw number */}
             <Field type="number" min={1} max={20} value={perInput} onChange={(e) => setPerInput(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} aria-label="Records per input" className="w-20" />
-            <Button variant="primary" disabled={!!busy || urls.length === 0 || !organizationId} onClick={() => void fetchNow()} meta={estimate ?? undefined}>
+            <Button variant="primary" disabled={!!busy || urls.length === 0 || !organizationId} onClick={() => void fetchNow()}>
               {busy ?? `Fetch ${urls.length * perInput}`}
             </Button>
           </div>

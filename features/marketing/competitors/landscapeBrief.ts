@@ -135,7 +135,7 @@ async function runSeoDiscoveryStream<T>({
   // person reading it can act on — never the developer sentence.
   if (!finalResult)
     throw new Error(
-      "The search ran but its results never came back. Nothing was charged twice — try it again in a moment.",
+      "The search ran but its results never came back. Try it again in a moment.",
     );
   return finalResult;
 }

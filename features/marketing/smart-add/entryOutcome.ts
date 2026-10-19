@@ -235,7 +235,7 @@ export function entryCopy(o: EntryOutcome): EntryCopy {
     case "unsupported":
       return { title: "Can't look that up", line: `We can't read ${unreadableKind(o)} yet.`, retry: false };
     case "usage_limit":
-      return { title: "Out of points", line: "Nothing was charged.", retry: false };
+      return { title: "Out of points", line: "That lookup did not run.", retry: false };
     case "provider_failed":
       return { title: "The lookup failed", line: "Our lookup service had a problem.", retry: true };
     case "no_such_site":
