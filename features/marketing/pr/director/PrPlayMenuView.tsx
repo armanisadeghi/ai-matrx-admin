@@ -50,7 +50,7 @@ type PegState = "idle" | "running" | { result: PegAnglesResult } | { error: stri
 
 /**
  * The Director's checked peg, with the one control that hands it to the Angle writer in peg mode
- * (`news.angles`, mode "peg"). Answers outside the Director panel have no brand, so no button.
+ * Answers outside the Director panel have no brand, so no button.
  */
 export function PrPegRow({ peg }: { peg: PrPegView }) {
   const dispatch = useAppDispatch();
