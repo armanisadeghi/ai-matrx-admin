@@ -288,6 +288,10 @@ and the agents under test are the same model, so they share its blind spots
 - **Delegating the net:** a manager who hands any step to a worker names this skill and the step in
   the brief. A worker brief that says only "run X, all must pass" has dropped the sealed checks and
   the fresh runner (2026-10-15, npm campaign).
+- **A grader brief carries no rulings.** The coordinator hands a grader only the sealed playbook file, the run
+  (its captures and ids) and the database. A ruling that changes how a row is read is first written into the sealed
+  playbook with a ledger row (§4b), then graded; a grade taken under a ruling found only in a brief does not count
+  (2026-10-19: PB-06 L2 passed under a brief's allow-list with a fourth tool present).
 
 **The fix loop is cheap or it does not happen.** After the first run that reaches the end, the runner's own
 transcript is the script: a browser-only Haiku `quick` agent replays the same sheet for every fix and every fault
@@ -347,11 +351,12 @@ show the environment did it.
 - **Prefer breaking disposable data over breaking code** (`admin@admin.com`'s own records on live, never anyone else's). Detach the resource, remove the tool from
   the agent's definition, flip the binding, point the mandate at the old version (a user-rung binding
   for admin only). Reversible, no edit on the shared checkout. Restore it and read it back before the next run.
-- **Code faults only through `plant.py`**, with the runner dispatch as the planted command. It holds
-  the repository lock, restores in `finally`, and screams with exit 5 if a peer commit captured the
-  mutation. The preview hot-reloads, so the fault is live the moment it lands and gone the moment it
-  is restored. Keep the window short and never across a turn boundary: `sync-main` commits every
-  uncommitted file and a fault left on disk is in a release within thirty minutes.
+- **A code fault is planted on main or as data, never on a local preview.** A real test runs on the live product,
+  and a local hot-reload never reaches it. Prefer a data fault on the same channel. When only code can break the
+  channel, commit the fault to main (best: a server switch whose plant and restore are one small commit each),
+  run blind only after `GET /health/version` shows a live build carrying the fault commit, then commit the restore
+  and prove a live build carries it before any other run counts. Record both commits and both builds in the
+  ledger row.
 - **Blind.** The runner is not told. The grade must be **FAIL**, and the marker that failed must be
   the channel the fault hit. A PASS, or a FAIL for a different reason, means the playbook cannot see
   that channel: rewrite it before anything else counts.

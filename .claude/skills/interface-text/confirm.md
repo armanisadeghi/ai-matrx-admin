@@ -36,13 +36,15 @@ Do not run `pnpm type-check` per batch — the round owner runs one after all ba
 ## 3. See it rendered
 
 Pick the highest-traffic page the batch touched (and every page where a primitive changed). Open
-it on the shared preview (`pnpm preview:status`; your session hostname, signed in as the test
-admin via `pnpm dev-login /<route>`), at desktop and at 390px wide. Check: the row/grid heights
+it on the live site (https://www.aimatrx.com, signed in as admin@admin.com) once a release carries
+the batch's commit (`GET https://server.app.matrxserver.com/health/version` for the server; the
+page itself for the frontend), at desktop and at 390px wide. The local preview is only for a
+fix-and-look loop while you change the text; it never signs off a batch. Check: the row/grid heights
 are even, no text wraps into a second line in a secondary slot, tooltips show the definition.
-Take one screenshot per page. If the preview cannot be reached, say so — do not claim a render.
+Take one screenshot per page. If the release has not landed yet, say so — do not claim a render.
 The shared browser pane is often driven by other sessions at the same time (round 1: tabs jumped
-routes mid-check). Use your own tab, or an isolated headless Playwright script against the same
-preview URL, and take the screenshot only after the page shows the committed text. A dialog or
+routes mid-check). Use your own headless browser (`matrx-frontend/scripts/real-tests/pw.mjs <run>
+signin`), and take the screenshot only after the page shows the committed text. A dialog or
 error state that cannot be opened without acting on real records is reported as "checked in code
 only", never as rendered.
 

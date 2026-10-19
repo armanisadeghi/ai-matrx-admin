@@ -81,7 +81,7 @@ VARIABLE_DEFINITIONS = [{
 # family. The dry run's platform_parts[] and tools[] are then what THAT door's real run is graded against.
 PREVIEW_DOOR = {"chat": "chat", "agent-run": "agent_run", "agent-api": "api", "builder-run": "builder",
                 "mandate-client": "api", "together": "chat",
-                "workflow": "api", "mandate-try": "agent_call", "agent-call": "agent_call"}
+                "workflow": "workflow", "mandate-try": "agent_call", "agent-call": "agent_call"}
 # Doors with no endpoint of their own that dry-runs: the live dry run's `door.covers` list says which preview door
 # covers them (api: "workflow agent step"; agent_call: "agent_call child ... /mandates/{key}/try"). Their dry run is the
 # canary's own agent call (bare API body) previewed as that door, so it is graded as the canary the door ends at.
