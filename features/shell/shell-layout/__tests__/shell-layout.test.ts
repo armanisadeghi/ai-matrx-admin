@@ -172,6 +172,18 @@ describe("resolver", () => {
     expect(expandNavChildren(group?.children).every((c) => c.group === undefined)).toBe(true);
   });
 
+  it("an empty group the person made still shows, with its label and an Add pages row (never vanishes)", () => {
+    const sidebar: ShellNode[] = [
+      { kind: "nav", id: "chat", ref: "chat" },
+      { kind: "group", id: "qa", label: "QA Group", icon: "Folder", children: [] },
+    ];
+    const out = asPerson(body({ sidebar }));
+    expect(out.problems).toEqual([]);
+    const group = (out.sidebar as ShellNavItem[])[1];
+    expect(group).toMatchObject({ id: "qa", label: "QA Group", iconName: "Folder", section: "primary" });
+    expect(group?.children).toEqual([expect.objectContaining({ label: "Add pages…", action: "edit-sidebar" })]);
+  });
+
   it("person wins whole over organization; organization applies when the person has none", () => {
     const org = body({ sidebar: [{ kind: "nav", id: "o", ref: "chat" }] });
     const person = body({ dock: [{ kind: "nav", id: "d", ref: "files" }] });

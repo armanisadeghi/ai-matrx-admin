@@ -47,6 +47,13 @@ export interface ShellLayoutState {
    * the live preview. This tab only: never persisted, never broadcast. null = no editor open.
    */
   previewBody: string | null;
+  /**
+   * When this tab (or a peer, by broadcast) last wrote a layout (`Date.now()`). A store answer REQUESTED
+   * before it predates that write and is ignored — otherwise a read in flight during a Save lands after
+   * it and repaints the editor and shell with the layout from before the save (2026-10-19 walk: the
+   * editor flashed the default 354-page menu after Save until a reload). Never persisted.
+   */
+  localWriteAt: number;
 }
 
 export const initialShellLayoutState: ShellLayoutState = {
@@ -59,6 +66,7 @@ export const initialShellLayoutState: ShellLayoutState = {
   reserved: false,
   personAllowed: true,
   previewBody: null,
+  localWriteAt: 0,
 };
 
 /** True when anything is stored for this viewer (drives the `matrx_shell` cookie and the Standard view switch). */
@@ -79,27 +87,48 @@ const shellLayoutSlice = createSlice({
   initialState: initialShellLayoutState,
   reducers: {
     /** A save (here or in another tab): the stored row after the write. */
-    shellLayoutStored(state, action: PayloadAction<{ target: ShellLayoutTarget; stored: StoredShellLayout }>) {
-      const { stored, target } = action.payload;
-      if (target === "person") {
-        if (newer(state.person, stored)) state.person = stored;
-      } else if (newer(state.organizations[stored.organizationId], stored)) {
-        state.organizations[stored.organizationId] = stored;
-      }
-      state.status = "ready";
-      state.reserved = false;
+    shellLayoutStored: {
+      reducer(state, action: PayloadAction<{ target: ShellLayoutTarget; stored: StoredShellLayout; at: number }>) {
+        const { stored, target, at } = action.payload;
+        if (target === "person") {
+          if (newer(state.person, stored)) state.person = stored;
+        } else if (newer(state.organizations[stored.organizationId], stored)) {
+          state.organizations[stored.organizationId] = stored;
+        }
+        state.status = "ready";
+        state.reserved = false;
+        state.localWriteAt = Math.max(state.localWriteAt, at);
+      },
+      prepare: (payload: { target: ShellLayoutTarget; stored: StoredShellLayout; at?: number }) => ({
+        payload: { ...payload, at: payload.at ?? Date.now() },
+      }),
     },
     /** A layout was archived (cleared): the default (or the organization's) applies again. */
-    shellLayoutCleared(state, action: PayloadAction<{ target: ShellLayoutTarget; organizationId: string }>) {
-      if (action.payload.target === "person") state.person = null;
-      else delete state.organizations[action.payload.organizationId];
+    shellLayoutCleared: {
+      reducer(state, action: PayloadAction<{ target: ShellLayoutTarget; organizationId: string; at: number }>) {
+        if (action.payload.target === "person") state.person = null;
+        else delete state.organizations[action.payload.organizationId];
+        state.localWriteAt = Math.max(state.localWriteAt, action.payload.at);
+      },
+      prepare: (payload: { target: ShellLayoutTarget; organizationId: string; at?: number }) => ({
+        payload: { ...payload, at: payload.at ?? Date.now() },
+      }),
     },
-    /** The store's answer (a version restore, a fetch outside the sync engine): replaces what is held. */
-    shellLayoutLoaded(state, action: PayloadAction<ShellBootSeed | null>) {
-      state.person = action.payload?.person ?? null;
-      state.organizations = action.payload?.organizations ?? {};
-      state.status = "ready";
-      state.reserved = false;
+    /**
+     * The store's answer (a revalidation, a late streamed seed): replaces what is held — unless it was
+     * requested before this tab's last write (`requestedAt` < `localWriteAt`), when it is older than what
+     * is held and is dropped. `requestedAt` absent = an answer with no request time (the boot seed).
+     */
+    shellLayoutLoaded: {
+      reducer(state, action: PayloadAction<{ seed: ShellBootSeed | null; requestedAt: number | null }>) {
+        const { seed, requestedAt } = action.payload;
+        if (requestedAt !== null && requestedAt < state.localWriteAt) return;
+        state.person = seed?.person ?? null;
+        state.organizations = seed?.organizations ?? {};
+        state.status = "ready";
+        state.reserved = false;
+      },
+      prepare: (seed: ShellBootSeed | null, requestedAt?: number) => ({ payload: { seed, requestedAt: requestedAt ?? null } }),
     },
     shellLayoutOrganizationChanged(state, action: PayloadAction<string | null>) {
       state.organizationId = action.payload;
@@ -119,8 +148,10 @@ const shellLayoutSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE_ACTION_TYPE, (state, action: RehydrateAction) => {
       if (action.payload.sliceName !== "shellLayout" || !state.enabled) return;
-      const body = action.payload.state as Partial<ShellLayoutState> & { fromServer?: boolean };
+      const body = action.payload.state as Partial<ShellLayoutState> & { fromServer?: boolean; requestedAt?: number };
       if (body.fromServer) {
+        // Asked before this tab's last write: the answer predates it (see `localWriteAt`).
+        if (typeof body.requestedAt === "number" && body.requestedAt < state.localWriteAt) return;
         state.person = body.person ?? null;
         state.organizations = body.organizations ?? {};
         state.status = "ready";
@@ -171,6 +202,7 @@ export function seedShellLayoutState(input: {
     reserved: input.reserved,
     personAllowed: input.personAllowed !== false,
     previewBody: null,
+    localWriteAt: 0,
   };
 }
 
@@ -217,15 +249,17 @@ export const shellLayoutPolicy = definePolicy<ShellLayoutState>({
       person: seed?.person ?? null,
       organizations: seed?.organizations ?? {},
       ...(r.fromServer === true ? ({ fromServer: true } as Partial<ShellLayoutState>) : {}),
+      ...(typeof r.requestedAt === "number" ? ({ requestedAt: r.requestedAt } as Partial<ShellLayoutState>) : {}),
     };
   },
   remote: {
     // The version in hand is compared by the reducer; a fetch is one small RPC and only on boot / focus.
     fetch: async ({ signal, identity }) => {
       if (identity.type !== "auth") return null; // guests have no layouts and never call the store
+      const requestedAt = Date.now();
       const seed = await fetchShellLayoutSeed(signal);
       if (seed === "failed") return null;
-      return { fromServer: true, person: seed?.person ?? null, organizations: seed?.organizations ?? {} } as Partial<ShellLayoutState>;
+      return { fromServer: true, requestedAt, person: seed?.person ?? null, organizations: seed?.organizations ?? {} } as Partial<ShellLayoutState>;
     },
     cachePaintsOnly: true,
     revalidateOnFocus: true,

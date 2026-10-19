@@ -42,6 +42,19 @@ describe("launchpad doc", () => {
     noOverlap(placed);
   });
 
+  it("a person's add lands in the first free spot from the row they are looking at, never below everything", () => {
+    // A small widget in the top-right hole lands there; from a lower row it lands at that row's first hole.
+    let doc = addWidget(EMPTY_LAUNCHPAD_DOC, { type: "tasks", id: "a", w: 6 });
+    doc = addWidget(doc, { type: "agenda", id: "b", w: 12 });
+    doc = addWidget(doc, { type: "recent", id: "c", w: 12 });
+    const top = addWidget(doc, { type: "favorites", id: "f", w: 6 }, undefined, 0);
+    expect(top.widgets.find((w) => w.id === "f")!.layout.lg).toMatchObject({ x: 6, y: 0 });
+    noOverlap(top);
+    const lastY = Math.max(...doc.widgets.map((w) => w.layout.lg.y));
+    const end = addWidget(doc, { type: "favorites", id: "f", w: 6 });
+    expect(end.widgets.find((w) => w.id === "f")!.layout.lg.y).toBeGreaterThan(lastY);
+  });
+
   it("moves in reading order, resizes within limits, configures, removes, applies grid placements", () => {
     let doc = addWidget(addWidget(addWidget(EMPTY_LAUNCHPAD_DOC, { type: "tasks", id: "a", w: 12 }), { type: "agenda", id: "b", w: 12 }), { type: "recent", id: "c", w: 12 });
     doc = moveWidget(doc, "c", 0);

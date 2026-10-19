@@ -114,6 +114,12 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-19` — Lane F (custom-experience): local first — `paintCache.ts` keeps this device's last-drawn
+  launchpad (`matrx:client:launchpad.last-drawn:<user>:<key>`, kind cache) and `LaunchpadPage` paints it while
+  the cloud read runs (read in an effect, after hydration); no copy → a neutral `RegionSkeleton`, never the
+  template. A hand-added widget lands at the first free spot from the widget last touched (else the top) and
+  scrolls into view (`addWidget(…, fromRow)`). The find is one request across organizations
+  (`@ai-matrx/records` `tableFindMany`).
 - `2026-10-19` — Lane D (custom-experience): launchpads — the `launchpad` typed table, `/launchpad/<key>`, the
   GridCanvas editor, one widget registry (Start's widgets adapted + Applet, launchpad link, app page), role
   templates, History with Set active, agent tools repointed; the Start page moved in and `features/start`

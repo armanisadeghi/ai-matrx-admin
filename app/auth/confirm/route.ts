@@ -14,7 +14,7 @@ import {
   withAuthDestination,
   withAuthFlowParams,
 } from "@/utils/auth/auth-destination";
-import { shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
+import { markShellLayoutDeviceAtSignIn, shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 import { clearPendingSignupEmail } from "@/utils/auth/pending-signup";
 
 function isEmailOtpType(value: string | null): value is EmailOtpType {
@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
       await clearPendingSignupEmail();
       // redirect user to specified redirect URL with success message
       // The platform default counts as no destination: a saved landing applies (utils/auth/FEATURE.md).
+      if (type !== "recovery") await markShellLayoutDeviceAtSignIn(supabase);
       const landed =
         type === "recovery"
           ? redirectTo

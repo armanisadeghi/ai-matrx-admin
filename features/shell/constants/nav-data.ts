@@ -81,7 +81,8 @@ export type ShellNavActionId =
   | "create-pick-list"
   | "create-crm-person"
   | "create-crm-company"
-  | "manage-favorites";
+  | "manage-favorites"
+  | "edit-sidebar";
 
 export const DEFAULT_ADMIN_SURFACES: AdminNavSurface[] = [
   "sidebar",

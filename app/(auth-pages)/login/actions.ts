@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
+import { markShellLayoutDeviceAtSignIn, shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import {
@@ -117,7 +117,10 @@ export async function login(redirectToArg: string, formData: FormData) {
   // other auth surface, so no hand-rolled blocklist is needed here.
   // No destination of her own: the landing her saved layout chose (custom-experience), same validation.
   // "/dashboard" is the platform default, never her choice — it counts as none (signInDestination).
-  const finalRedirect = await signInDestination({ redirectTo }, () => shellLandingAfterSignIn(supabase));
+  const [finalRedirect] = await Promise.all([
+    signInDestination({ redirectTo }, () => shellLandingAfterSignIn(supabase)),
+    markShellLayoutDeviceAtSignIn(supabase),
+  ]);
 
   // Success lands via a FULL-DOCUMENT navigation (see HardRedirectForm):
   // a soft redirect() here runs in a possibly-stale tab's old runtime and

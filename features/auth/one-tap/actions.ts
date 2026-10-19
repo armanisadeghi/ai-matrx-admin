@@ -17,7 +17,7 @@ import { ACQUISITION_VISITOR_COOKIE } from "@/lib/product-analytics/user-acquisi
 import { linkAcquisitionToUser } from "@/lib/product-analytics/server/acquisition-persistence";
 import { clearPendingSignupEmail } from "@/utils/auth/pending-signup";
 import { signInDestination } from "@/utils/auth/auth-destination";
-import { shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
+import { markShellLayoutDeviceAtSignIn, shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 
 /** `destination`: where to open next (null = reload the page in place). */
 export type OneTapSignInResult = { ok: true; destination: string | null } | { ok: false; error: string };
@@ -72,6 +72,7 @@ export async function signInWithGoogleOneTap(input: {
       });
     }
   }
+  await markShellLayoutDeviceAtSignIn(supabase);
   const destination = input.landing
     ? await signInDestination({ redirectTo: input.landing.redirectTo ?? undefined }, () => shellLandingAfterSignIn(supabase))
     : null;

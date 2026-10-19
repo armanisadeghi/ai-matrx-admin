@@ -138,6 +138,9 @@ export function addWidget(
   doc: LaunchpadDoc,
   widget: { type: string; config?: Record<string, unknown>; id?: string; w?: number; h?: number },
   index?: number,
+  /** A person adding by hand: search for the first free spot from this row (the top, or the widget they last
+   *  touched) instead of after the last widget — so the new widget lands where they are looking. */
+  fromRow?: number,
 ): LaunchpadDoc {
   const id = widget.id && !doc.widgets.some((w) => w.id === widget.id) ? widget.id : newWidgetId(doc.widgets);
   const size = defaultSize(widget.type);
@@ -151,7 +154,7 @@ export function addWidget(
     // At the end: the first free spot at or after the last widget's row (two halves share a row, the way
     // iOS packs widgets); nothing else moves.
     const order = readingOrder(doc);
-    const cursorY = order.length ? order[order.length - 1]!.layout.lg.y : 0;
+    const cursorY = fromRow !== undefined ? Math.max(0, fromRow) : order.length ? order[order.length - 1]!.layout.lg.y : 0;
     const box = clampBox({ ...boxOf(next) }, COLS);
     const taken = doc.widgets.map(boxOf);
     let spot: GridBox | null = null;
