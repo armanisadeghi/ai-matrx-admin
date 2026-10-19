@@ -247,7 +247,7 @@ export function DealRecordPage({ dealId }: Props) {
             >
               {/* Facts rail */}
               <div className="space-y-3">
-                <SectionCard dense bodyClassName="p-2" title="Deal" Icon={Handshake}>
+                <SectionCard dense bodyClassName="p-2" title="Deal" icon={Handshake}>
                   <dl className="space-y-1.5 text-sm">
                     <div className="flex items-center justify-between gap-2">
                       <dt className="text-xs text-muted-foreground">Value</dt>
@@ -446,7 +446,7 @@ export function DealRecordPage({ dealId }: Props) {
                     dealLabel={deal.name}
                   />
                 ) : (
-                  <SectionCard dense bodyClassName="p-2" title="Activity" Icon={History}>
+                  <SectionCard dense bodyClassName="p-2" title="Activity" icon={History}>
                     {/* read-gate-exempt: guidance for a deal with no party (a field of the loaded deal); AccessGate and the refresh notice above own the read's failure */}
                     <SectionEmpty>
                       Attach a person or company to log activity — an

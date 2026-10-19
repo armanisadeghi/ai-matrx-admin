@@ -96,26 +96,22 @@ function Row({
             onChange={(e) => setDraft(e.target.value)}
           />
           <Button
-            size="icon"
             variant="outline"
+            icon={<Save />}
             aria-label={`Save ${row.displayName}`}
             disabled={busy || !dirty || draft === "" || !parsed.ok}
             onClick={() =>
               parsed.ok &&
               run(() => saveOrgSystemValue(client, { organizationId, itemId: row.itemId, value: parsed.value }))
             }
-          >
-            <Save className="h-4 w-4" />
-          </Button>
+          />
           <Button
-            size="icon"
             variant="outline"
+            icon={<RotateCcw />}
             aria-label={`Reset ${row.displayName}`}
             disabled={busy || !own}
             onClick={() => run(() => clearOrgSystemValue(client, { organizationId, itemId: row.itemId }))}
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+          />
         </div>
       ) : (
         <div className="truncate text-sm" title={show(row.orgValue)}>
@@ -145,7 +141,7 @@ export function OrgSystemValuesSection({ organizationId, canEdit, client }: OrgS
     return (
       <div role="alert" className="flex items-center gap-3 text-sm text-destructive">
         <span>{error}</span>
-        <Button size="sm" variant="outline" onClick={() => setTick((t) => t + 1)}>
+        <Button variant="outline" onClick={() => setTick((t) => t + 1)}>
           Retry
         </Button>
       </div>

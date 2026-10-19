@@ -394,7 +394,7 @@ function ThemeSection({ site, onSaved }: SectionProps) {
   };
 
   return (
-    <SectionCard
+    <SettingsSection
       sectionId="theme-tokens"
       title="Theme Tokens"
       aiRole="theme_designer"
@@ -484,7 +484,7 @@ function ThemeSection({ site, onSaved }: SectionProps) {
           Add token
         </Button>
       </div>
-    </SectionCard>
+    </SettingsSection>
   );
 }
 
@@ -523,7 +523,7 @@ function NavigationSection({ site, onSaved }: SectionProps) {
   };
 
   return (
-    <SectionCard
+    <SettingsSection
       sectionId="navigation"
       title="Navigation"
       aiRole="site_editor"
@@ -539,7 +539,7 @@ function NavigationSection({ site, onSaved }: SectionProps) {
           Menu is currently auto-derived from show-in-nav pages.
         </p>
       )}
-    </SectionCard>
+    </SettingsSection>
   );
 }
 
@@ -711,7 +711,7 @@ function FooterSection({ site, onSaved }: SectionProps) {
   };
 
   return (
-    <SectionCard
+    <SettingsSection
       sectionId="footer"
       title="Footer"
       aiRole="site_editor"
@@ -825,7 +825,7 @@ function FooterSection({ site, onSaved }: SectionProps) {
           />
         </div>
       </div>
-    </SectionCard>
+    </SettingsSection>
   );
 }
 
@@ -884,7 +884,7 @@ function ContactSection({ site, onSaved }: SectionProps) {
   };
 
   return (
-    <SectionCard
+    <SettingsSection
       sectionId="contact-info"
       title="Contact Info"
       aiRole="site_editor"
@@ -956,7 +956,7 @@ function ContactSection({ site, onSaved }: SectionProps) {
           </div>
         </div>
       </div>
-    </SectionCard>
+    </SettingsSection>
   );
 }
 
@@ -1014,7 +1014,7 @@ function SocialSection({ site, onSaved }: SectionProps) {
   };
 
   return (
-    <SectionCard
+    <SettingsSection
       sectionId="social-links"
       title="Social Links"
       aiRole="site_editor"
@@ -1068,7 +1068,7 @@ function SocialSection({ site, onSaved }: SectionProps) {
           Add social link
         </Button>
       </div>
-    </SectionCard>
+    </SettingsSection>
   );
 }
 

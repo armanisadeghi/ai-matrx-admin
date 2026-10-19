@@ -189,7 +189,6 @@ function LaneBox({
           onRunAgain={() => void run()}
           onCancel={call.stop}
           onReopen={call.reopen}
-          showRaw={false}
         />
       ) : null}
       {approval ? (

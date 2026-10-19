@@ -5,7 +5,8 @@ import { execFileSync } from "node:child_process";
 import { store } from "./store.mjs";
 import { start, ORIGIN } from "./lib.mjs";
 process.env.WALK_ORG_ID ??= "9c54ebd0-49c0-4ff0-8a51-1cd2c6b8562d";
-const raw = execFileSync("node", ["scripts/airtable-walk/at-walk-g-seed.mjs"], { cwd: new URL("../..", import.meta.url).pathname, encoding: "utf8", env: process.env });
+let raw = "";
+for (let i = 0; i < 4 && !raw; i++) { try { raw = execFileSync("node", ["scripts/airtable-walk/at-walk-g-seed.mjs"], { cwd: new URL("../..", import.meta.url).pathname, encoding: "utf8", env: process.env, stdio: ["ignore", "pipe", "ignore"] }); } catch { console.log("seed retry", i + 1); await new Promise((r) => setTimeout(r, 15000)); } }
 const seed = JSON.parse(raw.trim().split("\n").pop());
 console.log("seed", JSON.stringify({ table: seed.table, iface: seed.iface }));
 const { client } = await store();

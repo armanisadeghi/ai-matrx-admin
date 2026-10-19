@@ -56,7 +56,7 @@ export function PartyOutputsSection({
   if (state.status === "ready" && state.records.length === 0) return null;
 
   return (
-    <SectionCard dense bodyClassName="p-2" title="Outputs about this customer" Icon={AGENT_ICON}>
+    <SectionCard dense bodyClassName="p-2" title="Outputs about this customer" icon={AGENT_ICON}>
       <div className="p-2.5">
         <AnchorRecordsList
           state={state}

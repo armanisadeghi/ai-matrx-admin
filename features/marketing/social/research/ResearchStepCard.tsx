@@ -80,7 +80,6 @@ export function ResearchStepCard({
       <ToolResult
         view={call.view}
         clientError={call.clientError}
-        showRaw={false}
         onRunAgain={() => submission && void call.run({}, submission.inputs)}
         onCancel={call.stop}
       />

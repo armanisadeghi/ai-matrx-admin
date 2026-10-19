@@ -13,9 +13,14 @@ import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
 import { Button, Select } from "@ai-matrx/design-system/controls";
 import { useRecordsClient } from "@ai-matrx/records/react";
-import type { Field, PortalCard } from "@ai-matrx/records";
+import type { Field, PortalCard, RecordsError } from "@ai-matrx/records";
 
 import { PORTAL_BLOCK_KINDS, type PortalBlock, type PortalBlockKind, type PortalMeasureOp } from "./blocks";
+
+/** The store's refusal in its own words, with its remedy when it wrote one. */
+function refusalText(error: RecordsError): string {
+  return error.hint ? `${error.message} ${error.hint}` : error.message;
+}
 
 const KIND_LABEL: Record<PortalBlockKind, string> = {
   kpi: "Number tile",
@@ -48,7 +53,7 @@ export function PortalBlocksEditor({ portalId, onSaved }: { portalId: string; on
     void (async () => {
       const answered = await client.portalCard({ portal_id: portalId as never });
       if (!alive) return;
-      if (!answered.ok) return setSaid({ ok: false, text: answered.error });
+      if (!answered.ok) return setSaid({ ok: false, text: refusalText(answered.error) });
       setCard(answered.data);
       setBlocks(((answered.data.config as { blocks?: PortalBlock[] }).blocks ?? []).map((b) => ({ ...b })));
       for (const t of answered.data.tables) {
@@ -93,7 +98,7 @@ export function PortalBlocksEditor({ portalId, onSaved }: { portalId: string; on
       config: { blocks } as NonNullable<Parameters<typeof client.portalDeclare>[0]["config"]>,
     });
     setSaving(false);
-    if (!answered.ok) return setSaid({ ok: false, text: answered.error });
+    if (!answered.ok) return setSaid({ ok: false, text: refusalText(answered.error) });
     setSaid({ ok: true, text: "Saved" });
     onSaved?.();
   }
@@ -139,9 +144,9 @@ export function PortalBlocksEditor({ portalId, onSaved }: { portalId: string; on
                 value={b.title ?? ""}
                 onChange={(e) => patch(i, { title: e.target.value })}
               />
-              <Button variant="ghost" size="icon" aria-label="Move up" onClick={() => move(i, -1)}><ArrowUp className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" aria-label="Move down" onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" aria-label="Remove block" onClick={() => setBlocks((prev) => prev.filter((_, n) => n !== i))}><Trash2 className="h-4 w-4" /></Button>
+              <Button variant="quiet" icon={<ArrowUp />} aria-label="Move up" onClick={() => move(i, -1)} />
+              <Button variant="quiet" icon={<ArrowDown />} aria-label="Move down" onClick={() => move(i, 1)} />
+              <Button variant="quiet" icon={<Trash2 />} aria-label="Remove block" onClick={() => setBlocks((prev) => prev.filter((_, n) => n !== i))} />
             </div>
             {chart ? (
               <Select

@@ -118,7 +118,7 @@ export function ExpertStatusCard({ party, onChanged }: Props) {
   };
 
   return (
-    <SectionCard dense bodyClassName="p-2" title="Expert" Icon={GraduationCap}>
+    <SectionCard dense bodyClassName="p-2" title="Expert" icon={GraduationCap}>
       <div className="space-y-2.5">
         <div className="flex flex-wrap items-center gap-2">
           {status ? (
