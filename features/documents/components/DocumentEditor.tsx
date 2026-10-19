@@ -1148,10 +1148,16 @@ async function startDocumentRoom(
   try {
     const { documentUsesOrderedRoom, documentOtFactory } = await import("@ai-matrx/office/univer/collab");
     const knob = await readCollabOtRooms();
-    ordered = await documentUsesOrderedRoom(documentId, knob, async () => {
-      const res = await getLatestDocumentSnapshot(documentId);
-      return res.success && res.data === null;
-    });
+    const who = (await getClaimsUser(supabase)).data?.user?.id;
+    ordered = await documentUsesOrderedRoom(
+      documentId,
+      knob,
+      async () => {
+        const res = await getLatestDocumentSnapshot(documentId);
+        return res.success && res.data === null;
+      },
+      who ? `${documentId}:${who}` : undefined,
+    );
     if (!ordered) {
       await model.startCollab(collabFactoryFor(documentId));
       return;
