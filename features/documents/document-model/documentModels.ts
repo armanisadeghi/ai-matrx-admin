@@ -92,9 +92,17 @@ const DOCUMENT_KEEP_ALIVE_MS = 5 * 60_000;
 /** Each open document's hold on the one content-replacement door, released on close. */
 const replaceDoors = new Map<DocumentModel, () => void>();
 
+/**
+ * The longest a run of edits waits before the save runs anyway. In a live room the saver seat's debounce is reset by
+ * every peer's keystroke, so without a cap a checkpoint (what thumbnails, previews and cards read) waited for the
+ * first pause in everyone's typing: measured 55-76 s and unbounded (fold2, 2026-10-19).
+ */
+export const DOCUMENT_SAVE_MAX_WAIT_MS = 20_000;
+
 export const documentWorkingCopy = defineWorkingCopyKind<DocumentModel>({
   entity: "udt_document",
   delay: () => DOCUMENT_SAVE_DELAY_MS,
+  maxWait: DOCUMENT_SAVE_MAX_WAIT_MS,
   keepAliveMs: DOCUMENT_KEEP_ALIVE_MS,
   createEngine: (handle) => {
     const model = new DocumentModel(handle, deps);
