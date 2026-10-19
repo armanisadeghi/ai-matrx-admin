@@ -1,5 +1,7 @@
 "use client";
 
+// row-token: none — rows are canary scorecards and run results of the monitor itself, keyed by feature_key and run id; they are not records of any registry table.
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";

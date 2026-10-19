@@ -9,6 +9,7 @@
 import { useCallback, useMemo } from "react";
 
 import type { Composition, PatchOp } from "@ai-matrx/media/video";
+import { useMediaClient } from "@ai-matrx/media/core";
 import { TimelineEditor } from "@ai-matrx/media/video/react";
 import { EmptyState } from "@ai-matrx/design-system/controls";
 import { Film } from "lucide-react";
@@ -17,6 +18,7 @@ import { useFileUrls } from "../../video/studio-hooks";
 import { mediaFileIds } from "./StudioParts";
 
 export function TimelinePanel({ doc, disabled, onOps }: { doc: Composition; disabled: boolean; onOps: (ops: PatchOp[], note: string) => Promise<boolean> }) {
+  const mediaClient = useMediaClient();
   const byMedia = mediaFileIds(doc);
   const { facts, pending, failed } = useFileUrls(Object.values(byMedia));
   const key = Object.entries(byMedia)
@@ -32,16 +34,19 @@ export function TimelinePanel({ doc, disabled, onOps }: { doc: Composition; disa
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  // The package never fetches: the host reads an audio item's bytes through the same loadable URL the preview uses.
-  const readAudio = useCallback(async (mediaId: string): Promise<ArrayBuffer | null> => {
-    const url = mediaUrls[mediaId];
-    if (!url) return null;
-    const res = await fetch(url);
-    return res.ok ? res.arrayBuffer() : null;
-  }, [mediaUrls]);
+  const readMediaBytes = useCallback(async (mediaId: string): Promise<ArrayBuffer | null> => {
+    const source = doc.media[mediaId]?.source;
+    if (source?.type !== "file" || !source.fileId) return null;
+    const handle = await mediaClient.getBlob({ file_id: source.fileId });
+    try {
+      return await handle.blob.arrayBuffer();
+    } finally {
+      handle.release();
+    }
+  }, [doc, mediaClient]);
   if (pending) return <div className="h-[32rem] animate-pulse rounded-lg bg-muted" aria-label="Loading timeline" />;
   if (failed.length > 0) {
     return <EmptyState icon={<Film />} title="Files unavailable" line={`${failed.length} files didn't load`} />;
   }
-  return <TimelineEditor doc={doc} mediaUrls={mediaUrls} onPatch={onOps} readAudio={readAudio} disabled={disabled} />;
+  return <TimelineEditor doc={doc} mediaUrls={mediaUrls} onPatch={onOps} readMediaBytes={readMediaBytes} readAudio={readMediaBytes} disabled={disabled} />;
 }

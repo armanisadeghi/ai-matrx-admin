@@ -62,6 +62,7 @@ it("the package's refusal notice and line read a raw timeout as the shared sente
     createElement("div", null, createElement(RefusalNotice, { error: raw, onRetry: () => undefined }), createElement(RefusalLine, { error: raw, onRetry: () => undefined })),
   );
   expect(html).toContain(TIMED_OUT_SENTENCE);
-  expect(html).not.toContain("canceling statement");
+  // Engineer text rides the data-for-engineers attribute only (records-ui 0.116.47); what a person reads is the text.
+  expect(html.replace(/ data-for-engineers="[^"]*"/g, "")).not.toContain("canceling statement");
   expect((html.match(/Try again/g) ?? []).length).toBeGreaterThanOrEqual(2);
 });
