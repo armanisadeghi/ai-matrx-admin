@@ -6,7 +6,7 @@
  * run at a time, and can be stopped.
  */
 import { useState } from "react";
-import { MessagesSquare, Play, ScanSearch, Square } from "lucide-react";
+import { ChevronDown, MessagesSquare, Play, ScanSearch, Square } from "lucide-react";
 
 import { RecordId } from "@ai-matrx/design-system";
 import {
@@ -21,6 +21,9 @@ import { STATUS_LABEL, STATUS_TONE } from "./StepTimeline";
 import type { CandidateConversation, MemoryTrialStep } from "../types";
 
 export type ConversationFilter = "chat" | "all";
+
+/** Rows drawn per page of the list; a person can hold thousands of chats. */
+const PAGE_ROWS = 100;
 
 /** The last review step of each conversation. */
 export function reviewState(steps: MemoryTrialStep[]): Map<string, MemoryTrialStep> {
@@ -54,6 +57,7 @@ export function ConversationsColumn({
 }) {
   const [filter, setFilter] = useState<ConversationFilter>("chat");
   const [count, setCount] = useState(5);
+  const [visible, setVisible] = useState(PAGE_ROWS);
   const reviewed = reviewState(steps);
   const all = conversations ?? [];
   const shown = filter === "chat" ? all.filter((c) => c.isChat) : all;
@@ -65,7 +69,10 @@ export function ConversationsColumn({
     <div className="flex h-full min-h-0 flex-col gap-2">
       <SegmentedControl
         value={filter}
-        onValueChange={setFilter}
+        onValueChange={(f) => {
+          setFilter(f);
+          setVisible(PAGE_ROWS);
+        }}
         aria-label="Which conversations"
         fill
         data={[
@@ -91,13 +98,13 @@ export function ConversationsColumn({
           </Button>
         )}
       </div>
-      {archived ? <span className="type-caption text-muted-foreground">{blocked}</span> : null}
+      {archived ? <span className="type-secondary text-muted-foreground">{blocked}</span> : null}
       {conversations === null ? <RegionSkeleton shape="rows" count={6} twoLine aria-label="Reading conversations" /> : null}
       {conversations !== null && shown.length === 0 ? (
         <EmptyState icon={<MessagesSquare />} title="No conversations" line="This person has no chats of this kind." />
       ) : null}
       <ul className="flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto rounded-md border border-border bg-card">
-        {shown.map((c) => {
+        {shown.slice(0, visible).map((c) => {
           const step = reviewed.get(c.id);
           const running = runningId === c.id;
           return (
@@ -114,8 +121,9 @@ export function ConversationsColumn({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className="type-caption min-w-0 flex-1 truncate text-muted-foreground">
-                  {new Date(c.createdAt).toLocaleDateString()} · {c.messageCount} msgs ·{" "}
+                <span className="type-secondary min-w-0 flex-1 truncate text-muted-foreground">
+                  {/* No message count: chat.conversation.message_count is stale on some rows (it reads 0 on chats that have messages). */}
+                  {new Date(c.createdAt).toLocaleDateString()} ·{" "}
                   {c.agentId ? (c.agentName ?? "Agent") : "No agent"}
                   {c.agentId && !c.isChat ? " · not a chat agent" : ""}
                 </span>
@@ -139,6 +147,13 @@ export function ConversationsColumn({
             </li>
           );
         })}
+        {shown.length > visible ? (
+          <li className="flex justify-center px-2 py-1.5">
+            <Button variant="quiet" icon={<ChevronDown />} onClick={() => setVisible((v) => v + PAGE_ROWS)}>
+              Show {Math.min(PAGE_ROWS, shown.length - visible)} more of {shown.length - visible}
+            </Button>
+          </li>
+        ) : null}
       </ul>
     </div>
   );

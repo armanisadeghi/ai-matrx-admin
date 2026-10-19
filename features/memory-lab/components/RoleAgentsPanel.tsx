@@ -87,11 +87,11 @@ function RoleRow({
             )}
           </>
         ) : (
-          <span className="type-caption text-muted-foreground">No agent yet: captures the provision only</span>
+          <span className="type-secondary text-muted-foreground">No agent yet: captures the provision only</span>
         )}
       </div>
       {agent && agent.variables.length === 0 ? (
-        <span className="type-caption text-muted-foreground">This agent declares no variables.</span>
+        <span className="type-secondary text-muted-foreground">This agent declares no variables.</span>
       ) : null}
       {agent && agent.variables.length > 0 ? (
         <div className="grid grid-cols-1 gap-x-3 gap-y-1 pl-20 sm:grid-cols-2">
@@ -129,7 +129,7 @@ export function RoleAgentsPanel(props: {
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-3">
       {props.locked ? (
-        <span className="type-caption text-muted-foreground">Archived: restore the trial to change agents</span>
+        <span className="type-secondary text-muted-foreground">Archived: restore the trial to change agents</span>
       ) : null}
       {MEMORY_ROLES.map((role) => {
         const id = props.trial.agents[role];

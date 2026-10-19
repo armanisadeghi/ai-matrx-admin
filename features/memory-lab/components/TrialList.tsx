@@ -144,7 +144,7 @@ export function TrialList() {
                 <Link href={trialHref(t.id)} className="type-body truncate text-foreground hover:underline">
                   {t.title}
                 </Link>
-                <span className="type-caption truncate text-muted-foreground">
+                <span className="type-secondary truncate text-muted-foreground">
                   {t.subjectLabel || "Person"} · {Object.keys(t.files).length} files ·{" "}
                   {new Date(t.createdAt).toLocaleDateString()}
                 </span>

@@ -163,7 +163,7 @@ export default function MediaGallery() {
         className="sticky top-0 z-20 space-y-1.5 border-b border-border/60 bg-background/90 px-3 py-2 backdrop-blur-xl sm:px-4"
       >
         <div className="flex items-center gap-2">
-          <h2 className="type-section hidden shrink-0 whitespace-nowrap sm:block">
+          <h2 className="type-title hidden shrink-0 whitespace-nowrap sm:block">
             Media{" "}
             <span className="type-meta tabular-nums text-muted-foreground">
               <UntrustedCount

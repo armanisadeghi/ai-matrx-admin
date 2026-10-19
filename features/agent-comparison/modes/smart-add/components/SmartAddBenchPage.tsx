@@ -432,7 +432,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
                         { value: "score", label: "Scoreboard", count: marked },
                       ]}
                     />
-                    <span className="type-caption text-muted-foreground">Answers stay hidden until the scoreboard.</span>
+                    <span className="type-secondary text-muted-foreground">Answers stay hidden until the scoreboard.</span>
                   </div>
                   {view === "truth" ? (
                     <div className="rounded-lg border border-border bg-card min-h-[420px] flex flex-col">
@@ -468,7 +468,7 @@ function BrandCard({
   return (
     <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <h2 className="type-section flex-1">{person ? "1 · Person" : "1 · Brand"}</h2>
+        <h2 className="type-title flex-1">{person ? "1 · Person" : "1 · Brand"}</h2>
         {!locked ? (
           <SegmentedControl<Subject>
             aria-label="Who the bench is about"
@@ -556,7 +556,7 @@ function SearchCard({
   return (
     <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <h2 className="type-section flex-1">2 · Searches</h2>
+        <h2 className="type-title flex-1">2 · Searches</h2>
         <Button variant="quiet" onClick={onPlan} disabled={!canSearch}>
           Suggest searches
         </Button>
@@ -613,11 +613,11 @@ function ResultsCard({
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
-        <h2 className="type-section">3 · Results</h2>
+        <h2 className="type-title">3 · Results</h2>
         {searching && net ? (
           <>
             <Progress value={net.total ? (100 * net.done) / net.total : 0} className="flex-1 max-w-md" />
-            <span className="type-caption text-muted-foreground tabular-nums">
+            <span className="type-secondary text-muted-foreground tabular-nums">
               {net.done} of {net.total} searches · {bench.results.length} results
             </span>
           </>
@@ -666,7 +666,7 @@ function JudgeCard({
   const shown = judged ? SYSTEMS.filter((s) => bench.systems.includes(s)) : SYSTEMS;
   return (
     <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
-      <h2 className="type-section">4 · Judge</h2>
+      <h2 className="type-title">4 · Judge</h2>
       <div className="flex flex-col gap-3">
         {shown.map((s) => {
           const missing = s === "reference" ? !bench.agents.referenceModel : !bench.agents[s];
@@ -689,12 +689,12 @@ function JudgeCard({
                     tone={r.failed ? "warning" : r.done === r.calls && r.calls ? "success" : "default"}
                     className="flex-1 min-w-32"
                   />
-                  <span className="type-caption text-muted-foreground tabular-nums w-40 text-right">
+                  <span className="type-secondary text-muted-foreground tabular-nums w-40 text-right">
                     {r.done} of {r.calls} calls{r.failed ? ` · ${r.failed} failed` : ""}
                   </span>
                 </>
               ) : (
-                <span className="type-caption text-muted-foreground">{SYSTEM_HINT[s]}</span>
+                <span className="type-secondary text-muted-foreground">{SYSTEM_HINT[s]}</span>
               )}
               {s === "reference" && !judged ? (
                 <ModelListDropdown
@@ -732,15 +732,15 @@ function JudgeCard({
                 <Link
                   href={`/agents/${bench.agents[s]}`}
                   target="_blank"
-                  className="type-caption inline-flex items-center gap-1 underline"
+                  className="type-secondary inline-flex items-center gap-1 underline"
                 >
                   Open agent <SquareArrowOutUpRight className="w-3.5 h-3.5" aria-hidden />
                 </Link>
               ) : s !== "reference" && !bench.agents[s] ? (
                 !judgesLooked ? (
-                  <span className="type-caption text-muted-foreground">Finding…</span>
+                  <span className="type-secondary text-muted-foreground">Finding…</span>
                 ) : (
-                  <span className="type-caption text-destructive">No agent found</span>
+                  <span className="type-secondary text-destructive">No agent found</span>
                 )
               ) : null}
             </div>

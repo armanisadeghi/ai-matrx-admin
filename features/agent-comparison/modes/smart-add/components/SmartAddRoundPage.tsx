@@ -402,7 +402,7 @@ export function SmartAddRoundPage({
             <>
               {modeSwitch}
               <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
-                <h2 className="type-section">A brand you know</h2>
+                <h2 className="type-title">A brand you know</h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="flex flex-col gap-1">
                     <span className="type-label">Website</span>
@@ -471,7 +471,7 @@ export function SmartAddRoundPage({
                 </div>
               </section>
               <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2">
-                <h2 className="type-section">Jev replays</h2>
+                <h2 className="type-title">Jev replays</h2>
                 {JUDGMENTS.map((j) => (
                   <div key={j} className="flex flex-wrap items-center gap-3">
                     <span className="type-body font-medium w-48">
@@ -481,14 +481,14 @@ export function SmartAddRoundPage({
                       <Link
                         href={`/agents/${bench.agents[j]}`}
                         target="_blank"
-                        className="type-caption inline-flex items-center gap-1 underline"
+                        className="type-secondary inline-flex items-center gap-1 underline"
                       >
                         Open agent <SquareArrowOutUpRight className="w-3.5 h-3.5" aria-hidden />
                       </Link>
                     ) : !judgesLooked && !setId ? (
-                      <span className="type-caption text-muted-foreground">Finding…</span>
+                      <span className="type-secondary text-muted-foreground">Finding…</span>
                     ) : (
-                      <span className="type-caption text-destructive">
+                      <span className="type-secondary text-destructive">
                         No agent found
                       </span>
                     )}
@@ -532,7 +532,7 @@ export function SmartAddRoundPage({
                     { value: "score", label: "Scoreboard", count: marked },
                   ]}
                 />
-                <span className="type-caption text-muted-foreground">
+                <span className="type-secondary text-muted-foreground">
                   Answers stay hidden until the scoreboard.
                 </span>
               </div>
@@ -575,13 +575,13 @@ function RoundProgress({
   return (
     <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="type-section flex-1">The round is running</h2>
+        <h2 className="type-title flex-1">The round is running</h2>
         <Badge tone="info">{status ?? "starting"}</Badge>
         {runId ? (
           <Link
             href={runHref(runId)}
             target="_blank"
-            className="type-caption inline-flex items-center gap-1 underline"
+            className="type-secondary inline-flex items-center gap-1 underline"
           >
             Open run <SquareArrowOutUpRight className="w-3.5 h-3.5" aria-hidden />
           </Link>
@@ -589,7 +589,7 @@ function RoundProgress({
       </div>
       <div className="flex flex-wrap gap-2">
         {steps.length === 0 ? (
-          <span className="type-caption text-muted-foreground">
+          <span className="type-secondary text-muted-foreground">
             No judgment step has started yet.
           </span>
         ) : (
@@ -649,7 +649,7 @@ function RoundStrip({
           <Link
             href={runHref(bench.runId)}
             target="_blank"
-            className="type-caption inline-flex items-center gap-1 underline"
+            className="type-secondary inline-flex items-center gap-1 underline"
           >
             Open round <SquareArrowOutUpRight className="w-3.5 h-3.5" aria-hidden />
           </Link>
@@ -679,7 +679,7 @@ function TruthList({
         if (!items.length) return null;
         return (
           <section key={j} className="flex flex-col gap-2">
-            <h2 className="type-section">{JUDGMENT_LABEL[j]}</h2>
+            <h2 className="type-title">{JUDGMENT_LABEL[j]}</h2>
             <ol className="rounded-lg border border-border bg-card divide-y divide-border">
               {items.map((item) => {
                 const t = bench.truth[item.id] ?? null;
@@ -705,12 +705,12 @@ function TruthList({
                         </div>
                       )}
                       {item.url ? (
-                        <div className="type-caption text-muted-foreground break-all">
+                        <div className="type-secondary text-muted-foreground break-all">
                           {item.url}
                         </div>
                       ) : null}
                       {item.detail ? (
-                        <div className="type-caption text-muted-foreground whitespace-pre-wrap line-clamp-6">
+                        <div className="type-secondary text-muted-foreground whitespace-pre-wrap line-clamp-6">
                           {item.detail}
                         </div>
                       ) : null}
@@ -794,7 +794,7 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
         if (!scores[0].sc.marked) return null;
         return (
           <section key={j} className="flex flex-col gap-2">
-            <h2 className="type-section">{JUDGMENT_LABEL[j]}</h2>
+            <h2 className="type-title">{JUDGMENT_LABEL[j]}</h2>
             <div className="rounded-lg border border-border bg-card overflow-x-auto">
               <table className="w-full type-body tabular-nums whitespace-nowrap">
                 <thead>
@@ -856,7 +856,7 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
           aria-label="Only items a system got wrong"
         />
         <span className="type-body">Only items a system got wrong</span>
-        <span className="type-caption text-muted-foreground ml-auto">
+        <span className="type-secondary text-muted-foreground ml-auto">
           {shown.length} shown
         </span>
       </div>
@@ -900,7 +900,7 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
                     )?.label ?? t.value}
                   </div>
                   {t.relation ? (
-                    <div className="type-caption text-muted-foreground">
+                    <div className="type-secondary text-muted-foreground">
                       {t.relation.replace(/_/g, " ")}
                     </div>
                   ) : null}
@@ -924,7 +924,7 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
                       >
                         {answerLabel(item.judgment, a)}
                       </div>
-                      <div className="type-caption text-muted-foreground break-words">
+                      <div className="type-secondary text-muted-foreground break-words">
                         {[
                           a?.detail,
                           a?.probability != null
