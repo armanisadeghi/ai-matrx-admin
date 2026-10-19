@@ -1,5 +1,10 @@
 # CHANGELOG — Board (`features/board`)
 
+## 2026-10-19 — Scroll ownership latch; generous heights
+
+- **A scroll starts and ends with what it started on:** wheel gesture latch (`WheelLatch` in `engine/wheel-input.ts`, 200 ms) replaces "wheel over a tile never moves the board". Board-started gestures pan over scrollable tiles; element-started gestures scroll the element and stop at its end; tiles with nothing to scroll belong to the board. Touch follows the same rule.
+- **Taller tiles:** per-type `defaultSize` heights raised (Note 620->1000, Document 760->1000, Chat 760->1000, Write-up 720->1000, Research 820->1000, Table 620->860, Record 640->900, File 600->860, Meeting notes 390->800, Swipe collection 280->560, Ad 420->640, Image 400->640, Task/War Room/Project/Meeting ~650->900, others 560-760 -> 760-960; fallback 360->640), plus one auto-height ceiling `AUTO_HEIGHT_CEILING_PX` = 2000.
+
 ## 2026-10-09 — File tile: one header, one row
 
 - **The File tile names its file once and keeps the picture big:** the tile header shows the file's name with its right-click menu and lineage (`TitleField: FileTileTitle` in `items/work-items.tsx`); the body is `SingleFileWorkspace layout="tile"` — ONE row (the seven tabs as a menu, the kind's actions, View controls in a popover, Copy link / Download / More) instead of a second name row, a tab strip, an action bar and a 176px side rail. Details: `features/files/FEATURE.md` change log.

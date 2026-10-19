@@ -39,6 +39,7 @@ import {
   meetingPartSource,
   type MeetingPart,
 } from "./meeting-items.logic";
+import { MeetingNotesStructure } from "./structures";
 
 function MeetingPartItemBody({ source }: ItemBodyProps) {
   const target = meetingPartOf(source);
@@ -187,8 +188,9 @@ export const MEETING_ITEMS: BoardItemType[] = [
     group: "features",
     section: "meetings",
     accent: "cyan",
+    structure: MeetingNotesStructure,
     status: { none: "Its meeting's tile carries the meeting's state." },
-    defaultSize: { w: 520, h: 390 },
+    defaultSize: { w: 520, h: 800 },
     matches: matchesMeetingPart,
     Body: MeetingPartItemBody,
     Keep: MeetingPartKeep,

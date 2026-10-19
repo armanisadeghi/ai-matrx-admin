@@ -49,6 +49,12 @@ export interface ItemBodyProps {
   onSource: (next: NodeSource, title?: string) => void;
 }
 
+/** What a type's L1 skeleton receives (`BoardItemType.structure`): only what the tile already holds. */
+export interface ItemStructureProps {
+  source: NodeSource;
+  title: string;
+}
+
 /** What a type's `TitleField` receives: the tile header's title slot. */
 export interface TitleFieldProps {
   tileId: string;
@@ -241,6 +247,17 @@ export interface BoardItemType {
    * sizes; it never fetches on its own account.
    */
   Face?: ComponentType<{ source: NodeSource; title: string }>;
+  /**
+   * L1 of the zoom ladder (`engine/lod.ts` `DetailLevel` "structure"): this type's component with its
+   * text replaced by calm placeholder bars — chrome, inputs, avatars, grid lines, icons and colors kept.
+   * Drawn from `components/lod/StructureKit.tsx` pieces in `--lod-u` units, from PROPS ONLY: no store,
+   * no data, no effects, never the feature body. The tile's header is drawn around it.
+   * A type without one names why in `structureGeneric` (it then gets the generic heading + paragraphs);
+   * `__tests__/tile-levels.test.tsx` fails for a type with neither.
+   */
+  structure?: ComponentType<ItemStructureProps>;
+  /** Why this type uses the generic L1 skeleton instead of its own `structure`. */
+  structureGeneric?: string;
   /** The feature's agent surface for the tile's record (see `ItemSurface`). */
   surface: ItemSurface;
   /**
@@ -265,6 +282,12 @@ export interface BoardItemType {
    * pick are the same source. Omit for a type whose record cannot be named by one id.
    */
   record?: RecordDoor;
+  /**
+   * A NEW tile for a named agent (agent form, chat with an agent), so an agent can start one without
+   * the person's picker. `board_add_items` resolves `agent` (an id or a name) through the agent
+   * catalog first and calls this with the one match. Omit for a type that has no agent to choose.
+   */
+  startWithAgent?: (agent: { id: string; name: string | null }) => PlacedItem;
   /** Where the tile's "Open" goes (no dead ends). Null when it has no page. */
   href?: (source: NodeSource) => string | null;
   /** A word for agents' `board_read` ("chat", "note", "file"…). Defaults to `key`. */

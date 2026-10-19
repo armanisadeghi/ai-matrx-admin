@@ -108,6 +108,7 @@ import {
 } from "./feature-items.logic";
 import { useMeetingStatus, useTaskStatus, useWorkflowRunStatus } from "./item-status";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { MeetingStructure, ProjectStructure, ResearchStructure, TaskStructure, WarRoomStructure, WorkflowRunStructure } from "./structures";
 
 // ─── Shared pieces ───────────────────────────────────────────────────────────
 
@@ -1013,8 +1014,9 @@ export const FEATURE_ITEMS: BoardItemType[] = [
     group: "work",
     section: "work",
     accent: "orange",
+    structure: TaskStructure,
     status: { useStatus: useTaskStatus },
-    defaultSize: { w: 520, h: 640 },
+    defaultSize: { w: 520, h: 900 },
     matches: matchesEntity(FEATURE_ENTITY.task),
     Body: TaskBody,
     startNew: {
@@ -1037,8 +1039,9 @@ export const FEATURE_ITEMS: BoardItemType[] = [
     group: "features",
     section: "meetings",
     accent: "rose",
+    structure: WarRoomStructure,
     status: { none: "A room has no single state; each thread shows its own." },
-    defaultSize: { w: 560, h: 620 },
+    defaultSize: { w: 560, h: 900 },
     matches: matchesEntity(FEATURE_ENTITY.warRoom),
     Body: WarRoomBody,
     Keep: WarRoomKeep,
@@ -1063,8 +1066,9 @@ export const FEATURE_ITEMS: BoardItemType[] = [
     group: "features",
     section: "meetings",
     accent: "cyan",
+    structure: MeetingStructure,
     status: { useStatus: useMeetingStatus },
-    defaultSize: { w: 720, h: 680 },
+    defaultSize: { w: 720, h: 900 },
     matches: matchesEntity(FEATURE_ENTITY.meeting),
     Body: MeetingBody,
     Keep: MeetingKeep,
@@ -1096,8 +1100,9 @@ export const FEATURE_ITEMS: BoardItemType[] = [
     group: "features",
     section: "research",
     accent: "violet",
+    structure: WorkflowRunStructure,
     status: { useStatus: useWorkflowRunStatus },
-    defaultSize: { w: 960, h: 760 },
+    defaultSize: { w: 960, h: 960 },
     matches: matchesEntity(FEATURE_ENTITY.workflowRun),
     Body: WorkflowRunBody,
     Keep: WorkflowRunKeep,
@@ -1127,8 +1132,9 @@ export const FEATURE_ITEMS: BoardItemType[] = [
     group: "features",
     section: "research",
     accent: "violet",
+    structure: ResearchStructure,
     status: { none: "A topic has no single state; its runs show on its page." },
-    defaultSize: { w: 820, h: 820 },
+    defaultSize: { w: 820, h: 1000 },
     matches: matchesEntity(FEATURE_ENTITY.research),
     Body: ResearchBody,
     startNew: { label: "New research topic", create: () => newDraft(FEATURE_ENTITY.research, "New research topic") },
@@ -1148,8 +1154,9 @@ export const FEATURE_ITEMS: BoardItemType[] = [
     group: "features",
     section: "work",
     accent: "lime",
+    structure: ProjectStructure,
     status: { none: "A project has no single state; its tasks carry theirs." },
-    defaultSize: { w: 620, h: 680 },
+    defaultSize: { w: 620, h: 900 },
     matches: matchesEntity(FEATURE_ENTITY.project),
     Body: ProjectBody,
     startNew: { label: "New project", create: () => newDraft(FEATURE_ENTITY.project, "New project") },

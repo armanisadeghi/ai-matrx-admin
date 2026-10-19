@@ -52,6 +52,7 @@ import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
 import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
 import { TABLE_ENTITY, TABLE_LAYOUT_CARD, TABLE_LAYOUT_SECTION, entityTableOf, tableLookHint, type EntityTileFilter } from "./table-tile";
 import { useTileAutoHeight } from "../components/BoardTile";
+import { RecordStructure, TableStructure } from "./structures";
 
 
 function tableSource(id: string | null): NodeSource {
@@ -448,8 +449,9 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     group: "work",
     section: "data",
     accent: "emerald",
+    structure: TableStructure,
     status: { none: "Its load state lives in the grid's own mount, which an idle tile does not run." },
-    defaultSize: { w: 960, h: 620 },
+    defaultSize: { w: 960, h: 860 },
     matches: (s) => s.kind === "entity" && s.entity === TABLE_ENTITY,
     // The Get data tile is the source picker until its table exists: one click opens it.
     opensOnClick: (s) => s.kind === "entity" && !tableIdOf(s) && Boolean(readDataFetchMeta(s.meta)),
@@ -488,8 +490,9 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     group: "work",
     section: "data",
     accent: "emerald",
+    structure: RecordStructure,
     status: { none: "A record has no lifecycle of its own; its table holds it." },
-    defaultSize: { w: 560, h: 640 },
+    defaultSize: { w: 560, h: 900 },
     matches: (s) => s.kind === "record",
     Body: RecordBody,
     sleeps: true,

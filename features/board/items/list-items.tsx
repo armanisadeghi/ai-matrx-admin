@@ -36,6 +36,7 @@ import { RecordList } from "./feature-items";
 import { TableRecordBody } from "./data-items";
 
 import { Spinner } from "@/components/ui/loaders/Spinner";
+import { PickListStructure } from "./structures";
 export const LIST_ITEM_KEY = "list";
 const NEW_LIST_TITLE = "New pick list";
 
@@ -187,10 +188,11 @@ export const LIST_ITEMS: readonly BoardItemType[] = [
     group: "work",
     section: "data",
     accent: "teal",
+    structure: PickListStructure,
     status: { none: "A list of choices has no running state." },
     // Wide enough for the table's Name column (~170 px, equal-share columns) to read a normal name beside five other columns and
     // the pinned Actions column (at 760 it was ~96 px: "Cigna ...").
-    defaultSize: { w: 1240, h: 560 },
+    defaultSize: { w: 1240, h: 760 },
     matches: (s) => s.kind === "entity" && s.entity === LIST_ITEM_KEY,
     Body: ListBody,
     startNew: { label: NEW_LIST_TITLE, create: () => ({ title: NEW_LIST_TITLE, source: listSource(null) }) },

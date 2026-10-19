@@ -72,30 +72,74 @@ export class WheelInterpreter {
 /**
  * Who a wheel event belongs to.
  *
- *   camera — the board pans / zooms (empty space; or a pinch / ctrl-⌘-wheel
- *            anywhere on the board, tiles included — Figma: pinch always
- *            zooms the canvas).
- *   native — the content under the pointer scrolls itself.
- *   block  — over a tile whose content cannot scroll that way: nothing moves,
- *            and the scroll must not chain out to the page (preventDefault).
+ *   camera — the board pans / zooms (empty space; a gesture the board owns, even over a tile with
+ *            its own scroll; or a pinch / ctrl-⌘-wheel anywhere — Figma: pinch always zooms).
+ *   native — the element that owns the gesture scrolls itself.
+ *   block  — the element that owns the gesture is at its end: nothing moves, and the scroll must
+ *            not chain out to the board or the page (preventDefault).
  *   ignore — chrome and the focus layer own their input entirely.
  *
- * THE RULE: a plain wheel or trackpad scroll over a tile NEVER moves the
- * camera, whether the tile is idle, selected or being worked in.
+ * THE RULE (Arman, 2026-10-19): a scroll starts and ends with the thing it started with. The first
+ * wheel event of a gesture picks the owner (`WheelLatch`); it never switches because one of them
+ * ran out.
  */
 export type WheelRoute = "camera" | "native" | "block" | "ignore";
 
 export function routeWheel(at: {
-  overTile: boolean;
   overChrome: boolean;
   /** Pinch, or a wheel with ctrl / ⌘ held. */
   zoomGesture: boolean;
-  /** Some element between the pointer and the tile can scroll this way. */
-  innerCanScroll: boolean;
+  /** The latched owner of this gesture. */
+  owner: "board" | "element";
+  /** The element owner can still scroll the way this event goes. */
+  elementCanScroll: boolean;
 }): WheelRoute {
   if (at.overChrome) return "ignore";
-  if (!at.overTile || at.zoomGesture) return "camera";
-  return at.innerCanScroll ? "native" : "block";
+  if (at.zoomGesture || at.owner === "board") return "camera";
+  return at.elementCanScroll ? "native" : "block";
+}
+
+/** A wheel / trackpad gesture ends when no wheel event arrives for this long. Trackpad momentum
+ * events keep arriving (gaps of ~16 ms), so momentum stays with the gesture's owner. */
+export const WHEEL_GESTURE_LATCH_MS = 200;
+
+/** True when `el` is a scroll container with room to scroll `delta` along the axis. */
+export function canScrollAlong(el: HTMLElement, vertical: boolean, delta: number): boolean {
+  const style = getComputedStyle(el);
+  const overflow = vertical ? style.overflowY : style.overflowX;
+  if (overflow !== "auto" && overflow !== "scroll") return false;
+  if (vertical) return delta > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 0;
+  return delta > 0 ? el.scrollLeft + el.clientWidth < el.scrollWidth - 1 : el.scrollLeft > 0;
+}
+
+/** Innermost element from `target` up to (and including) `limit` that can scroll that way. */
+export function innermostScroller(
+  target: HTMLElement | null,
+  limit: HTMLElement,
+  vertical: boolean,
+  delta: number,
+): HTMLElement | null {
+  for (let el = target; el && el !== limit.parentElement; el = el.parentElement) {
+    if (canScrollAlong(el, vertical, delta)) return el;
+  }
+  return null;
+}
+
+/**
+ * The gesture latch: the first wheel event of a gesture picks its owner — the innermost scroller
+ * under the pointer that can scroll that way, else the board — and the gesture keeps it until the
+ * stream of events pauses for `WHEEL_GESTURE_LATCH_MS`.
+ */
+export class WheelLatch {
+  private owner: HTMLElement | null = null;
+  private lastAt = -Infinity;
+
+  /** `pick` runs only when a new gesture starts. Returns the element owner, or null = the board. */
+  claim(timeStamp: number, pick: () => HTMLElement | null): HTMLElement | null {
+    if (timeStamp - this.lastAt > WHEEL_GESTURE_LATCH_MS) this.owner = pick();
+    this.lastAt = timeStamp;
+    return this.owner;
+  }
 }
 
 export const WHEEL_MODE_LABEL: Record<WheelMode, string> = {

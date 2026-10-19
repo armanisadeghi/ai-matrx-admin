@@ -82,20 +82,20 @@ describe("tile resize math", () => {
 });
 
 describe("wheel routing", () => {
-  const base = { overTile: false, overChrome: false, zoomGesture: false, innerCanScroll: false };
+  const base = { overChrome: false, zoomGesture: false, owner: "board" as "board" | "element", elementCanScroll: false };
 
-  it("empty space moves the camera", () => {
+  it("a board-owned gesture moves the camera, over a tile or not", () => {
     expect(routeWheel(base)).toBe("camera");
+    expect(routeWheel({ ...base, elementCanScroll: true })).toBe("camera");
   });
 
-  it("over a tile a plain wheel NEVER moves the camera", () => {
-    expect(routeWheel({ ...base, overTile: true, innerCanScroll: true })).toBe("native");
-    // Content that cannot scroll simply does not — and the scroll does not chain out.
-    expect(routeWheel({ ...base, overTile: true, innerCanScroll: false })).toBe("block");
+  it("an element-owned gesture scrolls the element, and at its end nothing moves", () => {
+    expect(routeWheel({ ...base, owner: "element", elementCanScroll: true })).toBe("native");
+    expect(routeWheel({ ...base, owner: "element", elementCanScroll: false })).toBe("block");
   });
 
-  it("pinch / ctrl-wheel over a tile zooms the canvas (Figma)", () => {
-    expect(routeWheel({ ...base, overTile: true, zoomGesture: true, innerCanScroll: true })).toBe("camera");
+  it("pinch / ctrl-wheel zooms the canvas even when an element owns the gesture (Figma)", () => {
+    expect(routeWheel({ ...base, owner: "element", zoomGesture: true, elementCanScroll: true })).toBe("camera");
   });
 
   it("chrome and the focus layer own their scrolling", () => {

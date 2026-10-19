@@ -50,7 +50,7 @@ export function planPlacement(
       continue;
     }
     const type = itemTypeFor(item.source);
-    const size = item.size ?? type?.defaultSize ?? { w: 480, h: 360 };
+    const size = item.size ?? type?.defaultSize ?? { w: 560, h: 640 };
     const id = `${type?.key ?? "item"}:${newId()}`;
     tiles.push({ id, title: item.title, source: item.source, rect: { x: 0, y: 0, ...size } });
     results.push({ id, already: false });

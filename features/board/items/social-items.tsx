@@ -134,6 +134,7 @@ import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { rememberedMaxPosts } from "@/features/marketing/social/post-count";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { AdStructure, OutlierFeedStructure, SocialPostStructure, SocialProfileStructure, SwipeCollectionStructure } from "./structures";
 export const SOCIAL_POST_KEY = "social-post";
 export const SOCIAL_PROFILE_KEY = "social-profile";
 export const SOCIAL_OUTLIER_FEED_KEY = "social-outlier-feed";
@@ -1203,8 +1204,9 @@ export const SOCIAL_ITEMS: readonly BoardItemType[] = [
     group: "media",
     section: "social",
     accent: "rose",
+    structure: SocialPostStructure,
     status: none("A stored post has no running state; its numbers refresh from the Socials section."),
-    defaultSize: { w: 620, h: 560 },
+    defaultSize: { w: 620, h: 760 },
     growOnFill: true,
     matches: ENTITY(SOCIAL_POST_KEY),
     Body: SocialPostBody,
@@ -1223,8 +1225,9 @@ export const SOCIAL_ITEMS: readonly BoardItemType[] = [
     group: "media",
     section: "social",
     accent: "rose",
+    structure: SocialProfileStructure,
     status: none("A stored account has no running state."),
-    defaultSize: { w: 620, h: 700 },
+    defaultSize: { w: 620, h: 900 },
     growOnFill: true,
     matches: ENTITY(SOCIAL_PROFILE_KEY),
     Body: SocialProfileBody,
@@ -1247,8 +1250,9 @@ export const SOCIAL_ITEMS: readonly BoardItemType[] = [
     group: "media",
     section: "social",
     accent: "orange",
+    structure: OutlierFeedStructure,
     status: none("The feed re-reads every minute; it has no state of its own."),
-    defaultSize: { w: 560, h: 640 },
+    defaultSize: { w: 560, h: 900 },
     matches: ENTITY(SOCIAL_OUTLIER_FEED_KEY),
     Body: OutlierFeedBody,
     Face: OutlierFeedFace,
@@ -1264,8 +1268,9 @@ export const SOCIAL_ITEMS: readonly BoardItemType[] = [
     group: "media",
     section: "social",
     accent: "amber",
+    structure: AdStructure,
     status: none("A stored ad has no running state."),
-    defaultSize: { w: 520, h: 420 },
+    defaultSize: { w: 520, h: 640 },
     matches: ENTITY(SOCIAL_AD_KEY),
     Body: SocialAdBody,
     Face: AdFace,
@@ -1282,8 +1287,9 @@ export const SOCIAL_ITEMS: readonly BoardItemType[] = [
     group: "media",
     section: "social",
     accent: "violet",
+    structure: SwipeCollectionStructure,
     status: none("A collection has no running state."),
-    defaultSize: { w: 480, h: 280 },
+    defaultSize: { w: 480, h: 560 },
     matches: ENTITY(SOCIAL_SWIPE_KEY),
     Body: SwipeBody,
     Face: SwipeFace,

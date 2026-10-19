@@ -25,6 +25,7 @@ import { BoardCameraStoreContext } from "../engine/react";
 import { FaceLine, faceCopy } from "./face-text";
 import { MarkdownTileBody } from "../tiles/MarkdownTileBody";
 import { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
+import { CoverStructure } from "./structures";
 
 export { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 
@@ -182,8 +183,9 @@ export const COVER_ITEMS: BoardItemType[] = [
     group: "content",
     section: "notes",
     accent: "indigo",
+    structure: CoverStructure,
     status: { none: "A cover is board content; it saves with the board." },
-    defaultSize: { w: 1020, h: 720 },
+    defaultSize: { w: 1020, h: 900 },
     matches: (s) => s.kind === "entity" && s.entity === COVER_ENTITY,
     Body: CoverBody,
     Face: CoverFace,

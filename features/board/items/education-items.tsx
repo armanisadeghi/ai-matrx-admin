@@ -42,6 +42,7 @@ import {
   kitFromSource,
   kitSource,
 } from "./education-items.logic";
+import { FlashcardStructure, StudyKitStructure } from "./structures";
 
 // ─── Flashcard deck ──────────────────────────────────────────────────────────
 
@@ -209,8 +210,9 @@ export const EDUCATION_ITEMS: readonly BoardItemType[] = [
     group: "features",
     section: "research",
     accent: "pink",
+    structure: FlashcardStructure,
     status: { none: "A deck has no running state." },
-    defaultSize: { w: 960, h: 720 },
+    defaultSize: { w: 960, h: 900 },
     matches: (s) => s.kind === "entity" && s.entity === FLASHCARD_ITEM_KEY,
     Body: DeckBody,
     startNew: { label: "New flashcard deck", create: () => ({ title: "New flashcard deck", source: deckSource(null) }) },
@@ -234,8 +236,9 @@ export const EDUCATION_ITEMS: readonly BoardItemType[] = [
     group: "features",
     section: "research",
     accent: "pink",
+    structure: StudyKitStructure,
     status: { none: "A study kit has no running state." },
-    defaultSize: { w: 880, h: 720 },
+    defaultSize: { w: 880, h: 900 },
     matches: (s) => s.kind === "entity" && s.entity === KIT_ITEM_KEY,
     Body: KitBody,
     startNew: { label: "New study kit", create: () => ({ title: "New study kit", source: kitSource(null, null) }) },

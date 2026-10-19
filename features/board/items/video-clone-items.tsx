@@ -32,6 +32,7 @@ import { VIDEO_CLONE_SURFACE_NAME, createVideoCloneScope } from "@/features/surf
 import type { NodeSource } from "../board/document";
 import { useBoardOrganizationId } from "./board-organization";
 import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
+import { VideoCloneStructure } from "./structures";
 
 export const VIDEO_CLONE_KEY = "video-clone";
 
@@ -181,8 +182,9 @@ export const VIDEO_CLONE_ITEMS: readonly BoardItemType[] = [
     group: "media",
     section: "social",
     accent: "violet",
+    structure: VideoCloneStructure,
     status: { none: "A clone's state lives in its studio." },
-    defaultSize: { w: 900, h: 720 },
+    defaultSize: { w: 900, h: 900 },
     growOnFill: true,
     matches: (s) => s.kind === "entity" && s.entity === VIDEO_CLONE_KEY,
     Body: VideoCloneBody,

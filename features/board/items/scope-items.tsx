@@ -38,6 +38,7 @@ import { RecordList } from "./feature-items";
 import { titleToAdopt } from "./feature-items.logic";
 
 import { Spinner } from "@/components/ui/loaders/Spinner";
+import { ScopeStructure } from "./structures";
 export const SCOPE_ITEM_KEY = "scope";
 const NEW_SCOPE_TITLE = "New scope";
 
@@ -191,8 +192,9 @@ export const SCOPE_ITEMS: readonly BoardItemType[] = [
     group: "features",
     section: "work",
     accent: "lime",
+    structure: ScopeStructure,
     status: { none: "A scope has no running state." },
-    defaultSize: { w: 720, h: 760 },
+    defaultSize: { w: 720, h: 960 },
     matches: (s) => s.kind === "entity" && s.entity === SCOPE_ITEM_KEY,
     Body: ScopeBody,
     startNew: { label: NEW_SCOPE_TITLE, create: () => ({ title: NEW_SCOPE_TITLE, source: scopeSource(null) }) },

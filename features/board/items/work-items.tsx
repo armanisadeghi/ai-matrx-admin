@@ -79,6 +79,7 @@ import { selectNoteById } from "@/features/notes/redux/selectors";
 import { extractFlatText } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { FaceLine, faceCopy } from "./face-text";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { AgentFormStructure, ChatStructure, FileStructure, NoteStructure } from "./structures";
 
 // ── Chat ─────────────────────────────────────────────────────────────────────
 
@@ -559,8 +560,9 @@ export const WORK_ITEMS: BoardItemType[] = [
     group: "work",
     section: "ai",
     accent: "blue",
+    structure: ChatStructure,
     status: { useStatus: useChatStatus },
-    defaultSize: { w: 520, h: 760 },
+    defaultSize: { w: 520, h: 1000 },
     matches: (s) => isEntity(s, "chat"),
     Body: ChatBody,
     Face: ChatFace,
@@ -578,6 +580,7 @@ export const WORK_ITEMS: BoardItemType[] = [
     ],
     bringIn: { label: "Conversation", Picker: ChatPicker },
     record: { place: (id, title) => chatItem(id, title), searchToken: "conversation" },
+    startWithAgent: (agent): PlacedItem => ({ title: agent.name?.trim() || "Chat", source: chatSource(null, agent.id) }),
     href: (s) => {
       const id = entityId(s);
       return id ? `/chat/${id}` : null;
@@ -598,12 +601,18 @@ export const WORK_ITEMS: BoardItemType[] = [
     group: "work",
     section: "ai",
     accent: "violet",
+    structure: AgentFormStructure,
     status: { useStatus: useChatStatus },
-    defaultSize: { w: 560, h: 680 },
+    defaultSize: { w: 560, h: 900 },
     matches: (s) => isEntity(s, AGENT_FORM_ENTITY),
     Body: AgentFormItemBody,
     Keep: ChatKeep,
     startNew: { label: "Agent form", icon: AGENT_ICON, Picker: AgentFormPicker },
+    // An agent names the agent (id or name) and the tile starts its form at once; the layout stays the default.
+    startWithAgent: (agent): PlacedItem => ({
+      title: agent.name?.trim() || AGENT_FORM_PLACEHOLDER_TITLE,
+      source: agentFormSource(null, agent.id),
+    }),
     // An agent places a past run by its conversation id (a new one needs the person's agent choice).
     record: { place: (id, title) => ({ title: title?.trim() || AGENT_FORM_PLACEHOLDER_TITLE, source: agentFormSource(id, null) }) },
     href: (s) => {
@@ -622,9 +631,10 @@ export const WORK_ITEMS: BoardItemType[] = [
     group: "work",
     section: "notes",
     accent: "amber",
+    structure: NoteStructure,
     status: { useStatus: useNoteStatus },
     // Room for the notes core: modes + tools, the editor, metadata and save strip.
-    defaultSize: { w: 560, h: 620 },
+    defaultSize: { w: 560, h: 1000 },
     matches: (s) => isEntity(s, "note"),
     // Page layout: the note reads as a card at its natural height (no notes toolbar, menu or second
     // title); a press opens the real editor in place (NotePageCard).
@@ -659,8 +669,9 @@ export const WORK_ITEMS: BoardItemType[] = [
     group: "work",
     section: "media",
     accent: "slate",
+    structure: FileStructure,
     status: { useStatus: useFileStatus },
-    defaultSize: { w: 800, h: 600 },
+    defaultSize: { w: 800, h: 860 },
     matches: (s: NodeSource) => fileIdOf(s) !== null || isEntity(s, "file"),
     Body: FileBody,
     TitleField: FileTileTitle,

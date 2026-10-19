@@ -18,6 +18,7 @@ import { TextTileBody } from "../tiles/TextTileBody";
 import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
 import { parseWebUrl } from "./web-address";
 import { FaceLine, faceCopy } from "./face-text";
+import { ImageStructure, LabelStructure, WebPageStructure, WriteUpStructure } from "./structures";
 
 function UrlPicker({
   label,
@@ -124,8 +125,9 @@ export const CONTENT_ITEMS: BoardItemType[] = [
     group: "media",
     section: "media",
     accent: "slate",
+    structure: WebPageStructure,
     status: { none: "A framed web page has no state of its own." },
-    defaultSize: { w: 800, h: 560 },
+    defaultSize: { w: 800, h: 900 },
     matches: (s) => s.kind === "html",
     Body: WebPageBody,
     bringIn: {
@@ -147,8 +149,9 @@ export const CONTENT_ITEMS: BoardItemType[] = [
     group: "media",
     section: "media",
     accent: "slate",
+    structure: ImageStructure,
     status: { none: "An image on the board never changes on its own." },
-    defaultSize: { w: 560, h: 400 },
+    defaultSize: { w: 560, h: 640 },
     matches: (s) => s.kind === "image" && !!s.url,
     Body: ImageBody,
     bringIn: {
@@ -168,8 +171,9 @@ export const CONTENT_ITEMS: BoardItemType[] = [
     group: "content",
     section: "notes",
     accent: "indigo",
+    structure: WriteUpStructure,
     status: { none: "Board text; it saves with the board." },
-    defaultSize: { w: 640, h: 720 },
+    defaultSize: { w: 640, h: 1000 },
     matches: (s) => s.kind === "text",
     // Page layout: the tile takes the write-up's full height (`WriteUpBody` drops its inner scroll).
     autoHeight: () => true,
@@ -189,6 +193,7 @@ export const CONTENT_ITEMS: BoardItemType[] = [
     group: "content",
     section: "canvas",
     accent: "slate",
+    structure: LabelStructure,
     status: { none: "A label is board text with no state." },
     defaultSize: { w: 520, h: 120 },
     matches: (s) => s.kind === "label",

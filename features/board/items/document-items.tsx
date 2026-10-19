@@ -35,6 +35,7 @@ import {
   pickedDocumentItem,
 } from "./document-items.logic";
 import { titleToAdopt } from "./feature-items.logic";
+import { DocumentStructure } from "./structures";
 
 function DocumentPicker({ onPick, onCancel }: PickerProps) {
   return (
@@ -94,9 +95,10 @@ export const DOCUMENT_ITEMS: readonly BoardItemType[] = [
     group: "work",
     section: "notes",
     accent: "indigo",
+    structure: DocumentStructure,
     status: { none: "Its save status lives in the editor's own bar, not in a store the board can read." },
     // A page-width document (~794px) plus the title strip and the editor bar.
-    defaultSize: { w: 840, h: 760 },
+    defaultSize: { w: 840, h: 1000 },
     matches: matchesDocument,
     Body: DocumentBody,
     startNew: { label: "New document", create: newDocumentItem },

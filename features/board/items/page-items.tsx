@@ -25,6 +25,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import type { NodeSource } from "../board/document";
 import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
+import { PageStructure } from "./structures";
 
 export const PAGE_ENTITY = "page";
 
@@ -133,8 +134,9 @@ export const PAGE_ITEMS: BoardItemType[] = [
     group: "content",
     section: "media",
     accent: "slate",
+    structure: PageStructure,
     status: { none: "A framed app page has no state of its own." },
-    defaultSize: { w: 1100, h: 760 },
+    defaultSize: { w: 1100, h: 1000 },
     matches: (s) => pagePathOf(s) !== null,
     Body: PageBody,
     bringIn: { label: "Page", Picker: PagePicker },

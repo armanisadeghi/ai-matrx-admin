@@ -15,9 +15,11 @@
  *   ⌘' / Ctrl+' ................... snap to grid      hold ⌘ / Ctrl / Alt while dragging ... no snapping
  *   arrows ........................ nudge the selection (shift ×10); nothing selected: move the view
  *                                   (in focus: previous / next tile)
- * Scroll over a TILE never moves the board (engine/wheel-input.ts `routeWheel`):
- * content that can scroll scrolls, content that can't doesn't. Pinch and
- * ctrl/⌘+scroll zoom the board everywhere, tiles included (Figma).
+ * A scroll starts and ends with the thing it started with (engine/wheel-input.ts `WheelLatch`):
+ * the gesture's first wheel event picks the owner — the innermost scroller under the pointer
+ * that can scroll that way, else the board — and it never switches because one ran out. A
+ * finger works the same (`touchmove` below). Pinch and ctrl/⌘+scroll zoom the board
+ * everywhere, tiles included (Figma).
  * Tiles: click selects (drag moves from anywhere), double-click or a press on a
  * control inside starts interacting (native input), Esc steps back out.
  *
@@ -41,7 +43,7 @@ import {
   zoomAt,
 } from "../engine/camera";
 import { type Insets, BoardCameraStore, cameraIsUnreadable } from "../engine/camera-store";
-import { type WheelMode, routeWheel } from "../engine/wheel-input";
+import { type WheelMode, WheelLatch, canScrollAlong, innermostScroller, routeWheel } from "../engine/wheel-input";
 import { isCreationTool, toolForKey } from "../engine/tools";
 import { boardOwnsKey, isTyping } from "../engine/key-target";
 import { isAccidentalScroll } from "../engine/native-scroll";
@@ -430,17 +432,41 @@ export function BoardViewport({
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    const latch = new WheelLatch();
     const onWheel = (e: WheelEvent) => {
       const target = e.target as HTMLElement | null;
       const tile = target?.closest<HTMLElement>("[data-board-tile], [data-board-card]") ?? null;
+      const zoomGesture = e.ctrlKey || e.metaKey;
+      // Focus mode and chrome own their own scrolling.
+      const overChrome = !!target?.closest("[data-board-focus], [data-board-chrome]");
+      const vertical = Math.abs(e.deltaY) >= Math.abs(e.deltaX);
+      const delta = vertical ? e.deltaY : e.deltaX;
+      // A scroll starts and ends with the thing it started with: the gesture's first event picks
+      // the owner, and it stays until the events pause (momentum included).
+      let owner: HTMLElement | null = null;
+      if (!overChrome && !zoomGesture) {
+        owner = latch.claim(e.timeStamp, () => (tile ? innermostScroller(target, tile, vertical, delta) : null));
+      }
+      const elementCanScroll = !!owner && owner.isConnected && canScrollAlong(owner, vertical, delta);
       const route = routeWheel({
-        // Focus mode and chrome own their own scrolling.
-        overChrome: !!target?.closest("[data-board-focus], [data-board-chrome]"),
-        overTile: !!tile,
-        zoomGesture: e.ctrlKey || e.metaKey,
-        innerCanScroll: !!tile && contentScrolls(e, tile),
+        overChrome,
+        zoomGesture,
+        owner: owner ? "element" : "board",
+        elementCanScroll,
       });
-      if (route === "ignore" || route === "native") return;
+      if (route === "ignore") return;
+      if (route === "native" || route === "block") {
+        // The owner scrolls; nothing else moves. Native scroll only reaches the owner when the
+        // pointer is still over it — otherwise scroll it by hand.
+        const natural = tile ? innermostScroller(target, tile, vertical, delta) : null;
+        if (route === "native" && natural === owner) return;
+        e.preventDefault();
+        if (route === "native" && owner) {
+          const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? owner.clientHeight : 1;
+          owner.scrollBy(vertical ? 0 : delta * unit, vertical ? delta * unit : 0);
+        }
+        return;
+      }
       // Page layout reads like a document: every scroll the content does not take moves the page
       // down or up (over a tile too), and nothing zooms.
       if (store.getPageLock()) {
@@ -450,10 +476,7 @@ export function BoardViewport({
         store.setCamera(panBy(store.getCamera(), 0, -e.deltaY * unit));
         return;
       }
-      // "block": over a tile that cannot scroll this way — nothing moves, and
-      // the scroll must not chain out to the page.
       e.preventDefault();
-      if (route === "block") return;
       const intent = store.wheel.intent(e);
       const bounds = root.getBoundingClientRect();
       const cam = store.getCamera();
@@ -470,6 +493,64 @@ export function BoardViewport({
     };
     root.addEventListener("wheel", onWheel, { passive: false });
     return () => root.removeEventListener("wheel", onWheel);
+  }, [store]);
+
+  // ── touch: a one-finger pan belongs to what it started on ────────────────
+  // A finger that starts on a tile body inside a scroller that can scroll that way scrolls it
+  // natively (overscroll is contained, so it never chains out). A finger whose start has nothing
+  // to scroll that way pans the board, over tiles too. Decided once, on the first move.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    let last: { x: number; y: number } | null = null;
+    let mode: "undecided" | "native" | "board" = "undecided";
+    let startTarget: HTMLElement | null = null;
+    let startTile: HTMLElement | null = null;
+    const onStart = (e: TouchEvent) => {
+      last = null;
+      startTarget = null;
+      startTile = null;
+      if (e.touches.length !== 1) return;
+      const t = e.target as HTMLElement | null;
+      const tile = t?.closest<HTMLElement>("[data-board-body]") ?? null;
+      if (!t || !tile || t.closest("[data-board-chrome], [data-board-focus], [data-board-resize], canvas")) return;
+      last = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      startTarget = t;
+      startTile = tile;
+      mode = "undecided";
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!last || !startTarget || !startTile || e.touches.length !== 1) return;
+      const x = e.touches[0].clientX;
+      const y = e.touches[0].clientY;
+      const dx = last.x - x;
+      const dy = last.y - y;
+      if (mode === "undecided") {
+        if (Math.hypot(dx, dy) < 4) return;
+        const vertical = Math.abs(dy) >= Math.abs(dx);
+        mode = innermostScroller(startTarget, startTile, vertical, vertical ? dy : dx) ? "native" : "board";
+      }
+      if (mode !== "board") {
+        last = { x, y };
+        return;
+      }
+      if (e.cancelable) e.preventDefault();
+      store.setCamera(panBy(store.getCamera(), -dx, -dy));
+      last = { x, y };
+    };
+    const onEnd = () => {
+      last = null;
+    };
+    root.addEventListener("touchstart", onStart, { passive: true });
+    root.addEventListener("touchmove", onMove, { passive: false });
+    root.addEventListener("touchend", onEnd);
+    root.addEventListener("touchcancel", onEnd);
+    return () => {
+      root.removeEventListener("touchstart", onStart);
+      root.removeEventListener("touchmove", onMove);
+      root.removeEventListener("touchend", onEnd);
+      root.removeEventListener("touchcancel", onEnd);
+    };
   }, [store]);
 
   // ── pointer: drag-pan + two-finger pinch ─────────────────────────────────
@@ -945,20 +1026,3 @@ function toolCursor(tool: string): string {
  * `role="textbox"`. Missing those ate every space typed into a file.
  */
 
-/** True when some scroll container between the pointer and the tile has room
- * to scroll in the wheel's direction. Any scroll container counts — tile
- * bodies need no special marker. */
-function contentScrolls(e: WheelEvent, tile: HTMLElement): boolean {
-  const target = e.target as HTMLElement | null;
-  const vertical = Math.abs(e.deltaY) >= Math.abs(e.deltaX);
-  const delta = vertical ? e.deltaY : e.deltaX;
-  for (let el: HTMLElement | null = target; el && el !== tile.parentElement; el = el.parentElement) {
-    const style = getComputedStyle(el);
-    const overflow = vertical ? style.overflowY : style.overflowX;
-    if (overflow !== "auto" && overflow !== "scroll") continue;
-    if (vertical) {
-      if (delta > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 0) return true;
-    } else if (delta > 0 ? el.scrollLeft + el.clientWidth < el.scrollWidth - 1 : el.scrollLeft > 0) return true;
-  }
-  return false;
-}

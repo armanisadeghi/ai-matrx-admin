@@ -114,9 +114,17 @@ export function autoHeightMoves(
   return moves;
 }
 
-export function autoHeightChange(current: number, measured: number, min = 48): number | null {
+/**
+ * THE ONE SAFETY CEILING on a tile growing to its content (board px). A board has unlimited space, so
+ * a tile is never shortened without a very good reason (Arman, 2026-10-19: "the limitations should be
+ * sort of the exception, not the rule"); this exists only so runaway content (a 58-page paste) cannot
+ * make one tile miles tall. The person's manual resize is not capped by it.
+ */
+export const AUTO_HEIGHT_CEILING_PX = 2000;
+
+export function autoHeightChange(current: number, measured: number, min = 48, ceiling = AUTO_HEIGHT_CEILING_PX): number | null {
   if (!Number.isFinite(measured) || measured <= 0) return null;
-  const next = Math.max(min, Math.ceil(measured));
+  const next = Math.min(ceiling, Math.max(min, Math.ceil(measured)));
   return Math.abs(next - current) >= 1 ? next : null;
 }
 

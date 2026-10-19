@@ -226,11 +226,20 @@ hardware with a production build before tuning further.
 - **Scrolling (`engine/wheel-input.ts`, knob `WheelMode`, per-viewer):** `auto` (default) — a mouse
   wheel zooms at the cursor, a trackpad swipe pans, a pinch zooms; `zoom`; `pan`. One decision per
   gesture burst so an inertia tail never flips device. Drag empty space / space+drag / middle-drag
-  pans. **Over a tile a plain wheel or trackpad scroll NEVER moves the board** (`routeWheel`), whether
-  the tile is idle, selected or interacting: content with room to scroll that way scrolls, otherwise
-  the event is swallowed so nothing chains out (the card is also `overscroll-contain`). **Pinch and
-  ctrl/⌘+wheel zoom the board everywhere, tiles included** (Figma). Menus and popovers opened from a
-  tile portal to `body`, outside the board, so the board never hears their wheel.
+  pans. **One rule (Arman, 2026-10-19; `WheelLatch`, `WHEEL_GESTURE_LATCH_MS`): a scroll starts and ends with the
+  thing it started with.** The first wheel event of a gesture picks the owner — the innermost scroller under the
+  pointer that can scroll that way, else the board — and it keeps it until the events pause (trackpad momentum is
+  the same gesture). Board-owned: the board pans over tiles too, tile content never scrolls. Element-owned: the
+  element scrolls and at its end nothing else moves (no chaining to board or page). A tile with nothing to scroll
+  that way belongs to the board. A finger follows the same rule (`touchmove` in `BoardViewport`: decided on the first
+  move from where it started). **Pinch and ctrl/⌘+wheel zoom the board everywhere, tiles included** (Figma). Menus
+  and popovers opened from a tile portal to `body`, outside the board. Guard `__tests__/wheel-gesture-latch.test.tsx`.
+- **Heights are generous (Arman, 2026-10-19):** a board has unlimited space, so a tile opens tall enough to show its
+  real content (per-type `defaultSize`: note/document/chat 1000, tables/records/files 860-900) and nothing inside a tile
+  shortens it with its own max-height (picker lists in dialogs excepted). The ONE exception is the safety ceiling
+  `AUTO_HEIGHT_CEILING_PX` (2000, `engine/tile-chrome.ts`) on growth to content, against a runaway paste; a person's manual
+  resize always wins. Open: the agent-form field box `max-h-72` lives in the published `@ai-matrx/chat` package
+  (`AgentVariableForm`), not here. Guard `__tests__/generous-heights.test.ts`.
 - **Full screen (`FocusLayer`):** Enter, F, the tile's expand button or the menu → the tile's live
   card portals into the focus layer, which is itself portalled to `body` and fixed to the VIEWPORT
   (`fixed inset-0 h-dvh`, z-50) — never sized from the tile, the camera or the board pane, so nothing
