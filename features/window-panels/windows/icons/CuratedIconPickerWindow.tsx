@@ -280,6 +280,7 @@ function AiTapTapestry({
         return (
           <TapTargetLabeled key={`${label}-${selectValue}`} label={label}>
             <Component
+              variant="transparent"
               ariaLabel={label}
               tooltip={false}
               colored={colored}
