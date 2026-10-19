@@ -90,6 +90,7 @@ import SandboxStorageTab from "./tabs/SandboxStorageTab";
 import FeedbackTab from "./tabs/FeedbackTab";
 import ExtensionTab from "./tabs/ExtensionTab";
 import ApiKeysTab from "./tabs/ApiKeysTab";
+import OAuthAppsTab from "./tabs/OAuthAppsTab";
 import AccessRequestsTab from "./tabs/AccessRequestsTab";
 import WritingVoiceTab from "./tabs/WritingVoiceTab";
 import SandboxDefaultsTab from "./tabs/SandboxDefaultsTab";
@@ -944,6 +945,19 @@ export const settingsRegistry: SettingsTabDef[] = [
       "programmatic",
     ],
     component: ApiKeysTab,
+    persistence: "server",
+  },
+  // ── OAuth apps (AT-OAUTH) ─────────────────────────────────────────────────
+  // Apps a person registers so other people can authorize them; each reaches
+  // only the scopes it declared, as the person who authorized it.
+  {
+    id: "integrations.oauthApps",
+    parentId: "integrations",
+    label: "OAuth apps",
+    icon: AppWindow,
+    description: "Apps other people can sign in to AI Matrx with.",
+    searchKeywords: ["oauth", "oauth app", "client id", "client secret", "developer", "integration", "authorize", "redirect"],
+    component: OAuthAppsTab,
     persistence: "server",
   },
 
